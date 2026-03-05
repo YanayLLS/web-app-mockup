@@ -45,7 +45,7 @@ export function FloatingMinimizedCall() {
   
   const handleMaximize = () => {
     setIsCallMinimized(false);
-    navigate('/remote-support');
+    navigate('/web/remote-support');
   };
   
   const handleEndCall = () => {
@@ -53,7 +53,7 @@ export function FloatingMinimizedCall() {
     if (window.confirm('Are you sure you want to end the call?')) {
       updateCallState({ isAudioEnabled: false, isVideoEnabled: false });
       setIsCallMinimized(false);
-      navigate('/remote-support');
+      navigate('/web/remote-support');
     }
   };
   

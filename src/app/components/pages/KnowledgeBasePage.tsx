@@ -116,6 +116,7 @@ function KnowledgeBaseContent() {
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
   const [nameColumnWidth, setNameColumnWidth] = useState(250);
   const [openProcedure, setOpenProcedure] = useState<KnowledgeBaseItem | null>(null);
+  const [openDigitalTwin, setOpenDigitalTwin] = useState<KnowledgeBaseItem | null>(null);
   const [canvasProcedure, setCanvasProcedure] = useState<KnowledgeBaseItem | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | 'inside' | null>(null);
@@ -1006,6 +1007,8 @@ function KnowledgeBaseContent() {
     const handleRowClick = () => {
       if (item.type === 'procedure') {
         setOpenProcedure(item);
+      } else if (item.type === 'digital-twin') {
+        setOpenDigitalTwin(item);
       }
     };
     
@@ -1258,6 +1261,8 @@ function KnowledgeBaseContent() {
                     e.stopPropagation();
                     if (item.type === 'procedure') {
                       setOpenProcedure(item);
+                    } else if (item.type === 'digital-twin') {
+                      setOpenDigitalTwin(item);
                     }
                     setActiveItemMenu(null);
                   }}
@@ -1341,6 +1346,8 @@ function KnowledgeBaseContent() {
         setCurrentFolderId(item.id);
       } else if (item.type === 'procedure') {
         setOpenProcedure(item);
+      } else if (item.type === 'digital-twin') {
+        setOpenDigitalTwin(item);
       }
     };
 
@@ -1426,6 +1433,8 @@ function KnowledgeBaseContent() {
                       setCurrentFolderId(item.id);
                     } else if (item.type === 'procedure') {
                       setOpenProcedure(item);
+                    } else if (item.type === 'digital-twin') {
+                      setOpenDigitalTwin(item);
                     }
                     setActiveItemMenu(null);
                   }}
@@ -2057,6 +2066,34 @@ function KnowledgeBaseContent() {
             updateKnowledgeBaseItems(newItems);
             // Update the open procedure state to reflect new changes
             setOpenProcedure(updatedProcedure);
+          }}
+        />
+      )}
+
+      {/* Digital Twin Modal */}
+      {openDigitalTwin && (
+        <ProcedureModal
+          mode="digital-twin"
+          procedure={{
+            ...openDigitalTwin,
+            isPublished: openDigitalTwin.isPublished ?? false,
+            hasUnpublishedChanges: openDigitalTwin.hasUnpublishedChanges ?? false,
+            publishedVersion: openDigitalTwin.publishedVersion || '1.0',
+            publishedDate: openDigitalTwin.publishedDate || '01/15/2025',
+          }}
+          onClose={() => setOpenDigitalTwin(null)}
+          onSave={(updated) => {
+            const updateItem = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
+              return items.map(item => {
+                if (item.id === updated.id) return updated;
+                if (item.children) return { ...item, children: updateItem(item.children) };
+                return item;
+              });
+            };
+            const newItems = updateItem(items);
+            setItems(newItems);
+            updateKnowledgeBaseItems(newItems);
+            setOpenDigitalTwin(updated);
           }}
         />
       )}

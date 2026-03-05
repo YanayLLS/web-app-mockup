@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { 
-  X, 
-  Share2, 
-  ChevronRight, 
+import {
+  X,
+  Share2,
+  ChevronRight,
   FileText,
   ChevronDown,
   Play,
@@ -13,8 +13,11 @@ import {
   Calendar,
   Edit2,
   AlertCircle,
-  Star
+  Star,
+  Clapperboard,
+  Link2,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useProject, KnowledgeBaseItem } from '../../contexts/ProjectContext';
 import { ProcedureSettings } from './ProcedureSettings';
 import { VersionHistory } from './VersionHistory';
@@ -26,6 +29,7 @@ import { useToast } from '../../contexts/ToastContext';
 
 interface ProcedureModalProps {
   isOpen?: boolean;
+  mode?: 'procedure' | 'digital-twin';
   procedure: {
     id: string;
     name: string;
@@ -47,14 +51,25 @@ interface ProcedureModalProps {
   onOpenCanvas?: () => void;
 }
 
-export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, startEditingTitle = false, onOpenCanvas }: ProcedureModalProps) {
+export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, onClose, onSave, startEditingTitle = false, onOpenCanvas }: ProcedureModalProps) {
   const { digitalTwins, getDigitalTwinById, knowledgeBaseItems, currentProject } = useProject();
   const { currentRole } = useRole();
   const { favorites, addFavorite, removeFavorite } = useFavorites();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   
+  const isDT = mode === 'digital-twin';
+
   // Check if user has edit permissions
   const canEdit = hasAccess(currentRole, 'projects-edit');
+
+  // For DT mode: find procedures connected to this digital twin
+  const connectedProcedures = isDT
+    ? knowledgeBaseItems.filter(
+        i => i.type === 'procedure' && i.connectedDigitalTwinIds?.includes(procedure.id)
+      )
+    : [];
+  const [connectedProceduresExpanded, setConnectedProceduresExpanded] = useState(true);
   
   // Check if this procedure is favorited
   const isFavorited = favorites.some(fav => fav.id === procedure.id);
@@ -360,10 +375,10 @@ export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, star
                     style={{ boxShadow: 'var(--elevation-sm)' }}
                   >
                     <p className="text-sm text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                      Share this procedure
+                      Share this {isDT ? 'digital twin' : 'procedure'}
                     </p>
                     <p className="text-xs text-muted mb-3">
-                      Anyone with the link can view this procedure
+                      Anyone with the link can view this {isDT ? 'digital twin' : 'procedure'}
                     </p>
                     <div className="flex gap-2">
                       <input
@@ -422,7 +437,7 @@ export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, star
           <div className="flex items-center gap-3 px-4 py-3">
             {/* Icon */}
             <div className="p-2 bg-accent/10 rounded-[var(--radius)]">
-              <FileText size={20} className="text-accent" />
+              {isDT ? <Box size={20} className="text-accent" /> : <FileText size={20} className="text-accent" />}
             </div>
 
             {/* Title */}
@@ -557,82 +572,86 @@ export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, star
                     <h3 className="text-sm text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                       Preview
                     </h3>
-                    <p className="text-xs text-muted">
-                      Preview a connected digital twin, or{' '}
-                      <button className="text-primary hover:underline">preview in 2D</button>
-                    </p>
-                  </div>
-
-                  {/* Digital Twin Selector */}
-                  <div className="relative" ref={dropdownRef}>
-                    <button
-                      onClick={() => canEdit && setShowDigitalTwinDropdown(!showDigitalTwinDropdown)}
-                      className={`flex items-center justify-between gap-3 h-10 px-4 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground transition-colors min-w-[240px] ${canEdit ? 'hover:bg-secondary cursor-pointer' : 'cursor-default'}`}
-                      disabled={!canEdit}
-                    >
-                      <span className="truncate">
-                        {selectedDigitalTwins.length === 0 
-                          ? 'Select digital twins' 
-                          : selectedDigitalTwins.length === 1
-                          ? selectedDigitalTwins[0]!.name
-                          : `${selectedDigitalTwins.length} digital twins selected`}
-                      </span>
-                      <ChevronDown size={14} className="text-muted shrink-0" />
-                    </button>
-
-                    {showDigitalTwinDropdown && canEdit && (
-                      <div 
-                        className="absolute right-0 top-full mt-1 w-64 bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 max-h-60 overflow-auto"
-                        style={{ boxShadow: 'var(--elevation-sm)' }}
-                      >
-                        {digitalTwins.map((twin) => {
-                          const isSelected = selectedDigitalTwinIds.includes(twin.id);
-                          return (
-                            <label
-                              key={twin.id}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer hover:bg-secondary"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedDigitalTwinIds([...selectedDigitalTwinIds, twin.id]);
-                                  } else {
-                                    setSelectedDigitalTwinIds(selectedDigitalTwinIds.filter(id => id !== twin.id));
-                                  }
-                                }}
-                                className="w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-primary/20"
-                              />
-                              <Box size={14} className="text-muted" />
-                              <span className="text-foreground">{twin.name}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                    {!isDT && (
+                      <p className="text-xs text-muted">
+                        Preview a connected digital twin, or{' '}
+                        <button className="text-primary hover:underline">preview in 2D</button>
+                      </p>
                     )}
                   </div>
+
+                  {/* Digital Twin Selector - only in procedure mode */}
+                  {!isDT && (
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        onClick={() => canEdit && setShowDigitalTwinDropdown(!showDigitalTwinDropdown)}
+                        className={`flex items-center justify-between gap-3 h-10 px-4 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground transition-colors min-w-[240px] ${canEdit ? 'hover:bg-secondary cursor-pointer' : 'cursor-default'}`}
+                        disabled={!canEdit}
+                      >
+                        <span className="truncate">
+                          {selectedDigitalTwins.length === 0
+                            ? 'Select digital twins'
+                            : selectedDigitalTwins.length === 1
+                            ? selectedDigitalTwins[0]!.name
+                            : `${selectedDigitalTwins.length} digital twins selected`}
+                        </span>
+                        <ChevronDown size={14} className="text-muted shrink-0" />
+                      </button>
+
+                      {showDigitalTwinDropdown && canEdit && (
+                        <div
+                          className="absolute right-0 top-full mt-1 w-64 bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 max-h-60 overflow-auto"
+                          style={{ boxShadow: 'var(--elevation-sm)' }}
+                        >
+                          {digitalTwins.map((twin) => {
+                            const isSelected = selectedDigitalTwinIds.includes(twin.id);
+                            return (
+                              <label
+                                key={twin.id}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer hover:bg-secondary"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedDigitalTwinIds([...selectedDigitalTwinIds, twin.id]);
+                                    } else {
+                                      setSelectedDigitalTwinIds(selectedDigitalTwinIds.filter(id => id !== twin.id));
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-primary/20"
+                                />
+                                <Box size={14} className="text-muted" />
+                                <span className="text-foreground">{twin.name}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* 3D Preview */}
                 <div className="relative w-full aspect-[16/9] bg-gradient-to-b from-[#5b19b4] to-[#004fff] rounded-[var(--radius)] overflow-hidden mb-3 flex items-center justify-center">
-                  {selectedDigitalTwins.length > 0 ? (
+                  {(isDT || selectedDigitalTwins.length > 0) ? (
                     <>
                       {!show3DViewer ? (
                         <>
-                          <button 
+                          <button
                             onClick={() => setShow3DViewer(true)}
                             className="relative z-10 w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/50 transition-colors"
                           >
                             <Play size={24} className="text-white ml-1" fill="white" />
                           </button>
                           <p className="absolute bottom-4 left-4 text-white text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                            {selectedDigitalTwins.length === 1 ? selectedDigitalTwins[0]!.name : `${selectedDigitalTwins.length} digital twins`}
+                            {isDT ? procedureName : (selectedDigitalTwins.length === 1 ? selectedDigitalTwins[0]!.name : `${selectedDigitalTwins.length} digital twins`)}
                           </p>
                         </>
                       ) : (
-                        <Simple3DViewer 
-                          digitalTwinName={selectedDigitalTwins.length === 1 ? selectedDigitalTwins[0]!.name : `${selectedDigitalTwins.length} digital twins`}
+                        <Simple3DViewer
+                          digitalTwinName={isDT ? procedureName : (selectedDigitalTwins.length === 1 ? selectedDigitalTwins[0]!.name : `${selectedDigitalTwins.length} digital twins`)}
                           onClose={() => setShow3DViewer(false)}
                         />
                       )}
@@ -648,20 +667,40 @@ export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, star
                 {/* Action Buttons */}
                 {canEdit && (
                   <div className="flex gap-2">
-                    <button 
-                      disabled={selectedDigitalTwinIds.length === 0}
-                      className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="text-sm">Edit in app</span>
-                      <ExternalLink size={12} />
-                    </button>
-                    <button 
-                      onClick={onOpenCanvas}
-                      disabled={selectedDigitalTwinIds.length === 0}
-                      className="flex-1 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="text-sm">Edit in canvas</span>
-                    </button>
+                    {isDT ? (
+                      <>
+                        <button
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors"
+                        >
+                          <span className="text-sm">Edit Digital Twin</span>
+                          <ExternalLink size={12} />
+                        </button>
+                        <button
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors"
+                        >
+                          <Clapperboard size={14} />
+                          <span className="text-sm">Animate</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          disabled={selectedDigitalTwinIds.length === 0}
+                          onClick={() => navigate(`/web/procedure-editor/${procedure.id}`)}
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="text-sm">Edit in app</span>
+                          <ExternalLink size={12} />
+                        </button>
+                        <button
+                          onClick={onOpenCanvas}
+                          disabled={selectedDigitalTwinIds.length === 0}
+                          className="flex-1 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="text-sm">Edit in canvas</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -677,6 +716,8 @@ export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, star
                         alt="Procedure thumbnail"
                         className="w-full h-full object-cover rounded-[var(--radius)]"
                       />
+                    ) : isDT ? (
+                      <Box size={24} className="text-muted" />
                     ) : (
                       <FileText size={24} className="text-muted" />
                     )}
@@ -700,15 +741,58 @@ export function ProcedureModal({ isOpen = true, procedure, onClose, onSave, star
             {/* Side Menu - Only for editing roles */}
             {canEdit && (
               <div className="w-[400px] shrink-0 flex flex-col gap-3">
-                {/* Settings Section */}
-                <ProcedureSettings
-                  isExpanded={settingsExpanded}
-                  onToggleExpand={() => setSettingsExpanded(!settingsExpanded)}
-                  settings={procedureSettings}
-                  aiInstructions={aiInstructions}
-                  onSettingsChange={setProcedureSettings}
-                  onAIInstructionsChange={setAIInstructions}
-                />
+                {isDT ? (
+                  /* Connected Procedures - DT mode */
+                  <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden">
+                    <button
+                      onClick={() => setConnectedProceduresExpanded(!connectedProceduresExpanded)}
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Link2 size={16} className="text-primary" />
+                        <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                          Connected Procedures
+                        </span>
+                        <span className="text-xs text-muted bg-secondary rounded-full px-2 py-0.5">{connectedProcedures.length}</span>
+                      </div>
+                      <ChevronDown size={16} className={`text-muted transition-transform ${connectedProceduresExpanded ? '' : '-rotate-90'}`} />
+                    </button>
+
+                    {connectedProceduresExpanded && (
+                      <div className="px-4 pb-3 border-t border-border">
+                        {connectedProcedures.length === 0 ? (
+                          <p className="text-sm text-muted py-3 text-center">No procedures connected to this digital twin</p>
+                        ) : (
+                          <div className="flex flex-col gap-1 pt-2">
+                            {connectedProcedures.map(proc => (
+                              <div
+                                key={proc.id}
+                                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-secondary/50 transition-colors cursor-pointer"
+                              >
+                                <FileText size={14} className="text-muted shrink-0" />
+                                <span className="text-sm text-foreground truncate">{proc.name}</span>
+                                {proc.isPublished && (
+                                  <span className="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded ml-auto shrink-0">Published</span>
+                                )}
+                                <ChevronRight size={12} className="text-muted shrink-0" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Settings Section - Procedure mode */
+                  <ProcedureSettings
+                    isExpanded={settingsExpanded}
+                    onToggleExpand={() => setSettingsExpanded(!settingsExpanded)}
+                    settings={procedureSettings}
+                    aiInstructions={aiInstructions}
+                    onSettingsChange={setProcedureSettings}
+                    onAIInstructionsChange={setAIInstructions}
+                  />
+                )}
 
                 {/* Version History Section */}
                 <VersionHistory

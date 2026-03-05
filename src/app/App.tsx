@@ -42,6 +42,8 @@ import { FloatingMinimizedCall } from './components/FloatingMinimizedCall';
 import { LoginScreen } from './components/LoginScreen';
 import { SignUpScreen } from './components/SignUpScreen';
 import { WorkspaceSelector } from './components/WorkspaceSelector';
+import { ProductSelector } from './components/ProductSelector';
+import { ProcedureEditorPage } from './components/pages/ProcedureEditorPage';
 import {
   IconHome,
   IconNotifications,
@@ -157,7 +159,8 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
 
   // Sync URL with selected menu item
   useEffect(() => {
-    const path = location.pathname;
+    // Strip /web prefix for internal route matching
+    const path = location.pathname.replace(/^\/web/, '') || '/';
     if (path.startsWith('/project/')) {
       const parts = path.split('/');
       const projectId = parts[2];
@@ -190,19 +193,18 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
     const path = location.pathname;
     if (path.endsWith('/chat')) {
       setIsChatOpen(true);
-      // Remove /chat from URL without adding to history
-      const basePath = path.replace(/\/chat$/, '') || '/';
+      const basePath = path.replace(/\/chat$/, '') || '/web/home';
       navigate(basePath, { replace: true });
     }
   }, [location.pathname, navigate]);
 
   const handleProjectSelect = (projectId: string) => {
     setCurrentProject(projectId);
-    navigate(`/project/${projectId}/knowledgebase`);
+    navigate(`/web/project/${projectId}/knowledgebase`);
   };
 
   const handleBackToMain = () => {
-    navigate('/home');
+    navigate('/web/home');
   };
 
   const handleMenuItemSelect = (menuItem: string) => {
@@ -212,28 +214,28 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
     }
     
     const routeMap: { [key: string]: string } = {
-      'home': '/home',
-      'notifications': '/notifications',
-      'remote-support': '/remote-support',
-      'ai-studio': '/ai-studio',
-      'archive': '/archive',
-      'ws-members': '/workspace/members',
-      'ws-design': '/workspace/design',
-      'ws-remote-support': '/workspace/remote-support',
-      'ws-subworkspaces': '/workspace/subworkspaces',
-      'ws-pay-per-click': '/workspace/pay-per-click',
-      'ws-sso': '/workspace/sso',
-      'ws-qr-codes': '/workspace/qr-codes',
-      'ws-integrations': '/workspace/integrations',
+      'home': '/web/home',
+      'notifications': '/web/notifications',
+      'remote-support': '/web/remote-support',
+      'ai-studio': '/web/ai-studio',
+      'archive': '/web/archive',
+      'ws-members': '/web/workspace/members',
+      'ws-design': '/web/workspace/design',
+      'ws-remote-support': '/web/workspace/remote-support',
+      'ws-subworkspaces': '/web/workspace/subworkspaces',
+      'ws-pay-per-click': '/web/workspace/pay-per-click',
+      'ws-sso': '/web/workspace/sso',
+      'ws-qr-codes': '/web/workspace/qr-codes',
+      'ws-integrations': '/web/workspace/integrations',
     };
-    
-    const route = routeMap[menuItem] || '/home';
+
+    const route = routeMap[menuItem] || '/web/home';
     navigate(route);
   };
 
   const handleScheduleMeeting = () => {
     setShouldShowScheduleModal(true);
-    navigate('/remote-support');
+    navigate('/web/remote-support');
     if (isMobile) {
       setIsSidebarOpen(false);
     }
@@ -251,9 +253,9 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
 
   const handleToggleWorkspaceManagement = () => {
     if (!isWorkspaceManagement) {
-      navigate('/workspace/members');
+      navigate('/web/workspace/members');
     } else {
-      navigate('/home');
+      navigate('/web/home');
     }
     if (isMobile) {
       setIsSidebarOpen(false);
@@ -332,10 +334,10 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
           title: 'Home',
           content: <HomePage 
             onNavigateToKnowledgeBase={() => {
-              navigate('/project/project-phoenix/knowledgebase');
+              navigate('/web/project/project-phoenix/knowledgebase');
             }}
             onNavigateToRemoteSupport={() => {
-              navigate('/remote-support');
+              navigate('/web/remote-support');
             }}
             onOpenAIChat={() => {
               setIsChatOpen(true);
@@ -608,7 +610,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
                     'activity': 'activity',
                   };
                   const route = routeMap[tabId] || tabId;
-                  navigate(`/project/${selectedProject}/${route}`);
+                  navigate(`/web/project/${selectedProject}/${route}`);
                 }
               }}
             />
@@ -646,7 +648,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
                   currentProjectName={selectedProject ? 'Manufacturing Facility Alpha' : undefined}
                   isAdmin={true}
                   onNavigateToAiStudio={() => {
-                    navigate('/ai-studio');
+                    navigate('/web/ai-studio');
                     setIsChatOpen(false);
                   }}
                 />
@@ -679,7 +681,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
             deleteProject(currentProject.id);
             toast.success('Project deleted successfully!');
             setSelectedProject(null);
-            navigate('/home');
+            navigate('/web/home');
           }}
           mode="edit"
           initialData={{
@@ -728,24 +730,48 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
   );
 }
 
+// Router wrapper that handles product selection and platform routing
+function AppRouter() {
+  return (
+    <Routes>
+      <Route path="/" element={<ProductSelector />} />
+      <Route path="/web/*" element={
+        <AvatarProvider>
+          <RoleProvider>
+            <ProjectProvider>
+              <FavoritesProvider>
+                <ActiveCallProvider>
+                  <ToastProvider>
+                    <Routes>
+                      <Route path="procedure-editor/:procedureId" element={<ProcedureEditorPage />} />
+                      <Route path="*" element={<AppContent />} />
+                    </Routes>
+                  </ToastProvider>
+                </ActiveCallProvider>
+              </FavoritesProvider>
+            </ProjectProvider>
+          </RoleProvider>
+        </AvatarProvider>
+      } />
+      <Route path="/app/*" element={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <p className="text-muted">App design coming soon</p>
+        </div>
+      } />
+      <Route path="/xr/*" element={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <p className="text-muted">XR App design coming soon</p>
+        </div>
+      } />
+    </Routes>
+  );
+}
+
 // Main App Export with Context Providers
-// Version: 2.0.0 - Multi-project management system
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <AvatarProvider>
-        <RoleProvider>
-          <ProjectProvider>
-            <FavoritesProvider>
-              <ActiveCallProvider>
-                <ToastProvider>
-                  <AppContent />
-                </ToastProvider>
-              </ActiveCallProvider>
-            </FavoritesProvider>
-          </ProjectProvider>
-        </RoleProvider>
-      </AvatarProvider>
+      <AppRouter />
     </BrowserRouter>
   );
 }
