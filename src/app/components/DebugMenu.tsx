@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bug, X, RotateCcw, ChevronRight, ChevronDown, Search, Play, FileText, Sparkles, Shield } from 'lucide-react';
+import { Bug, X, RotateCcw, ChevronRight, ChevronDown, Search, Play, FileText, Sparkles, Shield, Share2, Check } from 'lucide-react';
 import { useRole, ROLES, type UserRole } from '../contexts/RoleContext';
 
 // Role groups — 3 sets
@@ -133,8 +133,19 @@ export function DebugMenu() {
     return initial;
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedDemoId, setCopiedDemoId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const pendingDemoRef = useRef<string | null>(null);
+
+  const shareDemoLink = (feat: FeatureItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = new URL(window.location.origin + import.meta.env.BASE_URL + feat.route.slice(1));
+    url.searchParams.set('demo', feat.id);
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      setCopiedDemoId(feat.id);
+      setTimeout(() => setCopiedDemoId(null), 2000);
+    });
+  };
 
   // Shift+F to toggle debug menu with search focused
   useEffect(() => {
@@ -599,6 +610,16 @@ export function DebugMenu() {
                                 <div style={{ fontSize: '13px', color: '#36415D', fontWeight: 500 }}>{feat.name}</div>
                                 <div style={{ fontSize: '11px', color: '#868D9E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{feat.desc}</div>
                               </div>
+                              <button
+                                onClick={(e) => shareDemoLink(feat, e)}
+                                className="shrink-0 rounded hover:bg-purple-100 transition-colors"
+                                style={{ padding: '3px', color: copiedDemoId === feat.id ? '#11E874' : '#868D9E' }}
+                                title={copiedDemoId === feat.id ? 'Link copied!' : 'Copy share link'}
+                              >
+                                {copiedDemoId === feat.id
+                                  ? <Check style={{ width: '12px', height: '12px' }} />
+                                  : <Share2 style={{ width: '12px', height: '12px' }} />}
+                              </button>
                               <div
                                 className="flex items-center gap-1 shrink-0 rounded"
                                 style={{
@@ -790,6 +811,16 @@ export function DebugMenu() {
                               <div style={{ fontSize: '13px', color: '#36415D', fontWeight: 500 }}>{feat.name}</div>
                               <div style={{ fontSize: '11px', color: '#868D9E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{feat.desc}</div>
                             </div>
+                            <button
+                              onClick={(e) => shareDemoLink(feat, e)}
+                              className="shrink-0 rounded hover:bg-purple-100 transition-colors"
+                              style={{ padding: '3px', color: copiedDemoId === feat.id ? '#11E874' : '#868D9E' }}
+                              title={copiedDemoId === feat.id ? 'Link copied!' : 'Copy share link'}
+                            >
+                              {copiedDemoId === feat.id
+                                ? <Check style={{ width: '12px', height: '12px' }} />
+                                : <Share2 style={{ width: '12px', height: '12px' }} />}
+                            </button>
                             <div
                               className="flex items-center gap-1 shrink-0 rounded"
                               style={{
