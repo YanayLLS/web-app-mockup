@@ -1632,7 +1632,7 @@ export function ProcedureEditor() {
           {/* 3D Scene - Embedded from external server */}
           {!showARPlacement && (
             <iframe
-              src="/app/digital-twin-scene.html?embedded=true&mode=procedure"
+              src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true&mode=procedure`}
               className="absolute inset-0 w-full h-full border-0"
               style={{ zIndex: 0 }}
               title="3D Scene"
