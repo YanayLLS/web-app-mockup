@@ -194,28 +194,24 @@ export function DebugMenu() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
+  const currentPath = location.pathname + location.search;
+  const currentPathname = location.pathname;
+
   // Auto-start demo from URL ?demo=featureId
   const autoStartedRef = useRef<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const demoId = params.get('demo');
     if (demoId && demoId !== autoStartedRef.current) {
-      // Find the feature across all groups
       for (const group of featureGroups) {
         const feat = group.features.find(f => f.id === demoId);
         if (feat) {
           const alreadyOnPage = currentPathname === feat.route || currentPathname.startsWith(feat.route + '/');
           if (alreadyOnPage) {
             autoStartedRef.current = demoId;
-            // Delay to let iframe load
-            setTimeout(() => {
-              const iframe = document.querySelector('iframe') as HTMLIFrameElement | null;
-              if (iframe?.contentWindow) {
-                iframe.contentWindow.postMessage({ type: 'debugStartDemo', featureId: feat.id }, '*');
-              }
-            }, 1000);
+            // Use pendingDemoRef so demo starts when iframe reports ready
+            pendingDemoRef.current = feat.id;
           } else {
-            // Navigate to the correct page, keeping ?demo= in the URL
             pendingDemoRef.current = feat.id;
             autoStartedRef.current = demoId;
             navigate(`${feat.route}?demo=${feat.id}`);
@@ -224,11 +220,7 @@ export function DebugMenu() {
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search, currentPathname]);
-
-  const currentPath = location.pathname + location.search;
-  const currentPathname = location.pathname;
+  }, [location.search, currentPathname, navigate]);
   const isApp = currentPathname.startsWith('/app');
   const isWeb = currentPathname.startsWith('/web');
   const isXR = currentPathname.startsWith('/xr');
