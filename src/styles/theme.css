@@ -63,6 +63,18 @@
   --input-background: rgba(194, 201, 219, 1.00);
   /* The color for focus rings, outlines, and other focus indicators. */
   --ring: rgba(46, 128, 237, 1.00);
+  /* Text extra small */
+  --text-xs: 10px;
+  /* Light background tint for primary color */
+  --primary-background: rgba(47, 128, 237, 0.1);
+  /* Light background tint for destructive color */
+  --destructive-background: rgba(255, 31, 31, 0.1);
+  /* Warning color for non-critical alerts */
+  --warning: rgba(255, 193, 7, 1.00);
+  /* Success color for positive actions and confirmations */
+  --success: rgba(17, 232, 116, 1.00);
+  /* Light background tint for success color */
+  --success-background: rgba(17, 232, 116, 0.1);
   /* Shadow for small elevations, such as cards or modals. */
   --elevation-sm: 1px 1px 10px 0px rgba(0,0,0,0.15);
   /* Shadow for medium elevations. */
@@ -112,6 +124,7 @@
   --popover-foreground: rgba(255, 255, 255, 1.00);
   --primary: rgba(47, 128, 237, 1.00);
   --primary-foreground: rgba(255, 255, 255, 1.00);
+  --primary-background: rgba(47, 128, 237, 0.1);
   --secondary: rgba(127, 127, 127, 1.00);
   --secondary-foreground: rgba(255, 255, 255, 1.00);
   --muted: rgba(127, 127, 127, 1.00);
@@ -120,10 +133,14 @@
   --accent-foreground: rgba(255, 255, 255, 1.00);
   --destructive: rgba(255, 31, 31, 1.00);
   --destructive-foreground: rgba(255, 255, 255, 1.00);
+  --destructive-background: rgba(255, 31, 31, 0.1);
   --border: rgba(127, 127, 127, 1.00);
   --input: rgba(127, 127, 127, 1.00);
   --input-background: rgba(127, 127, 127, 1.00);
   --ring: rgba(46, 128, 237, 1.00);
+  --warning: rgba(255, 193, 7, 1.00);
+  --success: rgba(17, 232, 116, 1.00);
+  --success-background: rgba(17, 232, 116, 0.1);
   --chart-1: rgba(47, 128, 237, 1.00);
   --chart-2: rgba(17, 232, 116, 1.00);
   --chart-3: rgba(255, 31, 31, 1.00);
@@ -156,6 +173,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-background: var(--destructive-background);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
@@ -165,6 +183,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-success-background: var(--success-background);
+  --color-primary-background: var(--primary-background);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

@@ -5,12 +5,9 @@ import { AppKnowledgeBasePage } from './pages/AppKnowledgeBasePage';
 import { AppProjectKBPage } from './pages/AppProjectKBPage';
 import { AppRemoteSupportPage } from './pages/AppRemoteSupportPage';
 import { AppAIChatPage } from './pages/AppAIChatPage';
-import { AppCallDevicePage } from './pages/AppCallDevicePage';
-import { AppScheduleMeetingPage } from './pages/AppScheduleMeetingPage';
-import { AppMeetingJoinPage } from './pages/AppMeetingJoinPage';
 import { AppVirtualRoomPage } from './pages/AppVirtualRoomPage';
 import { AppNotificationsPage } from './pages/AppNotificationsPage';
-import { AppSearchPage } from './pages/AppSearchPage';
+import { AppSearchModal } from './pages/AppSearchPage';
 import { AppLoginPage } from './pages/AppLoginPage';
 import { AppFolderBrowsePage } from './pages/AppFolderBrowsePage';
 import { AppSettingsModal } from './components/AppSettingsModal';
@@ -61,7 +58,11 @@ const sceneProcedures: Record<string, { id: string; projectId: string; name: str
 
 function App3DViewer() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [procedureModal, setProcedureModal] = useState<string | null>(null);
+
+  const params = new URLSearchParams(location.search);
+  const startMode = params.get('mode') === 'editor' ? '&startMode=editor' : '';
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -84,9 +85,9 @@ function App3DViewer() {
     <>
       <div className="w-full h-full relative">
         <iframe
-          src="http://localhost:8080/app/digital-twin-scene.html?embedded=true"
+          src={`/app/digital-twin-scene.html?embedded=true${startMode}`}
           className="absolute inset-0 w-full h-full border-0"
-          title="3D Viewer"
+          title="Digital Twin"
           allow="autoplay; fullscreen"
         />
       </div>
@@ -139,10 +140,12 @@ export function AppLayout() {
     return <AppLoginPage onLogin={() => setIsLoggedIn(true)} />;
   }
 
+  const [showSearchModal, setShowSearchModal] = useState(false);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/app/search?q=${encodeURIComponent(searchQuery)}`);
+      setShowSearchModal(true);
     }
   };
 
@@ -153,10 +156,6 @@ export function AppLayout() {
   const isFullscreenEmbed = isProcedureEditor || is3DViewer;
   const isDetailPage = location.pathname.includes('/procedure/') ||
                         location.pathname.includes('/ai-chat') ||
-                        location.pathname.includes('/call-device') ||
-                        location.pathname.includes('/schedule-meeting') ||
-                        location.pathname.includes('/join-meeting') ||
-                        location.pathname.includes('/search') ||
                         isFullscreenEmbed;
 
   return (
@@ -183,19 +182,19 @@ export function AppLayout() {
 
         {/* Search bar - centered */}
         <div className="flex-1 flex justify-center px-4">
-          <form onSubmit={handleSearch} className="w-full" style={{ maxWidth: '600px' }}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4" style={{ color: '#7F7F7F' }} />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 text-sm border-none outline-none"
-                style={{ backgroundColor: '#D9E0F0', borderRadius: '10px', height: '32px', color: '#36415D' }}
-              />
-            </div>
-          </form>
+          <div className="relative" style={{ maxWidth: '360px', width: '100%' }}>
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5" style={{ color: 'rgba(255,255,255,0.5)' }} />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowSearchModal(true)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setShowSearchModal(true); } }}
+              className="w-full pl-8 pr-3 text-xs border-none outline-none text-white placeholder:text-white/50"
+              style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: '8px', height: '30px' }}
+            />
+          </div>
         </div>
 
         {/* Right side actions */}
@@ -519,11 +518,7 @@ export function AppLayout() {
             <Route path="project/:projectId/folder/:folderId" element={<AppFolderBrowsePage />} />
             <Route path="remote-support" element={<AppRemoteSupportPage />} />
             <Route path="ai-chat" element={<AppAIChatPage />} />
-            <Route path="call-device" element={<AppCallDevicePage />} />
-            <Route path="schedule-meeting" element={<AppScheduleMeetingPage />} />
-            <Route path="join-meeting" element={<AppMeetingJoinPage />} />
             <Route path="notifications" element={<AppNotificationsPage />} />
-            <Route path="search" element={<AppSearchPage />} />
             <Route path="immersive" element={<AppVirtualRoomPage />} />
             <Route path="*" element={<Navigate to="/app/knowledgebase" replace />} />
           </Routes>
@@ -585,6 +580,13 @@ export function AppLayout() {
 
       {/* Settings Modal */}
       {showSettings && <AppSettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Search Modal */}
+      <AppSearchModal
+        isOpen={showSearchModal}
+        onClose={() => { setShowSearchModal(false); setSearchQuery(''); }}
+        initialQuery={searchQuery}
+      />
     </div>
   );
 }

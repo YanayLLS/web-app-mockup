@@ -145,19 +145,45 @@ html.procedure .fl-window { display:none !important; }
   transition:left 0.2s ease;
 }
 .left-toolbar.beside-panel { left:344px; }
+/* Back button row — expands with toolbar */
+.lt-back-row {
+  display:flex; align-items:center; gap:4px; width:40px; overflow:hidden; transition:width 0.2s ease;
+}
+.left-toolbar:hover .lt-back-row { width:170px; }
+.left-toolbar.lt-locked .lt-back-row { width:170px; }
 .left-toolbar .collapse-btn {
-  width:40px; height:40px; background:#fff; border-radius:10px;
+  height:40px; background:#fff; border-radius:10px;
   box-shadow:1px 1px 10px rgba(0,0,0,0.15); display:flex; align-items:center;
-  justify-content:center; cursor:pointer; border:none;
+  gap:6px; cursor:pointer; border:none; flex:1; min-width:40px;
+  padding:0 12px; overflow:hidden;
 }
 .left-toolbar .collapse-btn:hover { background:#f0f0f0; }
-.left-toolbar .collapse-btn svg { width:14px; height:14px; fill:#36415d; }
+.left-toolbar .collapse-btn svg { width:14px; height:14px; fill:#36415d; flex-shrink:0; }
+.left-toolbar .collapse-btn .back-label {
+  font-size:12px; color:#36415d; opacity:0; transition:opacity 0.15s; white-space:nowrap;
+}
+.left-toolbar:hover .collapse-btn .back-label { opacity:1; }
+.left-toolbar.lt-locked .collapse-btn .back-label { opacity:1; }
+/* Lock toggle */
+.lt-lock-btn {
+  width:32px; height:32px; background:#fff; border-radius:8px;
+  box-shadow:1px 1px 10px rgba(0,0,0,0.15); display:flex; align-items:center;
+  justify-content:center; cursor:pointer; border:none; flex-shrink:0;
+  opacity:0; transition:opacity 0.15s; pointer-events:none;
+}
+.left-toolbar:hover .lt-lock-btn,
+.left-toolbar.lt-locked .lt-lock-btn { opacity:1; pointer-events:auto; }
+.lt-lock-btn svg { width:14px; height:14px; fill:#868d9e; }
+.lt-lock-btn:hover { background:#f0f0f0; }
+.lt-lock-btn.active { background:#d9e0f0; }
+.lt-lock-btn.active svg { fill:#2f80ed; }
 .toolbar-buttons {
   background:#fff; border-radius:10px; box-shadow:1px 1px 10px rgba(0,0,0,0.15);
   display:flex; flex-direction:column; gap:2px; padding:10px 0; width:40px;
   overflow:hidden; transition:width 0.2s ease;
 }
-.toolbar-buttons:hover { width:170px; }
+.left-toolbar:hover .toolbar-buttons { width:170px; }
+.left-toolbar.lt-locked .toolbar-buttons { width:170px; }
 .toolbar-btn {
   width:100%; height:36px; display:flex; align-items:center;
   cursor:pointer; border:none; background:none; padding:0 12px; position:relative;
@@ -171,7 +197,8 @@ html.procedure .fl-window { display:none !important; }
   position:static; transform:none; background:none; padding:0; border-radius:0;
   white-space:nowrap;
 }
-.toolbar-buttons:hover .toolbar-btn .tooltip { opacity:1; }
+.left-toolbar:hover .toolbar-btn .tooltip { opacity:1; }
+.left-toolbar.lt-locked .toolbar-btn .tooltip { opacity:1; }
 /* Sub-button: inline with parent toolbar-btn, only visible when expanded */
 .toolbar-sub-btn {
   display:none; width:24px; height:24px; border:1px solid #c2c9db; background:none; border-radius:6px;
@@ -179,7 +206,8 @@ html.procedure .fl-window { display:none !important; }
 }
 .toolbar-sub-btn:hover { background:#d9e0f0; }
 .toolbar-sub-btn:hover svg { fill:#2f80ed !important; }
-.toolbar-buttons:hover .toolbar-sub-btn { display:flex; }
+.left-toolbar:hover .toolbar-sub-btn { display:flex; }
+.left-toolbar.lt-locked .toolbar-sub-btn { display:flex; }
 .toolbar-divider { height:1px; background:#c2c9db; margin:2px 8px; }
 
 /* ===== LEFT PANEL (expanded) ===== */
@@ -333,7 +361,7 @@ html.embedded .right-panel { top:12px !important; }
 
 /* ===== BOTTOM TOOLBAR ===== */
 .bottom-toolbar {
-  position:fixed; bottom:17px; left:50%; transform:translateX(-50%); z-index:50;
+  position:fixed; bottom:17px; left:50%; transform:translateX(-50%); z-index:100;
   background:#fff; border-radius:10px; box-shadow:0px 4px 20px rgba(0,0,0,0.25);
   display:flex; align-items:center; gap:8px; padding:8px; height:51px;
 }
@@ -362,7 +390,7 @@ html.embedded .right-panel { top:12px !important; }
 
 /* ===== SELECTION INFO ===== */
 .selection-info {
-  position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:50;
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:100;
   background:#36415d; color:#fff; padding:8px 16px; border-radius:10px;
   font-size:12px; display:none; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,0.3);
 }
@@ -375,7 +403,7 @@ html.embedded .right-panel { top:12px !important; }
 
 /* ===== GIZMO BAR ===== */
 .gizmo-bar {
-  position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:50;
+  position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:100;
   background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2);
   display:none; align-items:center; gap:2px; padding:4px;
 }
@@ -470,21 +498,26 @@ html.embedded .right-panel { top:12px !important; }
 .hs-marker.hs-hidden { display:none !important; }
 /* Show-lines mode */
 .hs-marker .hs-line {
-  display:none; position:absolute; left:50%; transform:translateX(-50%);
-  top:100%; width:2px; height:40px;
-  background:linear-gradient(to bottom, rgba(47,128,237,.6), rgba(47,128,237,.15));
-  pointer-events:none; border-radius:1px;
-}
-.hs-marker .hs-line::after {
-  content:''; position:absolute; bottom:-3px; left:50%; transform:translateX(-50%);
-  width:6px; height:6px; border-radius:50%; background:rgba(47,128,237,.5);
+  display:none; position:absolute; left:50%; top:50%;
+  width:0; height:0; pointer-events:none;
 }
 .hs-marker.show-line .hs-line { display:block; }
-.hs-marker.show-line {
-  transform:translate(-50%, calc(-100% - 40px));
+.hs-line-diag, .hs-line-horiz {
+  position:absolute; height:2px;
+  background:rgba(255,255,255,0.65); border-radius:1px;
 }
-.hs-marker.show-line:hover { transform:translate(-50%, calc(-100% - 40px)) scale(1.12); }
-@keyframes hsAppearLine { from { transform:translate(-50%, calc(-100% - 40px)) scale(0); } to { transform:translate(-50%, calc(-100% - 40px)) scale(1); } }
+.hs-line-diag { transform-origin:0 50%; }
+.hs-line-anchor {
+  position:absolute; width:6px; height:6px;
+  border-radius:50%; background:rgba(255,255,255,0.45);
+  transform:translate(-50%,-50%);
+}
+.hs-marker.show-line {
+  transform:translate(calc(-50% + var(--hs-dx, 0px)), calc(-50% + var(--hs-dy, 0px)));
+  transition:none;
+}
+.hs-marker.show-line:hover { transform:translate(calc(-50% + var(--hs-dx, 0px)), calc(-50% + var(--hs-dy, 0px))) scale(1.12); }
+@keyframes hsAppearLine { from { transform:translate(calc(-50% + var(--hs-dx, 0px)), calc(-50% + var(--hs-dy, 0px))) scale(0); } to { transform:translate(calc(-50% + var(--hs-dx, 0px)), calc(-50% + var(--hs-dy, 0px))) scale(1); } }
 .hs-marker.show-line.hs-appear { animation:hsAppearLine .35s cubic-bezier(.18,1.25,.4,1) both; }
 
 /* ===== HOTSPOT EDIT PANEL — inherits fl-window fl-dark ===== */
@@ -504,7 +537,7 @@ html.embedded .right-panel { top:12px !important; }
 #hsEditPanel .ep-field input:focus, #hsEditPanel .ep-field textarea:focus {
   border-color:#2e80ed; background:rgba(240,242,248,.95); box-shadow:0 0 0 2px rgba(46,128,237,.2);
 }
-#hsEditPanel .ep-field textarea { resize:none; min-height:50px; line-height:1.4; }
+#hsEditPanel .ep-field textarea { resize:none; min-height:0; line-height:1.4; overflow:hidden; }
 #hsEditPanel .ep-camera-row {
   display:flex; align-items:center; gap:6px; padding:6px 8px;
   background:rgba(255,255,255,.06); border-radius:6px;
@@ -1252,7 +1285,7 @@ html.embedded .right-panel { top:12px !important; }
   <div class="fl-body">
     <div class="ep-body">
       <div class="ep-field"><label>Title</label><input type="text" id="hsEditTitle" placeholder="Hotspot name"></div>
-      <div class="ep-field"><label>Description</label><textarea id="hsEditDesc" placeholder="Add a description..." rows="2"></textarea></div>
+      <div class="ep-field"><label>Description</label><textarea id="hsEditDesc" placeholder="Add a description..." rows="1"></textarea></div>
       <div class="ep-camera-row" id="hsCameraRow" style="display:none">
         <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:#82b3f4;flex-shrink:0"><path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2S13.77 8.8 12 8.8 8.8 10.23 8.8 12s1.43 3.2 3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
         <span style="flex:1;font-size:11px;color:rgba(255,255,255,.6)">Camera view saved</span>
@@ -1401,8 +1434,11 @@ html.embedded .right-panel { top:12px !important; }
 <div id="hsPlacingToast" class="hidden">Click on the 3D model to place hotspot</div>
 
 <!-- LEFT TOOLBAR (collapsed) -->
-<div class="left-toolbar" id="leftToolbar">
-  <button class="collapse-btn" id="backToKBBtn" title="Back to Knowledge Base"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+<div class="left-toolbar lt-locked" id="leftToolbar">
+  <div class="lt-back-row">
+    <button class="collapse-btn" id="backToKBBtn" title="Back to Knowledge Base"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span class="back-label">Back</span></button>
+    <button class="lt-lock-btn active" id="ltLockBtn" title="Lock menu expanded"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg></button>
+  </div>
   <div class="toolbar-buttons">
     <button class="toolbar-btn" data-menu="subsystems"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-2h8v8h-8v-8zm2 2v4h4v-4h-4z"/></svg><span class="tooltip">Sub Systems</span></button>
     <div class="toolbar-divider"></div>
@@ -1773,6 +1809,7 @@ function flToggleMaximize(id) {
 
 function flFocus(id) {
   flZIndex++;
+  if (flZIndex >= 100) { flZIndex = 60; flWindows.forEach(w => { w.el.style.zIndex = 60; }); }
   const win = flWindows.get(id);
   if (!win) return;
   win.el.style.zIndex = flZIndex;
@@ -1806,7 +1843,7 @@ const state = {
   mode: 'viewer', // 'viewer' or 'editor'
   viewerFromEditor: false, // true when Preview button was used from editor
   leftPanelOpen: false,
-  rightPanelOpen: true,
+  rightPanelOpen: false,
   selectedParts: new Set(),    // multi-select set of part IDs
   gridVisible: true,
   xrayMode: false,
@@ -2393,6 +2430,18 @@ renderer.domElement.addEventListener('pointermove', e => {
 });
 
 // ==================== UI EVENTS ====================
+// Lock toggle for left toolbar expanded state
+document.getElementById('ltLockBtn').onclick=()=>{
+  const toolbar = document.getElementById('leftToolbar');
+  const btn = document.getElementById('ltLockBtn');
+  const locked = toolbar.classList.toggle('lt-locked');
+  btn.classList.toggle('active', locked);
+  // Switch icon: locked vs unlocked
+  btn.innerHTML = locked
+    ? '<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>'
+    : '<svg viewBox="0 0 24 24"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10z"/></svg>';
+  btn.title = locked ? 'Unlock menu' : 'Lock menu expanded';
+};
 document.getElementById('backToKBBtn').onclick=()=>{
   if(state.mode==='viewer' && state.viewerFromEditor){
     // Preview mode from editor → go back to editor
@@ -2743,7 +2792,7 @@ function createHotspotMarkers() {
     const backBtnHtml = isFocused
       ? `<div class="hs-back-btn" title="Back to parent"><svg viewBox="0 0 24 24"><path d="M14 4l-1.41 1.41L17.17 10H2v2h15.17l-4.58 4.59L14 18l6-6z" transform="rotate(-90 12 12)"/></svg></div>`
       : `<div class="hs-back-btn" style="display:none" title="Back to parent"><svg viewBox="0 0 24 24"><path d="M14 4l-1.41 1.41L17.17 10H2v2h15.17l-4.58 4.59L14 18l6-6z" transform="rotate(-90 12 12)"/></svg></div>`;
-    const lineHtml = `<div class="hs-line"></div>`;
+    const lineHtml = `<div class="hs-line"><div class="hs-line-diag"></div><div class="hs-line-horiz"></div><div class="hs-line-anchor"></div></div>`;
     el.innerHTML = `${lineHtml}<div class="hs-label">${num} ${hs.title}</div><div class="hs-ring">${badgeHtml}<div class="hs-dot">${hs.title}</div></div>${backBtnHtml}`;
     el.addEventListener('click', e => {
       if (e.target.closest('.hs-back-btn')) { e.stopPropagation(); drillBack(); return; }
@@ -2770,6 +2819,43 @@ function updateHotspotProjections() {
     const py = (-v.y * 0.5 + 0.5) * h;
     el.style.left = px + 'px';
     el.style.top = py + 'px';
+    // Dynamic broken line: 45° diagonal then horizontal, lerps between sides
+    // Direction: away from screen center (right if hotspot is on right half, left if on left)
+    if (el.classList.contains('show-line')) {
+      var diagSize = 25, horizLen = 55, aboveOff = 10;
+      var targetDx = (px > w / 2 ? 1 : -1) * (diagSize + horizLen);
+      var fixedDy = -(diagSize + aboveOff);
+      var curDx = el._lineDx !== undefined ? el._lineDx : targetDx;
+      curDx += (targetDx - curDx) * 0.1;
+      if (Math.abs(curDx - targetDx) < 0.5) curDx = targetDx;
+      el._lineDx = curDx;
+      el.style.setProperty('--hs-dx', curDx + 'px');
+      el.style.setProperty('--hs-dy', fixedDy + 'px');
+      // Line segments: anchor → 45° diagonal → horizontal → tip (below dot)
+      var lineEl = el.querySelector('.hs-line');
+      if (lineEl) {
+        var ax = -curDx, ay = -fixedDy; // anchor relative to marker center
+        var dir = curDx >= 0 ? 1 : -1;
+        var dc = Math.min(diagSize, Math.abs(curDx));
+        var bx = ax + dir * dc, by = ay - dc;
+        // Diagonal segment
+        var diagEl = lineEl.querySelector('.hs-line-diag');
+        var diagLen = dc * Math.SQRT2;
+        diagEl.style.left = ax + 'px';
+        diagEl.style.top = (ay - 1) + 'px';
+        diagEl.style.width = diagLen + 'px';
+        diagEl.style.transform = 'rotate(' + (dir > 0 ? -45 : -135) + 'deg)';
+        // Horizontal segment
+        var horizEl = lineEl.querySelector('.hs-line-horiz');
+        horizEl.style.left = Math.min(bx, 0) + 'px';
+        horizEl.style.top = (by - 1) + 'px';
+        horizEl.style.width = Math.abs(bx) + 'px';
+        // Anchor dot
+        var dotEl = lineEl.querySelector('.hs-line-anchor');
+        dotEl.style.left = ax + 'px';
+        dotEl.style.top = ay + 'px';
+      }
+    }
     sortArr.push({ el, z: v.z });
   });
   sortArr.sort((a, b) => b.z - a.z);
@@ -2880,7 +2966,10 @@ function openEditPanel(hsId) {
   const hs = state.hotspots.find(h => h.id === hsId);
   if (!hs) return;
   document.getElementById('hsEditTitle').value = hs.title;
-  document.getElementById('hsEditDesc').value = hs.description || '';
+  var descEl = document.getElementById('hsEditDesc');
+  descEl.value = hs.description || '';
+  descEl.style.height = 'auto';
+  descEl.style.height = descEl.scrollHeight + 'px';
   document.getElementById('hsCameraRow').style.display = hs.cameraView ? 'flex' : 'none';
   document.getElementById('hsCameraBtn').querySelector('svg').style.fill = hs.cameraView ? '#82b3f4' : 'rgba(255,255,255,.7)';
   renderEditItems(hs);
@@ -4131,15 +4220,19 @@ document.getElementById('hsEditTitle').addEventListener('input', () => {
     renderHotspotManager();
   }
 });
-document.getElementById('hsEditDesc').addEventListener('input', () => {
+document.getElementById('hsEditDesc').addEventListener('input', function() {
+  const el = this;
   const hs = state.hotspots.find(h => h.id === state.activeHotspotId);
-  if (hs) hs.description = document.getElementById('hsEditDesc').value;
+  if (hs) hs.description = el.value;
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
 });
 
 // ==================== EMBEDDED / PROCEDURE MODE ====================
 var urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('embedded')) document.documentElement.classList.add('embedded');
 if (urlParams.get('mode') === 'procedure') document.documentElement.classList.add('procedure');
+if (urlParams.get('startMode') === 'editor') { state.mode = 'editor'; updateUI(); }
 
 // ==================== INIT FRONTLINE WINDOWS ====================
 var isEmbed = document.documentElement.classList.contains('embedded');

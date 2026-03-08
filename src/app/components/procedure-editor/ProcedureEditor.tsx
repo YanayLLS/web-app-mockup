@@ -19,7 +19,7 @@ import { ARPlacementFlow, type ObjectTarget, type PlacementMethod } from './ARPl
 import { ContextMenu } from './ContextMenu';
 import { GraduationCap, Undo, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Extend window type for validation callback
 declare global {
@@ -123,16 +123,306 @@ const initialStep: Step = {
   mediaFiles: []
 };
 
+// Pre-built sample procedure with rich step data
+const sampleStepIds = {
+  s1: 'sample-step-1',
+  s2: 'sample-step-2',
+  s3: 'sample-step-3',
+  s4: 'sample-step-4',
+  s5: 'sample-step-5',
+  s6: 'sample-step-6',
+  s7: 'sample-step-7',
+  s8: 'sample-step-8',
+};
+
+const sampleSteps: Step[] = [
+  {
+    id: sampleStepIds.s1,
+    title: 'Safety Preparation',
+    description: 'Before beginning maintenance, ensure all safety protocols are followed. Wear appropriate PPE including safety glasses, gloves, and steel-toe boots. Verify the equipment is powered off and locked out.',
+    actions: [],
+    color: '#2F80ED',
+    hasAnimation: false,
+    popups: [
+      {
+        id: 'popup-1a',
+        title: 'PPE Required',
+        description: 'Safety glasses, nitrile gloves, steel-toe boots, and hearing protection are mandatory for this procedure.',
+        position: { x: 35, y: 25 },
+        color: '#FF6B35',
+        mediaFiles: [],
+        arrowDirection: 'down',
+      },
+      {
+        id: 'popup-1b',
+        title: 'Lockout Point',
+        description: 'Main power disconnect is located on the left side panel. Apply lockout tag before proceeding.',
+        position: { x: 70, y: 60 },
+        color: '#FF1F1F',
+        mediaFiles: [],
+        requiresConfirmation: true,
+        confirmButtonText: 'Lockout confirmed',
+        arrowDirection: 'left',
+      },
+    ],
+    mediaFiles: [],
+  },
+  {
+    id: sampleStepIds.s2,
+    title: 'Remove Access Panel',
+    description: 'Using a T-25 Torx driver, remove the six (6) screws securing the front access panel. Set screws aside in a magnetic tray to prevent loss. Carefully lift the panel away from the unit.',
+    actions: [],
+    color: 'var(--foreground)',
+    hasAnimation: true,
+    popups: [
+      {
+        id: 'popup-2a',
+        title: 'Screw Locations',
+        description: '4 screws along the top edge, 2 screws along the bottom edge. All are M5×12mm Torx T-25.',
+        position: { x: 50, y: 30 },
+        color: '#2F80ED',
+        mediaFiles: [],
+        arrowDirection: 'up',
+      },
+    ],
+    mediaFiles: [],
+  },
+  {
+    id: sampleStepIds.s3,
+    title: 'Inspect Belt Condition',
+    description: 'Visually inspect the drive belt for signs of wear, cracking, glazing, or fraying. Check belt tension by pressing down at the midpoint — deflection should be 10-15mm.',
+    actions: [
+      { label: 'Belt is OK', nextStepId: sampleStepIds.s5 },
+      { label: 'Belt needs replacement', nextStepId: sampleStepIds.s4 },
+    ],
+    color: '#8404B3',
+    hasAnimation: false,
+    popups: [
+      {
+        id: 'popup-3a',
+        title: 'Wear Indicators',
+        description: 'Look for cracks perpendicular to the belt direction, shiny spots (glazing), or any visible cord damage. Replace if any are found.',
+        position: { x: 40, y: 45 },
+        color: '#8404B3',
+        mediaFiles: [],
+        arrowDirection: 'right',
+      },
+      {
+        id: 'popup-3b',
+        title: 'Tension Check',
+        description: 'Press firmly at the belt midpoint between the two pulleys. Acceptable deflection: 10–15mm. If outside range, adjust tensioner.',
+        position: { x: 65, y: 70 },
+        color: '#11E874',
+        mediaFiles: [],
+        arrowDirection: 'down',
+      },
+    ],
+    mediaFiles: [],
+    validation: {
+      id: 'val-3',
+      checkpoints: [
+        {
+          id: 'cp-3a',
+          type: 'visual',
+          severity: 'critical',
+          label: 'Belt surface condition',
+          selectedParts: ['drive-belt'],
+          passState: { description: 'Belt shows no cracking, glazing or fraying', mediaFiles: [] },
+          failState: { description: 'Belt shows visible wear — proceed to replacement', mediaFiles: [], remediationSteps: 'Replace belt following step 4' },
+        },
+      ],
+    },
+  },
+  {
+    id: sampleStepIds.s4,
+    title: 'Replace Drive Belt',
+    description: 'Release the tensioner by rotating the tensioner arm clockwise. Slide the old belt off the pulleys. Route the new belt following the diagram on the belt guard. Release the tensioner to apply tension.',
+    actions: [],
+    color: '#FF6B35',
+    hasAnimation: true,
+    parentStepId: sampleStepIds.s3,
+    parentActionIndex: 1,
+    popups: [
+      {
+        id: 'popup-4a',
+        title: 'Belt Routing Diagram',
+        description: 'Follow the routing path: Motor pulley → Idler → Main drive → Tensioner. The ribbed side faces the grooved pulleys.',
+        position: { x: 30, y: 35 },
+        color: '#FF6B35',
+        mediaFiles: [],
+        arrowDirection: 'right',
+      },
+      {
+        id: 'popup-4b',
+        title: 'Tensioner Release',
+        description: 'Use a 15mm wrench on the tensioner bolt. Rotate clockwise to release tension. Do not force beyond the stop point.',
+        position: { x: 60, y: 55 },
+        color: '#2F80ED',
+        mediaFiles: [],
+        arrowDirection: 'left',
+      },
+    ],
+    mediaFiles: [],
+  },
+  {
+    id: sampleStepIds.s5,
+    title: 'Lubricate Bearings',
+    description: 'Apply 2-3 drops of ISO VG 68 bearing oil to each of the four bearing points marked in blue. Rotate the shaft by hand to distribute lubricant evenly.',
+    actions: [],
+    color: 'var(--foreground)',
+    hasAnimation: false,
+    popups: [
+      {
+        id: 'popup-5a',
+        title: 'Bearing Point #1 & #2',
+        description: 'Front bearings — accessible directly after panel removal. Apply oil to the zerk fittings.',
+        position: { x: 25, y: 40 },
+        color: '#2F80ED',
+        mediaFiles: [],
+        arrowDirection: 'right',
+      },
+      {
+        id: 'popup-5b',
+        title: 'Bearing Point #3 & #4',
+        description: 'Rear bearings — reach through the service window on the back panel.',
+        position: { x: 75, y: 40 },
+        color: '#2F80ED',
+        mediaFiles: [],
+        arrowDirection: 'left',
+      },
+    ],
+    mediaFiles: [],
+  },
+  {
+    id: sampleStepIds.s6,
+    title: 'Check Fluid Levels',
+    description: 'Inspect hydraulic fluid reservoir through the sight glass. Level should be between the MIN and MAX marks. Top up with ISO 46 hydraulic fluid if needed.',
+    actions: [],
+    color: '#11E874',
+    hasAnimation: false,
+    popups: [
+      {
+        id: 'popup-6a',
+        title: 'Sight Glass Location',
+        description: 'The sight glass is on the right side of the hydraulic reservoir. Clean it first with a lint-free cloth before reading.',
+        position: { x: 55, y: 50 },
+        color: '#11E874',
+        mediaFiles: [],
+        arrowDirection: 'down',
+      },
+    ],
+    mediaFiles: [],
+    validation: {
+      id: 'val-6',
+      checkpoints: [
+        {
+          id: 'cp-6a',
+          type: 'measurement',
+          severity: 'warning',
+          label: 'Hydraulic fluid level',
+          selectedParts: ['hydraulic-reservoir'],
+          tolerance: { nominal: 75, min: 50, max: 100, unit: '%' },
+          passState: { description: 'Fluid level is within acceptable range', mediaFiles: [] },
+          failState: { description: 'Fluid level is low — top up before continuing', mediaFiles: [] },
+        },
+      ],
+    },
+  },
+  {
+    id: sampleStepIds.s7,
+    title: 'Reinstall Access Panel',
+    description: 'Align the access panel with the locating pins and press firmly. Reinstall the six T-25 Torx screws in a star pattern. Torque to 4.5 Nm.',
+    actions: [],
+    color: 'var(--foreground)',
+    hasAnimation: true,
+    popups: [
+      {
+        id: 'popup-7a',
+        title: 'Torque Specification',
+        description: 'All panel screws: 4.5 Nm ± 0.5 Nm. Use a calibrated torque driver. Do not overtighten.',
+        position: { x: 45, y: 30 },
+        color: '#2F80ED',
+        mediaFiles: [],
+        requiresConfirmation: true,
+        confirmButtonText: 'Torque verified',
+        arrowDirection: 'up',
+      },
+    ],
+    mediaFiles: [],
+  },
+  {
+    id: sampleStepIds.s8,
+    title: 'Final Verification & Startup',
+    description: 'Remove lockout/tagout. Power on the equipment and run a 2-minute warm-up cycle. Listen for unusual noises. Check for leaks around the access panel and bearing points. Record maintenance in the logbook.',
+    actions: [],
+    color: '#11E874',
+    hasAnimation: false,
+    popups: [
+      {
+        id: 'popup-8a',
+        title: 'Startup Checklist',
+        description: '1. All panels secured\n2. Tools removed from work area\n3. Lockout removed\n4. Area clear of personnel\n5. Power switch to ON',
+        position: { x: 30, y: 30 },
+        color: '#11E874',
+        mediaFiles: [],
+        requiresConfirmation: true,
+        confirmButtonText: 'All checks passed',
+        arrowDirection: 'down',
+      },
+      {
+        id: 'popup-8b',
+        title: 'Leak Inspection Points',
+        description: 'Check for fluid weeping at: panel gasket line, bearing seals, hydraulic line fittings, and drain plug.',
+        position: { x: 65, y: 65 },
+        color: '#FF1F1F',
+        mediaFiles: [],
+        arrowDirection: 'left',
+      },
+    ],
+    mediaFiles: [],
+    validation: {
+      id: 'val-8',
+      checkpoints: [
+        {
+          id: 'cp-8a',
+          type: 'visual',
+          severity: 'critical',
+          label: 'No leaks detected',
+          selectedParts: ['access-panel', 'bearings', 'hydraulic-lines'],
+          passState: { description: 'No leaks observed during warm-up cycle', mediaFiles: [] },
+          failState: { description: 'Leak detected — power down and investigate', mediaFiles: [], remediationSteps: 'Identify source and re-tighten or replace gasket' },
+        },
+        {
+          id: 'cp-8b',
+          type: 'presence',
+          severity: 'warning',
+          label: 'Normal operating sounds',
+          selectedParts: ['motor-assembly'],
+          passState: { description: 'Equipment sounds normal during warm-up', mediaFiles: [] },
+          failState: { description: 'Unusual noise detected — investigate before full operation', mediaFiles: [] },
+        },
+      ],
+    },
+  },
+];
+
 export function ProcedureEditor() {
   const navigate = useNavigate();
-  const [steps, setSteps] = useState<Step[]>([initialStep]);
+  const [searchParams] = useSearchParams();
+  const urlMode = searchParams.get('mode'); // 'view' | 'edit' | null
+  const hasProcedureId = typeof window !== 'undefined' && window.location.pathname.includes('/procedure-editor/');
+
+  // Use sample steps when opening from KB (has procedure ID), empty for new procedures
+  const useSampleData = hasProcedureId && urlMode !== null;
+
+  const [steps, setSteps] = useState<Step[]>(useSampleData ? sampleSteps : [initialStep]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [selectedActionPath, setSelectedActionPath] = useState<Map<string, number>>(new Map());
   const [isTtsEnabled, setIsTtsEnabled] = useState(false);
-  const [procedureTitle, setProcedureTitle] = useState('Elitebook 840 G9');
+  const [procedureTitle, setProcedureTitle] = useState(useSampleData ? 'Routine Maintenance Procedure' : 'Elitebook 840 G9');
   const [showSettings, setShowSettings] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
-  const [editingEnabled, setEditingEnabled] = useState(true);
+  const [editingEnabled, setEditingEnabled] = useState(urlMode !== 'view');
   const [showOptionsManager, setShowOptionsManager] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [showPartsCatalog, setShowPartsCatalog] = useState(false);
@@ -1342,7 +1632,7 @@ export function ProcedureEditor() {
           {/* 3D Scene - Embedded from external server */}
           {!showARPlacement && (
             <iframe
-              src="http://localhost:8080/app/digital-twin-scene.html?embedded=true&mode=procedure"
+              src="/app/digital-twin-scene.html?embedded=true&mode=procedure"
               className="absolute inset-0 w-full h-full border-0"
               style={{ zIndex: 0 }}
               title="3D Scene"

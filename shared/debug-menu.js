@@ -1,4 +1,6 @@
 (function() {
+  var isEmbedded = window.parent !== window;
+
   // ==================== PAGE DATA ====================
   const PAGES = [
     { name: 'Digital Twin Scene', file: '../app/digital-twin-scene.html', filename: 'digital-twin-scene.html', tags: ['3d', 'viewer', 'editor', 'three.js', 'scene', 'twin', 'model', 'camera', 'undo', 'redo', 'parts'] },
@@ -11,8 +13,8 @@
   const FEATURES = {
     'digital-twin-scene.html': [
       { id:'hotspots', name:'Hotspot System', icon:'📍',
-        desc:'Create, place, and manage interactive hotspots on your 3D model — from placement to editing content.',
-        flow:['Activate the hotspot tool from the left toolbar','Open the Hotspot Manager panel','Add a new hotspot','Place it on the 3D model','Edit title and description','Add media and actions','Review in the manager','Save your work','Preview and interact in Viewer mode'],
+        desc:'Create, place, and manage interactive hotspots on your 3D model — from placement to editing content, sub-hotspots, and connection lines.',
+        flow:['Activate the hotspot tool','Open the Hotspot Manager','Add a new hotspot','Edit title and description','Add media and actions','Review in the manager','Add a sub-hotspot','Name the sub-hotspot','See the hierarchy','Enable connection lines','Save your work','Preview and interact in Viewer mode'],
         demo:[
           { target:'[data-menu="hotspots"]', text:'Click the Hotspot tool in the left toolbar to activate hotspot mode.', pos:'right', wait:'validate',
             validate:function(){ var b=document.querySelector('[data-menu="hotspots"]'); return b && b.classList.contains('active'); }},
@@ -20,16 +22,27 @@
             setup:function(){ var b=document.querySelector('[data-menu="hotspots"]'); if(b&&!b.classList.contains('active')) b.click(); },
             validate:function(){ var m=document.getElementById('hsManager'); return m && !m.classList.contains('hidden'); }},
           { target:'#hsManager', text:'The Hotspot Manager is now open. It lists all your hotspots with search, reorder, and bulk actions.', pos:'left', wait:'observe' },
-          { target:'#hmAdd', text:'Click the + button to create a new hotspot. This puts you in placement mode.', pos:'left', wait:'click' },
-          { target:'#viewport', text:'Click anywhere on the 3D model to place your hotspot. A marker will appear where you click.', pos:'top', wait:'validate',
-            validate:function(){ return document.querySelectorAll('.hs-marker').length > 0; }},
+          { target:'#hmAdd', text:'Click the + button to create a new hotspot. It will appear on the model at the center of your view.', pos:'left', wait:'validate',
+            setup:function(){ demo._hsCount = document.querySelectorAll('.hs-marker').length; },
+            validate:function(){ return document.querySelectorAll('.hs-marker').length > (demo._hsCount || 0); }},
           { target:'#hsEditPanel', text:'The Edit Panel opens automatically. Set the hotspot title and description here.', pos:'right', wait:'observe',
             setup:function(){ var p=document.getElementById('hsEditPanel'); if(p) p.classList.remove('hidden'); }},
-          { target:'#hsEditTitle', text:'Type a name for your hotspot — this label appears on the 3D marker.', pos:'right', wait:'validate',
-            validate:function(){ var el=document.getElementById('hsEditTitle'); return el && el.value.trim().length > 0; }},
+          { target:'#hsEditTitle', text:'Type a name for your hotspot — this label appears on the 3D marker.', pos:'right', wait:'observe' },
           { target:'#hsAddMedia', text:'Click "Add media" to attach images or videos that users see when interacting with this hotspot.', pos:'right', wait:'observe' },
           { target:'#hsAddAction', text:'Click "Add action" to link behaviors — navigate to another hotspot, highlight parts, or start a procedure.', pos:'right', wait:'observe' },
           { target:'#hmList', text:'Your hotspot is now in the Manager. Drag to reorder, right-click for options, or search to find hotspots.', pos:'left', wait:'observe' },
+          { target:'#hmList .hm-item.selected', text:'Hover over your hotspot in the list to reveal the action buttons. Click the <b>+</b> button on the right to add a sub-hotspot underneath it.', pos:'left', wait:'validate',
+            setup:function(){ demo._hsCount2 = document.querySelectorAll('.hs-marker').length; var row=document.querySelector('#hmList .hm-item.selected'); if(row){ row.scrollIntoView({block:'nearest'}); var acts=row.querySelector('.hm-item-actions'); if(acts){ acts.style.opacity='1'; demo.cleanup.push(function(){ acts.style.opacity=''; }); } } },
+            validate:function(){ return document.querySelectorAll('.hs-marker').length > (demo._hsCount2 || 0); }},
+          { target:'#hsEditTitle', text:'The sub-hotspot was created at the same position as its parent. Give it a name — it appears nested under its parent in the Manager.', pos:'right', wait:'observe',
+            setup:function(){ var p=document.getElementById('hsEditPanel'); if(p) p.classList.remove('hidden'); }},
+          { target:'#hmList', text:'The Manager now shows a hierarchy — sub-hotspots are indented under their parent. You can drag items to reparent them.', pos:'left', wait:'observe' },
+          { target:'#hmSettingsBtn', text:'Click the Settings button to access hotspot display options.', pos:'left', wait:'validate',
+            setup:function(){ var m=document.getElementById('hsManager'); if(m&&m.classList.contains('hidden')){ var btn=document.getElementById('openHsManagerSideBtn'); if(btn) btn.click(); }},
+            validate:function(){ var p=document.getElementById('hmSettingsPanel'); return p && p.style.display!=='none'; }},
+          { target:'#hmShowLines', text:'Enable "Show lines" to display vertical connection lines beneath each hotspot marker in the 3D view.', pos:'left', wait:'validate',
+            validate:function(){ var cb=document.getElementById('hmShowLines'); return cb && cb.checked; }},
+          { target:'.hs-marker', text:'Connection lines are now visible on the 3D markers, making hotspot positions easier to identify on the model.', pos:'top', wait:'observe' },
           { target:'#btSave', text:'Save your work before previewing. Click Save now.', pos:'top', wait:'click' },
           { target:'#btPreview', text:'Click Preview to see your hotspots as end users will experience them.', pos:'top', wait:'click' },
           { target:'.hs-marker', text:'You\'re in Viewer mode. Click any hotspot marker to see its content.', pos:'top', wait:'validate', viewerMode:true,
@@ -303,67 +316,7 @@
 
   // ==================== STYLES ====================
   var S = document.createElement('style');
-  S.textContent = [
-    // Overlay + panel
-    '.gs-overlay{display:none;position:fixed;inset:0;background:rgba(54,65,93,.5);z-index:99999;justify-content:center;align-items:flex-start;padding-top:8vh;font-family:"Open Sans","Inter",sans-serif}',
-    '.gs-overlay.gs-open{display:flex}',
-    '.gs-panel{background:#fff;border-radius:12px;box-shadow:0 16px 48px rgba(54,65,93,.25);width:560px;max-width:92vw;overflow:hidden;animation:gs-in .15s ease-out;display:flex;flex-direction:column;height:76vh}',
-    '@keyframes gs-in{from{opacity:0;transform:translateY(-16px) scale(.97)}to{opacity:1;transform:none}}',
-    // Header
-    '.gs-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #E9E9E9;flex-shrink:0}',
-    '.gs-header-left{display:flex;align-items:center;gap:10px}',
-    '.gs-header-icon{width:32px;height:32px;border-radius:8px;background:#8404B3;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}',
-    '.gs-header-title{font-size:16px;font-weight:700;color:#36415D}',
-    '.gs-header-page{font-size:11px;color:#868D9E;font-weight:400;margin-left:4px}',
-    '.gs-header-close{width:28px;height:28px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#868D9E}',
-    '.gs-header-close:hover{background:#D9E0F0;color:#36415D}',
-    '.gs-header-close svg{width:14px;height:14px;fill:currentColor}',
-    // Search bar
-    '.gs-search-wrap{display:flex;align-items:center;padding:10px 20px;border-bottom:1px solid #E9E9E9;gap:10px;flex-shrink:0}',
-    '.gs-search-icon{color:#868D9E;flex-shrink:0}',
-    '.gs-search{flex:1;border:none;outline:none;font-size:13px;font-family:inherit;color:#36415D;background:transparent}',
-    '.gs-search::placeholder{color:#868D9E}',
-    // Results list
-    '.gs-results{flex:1;overflow-y:auto;padding:4px 0;min-height:0}',
-    '.gs-results::-webkit-scrollbar{width:4px} .gs-results::-webkit-scrollbar-thumb{background:#c2c9db;border-radius:2px}',
-    '.gs-group-label{padding:6px 20px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#868D9E;user-select:none}',
-    '.gs-result{display:flex;align-items:center;padding:9px 20px;cursor:pointer;gap:12px;transition:background .1s}',
-    '.gs-result:hover,.gs-result.gs-active{background:#D9E0F0}',
-    '.gs-result.gs-current{opacity:.5}',
-    '.gs-r-icon{width:32px;height:32px;border-radius:8px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}',
-    '.gs-r-info{flex:1;min-width:0}',
-    '.gs-r-name{font-size:13px;font-weight:500;color:#36415D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-    '.gs-r-sub{font-size:11px;color:#868D9E;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-    '.gs-r-type{font-size:10px;font-weight:600;border-radius:4px;padding:2px 8px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}',
-    '.gs-hl{color:#2F80ED;font-weight:600}',
-    '.gs-empty{padding:24px 20px;text-align:center;color:#868D9E;font-size:13px}',
-    '.gs-footer{border-top:1px solid #E9E9E9;padding:7px 20px;display:flex;gap:14px;font-size:11px;color:#868D9E;flex-shrink:0}',
-    '.gs-footer kbd{display:inline-block;background:#F5F5F5;border:1px solid #C2C9DB;border-radius:3px;padding:1px 5px;font-family:inherit;font-size:10px;color:#5E677D;margin:0 2px}',
-    // Feature guide (inline in panel)
-    '.gs-guide{padding:0;display:flex;flex-direction:column;flex:1;min-height:0}',
-    '.gs-guide-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px 12px;border-bottom:1px solid #E9E9E9;flex-shrink:0}',
-    '.gs-guide-back{width:28px;height:28px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;color:#868D9E}',
-    '.gs-guide-back:hover{background:#D9E0F0;color:#36415D}',
-    '.gs-guide-back svg{width:16px;height:16px;fill:currentColor}',
-    '.gs-guide-icon{width:36px;height:36px;border-radius:8px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}',
-    '.gs-guide-info{flex:1;min-width:0}',
-    '.gs-guide-name{font-size:15px;font-weight:700;color:#36415D}',
-    '.gs-guide-desc{font-size:12px;color:#868D9E;margin-top:2px;line-height:1.4}',
-    '.gs-guide-body{padding:16px 20px;flex:1;overflow-y:auto;min-height:0}',
-    '.gs-guide-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#868D9E;margin-bottom:10px}',
-    '.gs-guide-step{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}',
-    '.gs-guide-num{width:22px;height:22px;border-radius:50%;background:#2F80ED;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}',
-    '.gs-guide-txt{font-size:13px;color:#36415D;line-height:1.45}',
-    '.gs-guide-foot{padding:12px 20px;border-top:1px solid #E9E9E9;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-shrink:0}',
-    '.gs-guide-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:none}',
-    '.gs-guide-demo{background:#2F80ED;color:#fff;display:flex;align-items:center;gap:6px}',
-    '.gs-guide-demo:hover{background:#5999F1}',
-    '.gs-guide-demo svg{width:14px;height:14px;fill:#fff}',
-    // Floating debug button (bottom-right)
-    '.gs-fab{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:#8404B3;color:#fff;border:none;cursor:pointer;z-index:99998;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(132,4,179,.35);transition:transform .15s,box-shadow .15s}',
-    '.gs-fab:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(132,4,179,.45)}',
-    '.gs-fab:active{transform:scale(.95)}',
-    '.gs-fab svg{width:20px;height:20px;fill:currentColor}',
+  var demoStyles = [
     // Guided demo
     '.gd-hl{position:fixed;z-index:99998;border-radius:8px;box-shadow:0 0 0 4000px rgba(54,65,93,.5);pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1)}',
     '.gd-pulse{animation:gd-p 2s ease-out infinite}',
@@ -380,16 +333,87 @@
     '@keyframes gd-dot{from{opacity:.3;transform:scale(.8)}to{opacity:1;transform:scale(1)}}',
     '.gd-btns{display:flex;gap:8px;justify-content:flex-end}',
     '.gd-b{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:none}',
-    '.gd-b-sec{background:#E9E9E9;color:#36415D} .gd-b-sec:hover{background:#D9E0F0}',
+    '.gd-b-sec{background:#E9E9E9;color:#36415D} .gd-b-sec:hover{background:#D9E0F0} .gd-prev{margin-right:auto}',
     '.gd-b-pri{background:#2F80ED;color:#fff} .gd-b-pri:hover{background:#5999F1}',
     '.gd-b-done{background:#11E874;color:#36415D} .gd-b-done:hover{background:#0fc964}',
     '.gd-progress{display:flex;gap:4px;margin-bottom:10px}',
     '.gd-dot-p{width:8px;height:4px;border-radius:2px;background:#E9E9E9;transition:all .2s}',
     '.gd-dot-p.done{background:#2F80ED} .gd-dot-p.current{background:#8404B3;width:20px}',
-  ].join('\n');
-  document.head.appendChild(S);
+    '.gd-complete-icon{width:48px;height:48px;border-radius:50%;background:#11E874;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}',
+    '.gd-complete-title{font-size:16px;font-weight:700;color:#36415D;text-align:center;margin-bottom:6px}',
+    '.gd-complete-desc{font-size:13px;color:#868D9E;text-align:center;margin-bottom:16px;line-height:1.45}',
+  ];
 
-  // ==================== BUILD PANEL ====================
+  if (isEmbedded) {
+    // Embedded in iframe: only inject demo styles + listen for postMessage
+    S.textContent = demoStyles.join('\n');
+    document.head.appendChild(S);
+  } else {
+    // Standalone: inject all styles (panel + demo)
+    S.textContent = [
+      // Overlay + panel
+      '.gs-overlay{display:none;position:fixed;inset:0;background:rgba(54,65,93,.5);z-index:99999;justify-content:center;align-items:flex-start;padding-top:8vh;font-family:"Open Sans","Inter",sans-serif}',
+      '.gs-overlay.gs-open{display:flex}',
+      '.gs-panel{background:#fff;border-radius:12px;box-shadow:0 16px 48px rgba(54,65,93,.25);width:560px;max-width:92vw;overflow:hidden;animation:gs-in .15s ease-out;display:flex;flex-direction:column;height:76vh}',
+      '@keyframes gs-in{from{opacity:0;transform:translateY(-16px) scale(.97)}to{opacity:1;transform:none}}',
+      '.gs-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #E9E9E9;flex-shrink:0}',
+      '.gs-header-left{display:flex;align-items:center;gap:10px}',
+      '.gs-header-icon{width:32px;height:32px;border-radius:8px;background:#8404B3;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}',
+      '.gs-header-title{font-size:16px;font-weight:700;color:#36415D}',
+      '.gs-header-page{font-size:11px;color:#868D9E;font-weight:400;margin-left:4px}',
+      '.gs-header-close{width:28px;height:28px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#868D9E}',
+      '.gs-header-close:hover{background:#D9E0F0;color:#36415D}',
+      '.gs-header-close svg{width:14px;height:14px;fill:currentColor}',
+      '.gs-search-wrap{display:flex;align-items:center;padding:10px 20px;border-bottom:1px solid #E9E9E9;gap:10px;flex-shrink:0}',
+      '.gs-search-icon{color:#868D9E;flex-shrink:0}',
+      '.gs-search{flex:1;border:none;outline:none;font-size:13px;font-family:inherit;color:#36415D;background:transparent}',
+      '.gs-search::placeholder{color:#868D9E}',
+      '.gs-results{flex:1;overflow-y:auto;padding:4px 0;min-height:0}',
+      '.gs-results::-webkit-scrollbar{width:4px} .gs-results::-webkit-scrollbar-thumb{background:#c2c9db;border-radius:2px}',
+      '.gs-group-label{padding:6px 20px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#868D9E;user-select:none}',
+      '.gs-result{display:flex;align-items:center;padding:9px 20px;cursor:pointer;gap:12px;transition:background .1s}',
+      '.gs-result:hover,.gs-result.gs-active{background:#D9E0F0}',
+      '.gs-result.gs-current{opacity:.5}',
+      '.gs-r-icon{width:32px;height:32px;border-radius:8px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}',
+      '.gs-r-info{flex:1;min-width:0}',
+      '.gs-r-name{font-size:13px;font-weight:500;color:#36415D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.gs-r-sub{font-size:11px;color:#868D9E;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.gs-r-type{font-size:10px;font-weight:600;border-radius:4px;padding:2px 8px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}',
+      '.gs-hl{color:#2F80ED;font-weight:600}',
+      '.gs-empty{padding:24px 20px;text-align:center;color:#868D9E;font-size:13px}',
+      '.gs-footer{border-top:1px solid #E9E9E9;padding:7px 20px;display:flex;gap:14px;font-size:11px;color:#868D9E;flex-shrink:0}',
+      '.gs-footer kbd{display:inline-block;background:#F5F5F5;border:1px solid #C2C9DB;border-radius:3px;padding:1px 5px;font-family:inherit;font-size:10px;color:#5E677D;margin:0 2px}',
+      '.gs-guide{padding:0;display:flex;flex-direction:column;flex:1;min-height:0}',
+      '.gs-guide-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px 12px;border-bottom:1px solid #E9E9E9;flex-shrink:0}',
+      '.gs-guide-back{width:28px;height:28px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;color:#868D9E}',
+      '.gs-guide-back:hover{background:#D9E0F0;color:#36415D}',
+      '.gs-guide-back svg{width:16px;height:16px;fill:currentColor}',
+      '.gs-guide-icon{width:36px;height:36px;border-radius:8px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}',
+      '.gs-guide-info{flex:1;min-width:0}',
+      '.gs-guide-name{font-size:15px;font-weight:700;color:#36415D}',
+      '.gs-guide-desc{font-size:12px;color:#868D9E;margin-top:2px;line-height:1.4}',
+      '.gs-guide-body{padding:16px 20px;flex:1;overflow-y:auto;min-height:0}',
+      '.gs-guide-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#868D9E;margin-bottom:10px}',
+      '.gs-guide-step{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}',
+      '.gs-guide-num{width:22px;height:22px;border-radius:50%;background:#2F80ED;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}',
+      '.gs-guide-txt{font-size:13px;color:#36415D;line-height:1.45}',
+      '.gs-guide-foot{padding:12px 20px;border-top:1px solid #E9E9E9;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-shrink:0}',
+      '.gs-guide-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:none}',
+      '.gs-guide-demo{background:#2F80ED;color:#fff;display:flex;align-items:center;gap:6px}',
+      '.gs-guide-demo:hover{background:#5999F1}',
+      '.gs-guide-demo svg{width:14px;height:14px;fill:#fff}',
+      '.gs-fab{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:#8404B3;color:#fff;border:none;cursor:pointer;z-index:99998;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(132,4,179,.35);transition:transform .15s,box-shadow .15s}',
+      '.gs-fab:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(132,4,179,.45)}',
+      '.gs-fab:active{transform:scale(.95)}',
+      '.gs-fab svg{width:20px;height:20px;fill:currentColor}',
+    ].concat(demoStyles).join('\n');
+    document.head.appendChild(S);
+  }
+
+  // ==================== BUILD PANEL (standalone only) ====================
+  if (isEmbedded) {
+    // Embedded mode: skip panel UI, jump to demo engine + postMessage listener below
+  } else {
   var pageName = '';
   for (var pi = 0; pi < PAGES.length; pi++) { if (PAGES[pi].file === currentFile) { pageName = PAGES[pi].name; break; } }
 
@@ -578,6 +602,7 @@
       backToSearch();
     }
   });
+  } // end if (!isEmbedded) — panel UI
 
   // ==================== GUIDED DEMO ENGINE ====================
   var demo = null;
@@ -590,6 +615,7 @@
   }
 
   function startDemo(feat) {
+    if (demo) endDemo();
     demo = { feat:feat, idx:0, hlEl:null, tipEl:null, cleanup:[] };
     var hlEl = document.createElement('div'); hlEl.className='gd-hl gd-pulse'; document.body.appendChild(hlEl); demo.hlEl=hlEl;
     var tip = document.createElement('div'); tip.className='gd-tip'; document.body.appendChild(tip); demo.tipEl=tip;
@@ -600,7 +626,7 @@
     if (!demo) return;
     demo.cleanup.forEach(function(fn){ fn(); }); demo.cleanup = [];
     var feat = demo.feat, idx = demo.idx;
-    if (idx >= feat.demo.length) { endDemo(); return; }
+    if (idx >= feat.demo.length) { showCompletion(); return; }
     var step = feat.demo[idx], total = feat.demo.length;
 
     // Edit mode gate
@@ -660,6 +686,18 @@
         highlightEl(targetEl);
         var r = targetEl.getBoundingClientRect();
         if (r.top < 0 || r.bottom > window.innerHeight) targetEl.scrollIntoView({block:'center',behavior:'smooth'});
+        // Dynamically track target position — re-measure each frame
+        var hlSels = sels;
+        var hlRaf;
+        var trackHighlight = function() {
+          if (!demo) return;
+          var el = null;
+          for (var j = 0; j < hlSels.length; j++) { el = document.querySelector(hlSels[j].trim()); if (el) break; }
+          if (el) highlightEl(el);
+          hlRaf = requestAnimationFrame(trackHighlight);
+        };
+        hlRaf = requestAnimationFrame(trackHighlight);
+        demo.cleanup.push(function() { cancelAnimationFrame(hlRaf); });
       } else {
         demo.hlEl.style.display = 'none';
       }
@@ -691,7 +729,7 @@
       var sk = demo.tipEl.querySelector('.gd-step-skip');
       if (nxt) nxt.onclick = function() { demo.idx++; showStep(); };
       if (prv) prv.onclick = function() { demo.idx--; showStep(); };
-      if (dn) dn.onclick = endDemo;
+      if (dn) dn.onclick = showCompletion;
       if (sk) sk.onclick = endDemo;
 
       if (wt === 'click' && targetEl) {
@@ -770,6 +808,28 @@
     tip.appendChild(arrow);
   }
 
+  function showCompletion() {
+    if (!demo) return;
+    demo.cleanup.forEach(function(fn){ fn(); }); demo.cleanup = [];
+    if (demo.hlEl) demo.hlEl.style.display = 'none';
+    var feat = demo.feat;
+    var allDone = buildDots(feat.demo.length, feat.demo.length);
+    demo.tipEl.innerHTML =
+      allDone +
+      '<div class="gd-complete-icon">✓</div>' +
+      '<div class="gd-complete-title">Tutorial Complete</div>' +
+      '<div class="gd-complete-desc">You\'ve completed the <b>' + feat.name + '</b> tutorial.</div>' +
+      '<div class="gd-btns">' +
+        '<button class="gd-b gd-b-sec gd-restart">Show again</button>' +
+        '<button class="gd-b gd-b-done gd-close">Done</button>' +
+      '</div>';
+    demo.tipEl.style.left = '50%';
+    demo.tipEl.style.top = '40%';
+    demo.tipEl.style.transform = 'translate(-50%, -50%)';
+    demo.tipEl.querySelector('.gd-restart').onclick = function() { startDemo(feat); };
+    demo.tipEl.querySelector('.gd-close').onclick = function() { endDemo(); };
+  }
+
   function endDemo() {
     if (!demo) return;
     demo.cleanup.forEach(function(fn){ fn(); });
@@ -781,13 +841,37 @@
   // ==================== GLOBAL HOTKEY ====================
   document.addEventListener('keydown', function(e) {
     if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable) return;
-    if (e.key==='Escape') {
-      if (demo) { e.preventDefault(); e.stopPropagation(); endDemo(); return; }
-      if (isOpen()) { e.preventDefault(); e.stopPropagation(); closePanel(); return; }
-    }
+    if (e.key==='Escape' && demo) { e.preventDefault(); e.stopPropagation(); endDemo(); return; }
     if (e.key==='F'&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey) {
       e.preventDefault(); e.stopPropagation();
-      if (isOpen()) closePanel(); else openPanel();
+      if (isEmbedded) {
+        // Forward to parent so the React DebugMenu can toggle
+        window.parent.postMessage({ type: 'debugToggle' }, '*');
+      } else {
+        if (isOpen()) closePanel(); else openPanel();
+      }
+    }
+    if (!isEmbedded) {
+      if (e.key==='Escape' && isOpen()) { e.preventDefault(); e.stopPropagation(); closePanel(); return; }
     }
   }, true);
+
+  // ==================== POSTMESSAGE API (embedded mode) ====================
+  if (isEmbedded) {
+    window.addEventListener('message', function(e) {
+      if (!e.data || e.data.type !== 'debugStartDemo') return;
+      var featureId = e.data.featureId;
+      var pageFeatures = FEATURES[currentFile] || [];
+      for (var i = 0; i < pageFeatures.length; i++) {
+        if (pageFeatures[i].id === featureId) {
+          startDemo(pageFeatures[i]);
+          return;
+        }
+      }
+    });
+    // Report available features to parent on load
+    var pageFeatures = FEATURES[currentFile] || [];
+    var featureList = pageFeatures.map(function(f) { return { id: f.id, name: f.name, icon: f.icon, desc: f.desc, demoSteps: f.demo ? f.demo.length : 0 }; });
+    window.parent.postMessage({ type: 'debugFeatures', page: currentFile, features: featureList }, '*');
+  }
 })();

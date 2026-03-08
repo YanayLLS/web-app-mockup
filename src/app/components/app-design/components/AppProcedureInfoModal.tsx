@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Globe, ChevronDown } from 'lucide-react';
+import { X, Globe, ChevronDown, Play, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ProcedureInfo {
@@ -30,23 +30,21 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
   const handleRunIn3D = () => {
     onClose();
     if (procedure.type === 'procedure') {
-      // Procedure items open the procedure editor UI (3D scene + procedure step overlay)
-      navigate(`/app/procedure-editor/${procedure.id}`);
+      // Open procedure in VIEW mode (no editing)
+      navigate(`/app/procedure-editor/${procedure.id}?mode=view`);
     } else {
-      // Digital twin items open the 3D viewer embedded in app
       navigate('/app/3d-viewer');
     }
   };
 
   const handleSettings = () => {
-    // Open the web KB item modal (procedure editor with settings) in a new tab
     window.open(`/web/project/project-phoenix/knowledgebase?open=${procedure.id}`, '_blank');
   };
 
   const handleEdit = () => {
-    // Open the procedure editor UI
+    // Open procedure in EDIT mode
     onClose();
-    navigate(`/app/procedure-editor/${procedure.id}`);
+    navigate(`/app/procedure-editor/${procedure.id}?mode=edit`);
   };
 
   const handleRunIn2D = () => {
@@ -129,51 +127,6 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
             {procedure.version && <span>Version {procedure.version}</span>}
           </div>
 
-          {/* Content creator area */}
-          {isContentCreator && (
-            <div
-              className="w-full"
-              style={{
-                backgroundColor: '#E9E9E9',
-                borderRadius: '10px',
-                padding: '12px',
-                marginBottom: '12px',
-              }}
-            >
-              <div className="flex items-center justify-between" style={{ marginBottom: '13px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
-                  Content creator area
-                </span>
-                <button
-                  onClick={handleSettings}
-                  className="hover:underline"
-                  style={{ fontSize: '12px', color: '#2F80ED', padding: '2px', borderRadius: '5px' }}
-                >
-                  Settings
-                </button>
-              </div>
-              <div style={{ fontSize: '12px', color: '#36415D', marginBottom: '13px' }}>
-                Last updated {procedure.lastUpdated} by User Name
-              </div>
-              <div className="flex items-center">
-                <div className="flex-1" />
-                <button
-                  onClick={handleEdit}
-                  className="flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                  style={{
-                    width: '110px',
-                    padding: '12px',
-                    backgroundColor: '#2F80ED',
-                    borderRadius: '25px',
-                    fontSize: '12px',
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Description */}
           {procedure.description && (
             <div className="w-full" style={{ marginBottom: '12px' }}>
@@ -184,7 +137,7 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
           )}
 
           {/* Digital twin / Configuration / Mode rows */}
-          <div className="flex flex-col w-full" style={{ gap: '8px', marginBottom: '8px' }}>
+          <div className="flex flex-col w-full" style={{ gap: '8px', marginBottom: '16px' }}>
             {/* Digital twin row */}
             <div className="flex items-center" style={{ gap: '12px' }}>
               <span style={{ width: '100px', fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', flexShrink: 0 }}>
@@ -231,20 +184,62 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
             </div>
           </div>
 
-          {/* Run in 3D button */}
-          <button
-            onClick={handleRunIn3D}
-            className="w-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-            style={{
-              padding: '12px',
-              backgroundColor: '#2F80ED',
-              borderRadius: '25px',
-              fontSize: '12px',
-              marginBottom: '10px',
-            }}
-          >
-            Run in 3D
-          </button>
+          {/* Action buttons - Run vs Edit */}
+          <div className="w-full flex gap-3" style={{ marginBottom: '10px' }}>
+            {/* Run in 3D - Primary action (green accent) */}
+            <button
+              onClick={handleRunIn3D}
+              className="flex-1 flex items-center justify-center gap-2 text-white hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                padding: '14px 16px',
+                backgroundColor: '#11E874',
+                borderRadius: '25px',
+                fontSize: '14px',
+                fontWeight: 'var(--font-weight-bold)',
+                color: '#1a1a1a',
+                boxShadow: '0 2px 8px rgba(17,232,116,0.3)',
+              }}
+            >
+              <Play style={{ width: '16px', height: '16px', fill: 'currentColor' }} />
+              Run in 3D
+            </button>
+
+            {/* Edit - Secondary action (content creator only) */}
+            {isContentCreator && (
+              <button
+                onClick={handleEdit}
+                className="flex items-center justify-center gap-2 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  padding: '14px 20px',
+                  backgroundColor: '#2F80ED',
+                  borderRadius: '25px',
+                  fontSize: '14px',
+                  fontWeight: 'var(--font-weight-bold)',
+                  color: 'white',
+                  boxShadow: '0 2px 8px rgba(47,128,237,0.3)',
+                }}
+              >
+                <Pencil style={{ width: '14px', height: '14px' }} />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {/* Content creator settings link */}
+          {isContentCreator && (
+            <div className="w-full flex items-center justify-between" style={{ marginBottom: '6px' }}>
+              <span style={{ fontSize: '11px', color: '#7F7F7F' }}>
+                Last updated {procedure.lastUpdated} by User Name
+              </span>
+              <button
+                onClick={handleSettings}
+                className="hover:underline"
+                style={{ fontSize: '11px', color: '#2F80ED' }}
+              >
+                Settings
+              </button>
+            </div>
+          )}
 
           {/* Don't need a digital twin link */}
           <button

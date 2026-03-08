@@ -19,7 +19,7 @@ import { AiStudioPage } from './components/pages/AiStudioPage';
 import { ArchivePage } from './components/pages/ArchivePage';
 import { ProjectOverviewPage } from './components/pages/ProjectOverviewPage';
 import { GenericPage } from './components/pages/GenericPage';
-import { MembersPage } from './components/pages/workspace/MembersPage';
+import { MembersPageWrapper } from './components/pages/workspace/MembersPageWrapper';
 import { WorkspaceDesignPage } from './components/pages/workspace/WorkspaceDesignPage';
 import { RemoteSupportSettingsPage } from './components/pages/workspace/RemoteSupportSettingsPage';
 import { SubWorkspacesPage } from './components/pages/workspace/SubWorkspacesPage';
@@ -382,7 +382,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
         return {
           icon: <IconHome />,
           title: 'Members',
-          content: <MembersPage />,
+          content: <MembersPageWrapper />,
           hideHeader: true,
         };
       case 'ws-design':
@@ -758,11 +758,7 @@ function usePageTitle() {
         'remote-support': 'Remote Support',
         'ai-chat': 'AI Chat',
         'immersive': 'Immersive Room',
-        'call-device': 'Call Device',
-        'schedule-meeting': 'Schedule Meeting',
-        'join-meeting': 'Join Meeting',
         'notifications': 'Notifications',
-        'search': 'Search',
         'procedure-editor': 'Procedure Editor',
         '3d-viewer': '3D Viewer',
       };
@@ -791,12 +787,11 @@ function usePageTitle() {
 function AppRouter() {
   usePageTitle();
   return (
-    <>
+    <RoleProvider>
       <Routes>
         <Route path="/" element={<ProductSelector />} />
         <Route path="/web/*" element={
           <AvatarProvider>
-            <RoleProvider>
               <ProjectProvider>
                 <GroupsProvider>
                 <FavoritesProvider>
@@ -811,7 +806,6 @@ function AppRouter() {
                 </FavoritesProvider>
                 </GroupsProvider>
               </ProjectProvider>
-            </RoleProvider>
           </AvatarProvider>
         } />
         <Route path="/app/*" element={<AppLayout />} />
@@ -826,7 +820,7 @@ function AppRouter() {
         } />
       </Routes>
       <DebugMenu />
-    </>
+    </RoleProvider>
   );
 }
 

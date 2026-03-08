@@ -1,6 +1,8 @@
-import { useNavigate } from 'react-router-dom';
 import { Search, Phone, Video, MessageSquare, Plus, ChevronDown, Users, PhoneCall, Calendar, MoreVertical, Clock, X, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { AppCallDeviceModal } from './AppCallDevicePage';
+import { AppMeetingJoinModal } from './AppMeetingJoinPage';
+import { AppScheduleMeetingModal } from './AppScheduleMeetingPage';
 
 const contacts = [
   { id: '1', name: 'Luy Robin', role: 'Field Engineer', initials: 'LR', online: true, color: '#2F80ED' },
@@ -44,21 +46,13 @@ const mobileActions = [
 ];
 
 export function AppRemoteSupportPage() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'agenda' | 'recent'>('agenda');
   const [showNewSessionMenu, setShowNewSessionMenu] = useState(false);
   const [showCallDeviceModal, setShowCallDeviceModal] = useState(false);
   const [showJoinMeetingModal, setShowJoinMeetingModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [deviceId, setDeviceId] = useState('');
-  const [meetingCode, setMeetingCode] = useState('');
-  const [meetingPassword, setMeetingPassword] = useState('');
-  const [meetingTitle, setMeetingTitle] = useState('');
-  const [meetingDate, setMeetingDate] = useState('');
-  const [meetingTime, setMeetingTime] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [scheduledConfirm, setScheduledConfirm] = useState(false);
 
   const filteredContacts = contacts.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -76,35 +70,6 @@ export function AppRemoteSupportPage() {
     alert('Starting instant meeting...');
   };
 
-  const handleScheduleMeeting = () => {
-    if (meetingTitle && meetingDate && meetingTime) {
-      setScheduledConfirm(true);
-      setTimeout(() => {
-        setShowScheduleModal(false);
-        setScheduledConfirm(false);
-        setMeetingTitle('');
-        setMeetingDate('');
-        setMeetingTime('');
-      }, 1500);
-    }
-  };
-
-  const handleCallDevice = () => {
-    if (deviceId.trim()) {
-      setShowCallDeviceModal(false);
-      alert(`Calling device: ${deviceId}`);
-      setDeviceId('');
-    }
-  };
-
-  const handleJoinMeeting = () => {
-    if (meetingCode.trim()) {
-      setShowJoinMeetingModal(false);
-      alert(`Joining meeting: ${meetingCode}`);
-      setMeetingCode('');
-      setMeetingPassword('');
-    }
-  };
 
   return (
     <div className="h-full flex flex-col">
@@ -112,12 +77,24 @@ export function AppRemoteSupportPage() {
       <div className="lg:hidden flex-1 flex flex-col">
         {/* Mobile header */}
         <div className="p-4 sm:p-6 border-b border-border bg-card">
-          <h2 className="text-primary" style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}>
-            Remote Support
-          </h2>
-          <p className="text-sm text-muted mt-0.5">
-            Connect, troubleshoot, and collaborate remotely.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-primary" style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}>
+                Remote Support
+              </h2>
+              <p className="text-sm text-muted mt-0.5">
+                Connect, troubleshoot, and collaborate remotely.
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: '10px' }}>
+                My Device ID
+              </span>
+              <p className="text-foreground mt-0.5" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '14px', letterSpacing: '2px' }}>
+                902 950 988
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* 4 action buttons grid */}
@@ -183,8 +160,13 @@ export function AppRemoteSupportPage() {
               </button>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2">
+            {/* Device ID + Action buttons */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/60 rounded-lg">
+                <span className="text-xs text-muted" style={{ fontWeight: 'var(--font-weight-medium)' }}>My Device ID</span>
+                <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', letterSpacing: '1.5px' }}>902 950 988</span>
+              </div>
+              <div className="w-px h-6 bg-border" />
               <button
                 onClick={() => setShowCallDeviceModal(true)}
                 className="px-3 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
@@ -343,229 +325,10 @@ export function AppRemoteSupportPage() {
         </div>
       </div>
 
-      {/* ===== CALL DEVICE MODAL ===== */}
-      {showCallDeviceModal && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setShowCallDeviceModal(false)} />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
-            <div
-              className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border"
-              style={{ width: '400px', maxWidth: '100%' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 style={{ fontSize: '16px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Call Device</h3>
-                <button onClick={() => setShowCallDeviceModal(false)} className="p-1 hover:bg-secondary rounded transition-colors">
-                  <X className="size-4" style={{ color: '#36415D' }} />
-                </button>
-              </div>
-              <div className="p-4">
-                <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                  Device ID
-                </label>
-                <input
-                  type="text"
-                  value={deviceId}
-                  onChange={(e) => setDeviceId(e.target.value)}
-                  placeholder="Enter device ID..."
-                  className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none text-foreground placeholder:text-muted focus:border-primary"
-                  style={{ borderColor: '#C2C9DB' }}
-                />
-                <p style={{ fontSize: '11px', color: '#7F7F7F', marginTop: '6px' }}>
-                  Enter the ID of the device you want to call.
-                </p>
-              </div>
-              <div className="flex justify-end gap-2 p-4 border-t border-border">
-                <button
-                  onClick={() => setShowCallDeviceModal(false)}
-                  className="px-4 py-2 text-sm text-foreground bg-secondary rounded-[var(--radius-button)] hover:bg-secondary/80 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCallDevice}
-                  className="px-4 py-2 text-sm text-white bg-primary rounded-[var(--radius-button)] hover:opacity-90 transition-opacity flex items-center gap-2"
-                  style={{ fontWeight: 'var(--font-weight-bold)' }}
-                >
-                  <Phone className="size-3.5" />
-                  Call
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ===== JOIN MEETING MODAL ===== */}
-      {showJoinMeetingModal && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setShowJoinMeetingModal(false)} />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
-            <div
-              className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border"
-              style={{ width: '400px', maxWidth: '100%' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 style={{ fontSize: '16px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Join Meeting</h3>
-                <button onClick={() => setShowJoinMeetingModal(false)} className="p-1 hover:bg-secondary rounded transition-colors">
-                  <X className="size-4" style={{ color: '#36415D' }} />
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                    Meeting Code
-                  </label>
-                  <input
-                    type="text"
-                    value={meetingCode}
-                    onChange={(e) => setMeetingCode(e.target.value)}
-                    placeholder="Enter meeting code..."
-                    className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none text-foreground placeholder:text-muted focus:border-primary"
-                    style={{ borderColor: '#C2C9DB' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                    Password (optional)
-                  </label>
-                  <input
-                    type="password"
-                    value={meetingPassword}
-                    onChange={(e) => setMeetingPassword(e.target.value)}
-                    placeholder="Enter password..."
-                    className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none text-foreground placeholder:text-muted focus:border-primary"
-                    style={{ borderColor: '#C2C9DB' }}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 p-4 border-t border-border">
-                <button
-                  onClick={() => setShowJoinMeetingModal(false)}
-                  className="px-4 py-2 text-sm text-foreground bg-secondary rounded-[var(--radius-button)] hover:bg-secondary/80 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleJoinMeeting}
-                  className="px-4 py-2 text-sm text-white bg-primary rounded-[var(--radius-button)] hover:opacity-90 transition-opacity flex items-center gap-2"
-                  style={{ fontWeight: 'var(--font-weight-bold)' }}
-                >
-                  <Video className="size-3.5" />
-                  Join
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ===== SCHEDULE MEETING MODAL ===== */}
-      {showScheduleModal && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setShowScheduleModal(false)} />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
-            <div
-              className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border"
-              style={{ width: '440px', maxWidth: '100%' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 style={{ fontSize: '16px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Schedule Meeting</h3>
-                <button onClick={() => setShowScheduleModal(false)} className="p-1 hover:bg-secondary rounded transition-colors">
-                  <X className="size-4" style={{ color: '#36415D' }} />
-                </button>
-              </div>
-              {scheduledConfirm ? (
-                <div className="p-8 flex flex-col items-center text-center">
-                  <div className="size-12 rounded-full bg-accent/20 flex items-center justify-center mb-3">
-                    <Check className="size-6 text-accent" />
-                  </div>
-                  <p style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
-                    Meeting scheduled!
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#7F7F7F', marginTop: '4px' }}>
-                    Invitations will be sent to participants.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="p-4 space-y-4">
-                    <div>
-                      <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                        Meeting Title
-                      </label>
-                      <input
-                        type="text"
-                        value={meetingTitle}
-                        onChange={(e) => setMeetingTitle(e.target.value)}
-                        placeholder="Enter meeting title..."
-                        className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none text-foreground placeholder:text-muted focus:border-primary"
-                        style={{ borderColor: '#C2C9DB' }}
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                          Date
-                        </label>
-                        <input
-                          type="date"
-                          value={meetingDate}
-                          onChange={(e) => setMeetingDate(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none text-foreground focus:border-primary"
-                          style={{ borderColor: '#C2C9DB' }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                          Time
-                        </label>
-                        <input
-                          type="time"
-                          value={meetingTime}
-                          onChange={(e) => setMeetingTime(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none text-foreground focus:border-primary"
-                          style={{ borderColor: '#C2C9DB' }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '12px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', display: 'block', marginBottom: '6px' }}>
-                        Invite People
-                      </label>
-                      <div className="flex flex-wrap gap-1.5 p-2 rounded-lg border" style={{ borderColor: '#C2C9DB', minHeight: '40px' }}>
-                        <input
-                          type="text"
-                          placeholder="Search contacts..."
-                          className="flex-1 min-w-[120px] text-sm border-none outline-none text-foreground placeholder:text-muted"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 p-4 border-t border-border">
-                    <button
-                      onClick={() => setShowScheduleModal(false)}
-                      className="px-4 py-2 text-sm text-foreground bg-secondary rounded-[var(--radius-button)] hover:bg-secondary/80 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleScheduleMeeting}
-                      className="px-4 py-2 text-sm text-white bg-primary rounded-[var(--radius-button)] hover:opacity-90 transition-opacity flex items-center gap-2"
-                      style={{ fontWeight: 'var(--font-weight-bold)' }}
-                    >
-                      <Calendar className="size-3.5" />
-                      Schedule
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {/* ===== MODALS ===== */}
+      <AppCallDeviceModal isOpen={showCallDeviceModal} onClose={() => setShowCallDeviceModal(false)} />
+      <AppMeetingJoinModal isOpen={showJoinMeetingModal} onClose={() => setShowJoinMeetingModal(false)} />
+      <AppScheduleMeetingModal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} />
     </div>
   );
 }
