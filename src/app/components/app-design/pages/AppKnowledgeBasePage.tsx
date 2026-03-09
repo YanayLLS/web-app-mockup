@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Search, LayoutGrid, List, ChevronRight, Eye, RefreshCw } from 'lucide-react';
+import { Search, LayoutGrid, List, ChevronRight, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 const projects = [
@@ -57,53 +57,45 @@ export function AppKnowledgeBasePage() {
   );
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto" style={{ padding: '16px' }}>
-      {/* Page title */}
-      <h1 style={{ fontSize: '20px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', margin: '0 0 12px 0', fontFamily: 'var(--font-family)' }}>
-        Projects
-      </h1>
-
-      {/* Toolbar */}
-      <div
-        className="flex items-center gap-3 mb-4"
-        style={{
-          border: '1px solid #C2C9DB',
-          borderRadius: '10px',
-          padding: '0 16px',
-          height: '48px',
-          backgroundColor: 'white',
-        }}
-      >
-        <div className="flex-1" />
-        <div className="relative sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4" style={{ color: '#7F7F7F' }} />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 text-sm border-none outline-none"
-            style={{ backgroundColor: '#D9E0F0', borderRadius: '10px', height: '32px', color: '#36415D' }}
-          />
+    <div className="h-full flex flex-col overflow-y-auto" style={{ padding: '24px 28px' }}>
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-5">
+        <h1 style={{ fontSize: '22px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', margin: 0, fontFamily: 'var(--font-family)' }}>
+          Projects
+        </h1>
+        <div className="flex items-center gap-3">
+          <div className="relative" style={{ width: '240px' }}>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4" style={{ color: '#7F7F7F' }} />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 text-sm border-none outline-none"
+              style={{ backgroundColor: '#E9E9E9', borderRadius: '10px', height: '34px', color: '#36415D' }}
+            />
+          </div>
+          <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
+            <RefreshCw className="size-4" />
+          </button>
         </div>
-        <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
-          <Eye className="size-4" />
-        </button>
-        <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
-          <RefreshCw className="size-4" />
-        </button>
       </div>
 
       {/* Projects grid */}
-      <div className="flex flex-wrap" style={{ gap: '10px' }}>
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+          gap: '16px',
+        }}
+      >
         {filteredProjects.map((project) => (
           <div
             key={project.id}
             onClick={() => navigate(`/app/project/${project.id}/kb`)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all group"
             style={{
-              width: '249px',
-              height: '172px',
+              aspectRatio: '4 / 3',
               borderRadius: '10px',
               position: 'relative',
             }}
@@ -120,10 +112,10 @@ export function AppKnowledgeBasePage() {
             {/* Gradient overlay */}
             <div
               className="absolute inset-0"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%)' }}
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 55%)' }}
             />
             {/* Info at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 px-3 pb-2">
+            <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
               <div className="truncate" style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: 'white' }}>
                 {project.name}
               </div>

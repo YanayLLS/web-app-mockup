@@ -110,6 +110,7 @@ export function AppLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [showRecentPanel, setShowRecentPanel] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -119,7 +120,6 @@ export function AppLayout() {
     if (path.includes('/remote-support')) return 'remote-support';
     if (path.includes('/immersive')) return 'immersive';
     if (path.includes('/ai-chat')) return 'ai-chat';
-    if (path.includes('/notifications')) return 'notifications';
     if (path.includes('/search')) return 'search';
     return 'knowledgebase';
   };
@@ -154,14 +154,16 @@ export function AppLayout() {
   const isProcedureEditor = location.pathname.includes('/procedure-editor');
   const is3DViewer = location.pathname.includes('/3d-viewer');
   const isFullscreenEmbed = isProcedureEditor || is3DViewer;
+  const isImmersive = location.pathname.includes('/immersive');
   const isDetailPage = location.pathname.includes('/procedure/') ||
                         location.pathname.includes('/ai-chat') ||
+                        isImmersive ||
                         isFullscreenEmbed;
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden" style={{ fontFamily: 'var(--font-family)' }}>
       {/* ===== TOP HEADER BAR ===== */}
-      <header className="shrink-0 flex items-center px-4 lg:px-10 gap-3" style={{ backgroundColor: '#36415D', height: '55px' }}>
+      <header className="shrink-0 flex items-center px-4 lg:pl-0 lg:pr-10 gap-3" style={{ backgroundColor: '#36415D', height: '55px' }}>
         {/* Mobile menu toggle */}
         <button
           className="lg:hidden text-white p-1.5 hover:bg-white/10 rounded-lg"
@@ -170,8 +172,21 @@ export function AppLayout() {
           {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
 
-        {/* Logo */}
-        <div className="flex items-center gap-2 shrink-0 cursor-pointer" onClick={() => navigate('/app/knowledgebase')}>
+        {/* Logo — aligned above sidebar on desktop */}
+        <div
+          className="hidden lg:flex items-center justify-center shrink-0 cursor-pointer"
+          style={{ width: '70px' }}
+          onClick={() => navigate('/app/knowledgebase')}
+        >
+          <div className="size-8 rounded-lg bg-white/20 flex items-center justify-center">
+            <span className="text-white" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '16px' }}>F</span>
+          </div>
+        </div>
+        <span className="text-white hidden lg:block uppercase tracking-wider cursor-pointer" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '24px', letterSpacing: '0.5px' }} onClick={() => navigate('/app/knowledgebase')}>
+          ROTAX
+        </span>
+        {/* Mobile logo */}
+        <div className="flex lg:hidden items-center gap-2 shrink-0 cursor-pointer" onClick={() => navigate('/app/knowledgebase')}>
           <div className="size-8 rounded-lg bg-white/20 flex items-center justify-center">
             <span className="text-white" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '16px' }}>F</span>
           </div>
@@ -212,7 +227,7 @@ export function AppLayout() {
             className="relative p-1.5 text-white hover:bg-white/10 rounded-lg"
             onClick={(e) => {
               e.stopPropagation();
-              navigate('/app/notifications');
+              setShowNotifPanel(!showNotifPanel);
             }}
           >
             <Bell className="size-5" />
@@ -279,7 +294,7 @@ export function AppLayout() {
               ? 'fixed top-[55px] left-0 bottom-0 w-56 lg:w-[70px] lg:relative lg:top-0 lg:items-center'
               : 'hidden lg:flex lg:items-center w-[70px]'
             }`}
-          style={{ borderRight: '1px solid #C2C9DB', paddingTop: isMobileMenuOpen ? '16px' : '40px', paddingBottom: isMobileMenuOpen ? '16px' : '40px' }}
+          style={{ borderRight: '1px solid #C2C9DB', paddingTop: isMobileMenuOpen ? '16px' : '0px', paddingBottom: isMobileMenuOpen ? '16px' : '40px' }}
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -518,7 +533,7 @@ export function AppLayout() {
             <Route path="project/:projectId/folder/:folderId" element={<AppFolderBrowsePage />} />
             <Route path="remote-support" element={<AppRemoteSupportPage />} />
             <Route path="ai-chat" element={<AppAIChatPage />} />
-            <Route path="notifications" element={<AppNotificationsPage />} />
+            {/* Notifications is now a side panel, not a page */}
             <Route path="immersive" element={<AppVirtualRoomPage />} />
             <Route path="*" element={<Navigate to="/app/knowledgebase" replace />} />
           </Routes>
@@ -559,10 +574,10 @@ export function AppLayout() {
           );
         })}
         <button
-          onClick={() => navigate('/app/notifications')}
+          onClick={() => setShowNotifPanel(!showNotifPanel)}
           className="flex flex-col items-center justify-center gap-0.5 rounded-lg transition-colors relative"
           style={{
-            color: activeNav === 'notifications' ? '#2F80ED' : '#7F7F7F',
+            color: showNotifPanel ? '#2F80ED' : '#7F7F7F',
             minWidth: '48px',
             padding: '4px 6px',
           }}
@@ -577,6 +592,46 @@ export function AppLayout() {
           </span>
         </button>
       </nav>}
+
+      {/* Notifications Side Panel */}
+      {showNotifPanel && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-[60]"
+            onClick={() => setShowNotifPanel(false)}
+          />
+          {/* Panel */}
+          <div
+            className="fixed top-0 right-0 bottom-0 z-[61] bg-card flex flex-col shadow-elevation-lg"
+            style={{
+              width: '400px',
+              maxWidth: '100vw',
+              borderLeft: '1px solid #C2C9DB',
+              animation: 'slide-in-right 0.25s ease-out',
+            }}
+          >
+            {/* Close button overlaid on top-right, aligned with three-dots */}
+            <button
+              onClick={() => setShowNotifPanel(false)}
+              className="absolute right-3 z-10 p-2 hover:bg-secondary rounded-lg transition-colors"
+              style={{ color: '#7F7F7F', top: '16px' }}
+            >
+              <X className="size-5" />
+            </button>
+            {/* Content — AppNotificationsPage has its own header */}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <AppNotificationsPage />
+            </div>
+          </div>
+          <style>{`
+            @keyframes slide-in-right {
+              from { transform: translateX(100%); }
+              to { transform: translateX(0); }
+            }
+          `}</style>
+        </>
+      )}
 
       {/* Settings Modal */}
       {showSettings && <AppSettingsModal onClose={() => setShowSettings(false)} />}

@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Digital Twin Scene</title>
+<script>
+// Auto-redirect to React-wrapped route when accessed standalone (not embedded in iframe)
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (!params.has('embedded')) {
+    // Preserve other query params (e.g. mode=editor)
+    params.delete('embedded');
+    var qs = params.toString();
+    var target = '/app/3d-viewer' + (qs ? '?' + qs : '');
+    window.location.replace(target);
+  }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script type="importmap">
 {
@@ -139,6 +152,58 @@ html.procedure .fl-window { display:none !important; }
 }
 @keyframes spin { to { transform:rotate(360deg); } }
 
+/* ===== IMPORT REPORT TOAST ===== */
+.import-report {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+  padding:0; width:320px; overflow:hidden; font-family:inherit;
+  opacity:0; transform:translateY(20px) scale(0.97);
+  animation:reportSlideIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.import-report.report-exit {
+  animation:reportSlideOut 0.3s cubic-bezier(0.4,0,1,1) forwards;
+}
+@keyframes reportSlideIn { to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes reportSlideOut { to { opacity:0; transform:translateY(12px) scale(0.97); } }
+.import-report-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px 10px; border-bottom:1px solid #E9E9E9;
+}
+.import-report-header h3 {
+  margin:0; font-size:13px; font-weight:600; color:#36415D; display:flex; align-items:center; gap:8px;
+}
+.import-report-header .report-icon {
+  width:20px; height:20px; border-radius:6px; background:#11E874; display:flex; align-items:center; justify-content:center;
+}
+.import-report-header .report-icon svg { width:12px; height:12px; fill:#fff; }
+.import-report-close {
+  width:24px; height:24px; border:none; background:none; cursor:pointer; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; color:#868D9E;
+}
+.import-report-close:hover { background:#F5F5F5; color:#36415D; }
+.import-report-body { padding:12px 16px 14px; }
+.import-report-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.import-report-stat {
+  background:#F5F5F5; border-radius:8px; padding:10px 12px;
+}
+.import-report-stat .stat-value {
+  font-size:18px; font-weight:700; color:#36415D; line-height:1.1;
+}
+.import-report-stat .stat-label {
+  font-size:10px; color:#868D9E; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px;
+}
+.import-report-stat.stat-wide { grid-column:1/-1; }
+.import-report-bar {
+  margin-top:10px; height:3px; border-radius:2px; background:#E9E9E9; overflow:hidden;
+}
+.import-report-bar-fill {
+  height:100%; border-radius:2px; background:linear-gradient(90deg, #2F80ED, #11E874);
+  animation:reportBarFill 6s linear forwards;
+}
+@keyframes reportBarFill { from { width:100%; } to { width:0%; } }
+
 /* ===== LEFT TOOLBAR (collapsed, expands on hover) ===== */
 .left-toolbar {
   position:fixed; top:60px; left:12px; z-index:50; display:flex; flex-direction:column; gap:5px;
@@ -166,7 +231,7 @@ html.procedure .fl-window { display:none !important; }
 .left-toolbar.lt-locked .collapse-btn .back-label { opacity:1; }
 /* Lock toggle */
 .lt-lock-btn {
-  width:32px; height:32px; background:#fff; border-radius:8px;
+  width:40px; height:40px; background:#fff; border-radius:10px;
   box-shadow:1px 1px 10px rgba(0,0,0,0.15); display:flex; align-items:center;
   justify-content:center; cursor:pointer; border:none; flex-shrink:0;
   opacity:0; transition:opacity 0.15s; pointer-events:none;
@@ -252,6 +317,8 @@ html.procedure .fl-window { display:none !important; }
 }
 .field-textarea:focus { border-color:#2e80ed; }
 .section-title { font-size:13px; font-weight:600; color:#36415d; margin-top:8px; }
+.settings-section { display:flex; flex-direction:column; gap:8px; }
+.settings-section .section-title { margin-top:0; }
 .thumbnail-area {
   width:100%; aspect-ratio:16/10; background:#4a7ab5; border-radius:8px;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
@@ -280,10 +347,200 @@ html.procedure .fl-window { display:none !important; }
 .feature-label { font-size:13px; color:#36415d; flex:1; }
 .info-btn {
   width:20px; height:20px; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; opacity:0.5; border:none; background:none;
+  cursor:pointer; opacity:0.5; border:none; background:none; position:relative;
 }
 .info-btn:hover { opacity:0.8; }
 .info-btn svg { width:14px; height:14px; fill:#36415d; }
+.info-btn[data-tip]:hover::after {
+  content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); right:0;
+  background:#36415d; color:#fff; font-size:11px; padding:5px 8px; border-radius:6px;
+  pointer-events:none; z-index:100; white-space:nowrap;
+  line-height:1.3; box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.info-btn[data-tip]:hover::before {
+  content:''; position:absolute; bottom:calc(100% + 2px); right:6px;
+  border:4px solid transparent; border-top-color:#36415d; pointer-events:none; z-index:100;
+}
+
+/* Checkbox */
+.feature-checkbox {
+  width:16px; height:16px; border:1.5px solid #c2c9db; border-radius:3px; cursor:pointer;
+  position:relative; flex-shrink:0; transition:all .15s; background:#fff; appearance:none;
+  -webkit-appearance:none; margin:0; display:flex; align-items:center; justify-content:center;
+}
+.feature-checkbox:hover { border-color:#868d9e; }
+.feature-checkbox:checked { background:#2f80ed; border-color:#2f80ed; }
+.feature-checkbox:checked::after {
+  content:''; display:block; width:4px; height:8px;
+  border:solid #fff; border-width:0 1.5px 1.5px 0; transform:rotate(45deg);
+  margin-top:-1px;
+}
+
+/* Collapsible sections */
+.collapse-header {
+  display:flex; align-items:center; gap:6px; cursor:pointer; padding:4px 0;
+  user-select:none;
+}
+#tabParts { gap:0; }
+#tabParts > .collapse-header {
+  background:#e9e9e9; margin:0 -16px; padding:6px 16px; border-bottom:1px solid #d9e0f0;
+}
+#tabParts > .collapse-header:hover { background:#dfe3ed; }
+#tabParts > .collapse-body { padding:10px 0; }
+.collapse-header .collapse-arrow {
+  width:16px; height:16px; fill:#36415d; transition:transform .2s; flex-shrink:0;
+}
+.collapse-header.collapsed .collapse-arrow { transform:rotate(-90deg); }
+.collapse-header .section-title { margin:0; flex:1; }
+.collapse-body { display:flex; flex-direction:column; gap:10px; }
+.collapse-header.collapsed + .collapse-body { display:none; }
+.collapse-header .ctx-menu-btn {
+  width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+  border:none; background:none; cursor:pointer; border-radius:6px; margin-left:auto;
+}
+.collapse-header .ctx-menu-btn:hover { background:#e9e9e9; }
+.collapse-header .ctx-menu-btn svg { width:14px; height:14px; fill:#868d9e; }
+
+/* Drag-input / number input rows */
+.transform-group { display:flex; flex-direction:column; gap:4px; }
+.transform-row { display:flex; align-items:center; gap:6px; height:26px; }
+.transform-row .axis-label {
+  width:14px; font-size:11px; font-weight:600; text-align:center; flex-shrink:0;
+}
+.axis-label.x { color:#ff4444; }
+.axis-label.y { color:#44bb44; }
+.axis-label.z { color:#4488ff; }
+.drag-input {
+  flex:1; height:26px; background:#e9e9e9; border:1px solid transparent; border-radius:6px;
+  padding:0 8px; font-family:inherit; font-size:12px; color:#36415d; outline:none;
+  cursor:ew-resize; text-align:center; min-width:0;
+}
+.drag-input:focus { border-color:#2e80ed; cursor:text; background:#fff; }
+.transform-label { font-size:11px; color:#868d9e; width:52px; flex-shrink:0; }
+
+/* Lock scale icon */
+.lock-btn {
+  width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+  border:none; background:none; cursor:pointer; border-radius:6px;
+}
+.lock-btn:hover { background:#e9e9e9; }
+.lock-btn svg { width:14px; height:14px; fill:#868d9e; }
+.lock-btn.active svg { fill:#2f80ed; }
+
+/* Info banner */
+.info-banner {
+  display:flex; align-items:flex-start; gap:8px; padding:10px 12px;
+  background:#fff8e1; border:1px solid #ffe082; border-radius:8px; font-size:11px; color:#5d4037;
+}
+.info-banner svg { width:16px; height:16px; fill:#f9a825; flex-shrink:0; margin-top:1px; }
+
+/* Publish status badge */
+.publish-badge {
+  display:inline-flex; align-items:center; gap:4px; padding:3px 10px;
+  border-radius:12px; font-size:11px; font-weight:600;
+}
+.publish-badge.published { background:#e8f5e9; color:#2e7d32; }
+.publish-badge.unpublished { background:#fce4ec; color:#c62828; }
+.publish-badge .badge-dot {
+  width:6px; height:6px; border-radius:50%;
+}
+.publish-badge.published .badge-dot { background:#2e7d32; }
+.publish-badge.unpublished .badge-dot { background:#c62828; }
+
+/* Material swatch grid */
+.mat-grid {
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
+}
+.mat-swatch {
+  aspect-ratio:1; border-radius:8px; cursor:pointer; border:2px solid transparent;
+  position:relative; overflow:hidden;
+}
+.mat-swatch:hover { border-color:#2f80ed; }
+.mat-swatch.active { border-color:#2f80ed; box-shadow:0 0 0 1px #2f80ed; }
+.mat-swatch .swatch-color {
+  width:100%; height:100%; border-radius:6px;
+}
+.mat-swatch .swatch-label {
+  position:absolute; bottom:0; left:0; right:0; padding:2px 4px;
+  font-size:9px; color:#fff; background:rgba(0,0,0,0.5); text-align:center;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* Multi-select header */
+.multi-select-header {
+  font-size:12px; color:#868d9e; font-weight:600; padding:4px 0;
+}
+
+/* Mixed value indicator */
+.mixed-indicator {
+  width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center;
+  background:#e9e9e9; border-radius:4px; font-size:9px; color:#868d9e; font-weight:700;
+}
+
+/* Object target dropdown */
+.ot-dropdown {
+  display:flex; align-items:center; gap:6px; height:30px; background:#e9e9e9;
+  border-radius:10px; padding:0 10px; cursor:pointer; font-size:12px; color:#36415d;
+}
+.ot-dropdown:hover { background:#d9e0f0; }
+.ot-badge {
+  font-size:9px; font-weight:700; background:#2f80ed; color:#fff;
+  padding:1px 6px; border-radius:8px;
+}
+
+/* Snap mode selector */
+.snap-selector { display:flex; gap:2px; background:#e9e9e9; border-radius:8px; padding:2px; }
+.snap-option {
+  flex:1; height:24px; border:none; background:none; border-radius:6px;
+  font-family:inherit; font-size:11px; color:#868d9e; cursor:pointer;
+}
+.snap-option:hover { background:#d9e0f0; }
+.snap-option.active { background:#2f80ed; color:#fff; }
+
+/* Search bar for materials */
+.mat-search {
+  display:flex; align-items:center; gap:6px; height:30px; background:#e9e9e9;
+  border:1px solid transparent; border-radius:10px; padding:0 10px;
+}
+.mat-search:focus-within { border-color:#2e80ed; background:#fff; }
+.mat-search svg { width:14px; height:14px; fill:#868d9e; flex-shrink:0; }
+.mat-search input {
+  flex:1; border:none; background:none; outline:none; font-family:inherit;
+  font-size:12px; color:#36415d;
+}
+.mat-search input::placeholder { color:#868d9e; }
+
+/* Filter toggle */
+.filter-toggle {
+  height:28px; display:flex; align-items:center; gap:4px; padding:0 10px;
+  border:1px solid #c2c9db; border-radius:8px; background:none;
+  font-family:inherit; font-size:11px; color:#868d9e; cursor:pointer;
+}
+.filter-toggle:hover { background:#e9e9e9; }
+.filter-toggle.active { background:#d9e0f0; border-color:#2f80ed; color:#36415d; }
+.filter-toggle svg { width:12px; height:12px; fill:currentColor; }
+
+/* Thumbnail button row */
+.thumb-btn-row { display:flex; gap:6px; }
+.thumb-btn-row .btn-secondary { flex:1; font-size:11px; padding:0 8px; }
+
+/* Color picker button */
+.color-pick-btn {
+  display:flex; align-items:center; gap:8px; height:30px; padding:0 12px;
+  border:1px solid #c2c9db; border-radius:10px; background:#fff; cursor:pointer;
+  font-family:inherit; font-size:12px; color:#36415d;
+}
+.color-pick-btn:hover { background:#e9e9e9; }
+.color-swatch-preview {
+  width:18px; height:18px; border-radius:4px; border:1px solid #c2c9db;
+}
+
+/* Tool editor preview */
+.tool-preview-area {
+  width:100%; aspect-ratio:1; background:#e9e9e9; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.tool-preview-area img { width:100%; height:100%; object-fit:contain; }
 
 /* ===== RIGHT PANEL (Parts Catalog) — docked to right edge ===== */
 .right-panel {
@@ -353,6 +610,7 @@ html.embedded .right-panel { top:12px !important; }
 .part-action-btn:hover { opacity:1; }
 .part-action-btn svg { width:11px; height:11px; fill:#36415d; }
 .part-action-btn.hidden-part svg { fill:#7f7f7f; }
+.part-delete-btn:hover svg { fill:#FF1F1F; }
 .rp-footer {
   padding:8px 10px; border-top:1px solid #c2c9db; display:flex; flex-direction:column;
   gap:2px; flex-shrink:0; font-size:11px; color:#36415d;
@@ -441,6 +699,23 @@ html.embedded .right-panel { top:12px !important; }
 }
 .viewer-more-menu-item:hover { background:#e9e9e9; }
 .viewer-more-menu-item svg { width:16px; height:16px; fill:#36415d; }
+
+/* ===== SLICER PANEL ===== */
+#slicerPanel {
+  position:fixed; bottom:70px; left:50%; transform:translateX(-50%); z-index:120;
+  background:#fff; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.18);
+  padding:6px 10px; display:none; align-items:center; gap:10px;
+  font-family:'Open Sans',sans-serif;
+}
+#slicerPanel.visible { display:flex; }
+#slicerPanel .slicer-label { font-size:12px; font-weight:700; color:#36415d; white-space:nowrap; }
+#slicerPanel .slicer-divider { width:1px; height:20px; background:#e0e0e0; flex-shrink:0; }
+#slicerPanel button {
+  width:28px; height:28px; border:none; background:transparent; border-radius:6px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+#slicerPanel button:hover { background:#f0f2f7; }
+#slicerPanel button svg { width:16px; height:16px; fill:#868d9e; }
 
 /* ===== TOOLTIP ===== */
 #partTooltip {
@@ -649,6 +924,140 @@ html.embedded .right-panel { top:12px !important; }
   background:#2f80ed; border:none; color:#fff;
 }
 #partsSelectModal .psm-confirm:hover { background:#82b3f4; }
+
+/* ===== IMPORT MODEL SETTINGS MODAL ===== */
+#importSettingsModal {
+  position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+}
+#importSettingsModal .ism-box {
+  background:#fff; border-radius:12px; box-shadow:0 16px 48px rgba(0,0,0,.25);
+  width:520px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden;
+}
+#importSettingsModal .ism-header {
+  padding:16px 20px 12px; display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid #e9e9e9; flex-shrink:0;
+}
+#importSettingsModal .ism-header svg { width:18px; height:18px; fill:#36415d; flex-shrink:0; }
+#importSettingsModal .ism-header-title { font-size:14px; font-weight:700; color:#36415d; flex:1; }
+#importSettingsModal .ism-close {
+  width:28px; height:28px; border:none; background:transparent; border-radius:6px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+#importSettingsModal .ism-close:hover { background:#f0f2f7; }
+#importSettingsModal .ism-close svg { width:16px; height:16px; fill:#868d9e; }
+#importSettingsModal .ism-body {
+  flex:1; overflow-y:auto; padding:0;
+}
+#importSettingsModal .ism-body::-webkit-scrollbar { width:4px; }
+#importSettingsModal .ism-body::-webkit-scrollbar-thumb { background:#c2c9db; border-radius:2px; }
+
+/* File info banner */
+#importSettingsModal .ism-file-info {
+  display:flex; gap:16px; padding:16px 20px; background:#f7f8fa; border-bottom:1px solid #e9e9e9;
+}
+#importSettingsModal .ism-preview {
+  width:120px; height:120px; border-radius:8px; background:#e9e9e9; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative;
+}
+#importSettingsModal .ism-preview canvas { width:100% !important; height:100% !important; }
+#importSettingsModal .ism-preview .ism-preview-placeholder {
+  display:flex; flex-direction:column; align-items:center; gap:6px; color:#868d9e;
+}
+#importSettingsModal .ism-preview .ism-preview-placeholder svg { width:32px; height:32px; fill:#c2c9db; }
+#importSettingsModal .ism-preview .ism-preview-placeholder span { font-size:10px; }
+#importSettingsModal .ism-preview .ism-preview-spinner {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(233,233,233,.8);
+}
+#importSettingsModal .ism-preview .ism-preview-spinner::after {
+  content:''; width:24px; height:24px; border:2px solid rgba(0,0,0,.1);
+  border-top-color:#2f80ed; border-radius:50%; animation:spin .7s linear infinite;
+}
+#importSettingsModal .ism-meta-grid {
+  flex:1; display:grid; grid-template-columns:1fr 1fr; gap:4px 16px; align-content:start;
+}
+#importSettingsModal .ism-meta-item {
+  display:flex; flex-direction:column; gap:1px; padding:3px 0;
+}
+#importSettingsModal .ism-meta-label { font-size:10px; color:#868d9e; text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
+#importSettingsModal .ism-meta-value { font-size:12px; color:#36415d; font-weight:600; }
+
+/* Settings sections */
+#importSettingsModal .ism-section {
+  padding:12px 20px; border-bottom:1px solid #f0f0f0;
+}
+#importSettingsModal .ism-section:last-child { border-bottom:none; }
+#importSettingsModal .ism-section-title {
+  font-size:11px; font-weight:700; color:#868d9e; text-transform:uppercase; letter-spacing:.5px;
+  margin-bottom:10px;
+}
+#importSettingsModal .ism-row {
+  display:flex; align-items:center; gap:10px; margin-bottom:8px;
+}
+#importSettingsModal .ism-row:last-child { margin-bottom:0; }
+#importSettingsModal .ism-label {
+  font-size:12px; color:#36415d; min-width:90px; flex-shrink:0;
+}
+#importSettingsModal .ism-select {
+  flex:1; height:30px; border:1.5px solid #c2c9db; border-radius:6px; padding:0 8px;
+  font-size:12px; font-family:inherit; color:#36415d; background:#fff; outline:none; cursor:pointer;
+}
+#importSettingsModal .ism-select:focus { border-color:#2e80ed; }
+#importSettingsModal .ism-input {
+  flex:1; height:30px; border:1.5px solid #c2c9db; border-radius:6px; padding:0 8px;
+  font-size:12px; font-family:inherit; color:#36415d; background:#fff; outline:none;
+}
+#importSettingsModal .ism-input:focus { border-color:#2e80ed; }
+#importSettingsModal .ism-input-short {
+  width:70px; flex:none;
+}
+#importSettingsModal .ism-unit { font-size:11px; color:#868d9e; }
+
+/* Toggle switch */
+#importSettingsModal .ism-toggle {
+  position:relative; width:36px; height:20px; flex-shrink:0;
+}
+#importSettingsModal .ism-toggle input { display:none; }
+#importSettingsModal .ism-toggle-track {
+  position:absolute; inset:0; background:#c2c9db; border-radius:10px; cursor:pointer;
+  transition:background .2s;
+}
+#importSettingsModal .ism-toggle input:checked + .ism-toggle-track { background:#2f80ed; }
+#importSettingsModal .ism-toggle-thumb {
+  position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff;
+  border-radius:50%; transition:transform .2s; pointer-events:none;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+#importSettingsModal .ism-toggle input:checked ~ .ism-toggle-thumb { transform:translateX(16px); }
+
+/* Footer */
+#importSettingsModal .ism-footer {
+  padding:12px 20px; border-top:1px solid #e9e9e9; display:flex; gap:8px; justify-content:flex-end; flex-shrink:0;
+}
+#importSettingsModal .ism-footer button {
+  padding:8px 22px; border-radius:6px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer;
+}
+#importSettingsModal .ism-btn-cancel {
+  background:#fff; border:1.5px solid #c2c9db; color:#36415d;
+}
+#importSettingsModal .ism-btn-cancel:hover { background:#f5f5f5; }
+#importSettingsModal .ism-btn-import {
+  background:#2f80ed; border:none; color:#fff; min-width:100px;
+}
+#importSettingsModal .ism-btn-import:hover { background:#82b3f4; }
+#importSettingsModal .ism-btn-import:disabled {
+  background:#c2c9db; cursor:not-allowed;
+}
+
+/* Progress bar inside import button */
+#importSettingsModal .ism-btn-import .ism-btn-progress {
+  display:none; width:100%; height:3px; background:rgba(255,255,255,.3);
+  border-radius:2px; margin-top:4px; overflow:hidden;
+}
+#importSettingsModal .ism-btn-import .ism-btn-progress-bar {
+  height:100%; background:#fff; border-radius:2px; width:0%; transition:width .15s;
+}
 
 /* ===== ADD BUTTON CONTEXT MENU ===== */
 .bt-add-menu {
@@ -1269,6 +1678,9 @@ html.embedded .right-panel { top:12px !important; }
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <span id="loadingText">Loading 3D model...</span>
+    <div id="loadingBarWrap" style="display:none;width:220px;height:6px;border-radius:3px;background:rgba(255,255,255,0.2);margin-top:4px;overflow:hidden;">
+      <div id="loadingBar" style="width:0%;height:100%;border-radius:3px;background:#fff;transition:width 0.15s;"></div>
+    </div>
   </div>
   <div id="hotspotOverlay" class="hidden"></div>
 </div>
@@ -1455,28 +1867,240 @@ html.embedded .right-panel { top:12px !important; }
 <!-- LEFT PANEL (expanded) -->
 <div class="left-panel hidden" id="leftPanel">
   <div class="panel-tabs">
-    <button class="panel-tab active" data-tab="settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
-    <button class="panel-tab" data-tab="list"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button>
-    <button class="panel-tab" data-tab="connections"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></button>
-    <button class="panel-tab" data-tab="subsystems"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-2h8v8h-8v-8zm2 2v4h4v-4h-4z"/></svg></button>
-    <button class="panel-tab" data-tab="link"><svg viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z"/></svg></button>
-    <button class="panel-tab" data-tab="config"><svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+    <!-- 1. General Settings -->
+    <button class="panel-tab active" data-tab="settings" title="General Settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+    <!-- 2. Part Properties -->
+    <button class="panel-tab" data-tab="parts" title="Part Properties"><svg viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.991.991 0 013 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9zM12 4.15L6.04 7.5 12 10.85l5.96-3.35L12 4.15zM5 15.91l6 3.37v-6.73L5 9.18v6.73zm14 0v-6.73l-6 3.37v6.73l6-3.37z"/></svg></button>
+    <!-- 3. Object Target -->
+    <button class="panel-tab" data-tab="objectTarget" title="Object Target"><svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></button>
+    <!-- 5. Material Editor -->
+    <button class="panel-tab" data-tab="materials" title="Material Editor"><svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1-.01-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></button>
+    <!-- 6. Tools Editor Settings -->
+    <button class="panel-tab" data-tab="toolEditor" title="Tools Editor"><svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg></button>
     <button class="close-panel-btn" id="closePanelBtn"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
   </div>
+  <!-- ==================== 1. GENERAL SETTINGS ==================== -->
   <div class="panel-content" id="tabSettings">
-    <div class="field-group"><label class="field-label">Title</label><input class="field-input" type="text" value="Generator" id="dtTitle"></div>
-    <div class="field-group"><label class="field-label">Description</label><textarea class="field-textarea" id="dtDescription" placeholder="Enter description..."></textarea></div>
-    <div class="section-title">Thumbnail</div>
-    <div class="thumbnail-area" id="thumbnailArea"></div>
-    <button class="btn-primary" id="captureThumbnailBtn" style="width:100%"><svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2S13.77 8.8 12 8.8 8.8 10.23 8.8 12s1.43 3.2 3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg> Create thumbnail from view</button>
-    <div class="section-title">View</div>
-    <button class="btn-secondary" id="setDefaultViewBtn" style="width:100%"><svg viewBox="0 0 24 24" width="14" height="14" fill="#36415d"><path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2S13.77 8.8 12 8.8 8.8 10.23 8.8 12s1.43 3.2 3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg> Set default view</button>
-    <div style="font-size:11px;color:#868d9e;margin-top:-8px;">The default view is the initial display that appears when the digital twin is opened.</div>
-    <div class="section-title">Features</div>
-    <div class="feature-row"><div class="checkbox checked" id="chkSlicer" onclick="toggleCheckbox(this)"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div><span class="feature-label">Slicer</span><button class="info-btn"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></button></div>
-    <div class="feature-row"><div class="checkbox checked" id="chkTooltips" onclick="toggleCheckbox(this)"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div><span class="feature-label">Parts tool-tips on hover</span><button class="info-btn"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></button></div>
+    <!-- Publish Status -->
+    <div class="field-group">
+      <label class="field-label">Status</label>
+      <div><span class="publish-badge unpublished"><span class="badge-dot"></span> Unpublished</span></div>
+    </div>
+
+    <div class="field-group"><label class="field-label">Item Name</label><input class="field-input" type="text" value="Generator" id="dtTitle"></div>
+    <div class="field-group"><label class="field-label">Item Description</label><textarea class="field-textarea" id="dtDescription" placeholder="Enter description..."></textarea></div>
+
+    <!-- Thumbnail -->
+    <div class="settings-section">
+      <div class="section-title">Thumbnail</div>
+      <div class="thumbnail-area" id="thumbnailArea"></div>
+      <div class="thumb-btn-row">
+        <button class="btn-primary" id="captureThumbnailBtn" style="flex:1"><svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2S13.77 8.8 12 8.8 8.8 10.23 8.8 12s1.43 3.2 3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg> Change</button>
+        <button class="btn-secondary" style="flex:1"><svg viewBox="0 0 24 24" width="14" height="14" fill="#36415d"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg> Remove</button>
+      </div>
+      <button class="btn-secondary" style="width:100%"><svg viewBox="0 0 24 24" width="14" height="14" fill="#36415d"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg> Upload custom thumbnail</button>
+    </div>
+
+    <!-- Camera -->
+    <div class="settings-section">
+      <div class="section-title">Camera</div>
+      <button class="btn-secondary" id="setDefaultViewBtn" style="width:100%"><svg viewBox="0 0 24 24" width="14" height="14" fill="#36415d"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg> Set camera position</button>
+      <div style="font-size:11px;color:#868d9e;">Sets the default camera angle when this digital twin is opened.</div>
+    </div>
+
+    <!-- Features -->
+    <div class="settings-section">
+      <div class="section-title">Features</div>
+      <div class="feature-row"><input type="checkbox" class="feature-checkbox" id="chkSlicer" checked><span class="feature-label">Slicer</span><button class="info-btn" data-tip="Enable cross-section slicer tool to cut through the 3D model"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></button></div>
+      <div class="feature-row"><input type="checkbox" class="feature-checkbox" id="chkTooltips" checked onchange="state.tooltipsEnabled=this.checked"><span class="feature-label">Show Parts Names</span><button class="info-btn" data-tip="Display part name labels when hovering over parts"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></button></div>
+    </div>
+
+    <!-- Background Color -->
+    <div class="settings-section">
+      <div class="section-title">Background</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="color-pick-btn" id="bgColorBtn" onclick="document.getElementById('bgColorInput').click()"><div class="color-swatch-preview" id="bgColorSwatch" style="background:#1d4593;"></div> Change Color</button>
+        <input type="color" id="bgColorInput" value="#1d4593" style="position:absolute;opacity:0;pointer-events:none;">
+      </div>
+    </div>
+
+    <!-- Visibility Warning -->
+    <div class="info-banner" id="visibilityWarning">
+      <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+      <span>This digital twin is unpublished. Changes won't be visible to other users until you publish it.</span>
+    </div>
   </div>
-  <div class="panel-content hidden" id="tabPlaceholder"><div style="text-align:center;color:#868d9e;padding:40px 0;font-size:13px;">This tab's design is coming soon.</div></div>
+
+  <!-- ==================== 2. PART PROPERTIES ==================== -->
+  <div class="panel-content hidden" id="tabParts">
+    <!-- Header when parts selected -->
+    <div class="multi-select-header" id="partSelHeader">1 Assembly Selected</div>
+
+    <!-- 2a. Name -->
+    <div class="collapse-header" onclick="this.classList.toggle('collapsed')">
+      <svg class="collapse-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      <span class="section-title">Name</span>
+    </div>
+    <div class="collapse-body">
+      <div class="field-group"><input class="field-input" type="text" value="Main Housing" maxlength="500" placeholder="Part name" id="partNameInput"></div>
+    </div>
+
+    <!-- 2b. Transform -->
+    <div class="collapse-header" onclick="this.classList.toggle('collapsed')">
+      <svg class="collapse-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      <span class="section-title">Transform</span>
+      <button class="ctx-menu-btn" onclick="event.stopPropagation()" title="More options"><svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+    </div>
+    <div class="collapse-body">
+      <!-- Position -->
+      <div class="transform-group">
+        <div style="font-size:11px;color:#868d9e;margin-bottom:2px;">Position</div>
+        <div class="transform-row"><span class="axis-label x">X</span><input class="drag-input" type="text" value="0.00"><span class="axis-label y">Y</span><input class="drag-input" type="text" value="0.00"><span class="axis-label z">Z</span><input class="drag-input" type="text" value="0.00"></div>
+      </div>
+      <!-- Rotation -->
+      <div class="transform-group">
+        <div style="font-size:11px;color:#868d9e;margin-bottom:2px;">Rotation</div>
+        <div class="transform-row"><span class="axis-label x">X</span><input class="drag-input" type="text" value="0.00"><span class="axis-label y">Y</span><input class="drag-input" type="text" value="0.00"><span class="axis-label z">Z</span><input class="drag-input" type="text" value="0.00"></div>
+      </div>
+      <!-- Scale -->
+      <div class="transform-group">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="font-size:11px;color:#868d9e;">Scale</span>
+          <button class="lock-btn active" id="lockScaleBtn" onclick="this.classList.toggle('active')" title="Lock uniform scale"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></button>
+        </div>
+        <div class="transform-row"><span class="axis-label x">X</span><input class="drag-input" type="text" value="1.00"><span class="axis-label y">Y</span><input class="drag-input" type="text" value="1.00"><span class="axis-label z">Z</span><input class="drag-input" type="text" value="1.00"></div>
+      </div>
+
+      <!-- Snapping & Pivot -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+        <button class="btn-secondary" style="flex:1;min-width:0;" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'#d9e0f0':''" title="Snap to Mesh"><svg viewBox="0 0 24 24" width="12" height="12" fill="#36415d"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 20H4v-4h4v4zm0-6H4v-4h4v4zm0-6H4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4z"/></svg> Snap Mesh</button>
+        <button class="btn-secondary" style="flex:1;min-width:0;" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'#d9e0f0':''" title="Snap to Grid"><svg viewBox="0 0 24 24" width="12" height="12" fill="#36415d"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 20H4v-4h4v4zm0-6H4v-4h4v4zm0-6H4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4z"/></svg> Snap Grid</button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-secondary" style="flex:1" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'#d9e0f0':''"><svg viewBox="0 0 24 24" width="12" height="12" fill="#36415d"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/></svg> Edit Pivot</button>
+        <button class="btn-secondary" style="flex:1"><svg viewBox="0 0 24 24" width="12" height="12" fill="#36415d"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7z"/></svg> Center Pivot</button>
+      </div>
+    </div>
+
+    <!-- 2c. Metadata -->
+    <div class="collapse-header" id="metadataSection" onclick="this.classList.toggle('collapsed')">
+      <svg class="collapse-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      <span class="section-title">Metadata</span>
+      <button class="ctx-menu-btn" onclick="event.stopPropagation()" title="More options"><svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+    </div>
+    <div class="collapse-body">
+      <div class="field-group"><label class="field-label">Description</label><textarea class="field-textarea" maxlength="10000" placeholder="Part description..."></textarea></div>
+      <div class="field-group"><label class="field-label">ID Number</label><input class="field-input" type="text" maxlength="500" placeholder="e.g. P-10042"></div>
+    </div>
+
+    <!-- 2d. Settings -->
+    <div class="collapse-header" id="partSettingsSection" onclick="this.classList.toggle('collapsed')">
+      <svg class="collapse-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      <span class="section-title">Settings</span>
+      <button class="ctx-menu-btn" onclick="event.stopPropagation()" title="More options"><svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+    </div>
+    <div class="collapse-body">
+      <div class="feature-row"><input type="checkbox" class="feature-checkbox"><span class="feature-label">Is Spare Part</span></div>
+      <div class="feature-row"><input type="checkbox" class="feature-checkbox" checked><span class="feature-label">Is Visible</span></div>
+      <div class="feature-row"><input type="checkbox" class="feature-checkbox"><span class="feature-label">Group Assembly</span></div>
+    </div>
+  </div>
+
+  <!-- ==================== 3. OBJECT TARGET ==================== -->
+  <div class="panel-content hidden" id="tabObjectTarget">
+    <button class="btn-primary" style="width:100%"><svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Create New Object Target</button>
+
+    <!-- Target selector -->
+    <div class="field-group">
+      <label class="field-label">Object Target</label>
+      <div class="ot-dropdown" onclick="this.querySelector('.collapse-arrow').classList.toggle('open')">
+        <span style="flex:1">Default Tracker</span>
+        <span class="ot-badge">Base</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M7 10l5 5 5-5z"/></svg>
+      </div>
+    </div>
+
+    <div class="field-group"><label class="field-label">Name</label><input class="field-input" type="text" value="Default Tracker"></div>
+    <div class="feature-row"><input type="checkbox" class="feature-checkbox" checked><span class="feature-label">Default Tracker</span></div>
+
+    <!-- Snap Mode -->
+    <div class="field-group">
+      <label class="field-label">Snap Mode</label>
+      <div class="snap-selector">
+        <button class="snap-option active" onclick="this.parentElement.querySelectorAll('.snap-option').forEach(s=>s.classList.remove('active'));this.classList.add('active')">None</button>
+        <button class="snap-option" onclick="this.parentElement.querySelectorAll('.snap-option').forEach(s=>s.classList.remove('active'));this.classList.add('active')">Grid</button>
+        <button class="snap-option" onclick="this.parentElement.querySelectorAll('.snap-option').forEach(s=>s.classList.remove('active'));this.classList.add('active')">Mesh</button>
+      </div>
+    </div>
+
+    <!-- Transform -->
+    <div class="section-title">Transform</div>
+    <div class="transform-group">
+      <div style="font-size:11px;color:#868d9e;margin-bottom:2px;">Position</div>
+      <div class="transform-row"><span class="axis-label x">X</span><input class="drag-input" type="text" value="0.00"><span class="axis-label y">Y</span><input class="drag-input" type="text" value="0.00"><span class="axis-label z">Z</span><input class="drag-input" type="text" value="0.00"></div>
+    </div>
+    <div class="transform-group">
+      <div style="font-size:11px;color:#868d9e;margin-bottom:2px;">Rotation</div>
+      <div class="transform-row"><span class="axis-label x">X</span><input class="drag-input" type="text" value="0.00"><span class="axis-label y">Y</span><input class="drag-input" type="text" value="0.00"><span class="axis-label z">Z</span><input class="drag-input" type="text" value="0.00"></div>
+    </div>
+    <div class="transform-group">
+      <div style="font-size:11px;color:#868d9e;margin-bottom:2px;">Scale</div>
+      <div class="transform-row"><span class="axis-label x">X</span><input class="drag-input" type="text" value="1.00"><span class="axis-label y">Y</span><input class="drag-input" type="text" value="1.00"><span class="axis-label z">Z</span><input class="drag-input" type="text" value="1.00"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 5. MATERIAL EDITOR ==================== -->
+  <div class="panel-content hidden" id="tabMaterials">
+    <!-- Search -->
+    <div class="mat-search">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" placeholder="Search materials...">
+    </div>
+
+    <!-- Controls row -->
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="filter-toggle" onclick="this.classList.toggle('active')"><svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg> Used only</button>
+      <div style="flex:1"></div>
+      <button class="btn-secondary" style="height:28px;font-size:11px;"><svg viewBox="0 0 24 24" width="12" height="12" fill="#36415d"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg> Library</button>
+    </div>
+
+    <!-- Material swatches -->
+    <div class="mat-grid">
+      <div class="mat-swatch active"><div class="swatch-color" style="background:linear-gradient(135deg,#b0b0b0,#e0e0e0);"></div><div class="swatch-label">Steel</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#c0a050,#f0d888);"></div><div class="swatch-label">Brass</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#8b4513,#d2691e);"></div><div class="swatch-label">Copper</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#222,#555);"></div><div class="swatch-label">Dark Metal</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#1a5276,#2980b9);"></div><div class="swatch-label">Blue Paint</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#7b241c,#e74c3c);"></div><div class="swatch-label">Red Paint</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#1e8449,#27ae60);"></div><div class="swatch-label">Green Paint</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#d4ac0d,#f1c40f);"></div><div class="swatch-label">Yellow</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#eee,#fff);"></div><div class="swatch-label">White</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#333,#666);border:1px solid #c2c9db;"></div><div class="swatch-label">Rubber</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#87ceeb,#b0e0e6);"></div><div class="swatch-label">Glass</div></div>
+      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#f5deb3,#deb887);"></div><div class="swatch-label">Wood</div></div>
+    </div>
+  </div>
+
+  <!-- ==================== 6. TOOLS EDITOR SETTINGS ==================== -->
+  <div class="panel-content hidden" id="tabToolEditor">
+    <div class="field-group"><label class="field-label">Tool Name</label><input class="field-input" type="text" maxlength="30" placeholder="Tool name (1-30 chars)" pattern="[a-zA-Z0-9 ]*"></div>
+    <div class="field-group"><label class="field-label">Tool Description</label><textarea class="field-textarea" maxlength="500" placeholder="Describe this tool..."></textarea></div>
+    <div class="field-group">
+      <label class="field-label">Tool Category</label>
+      <select class="field-input" style="cursor:pointer;appearance:auto;">
+        <option>Hand Tools</option>
+        <option>Measurement</option>
+        <option>Safety Equipment</option>
+        <option value="new">+ Create new</option>
+      </select>
+    </div>
+
+    <div class="section-title">Preview</div>
+    <div class="tool-preview-area">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="#c2c9db"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+    </div>
+    <button class="btn-primary" style="width:100%"><svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> Update Preview</button>
+  </div>
 
 </div>
 
@@ -1518,6 +2142,14 @@ html.embedded .right-panel { top:12px !important; }
   <button class="gizmo-btn" data-mode="rotate"><svg viewBox="0 0 24 24" fill="#36415d"><path d="M7.34 6.41L.86 12.9l6.49 6.48 6.49-6.48-6.5-6.49zM3.69 12.9l3.66-3.66L11 12.9l-3.66 3.66-3.65-3.66zm15.67-6.26C17.61 4.88 15.3 4 13 4V.76L8.76 5 13 9.24V6c1.79 0 3.58.68 4.95 2.05 2.73 2.73 2.73 7.17 0 9.9C16.58 19.32 14.79 20 13 20c-.97 0-1.94-.21-2.84-.61l-1.49 1.49C10.02 21.62 11.51 22 13 22c2.3 0 4.61-.88 6.36-2.64 3.52-3.51 3.52-9.21 0-12.72z"/></svg> Rotate</button>
   <button class="gizmo-btn" data-mode="scale"><svg viewBox="0 0 24 24" fill="#36415d"><path d="M19 12h-2v3h-3v2h5v-5zM7 9h3V7H5v5h2V9zm14-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z"/></svg> Scale</button>
 </div>
+<!-- SLICER PANEL -->
+<div id="slicerPanel">
+  <span class="slicer-label">Slicer</span>
+  <div class="slicer-divider"></div>
+  <button id="slicerReset" title="Reset"><svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+  <button id="slicerClose" title="Close slicer"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+</div>
+
 <button class="viewer-more-btn" id="viewerMoreBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
 <div class="viewer-more-menu" id="viewerMoreMenu">
   <button class="viewer-more-menu-item" id="editDTBtn"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> Edit digital twin</button>
@@ -1676,12 +2308,142 @@ html.embedded .right-panel { top:12px !important; }
   </div>
 </div>
 
+<!-- IMPORT MODEL SETTINGS MODAL -->
+<div id="importSettingsModal" class="hidden">
+  <div class="ism-box">
+    <div class="ism-header">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      <span class="ism-header-title">Import Model</span>
+      <button class="ism-close" id="ismClose"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="ism-body">
+      <!-- File info banner -->
+      <div class="ism-file-info">
+        <div class="ism-preview" id="ismPreview">
+          <div class="ism-preview-placeholder" id="ismPreviewPlaceholder">
+            <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15l3.5-4.5 2.5 3.01L14.5 9l4.5 6H5z"/></svg>
+            <span>3D Preview</span>
+          </div>
+          <div class="ism-preview-spinner" id="ismPreviewSpinner" style="display:none"></div>
+        </div>
+        <div class="ism-meta-grid">
+          <div class="ism-meta-item">
+            <span class="ism-meta-label">File Name</span>
+            <span class="ism-meta-value" id="ismFileName">—</span>
+          </div>
+          <div class="ism-meta-item">
+            <span class="ism-meta-label">Format</span>
+            <span class="ism-meta-value" id="ismFormat">—</span>
+          </div>
+          <div class="ism-meta-item">
+            <span class="ism-meta-label">File Size</span>
+            <span class="ism-meta-value" id="ismFileSize">—</span>
+          </div>
+          <div class="ism-meta-item">
+            <span class="ism-meta-label">Meshes</span>
+            <span class="ism-meta-value" id="ismMeshCount">—</span>
+          </div>
+          <div class="ism-meta-item">
+            <span class="ism-meta-label">Vertices</span>
+            <span class="ism-meta-value" id="ismVertCount">—</span>
+          </div>
+          <div class="ism-meta-item">
+            <span class="ism-meta-label">Triangles</span>
+            <span class="ism-meta-value" id="ismTriCount">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transform settings -->
+      <div class="ism-section">
+        <div class="ism-section-title">Transform</div>
+        <div class="ism-row">
+          <span class="ism-label">Scale mode</span>
+          <select class="ism-select" id="ismScaleMode">
+            <option value="original">Keep original size (1:1)</option>
+            <option value="fit">Auto-fit to scene</option>
+            <option value="custom">Custom scale factor</option>
+          </select>
+        </div>
+        <div class="ism-row" id="ismCustomScaleRow" style="display:none">
+          <span class="ism-label">Scale factor</span>
+          <input type="number" class="ism-input ism-input-short" id="ismScaleFactor" value="1" min="0.001" step="0.1">
+          <span class="ism-unit">x</span>
+        </div>
+        <div class="ism-row">
+          <span class="ism-label">Up axis</span>
+          <select class="ism-select" id="ismUpAxis">
+            <option value="auto">Auto-detect</option>
+            <option value="y">Y-up</option>
+            <option value="z">Z-up (convert to Y-up)</option>
+          </select>
+        </div>
+        <div class="ism-row">
+          <span class="ism-label">Placement</span>
+          <select class="ism-select" id="ismPlacement">
+            <option value="auto">Auto (next to existing)</option>
+            <option value="origin">Center at origin</option>
+            <option value="camera">In front of camera</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Materials settings -->
+      <div class="ism-section">
+        <div class="ism-section-title">Materials</div>
+        <div class="ism-row">
+          <span class="ism-label">Materials</span>
+          <select class="ism-select" id="ismMaterials">
+            <option value="keep">Keep original</option>
+            <option value="default">Apply default gray</option>
+            <option value="scene">Match scene palette</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Geometry settings -->
+      <div class="ism-section">
+        <div class="ism-section-title">Geometry</div>
+        <div class="ism-row">
+          <span class="ism-label">Merge meshes</span>
+          <label class="ism-toggle">
+            <input type="checkbox" id="ismMergeMeshes">
+            <div class="ism-toggle-track"></div>
+            <div class="ism-toggle-thumb"></div>
+          </label>
+          <span class="ism-unit">Combine into single part</span>
+        </div>
+        <div class="ism-row">
+          <span class="ism-label">Center pivot</span>
+          <label class="ism-toggle">
+            <input type="checkbox" id="ismCenterPivot" checked>
+            <div class="ism-toggle-track"></div>
+            <div class="ism-toggle-thumb"></div>
+          </label>
+          <span class="ism-unit">Recenter geometry origin</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ism-footer">
+      <button class="ism-btn-cancel" id="ismCancel">Cancel</button>
+      <button class="ism-btn-import" id="ismImport" disabled>
+        <span id="ismImportLabel">Import</span>
+        <div class="ism-btn-progress"><div class="ism-btn-progress-bar" id="ismProgressBar"></div></div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- HIDDEN FILE INPUT FOR 3D MODEL IMPORT -->
-<input type="file" id="modelFileInput" accept=".fbx,.obj,.glb,.gltf,.stl" style="display:none" multiple>
+<input type="file" id="modelFileInput" accept=".fbx,.obj,.glb,.gltf,.stl" style="display:none">
 
 <script type="module">
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -1867,13 +2629,14 @@ const state = {
   hsDragOverId: null,         // drag-drop target in manager
   hsFocusedParent: null,      // drill-down: currently focused parent hotspot ID
   hsFocusedStack: [],         // drill-down: stack of previous focused parents
+  importedModels: [],         // root Object3Ds of user-imported models
 };
 
 // ==================== THREE.JS SETUP ====================
 const viewport = document.getElementById('viewport');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, viewport.clientWidth / viewport.clientHeight, 0.1, 10000);
-camera.position.set(200, 150, 200);
+const camera = new THREE.PerspectiveCamera(50, viewport.clientWidth / viewport.clientHeight, 0.01, 50000);
+camera.position.set(3, 2, 3);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(viewport.clientWidth, viewport.clientHeight);
@@ -1910,26 +2673,43 @@ composer.addPass(fxaaPass);
 // Controls
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true; orbitControls.dampingFactor = 0.08;
-orbitControls.minDistance = 10; orbitControls.maxDistance = 2000;
+orbitControls.minDistance = 0.05; orbitControls.maxDistance = 10000;
 
 const transformControls = new TransformControls(camera, renderer.domElement);
 transformControls.setSize(0.8);
-scene.add(transformControls);
+// v0.183+: TransformControls is no longer an Object3D — add its helper instead
+if (transformControls.isObject3D) {
+  scene.add(transformControls);
+} else if (transformControls.getHelper) {
+  scene.add(transformControls.getHelper());
+}
 
 // ==================== UNDO SYSTEM ====================
-const undoStack = []; // { object, pos, rot, scl }
+const undoStack = []; // [{ meshes: [{object, pos, rot, scl}, ...] }]
 const redoStack = [];
 let preTransform = null;
 
+function _snapMeshes() {
+  const snaps = [];
+  const anchor = transformControls.object;
+  if (anchor) snaps.push({ object: anchor, pos: anchor.position.clone(), rot: anchor.rotation.clone(), scl: anchor.scale.clone() });
+  for (const m of gizmoLinkedMeshes) snaps.push({ object: m, pos: m.position.clone(), rot: m.rotation.clone(), scl: m.scale.clone() });
+  return snaps;
+}
+function _restoreSnaps(snaps) {
+  for (const s of snaps) {
+    s.object.position.copy(s.pos); s.object.rotation.copy(s.rot); s.object.scale.copy(s.scl);
+    if (sceneBatcher.enabled) sceneBatcher.syncTransform(s.object);
+  }
+  if (sceneBatcher.enabled) updateSelectionOutline();
+}
+
 transformControls.addEventListener('dragging-changed', (e) => {
   orbitControls.enabled = !e.value;
-  const obj = transformControls.object;
-  if (!obj) return;
+  if (!transformControls.object) return;
   if (e.value) {
-    // Drag started — snapshot current transform
-    preTransform = { object: obj, pos: obj.position.clone(), rot: obj.rotation.clone(), scl: obj.scale.clone() };
-  } else if (preTransform && preTransform.object === obj) {
-    // Drag ended — push previous state to undo stack
+    preTransform = { meshes: _snapMeshes() };
+  } else if (preTransform) {
     undoStack.push(preTransform);
     redoStack.length = 0;
     preTransform = null;
@@ -1942,10 +2722,611 @@ const d1 = new THREE.DirectionalLight(0xffffff, 1.5); d1.position.set(150,200,10
 const d2 = new THREE.DirectionalLight(0xffffff, 0.6); d2.position.set(-100,-50,-80); scene.add(d2);
 scene.add(new THREE.HemisphereLight(0x87ceeb, 0x362d1b, 0.4));
 
-// Grid
-const gridHelper = new THREE.GridHelper(500, 50, 0x4a7ab5, 0x3a6a9a);
-gridHelper.material.opacity = 0.3; gridHelper.material.transparent = true;
-scene.add(gridHelper);
+// ==================== INFINITE ADAPTIVE GRID ====================
+// Direct port of Unity DigitalTwinGrid.shader + DigitalTwinGridController.cs
+// baseCellSize=1m, subdivisions=10 (10cm), maxSubdivLevels=3, fadeDistance=50m
+const infiniteGrid = (() => {
+  const gridMat = new THREE.ShaderMaterial({
+    vertexShader: [
+      'varying vec3 vWorld;',
+      'void main() {',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vWorld = wp.xyz;',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}',
+    ].join('\n'),
+    fragmentShader: [
+      'precision highp float;',
+      'varying vec3 vWorld;',
+      'uniform vec3  _CamPos;',
+      'uniform float _BaseCellSize;',    // 1.0
+      'uniform float _SubdivCount;',     // 10.0  (float for GLSL compat)
+      'uniform float _MaxLevels;',       // 3.0
+      'uniform float _FadeDist;',        // 50.0
+      'uniform float _MajorStr;',        // 1.0
+      'uniform float _MinorStr;',        // 0.1
+      'uniform float _XAxisStr;',        // 2.0
+      'uniform float _ZAxisStr;',        // 2.0
+      'uniform vec4  _GridColor;',       // (1,1,1,0.6)
+      'uniform vec4  _AxisUColor;',      // red
+      'uniform vec4  _AxisVColor;',      // blue
+      '',
+      'void main() {',
+      '  float dist = distance(_CamPos, vWorld);',
+      '  float u = vWorld.x;',
+      '  float v = vWorld.z;',
+      '  vec2 gp = vec2(u, v);',
+      '',
+      '  // Fade: close=_MaxLevels, far=0',
+      '  float t = clamp((dist - _BaseCellSize) / _FadeDist, 0.0, 1.0);',
+      '  float N = (1.0 - t) * _MaxLevels;',
+      '',
+      '  // Major grid (1m) — always bold',
+      '  vec2 c0 = gp / _BaseCellSize;',
+      '  vec2 g0 = abs(fract(c0 - 0.5) - 0.5) / fwidth(c0);',
+      '  float i0 = 1.0 - smoothstep(0.0, 1.0, min(g0.x, g0.y));',
+      '  float alphaG = i0 * _MajorStr;',
+      '',
+      '  // Subdivision levels (10cm, 1cm, 1mm) — thin lines between bold ones',
+      '  float sz = _BaseCellSize / _SubdivCount;',
+      '  float alphaSub = 0.0;',
+      '  for (int lvl = 1; lvl <= 3; ++lvl) {',
+      '    if (float(lvl) > _MaxLevels) break;',
+      '    vec2 cn = gp / sz;',
+      '    vec2 gn = abs(fract(cn - 0.5) - 0.5) / fwidth(cn);',
+      '    float iN = 1.0 - smoothstep(0.0, 1.0, min(gn.x, gn.y));',
+      '    float fadeL = clamp(N - float(lvl - 1), 0.0, 1.0);',
+      '    // Thin lines that fade in; never as strong as the level above',
+      '    float s = _MinorStr * fadeL;',
+      '    alphaSub = max(alphaSub, iN * s);',
+      '    sz /= _SubdivCount;',
+      '  }',
+      '',
+      '  // Axis lines (red X, blue Z)',
+      '  float axThV = fwidth(v) * 2.0;',
+      '  float axU = (1.0 - smoothstep(0.0, axThV, abs(v))) * _XAxisStr;',
+      '  float axThU = fwidth(u) * 2.0;',
+      '  float axV = (1.0 - smoothstep(0.0, axThU, abs(u))) * _ZAxisStr;',
+      '',
+      '  float cA = max(alphaG + alphaSub, max(axU, axV));',
+      '  if (cA < 0.001) discard;',
+      '',
+      '  vec3 col = _GridColor.rgb;',
+      '  float gridA = alphaG + alphaSub;',
+      '  if (axU > gridA && axU > axV) col = _AxisUColor.rgb;',
+      '  else if (axV > gridA) col = _AxisVColor.rgb;',
+      '',
+      '  gl_FragColor = vec4(col, cA * _GridColor.a);',
+      '}',
+    ].join('\n'),
+    uniforms: {
+      _CamPos:      { value: new THREE.Vector3() },
+      _BaseCellSize:{ value: 1.0 },
+      _SubdivCount: { value: 10.0 },
+      _MaxLevels:   { value: 3.0 },
+      _FadeDist:    { value: 50.0 },
+      _MajorStr:    { value: 0.5 },
+      _MinorStr:    { value: 0.15 },
+      _XAxisStr:    { value: 1.5 },
+      _ZAxisStr:    { value: 1.5 },
+      _GridColor:   { value: new THREE.Vector4(0, 0, 0, 0.4) },
+      _AxisUColor:  { value: new THREE.Vector4(0.85, 0.15, 0.15, 1) },
+      _AxisVColor:  { value: new THREE.Vector4(0.15, 0.3, 0.85, 1) },
+    },
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    extensions: { derivatives: true },
+  });
+
+  const gridGeo = new THREE.PlaneGeometry(1, 1, 1, 1);
+  gridGeo.rotateX(-Math.PI / 2);
+  const gridMesh = new THREE.Mesh(gridGeo, gridMat);
+  gridMesh.frustumCulled = false;
+  gridMesh.renderOrder = -1;
+  gridMesh.raycast = () => {};
+  scene.add(gridMesh);
+
+  return {
+    mesh: gridMesh,
+    update(cam) {
+      // Keep plane large enough to fill view and centered under camera
+      const camD = Math.max(cam.position.length(), 1);
+      const spread = camD * 40;
+      gridMesh.scale.set(spread, 1, spread);
+      gridMesh.position.set(cam.position.x, 0, cam.position.z);
+      gridMat.uniforms._CamPos.value.copy(cam.position);
+      // Adapt fade distance so grid LOD tracks with camera distance
+      gridMat.uniforms._FadeDist.value = Math.max(50, camD * 4);
+    }
+  };
+})();
+
+// ==================== SCENE BATCHER ====================
+// Combines N individual Mesh objects into a handful of BatchedMesh draws,
+// grouped by material. Transparently intercepts mesh.visible so existing
+// occlusion culling, progressive reveal, and part visibility code works unchanged.
+const sceneBatcher = {
+  enabled: false,
+  batches: [],              // { batchedMesh, meshMap: Map<geoId,uuid>, uuidMap: Map<uuid,geoId> }
+  meshToBatch: new Map(),   // uuid → { batch, geoId }
+  _batchByObj: new Map(),   // BatchedMesh → batch entry (fast hit resolution)
+  _meshByUUID: new Map(),   // uuid → mesh reference (for proxy creation)
+  _proxyScene: new THREE.Group(), // hidden group for outline proxy meshes
+  _activeProxies: [],       // current selection proxy meshes for outline
+  _hoverProxies: [],        // current hover proxy meshes
+
+  MAX_VERTS: 500000,        // max vertices per BatchedMesh buffer
+  MIN_MESHES: 100,          // don't bother batching small models
+
+  // ---- Mesh instancing thresholds (ported from Unity MeshInstancingService) ----
+  VERTEX_COUNT_THRESHOLD: 10,
+  VOLUME_DIFF_THRESHOLD: 0.05,  // 5% volume tolerance
+
+  batchify(rootObject) {
+    const t0 = performance.now();
+    rootObject.updateMatrixWorld(true);
+
+    // Collect meshes
+    const meshes = [];
+    rootObject.traverse(c => {
+      if (c.isMesh && c.geometry && c.geometry.attributes.position) meshes.push(c);
+    });
+    if (meshes.length < this.MIN_MESHES) return null;
+
+    // ---- Phase 0: Detect duplicate geometries (mesh instancing) ----
+    // Groups meshes that share identical/similar geometry so BatchedMesh
+    // uses addGeometry once per unique shape and addInstance per copy.
+    const instGroups = this._findInstances(meshes);
+    // Map each mesh → its prototype geometry (the first in its instance group)
+    const meshProtoMap = new Map(); // mesh → prototype mesh
+    for (const group of instGroups) {
+      const proto = group[0];
+      for (const m of group) meshProtoMap.set(m, proto);
+    }
+    // Meshes not in any group are their own prototype
+    for (const m of meshes) { if (!meshProtoMap.has(m)) meshProtoMap.set(m, m); }
+
+    // Group by material hash + geometry attribute signature
+    const groups = new Map();
+    for (const mesh of meshes) {
+      const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      const proto = meshProtoMap.get(mesh);
+      const attrKeys = Object.keys(proto.geometry.attributes).sort().join(',');
+      const hash = this._matHash(mat) + '|' + attrKeys;
+      if (!groups.has(hash)) groups.set(hash, { material: mat, meshes: [] });
+      groups.get(hash).meshes.push(mesh);
+    }
+
+    // Create BatchedMesh per group with instancing
+    let totalInstanced = 0, uniqueGeos = 0;
+    for (const [, group] of groups) {
+      // Count unique geometries and total instances for buffer sizing
+      const protoGeos = new Map(); // proto mesh uuid → { proto, instances: [mesh,...] }
+      for (const mesh of group.meshes) {
+        const proto = meshProtoMap.get(mesh);
+        const key = proto.uuid;
+        if (!protoGeos.has(key)) protoGeos.set(key, { proto, instances: [] });
+        protoGeos.get(key).instances.push(mesh);
+      }
+
+      // Split into sub-batches by vertex limit
+      let curProtos = [], curInstances = [], cv = 0, ci = 0;
+
+      const flush = () => {
+        if (!curInstances.length) return;
+        const bm = new THREE.BatchedMesh(curInstances.length, cv, ci, group.material.clone());
+        const meshMap = new Map(), uuidMap = new Map();
+
+        // addGeometry once per unique prototype, addInstance per copy
+        const geoIdMap = new Map(); // proto uuid → geoId in this batch
+        for (const { proto, instances } of curProtos) {
+          const geoId = bm.addGeometry(proto.geometry);
+          geoIdMap.set(proto.uuid, geoId);
+          uniqueGeos++;
+          for (const m of instances) {
+            const instId = bm.addInstance !== undefined ? bm.addInstance(geoId) : geoId;
+            bm.setMatrixAt(instId, m.matrixWorld);
+            bm.setVisibleAt(instId, m.visible);
+            meshMap.set(instId, m.uuid);
+            uuidMap.set(m.uuid, instId);
+            if (m !== proto) totalInstanced++;
+          }
+        }
+
+        bm.computeBoundingBox();
+        bm.computeBoundingSphere();
+
+        const entry = { batchedMesh: bm, meshMap, uuidMap };
+        this.batches.push(entry);
+        this._batchByObj.set(bm, entry);
+        scene.add(bm);
+
+        for (const m of curInstances) {
+          this.meshToBatch.set(m.uuid, { batch: entry, instId: uuidMap.get(m.uuid) });
+        }
+        curProtos = []; curInstances = []; cv = 0; ci = 0;
+      };
+
+      for (const [, pg] of protoGeos) {
+        const geo = pg.proto.geometry;
+        const vc = geo.attributes.position.count;
+        const ic = geo.index ? geo.index.count : vc;
+        if (cv + vc > this.MAX_VERTS && curInstances.length > 0) flush();
+        curProtos.push(pg);
+        curInstances.push(...pg.instances);
+        cv += vc; ci += ic;
+      }
+      flush();
+    }
+
+    // Store mesh references for fast proxy creation
+    for (const mesh of meshes) this._meshByUUID.set(mesh.uuid, mesh);
+
+    // Intercept .visible on each original mesh → forward to BatchedMesh
+    for (const mesh of meshes) {
+      const entry = this.meshToBatch.get(mesh.uuid);
+      if (!entry) continue;
+      let _vis = mesh.visible;
+      Object.defineProperty(mesh, 'visible', {
+        get() { return _vis; },
+        set(v) {
+          if (_vis !== v) {
+            _vis = v;
+            entry.batch.batchedMesh.setVisibleAt(entry.instId, v);
+          }
+        },
+        configurable: true
+      });
+    }
+
+    // Hide original hierarchy — Three.js skips traversal of 1M children
+    rootObject.visible = false;
+    rootObject.matrixWorldAutoUpdate = false;
+
+    // Add proxy container (invisible, used only by OutlinePass)
+    this._proxyScene.visible = false;
+    scene.add(this._proxyScene);
+
+    this.enabled = true;
+    const batchTime = performance.now() - t0;
+    const stats = {
+      totalMeshes: meshes.length,
+      batchedDraws: this.batches.length,
+      uniqueGeometries: uniqueGeos,
+      instancedMeshes: totalInstanced,
+      batchTimeMs: batchTime,
+    };
+    console.log(`Scene batcher: ${stats.totalMeshes} meshes → ${stats.batchedDraws} batched draws (${stats.uniqueGeometries} unique geometries, ${stats.instancedMeshes} instanced) in ${batchTime.toFixed(0)}ms`);
+    return stats;
+  },
+
+  _matHash(mat) {
+    if (!mat) return 'null';
+    const c = mat.color ? mat.color.getHex() : 0;
+    return `${c}_${(mat.metalness||0).toFixed(1)}_${(mat.roughness||0).toFixed(1)}_${mat.transparent?1:0}_${(mat.opacity||1).toFixed(1)}_${mat.wireframe?1:0}_${mat.side||0}`;
+  },
+
+  // ---- Mesh instancing: detect duplicate geometries (ported from Unity MeshInstancingService) ----
+  // Returns array of groups, each group = array of meshes sharing the same geometry.
+  // Three phases: (1) reference equality, (2) vertex data hash, (3) similarity bucketing.
+  _findInstances(meshes) {
+    const n = meshes.length;
+    const processed = new Uint8Array(n);
+    const result = [];
+
+    // Precompute per-mesh data
+    const data = meshes.map(m => {
+      const pos = m.geometry.attributes.position;
+      const idx = m.geometry.index;
+      return {
+        vertCount: pos.count,
+        idxCount: idx ? idx.count : pos.count,
+        geoUuid: m.geometry.uuid,
+        posArr: pos.array,
+        idxArr: idx ? idx.array : null,
+      };
+    });
+
+    // Phase 1: Reference equality (same geometry object)
+    const refMap = new Map();
+    for (let i = 0; i < n; i++) {
+      const key = data[i].geoUuid;
+      if (!refMap.has(key)) refMap.set(key, []);
+      refMap.get(key).push(i);
+    }
+    for (const indices of refMap.values()) {
+      if (indices.length < 2) continue;
+      for (const i of indices) processed[i] = 1;
+      result.push(indices.map(i => meshes[i]));
+    }
+
+    // Phase 2: Hash-based grouping (identical vertex+index data)
+    const hashMap = new Map();
+    for (let i = 0; i < n; i++) {
+      if (processed[i]) continue;
+      const d = data[i];
+      let h = 1465279;
+      h = (Math.imul(31, h) + d.vertCount) | 0;
+      h = (Math.imul(31, h) + d.idxCount) | 0;
+      // Sample positions (every 64th vertex for speed)
+      const pa = d.posArr;
+      const step = Math.max(1, Math.floor(pa.length / 192)) * 3;
+      for (let j = 0; j < pa.length; j += step) {
+        const bits = new Float32Array(1);
+        const intView = new Int32Array(bits.buffer);
+        bits[0] = pa[j]; h = (Math.imul(31, h) + intView[0]) | 0;
+      }
+      const key = h;
+      if (!hashMap.has(key)) hashMap.set(key, []);
+      hashMap.get(key).push(i);
+    }
+    for (const indices of hashMap.values()) {
+      if (indices.length < 2) continue;
+      // Verify exact match within hash bucket
+      const groups = [];
+      const used = new Set();
+      for (let a = 0; a < indices.length; a++) {
+        if (used.has(a)) continue;
+        const ia = indices[a], da = data[ia];
+        const group = [ia];
+        used.add(a);
+        for (let b = a + 1; b < indices.length; b++) {
+          if (used.has(b)) continue;
+          const ib = indices[b], db = data[ib];
+          if (da.vertCount !== db.vertCount || da.idxCount !== db.idxCount) continue;
+          // Compare position arrays
+          const pa = da.posArr, pb = db.posArr;
+          let match = true;
+          for (let k = 0; k < pa.length; k++) {
+            if (pa[k] !== pb[k]) { match = false; break; }
+          }
+          if (match) { group.push(ib); used.add(b); }
+        }
+        if (group.length > 1) {
+          for (const i of group) processed[i] = 1;
+          groups.push(group.map(i => meshes[i]));
+        }
+      }
+      result.push(...groups);
+    }
+
+    // Phase 3: Similarity bucketing (vertex count ± threshold, volume comparison)
+    const buckets = new Map();
+    for (let i = 0; i < n; i++) {
+      if (processed[i]) continue;
+      const vc = data[i].vertCount;
+      let key = -1;
+      for (const k of buckets.keys()) {
+        if (Math.abs(k - vc) <= this.VERTEX_COUNT_THRESHOLD) { key = k; break; }
+      }
+      if (key === -1) key = vc;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(i);
+    }
+    for (const bucket of buckets.values()) {
+      for (let a = 0; a < bucket.length; a++) {
+        const ia = bucket[a];
+        if (processed[ia]) continue;
+        processed[ia] = 1;
+        const group = [meshes[ia]];
+        const va = this._geoVolume(data[ia]);
+        for (let b = a + 1; b < bucket.length; b++) {
+          const ib = bucket[b];
+          if (processed[ib]) continue;
+          const vb = this._geoVolume(data[ib]);
+          const maxV = Math.max(va, vb);
+          if (maxV > 0 && Math.abs(va - vb) / maxV > this.VOLUME_DIFF_THRESHOLD) continue;
+          processed[ib] = 1;
+          group.push(meshes[ib]);
+        }
+        if (group.length > 1) result.push(group);
+      }
+    }
+
+    return result;
+  },
+
+  // Signed volume of a triangulated mesh (for similarity comparison)
+  _geoVolume(d) {
+    const pos = d.posArr;
+    const idx = d.idxArr;
+    let vol = 0;
+    if (idx) {
+      for (let i = 0; i < idx.length; i += 3) {
+        const i0 = idx[i]*3, i1 = idx[i+1]*3, i2 = idx[i+2]*3;
+        vol += Math.abs(
+          (pos[i0]*(pos[i1+1]*pos[i2+2] - pos[i1+2]*pos[i2+1]) -
+           pos[i0+1]*(pos[i1]*pos[i2+2] - pos[i1+2]*pos[i2]) +
+           pos[i0+2]*(pos[i1]*pos[i2+1] - pos[i1+1]*pos[i2])) / 6
+        );
+      }
+    } else {
+      for (let i = 0; i < pos.length; i += 9) {
+        vol += Math.abs(
+          (pos[i]*(pos[i+4]*pos[i+8] - pos[i+5]*pos[i+7]) -
+           pos[i+1]*(pos[i+3]*pos[i+8] - pos[i+5]*pos[i+6]) +
+           pos[i+2]*(pos[i+3]*pos[i+7] - pos[i+4]*pos[i+6])) / 6
+        );
+      }
+    }
+    return vol;
+  },
+
+  // Resolve a BatchedMesh raycast hit → mesh UUID
+  resolveHit(hit) {
+    if (!hit.object || !hit.object.isBatchedMesh) return null;
+    const batch = this._batchByObj.get(hit.object);
+    // v0.183+ uses instanceId, older uses batchId
+    const id = hit.instanceId != null ? hit.instanceId : hit.batchId;
+    if (!batch || id == null) return null;
+    return batch.meshMap.get(id) || null;
+  },
+
+  // Return all BatchedMesh objects as raycast targets
+  getRaycastTargets() {
+    return this.batches.map(b => b.batchedMesh);
+  },
+
+  // Create proxy Mesh objects for OutlinePass (for selected/hovered parts)
+  // Proxies are added to _proxyScene so OutlinePass can find them in the scene graph.
+  createProxies(meshUUIDs) {
+    const proxies = [];
+    for (const uuid of meshUUIDs) {
+      const entry = this.meshToBatch.get(uuid);
+      const origMesh = this._meshByUUID.get(uuid);
+      if (!entry || !origMesh) continue;
+
+      const proxy = new THREE.Mesh(origMesh.geometry, entry.batch.batchedMesh.material);
+      proxy.matrixAutoUpdate = false;
+      // Apply the full world transform directly (proxy lives in scene-root _proxyScene)
+      proxy.matrix.copy(origMesh.matrixWorld);
+      proxy.matrixWorld.copy(origMesh.matrixWorld);
+      this._proxyScene.add(proxy);
+      proxies.push(proxy);
+    }
+    // Make proxy container visible so OutlinePass can traverse it
+    if (proxies.length > 0) this._proxyScene.visible = true;
+    return proxies;
+  },
+
+  // Clean up selection proxies
+  _clearProxies() {
+    for (const p of this._activeProxies) this._proxyScene.remove(p);
+    this._activeProxies = [];
+    if (this._hoverProxies.length === 0) this._proxyScene.visible = false;
+  },
+
+  // Clean up hover proxies
+  _clearHoverProxies() {
+    for (const p of this._hoverProxies) this._proxyScene.remove(p);
+    this._hoverProxies = [];
+    if (this._activeProxies.length === 0) this._proxyScene.visible = false;
+  },
+
+  // Sync a mesh's current world matrix to its BatchedMesh instance
+  syncTransform(mesh) {
+    const entry = this.meshToBatch.get(mesh.uuid);
+    if (!entry) return;
+    mesh.updateMatrixWorld(true);
+    entry.batch.batchedMesh.setMatrixAt(entry.instId, mesh.matrixWorld);
+  },
+
+  // Sync all meshes belonging to a set of part IDs
+  syncSelectedTransforms(partIds) {
+    for (const pid of partIds) {
+      const meshes = state.partMeshMap.get(pid);
+      if (!meshes) continue;
+      for (const m of meshes) this.syncTransform(m);
+    }
+  }
+};
+
+// ==================== IMPORT REPORT TOAST ====================
+function showImportReport({ totalMeshes = 0, batchedDraws = 0, uniqueGeometries = 0, instancedMeshes = 0, batchTimeMs = 0, loadTimeMs = 0, fileName = '' } = {}) {
+  // Remove any existing report
+  const prev = document.querySelector('.import-report');
+  if (prev) prev.remove();
+
+  const fmtNum = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+  const fmtTime = ms => ms >= 1000 ? (ms / 1000).toFixed(1) + 's' : Math.round(ms) + 'ms';
+  const reduction = totalMeshes > 0 ? Math.round((1 - batchedDraws / totalMeshes) * 100) : 0;
+
+  const el = document.createElement('div');
+  el.className = 'import-report';
+  el.innerHTML = `
+    <div class="import-report-header">
+      <h3>
+        <span class="report-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></span>
+        Import Complete${fileName ? ' — ' + fileName : ''}
+      </h3>
+      <button class="import-report-close" title="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="import-report-body">
+      <div class="import-report-grid">
+        <div class="import-report-stat">
+          <div class="stat-value">${fmtNum(totalMeshes)}</div>
+          <div class="stat-label">Total Parts</div>
+        </div>
+        <div class="import-report-stat">
+          <div class="stat-value">${fmtNum(uniqueGeometries)}</div>
+          <div class="stat-label">Unique Geometries</div>
+        </div>
+        <div class="import-report-stat">
+          <div class="stat-value">${fmtNum(instancedMeshes)}</div>
+          <div class="stat-label">Instanced</div>
+        </div>
+        <div class="import-report-stat">
+          <div class="stat-value">${batchedDraws}</div>
+          <div class="stat-label">Draw Calls</div>
+        </div>
+        <div class="import-report-stat stat-wide" style="display:flex;align-items:center;gap:12px;">
+          <div>
+            <div class="stat-value" style="color:#11E874;">${reduction}%</div>
+            <div class="stat-label">Draw Call Reduction</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div class="stat-value" style="font-size:14px;">${fmtTime(loadTimeMs)}</div>
+            <div class="stat-label">Total Time</div>
+          </div>
+        </div>
+      </div>
+      <div class="import-report-bar"><div class="import-report-bar-fill"></div></div>
+    </div>
+  `;
+
+  document.body.appendChild(el);
+  el.querySelector('.import-report-close').onclick = () => dismiss();
+
+  function dismiss() {
+    el.classList.add('report-exit');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }
+  // Auto-dismiss after 6 seconds
+  setTimeout(dismiss, 6000);
+}
+
+// ==================== PROGRESSIVE REVEAL ====================
+// After parsing, reveals meshes in batches sorted bottom-to-top for a build-up effect.
+// Works with any format (FBX, GLB, OBJ, STL, etc.)
+function progressiveReveal(object, { batchSize = 30, onDone = null } = {}) {
+  // Collect all meshes and compute their world-space Y centers
+  const meshes = [];
+  const box = new THREE.Box3(), ctr = new THREE.Vector3();
+  object.traverse(c => {
+    if (c.isMesh) {
+      c.visible = false;
+      box.setFromObject(c); box.getCenter(ctr);
+      meshes.push({ mesh: c, y: ctr.y });
+    }
+  });
+  // Sort bottom-to-top so the model "builds up"
+  meshes.sort((a, b) => a.y - b.y);
+
+  let idx = 0;
+  function revealBatch() {
+    const end = Math.min(idx + batchSize, meshes.length);
+    for (let i = idx; i < end; i++) {
+      const m = meshes[i].mesh;
+      // Respect user-hidden parts
+      const partId = state.meshPartMap.get(m.uuid);
+      if (partId && state.hiddenParts.has(partId)) continue;
+      m.visible = true;
+    }
+    idx = end;
+    if (idx < meshes.length) {
+      requestAnimationFrame(revealBatch);
+    } else {
+      // All revealed — rebuild occlusion culling so it picks up the final state
+      if (typeof occlusionCulling !== 'undefined' && occlusionCulling.refresh) occlusionCulling.refresh();
+      if (onDone) onDone();
+    }
+  }
+  if (meshes.length > 0) requestAnimationFrame(revealBatch);
+  else if (onDone) onDone();
+}
 
 // ==================== LOAD FBX ====================
 const loader = new FBXLoader();
@@ -1953,12 +3334,13 @@ let fbxModel = null;
 
 loader.load('./Generator.fbx', (object) => {
   fbxModel = object;
+  // Keep real-world scale (1 unit = 1 meter). Only center the model at origin.
   const box = new THREE.Box3().setFromObject(object);
   const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
-  const scale = 200 / Math.max(size.x, size.y, size.z);
-  object.scale.setScalar(scale);
-  object.position.sub(center.multiplyScalar(scale));
+  object.position.sub(center);
+
+  // Hide all meshes before adding — they'll be revealed progressively
+  object.traverse(c => { if (c.isMesh) c.visible = false; });
   scene.add(object);
 
   const nb = new THREE.Box3().setFromObject(object);
@@ -2045,7 +3427,16 @@ loader.load('./Generator.fbx', (object) => {
   ];
   createHotspotMarkers();
 
+  // Register occlusion culling (will be refreshed after progressive reveal completes)
+  occlusionCulling.registerModel(object);
+
+  // Batch meshes into BatchedMesh draws (big perf win for large models)
+  let _batchStats = null;
+  try { _batchStats = sceneBatcher.batchify(object); } catch(e) { console.warn('Scene batcher failed, falling back to individual meshes:', e); }
+
+  // Dismiss loading overlay and start progressive reveal
   document.getElementById('loadingOverlay').style.display = 'none';
+  progressiveReveal(object);
 }, (progress) => {
   if (progress.total) document.getElementById('loadingText').textContent = `Loading 3D model... ${Math.round(progress.loaded/progress.total*100)}%`;
 }, (error) => {
@@ -2115,6 +3506,12 @@ function renderPartsList() {
     const xb = document.createElement('button'); xb.className='part-action-btn';
     xb.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
     xb.onclick=(e)=>{e.stopPropagation();xrayPart(part.id);}; item.appendChild(xb);
+
+    if (state.mode==='editor') {
+      const db = document.createElement('button'); db.className='part-action-btn part-delete-btn'; db.title='Delete';
+      db.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+      db.onclick=(e)=>{e.stopPropagation();deleteParts([part.id]);}; item.appendChild(db);
+    }
 
     container.appendChild(item);
     if(hasKids&&part._expanded) for(const c of part.children) render(c,depth+1);
@@ -2196,6 +3593,7 @@ function togglePartInSelection(partId) {
 
 function deselectAll() {
   state.selectedParts.clear();
+  if (sceneBatcher.enabled) sceneBatcher._clearProxies();
   outlinePass.selectedObjects = [];
   transformControls.detach();
   document.getElementById('selectionInfo').classList.remove('visible');
@@ -2209,7 +3607,15 @@ function updateSelectionOutline() {
     const meshes = state.partMeshMap.get(pid);
     if (meshes) allMeshes.push(...meshes);
   }
-  outlinePass.selectedObjects = allMeshes;
+  if (sceneBatcher.enabled) {
+    sceneBatcher._clearProxies();
+    const uuids = allMeshes.map(m => m.uuid);
+    const proxies = sceneBatcher.createProxies(uuids);
+    sceneBatcher._activeProxies = proxies;
+    outlinePass.selectedObjects = proxies;
+  } else {
+    outlinePass.selectedObjects = allMeshes;
+  }
 
   if (state.selectedParts.size > 0) {
     const names = [];
@@ -2248,10 +3654,18 @@ function attachGizmoToSelection() {
 
 transformControls.addEventListener('objectChange', () => {
   const anchor = transformControls.object;
-  if (!anchor || !gizmoLinkedMeshes.length) return;
-  const delta = new THREE.Vector3().subVectors(anchor.position, gizmoLastPos);
-  gizmoLinkedMeshes.forEach(m => m.position.add(delta));
-  gizmoLastPos.copy(anchor.position);
+  if (!anchor) return;
+  if (gizmoLinkedMeshes.length) {
+    const delta = new THREE.Vector3().subVectors(anchor.position, gizmoLastPos);
+    gizmoLinkedMeshes.forEach(m => m.position.add(delta));
+    gizmoLastPos.copy(anchor.position);
+  }
+  // Sync moved meshes to BatchedMesh instances
+  if (sceneBatcher.enabled) {
+    sceneBatcher.syncSelectedTransforms(state.selectedParts);
+    // Also update outline proxies to follow the moved parts
+    updateSelectionOutline();
+  }
 });
 
 function findPartById(parts, id) {
@@ -2277,11 +3691,120 @@ function xrayPart(id) {
   meshes.forEach(mesh => {
     if(mesh.material._isXray){ const o=state.originalMaterials.get(mesh.uuid); if(o)mesh.material=Array.isArray(o)?o.map(m=>m.clone()):o.clone(); }
     else { const x=new THREE.MeshStandardMaterial({color:0x2f80ed,transparent:true,opacity:0.25,wireframe:true,side:THREE.DoubleSide}); x._isXray=true; mesh.material=x; }
+    // Update occlusion culling transparency cache for this mesh
+    const idx = occlusionCulling._meshUuidToIdx.get(mesh.uuid);
+    if (idx !== undefined) occlusionCulling._isTransp[idx] = occlusionCulling.isTransparent(mesh) ? 1 : 0;
   });
 }
 function expandToPartId(id){ function ex(ps){for(const p of ps){if(p.id===id)return true;if(p.children&&ex(p.children)){p._expanded=true;return true;}}return false;} ex(state.parts); renderPartsList(); }
 
+// ==================== DELETE PARTS ====================
+function collectPartIds(part) {
+  const ids = [part.id];
+  if (part.children) for (const c of part.children) ids.push(...collectPartIds(c));
+  return ids;
+}
+
+function deleteParts(partIds) {
+  if (state.mode !== 'editor' || !partIds.length) return;
+
+  // Collect all part IDs including children
+  const allIds = new Set();
+  for (const id of partIds) {
+    const part = findPartById(state.parts, id);
+    if (part) collectPartIds(part).forEach(cid => allIds.add(cid));
+  }
+
+  // Collect all meshes from those parts
+  const meshesToRemove = [];
+  for (const id of allIds) {
+    const meshes = state.partMeshMap.get(id);
+    if (meshes) meshesToRemove.push(...meshes);
+  }
+
+  // Hide from BatchedMesh (set visibility to false for each instance)
+  for (const mesh of meshesToRemove) {
+    mesh.visible = false; // triggers BatchedMesh setVisibleAt via interceptor
+    // Clean up batcher maps
+    if (sceneBatcher.enabled) {
+      const entry = sceneBatcher.meshToBatch.get(mesh.uuid);
+      if (entry) sceneBatcher.meshToBatch.delete(mesh.uuid);
+      sceneBatcher._meshByUUID.delete(mesh.uuid);
+    }
+  }
+
+  // Remove meshes from scene graph
+  for (const mesh of meshesToRemove) {
+    if (mesh.geometry) mesh.geometry.dispose();
+    if (mesh.material) {
+      if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
+      else mesh.material.dispose();
+    }
+    if (mesh.parent) mesh.parent.remove(mesh);
+  }
+
+  // Clean up state maps
+  for (const id of allIds) {
+    state.partMeshMap.delete(id);
+    state.hiddenParts.delete(id);
+    state.selectedParts.delete(id);
+  }
+  for (const mesh of meshesToRemove) {
+    state.meshPartMap.delete(mesh.uuid);
+    state.originalMaterials.delete(mesh.uuid);
+  }
+
+  // Remove from importedModels if the deleted part's root object is there
+  for (const id of allIds) {
+    const part = findPartById(state.parts, id);
+    if (part && part.object3D) {
+      const idx = state.importedModels.indexOf(part.object3D);
+      if (idx !== -1) state.importedModels.splice(idx, 1);
+    }
+  }
+
+  // Remove from parts tree
+  function removeFromTree(parts, ids) {
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (ids.has(parts[i].id)) { parts.splice(i, 1); continue; }
+      if (parts[i].children) removeFromTree(parts[i].children, ids);
+    }
+  }
+  removeFromTree(state.parts, allIds);
+
+  // Refresh occlusion culling
+  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.refresh) {
+    occlusionCulling.refresh();
+  }
+
+  // Update UI
+  updateSelectionOutline();
+  attachGizmoToSelection();
+  renderPartsList();
+}
+
+function deleteSelectedParts() {
+  if (state.mode !== 'editor' || state.selectedParts.size === 0) return;
+  deleteParts([...state.selectedParts]);
+}
+
 // ==================== RAYCASTER ====================
+function getSelectableMeshes() {
+  if (sceneBatcher.enabled) return sceneBatcher.getRaycastTargets();
+  const meshes = [];
+  const roots = [];
+  if (fbxModel) roots.push(fbxModel);
+  for (const m of state.importedModels) roots.push(m);
+  for (const root of roots) root.traverse(c => { if (c.isMesh && c.visible) meshes.push(c); });
+  return meshes;
+}
+// Resolve a raycast hit to a mesh UUID (handles both individual meshes and BatchedMesh)
+function resolveHitUUID(hit) {
+  if (sceneBatcher.enabled && hit.object.isBatchedMesh) {
+    return sceneBatcher.resolveHit(hit);
+  }
+  return hit.object.uuid;
+}
 const raycaster=new THREE.Raycaster(), mouse=new THREE.Vector2(), hoverMouse=new THREE.Vector2();
 let ctrlDown = false, altDown = false;
 
@@ -2294,24 +3817,31 @@ document.addEventListener('keydown', e => {
     else if(state.hsFocusedParent !== null) drillBack();
     else if(state.managerOpen) closeHotspotManager();
   }
-  // Undo / Redo
+  // Undo / Redo (restores all meshes in the snapshot, not just anchor)
   if ((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey) {
     e.preventDefault();
     if (undoStack.length) {
       const entry = undoStack.pop();
-      const obj = entry.object;
-      redoStack.push({ object: obj, pos: obj.position.clone(), rot: obj.rotation.clone(), scl: obj.scale.clone() });
-      obj.position.copy(entry.pos); obj.rotation.copy(entry.rot); obj.scale.copy(entry.scl);
+      // Snapshot current state for redo
+      const redo = { meshes: entry.meshes.map(s => ({ object: s.object, pos: s.object.position.clone(), rot: s.object.rotation.clone(), scl: s.object.scale.clone() })) };
+      redoStack.push(redo);
+      _restoreSnaps(entry.meshes);
     }
   }
   if ((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.key==='z' && e.shiftKey))) {
     e.preventDefault();
     if (redoStack.length) {
       const entry = redoStack.pop();
-      const obj = entry.object;
-      undoStack.push({ object: obj, pos: obj.position.clone(), rot: obj.rotation.clone(), scl: obj.scale.clone() });
-      obj.position.copy(entry.pos); obj.rotation.copy(entry.rot); obj.scale.copy(entry.scl);
+      const undo = { meshes: entry.meshes.map(s => ({ object: s.object, pos: s.object.position.clone(), rot: s.object.rotation.clone(), scl: s.object.scale.clone() })) };
+      undoStack.push(undo);
+      _restoreSnaps(entry.meshes);
     }
+  }
+  // Delete selected parts
+  if ((e.key==='Delete'||e.key==='Backspace') && state.mode==='editor' && state.selectedParts.size>0) {
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+    e.preventDefault();
+    deleteSelectedParts();
   }
   if ((e.key==='f'||e.key==='F') && !e.shiftKey) {
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
@@ -2339,25 +3869,39 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   ctrlDown = e.ctrlKey||e.metaKey; altDown = e.altKey;
   // Clear hover outline when Ctrl released
-  if (!ctrlDown) { hoverOutlinePass.selectedObjects = []; state.ctrlHoveredPart = null; }
+  if (!ctrlDown) { if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies(); hoverOutlinePass.selectedObjects = []; state.ctrlHoveredPart = null; }
 });
 
-renderer.domElement.addEventListener('pointerdown', e => { if(e.button!==0)return; mouse._sx=e.clientX; mouse._sy=e.clientY; mouse._sTime=Date.now(); });
+renderer.domElement.addEventListener('pointerdown', e => {
+  if(e.button!==0)return;
+  // Slicer face drag start
+  if (slicer.active && !slicer._dragging) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const mx = ((e.clientX-rect.left)/rect.width)*2-1;
+    const my = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(new THREE.Vector2(mx, my), camera);
+    const hit = slicer.raycast(raycaster);
+    if (hit) { slicer.startDrag(hit.object.userData.slicerFace, hit.point); return; }
+  }
+  mouse._sx=e.clientX; mouse._sy=e.clientY; mouse._sTime=Date.now();
+});
 renderer.domElement.addEventListener('pointerup', e => {
   if(e.button!==0)return;
+  if (slicer._dragging) { slicer.endDrag(); return; }
   if(Math.abs(e.clientX-mouse._sx)>5||Math.abs(e.clientY-mouse._sy)>5)return;
 
   const rect = renderer.domElement.getBoundingClientRect();
   mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
   mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
   raycaster.setFromCamera(mouse, camera);
-  const meshes=[]; if(fbxModel) fbxModel.traverse(c=>{if(c.isMesh&&c.visible)meshes.push(c);});
+  const meshes = getSelectableMeshes();
   const hits = raycaster.intersectObjects(meshes, false);
 
   // Only Ctrl+click selects parts (editor mode)
   if (state.mode==='editor' && (e.ctrlKey || e.metaKey)) {
     if (hits.length) {
-      const pid = state.meshPartMap.get(hits[0].object.uuid);
+      const hitUUID = resolveHitUUID(hits[0]);
+      const pid = hitUUID && state.meshPartMap.get(hitUUID);
       if (pid) { togglePartInSelection(pid); expandToPartId(pid); }
     }
   } else if (!e.ctrlKey && !e.metaKey) {
@@ -2372,7 +3916,7 @@ renderer.domElement.addEventListener('dblclick', e => {
   const mx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   const my = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(new THREE.Vector2(mx, my), camera);
-  const meshes = []; if(fbxModel) fbxModel.traverse(c => { if(c.isMesh && c.visible) meshes.push(c); });
+  const meshes = getSelectableMeshes();
   const hits = raycaster.intersectObjects(meshes, false);
   if (hits.length) {
     const point = hits[0].point;
@@ -2389,28 +3933,53 @@ renderer.domElement.addEventListener('pointermove', e => {
   hoverMouse.x=((e.clientX-rect.left)/rect.width)*2-1;
   hoverMouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
   raycaster.setFromCamera(hoverMouse, camera);
-  const meshes=[]; if(fbxModel) fbxModel.traverse(c=>{if(c.isMesh&&c.visible)meshes.push(c);});
+
+  // Slicer drag in progress
+  if (slicer._dragging) {
+    slicer.updateDrag(raycaster);
+    renderer.domElement.style.cursor = 'grabbing';
+    return;
+  }
+
+  // Slicer face hover detection
+  if (slicer.active) {
+    const hit = slicer.raycast(raycaster);
+    if (hit) {
+      slicer.setHover(hit.object.userData.slicerFace);
+      renderer.domElement.style.cursor = 'grab';
+    } else {
+      slicer.setHover(-1);
+    }
+  }
+
+  const meshes = getSelectableMeshes();
   const hits = raycaster.intersectObjects(meshes, false);
 
   if (hits.length) {
-    const pid = state.meshPartMap.get(hits[0].object.uuid);
+    const hitUUID = resolveHitUUID(hits[0]);
+    const pid = hitUUID && state.meshPartMap.get(hitUUID);
     const part = pid && findPartById(state.parts, pid);
 
     // Ctrl hover: show outline preview
     if ((e.ctrlKey||e.metaKey) && pid) {
       const hoverMeshes = state.partMeshMap.get(pid) || [];
-      // Don't outline already-selected parts
-      const filtered = hoverMeshes.filter(m => {
-        const mPid = state.meshPartMap.get(m.uuid);
-        return !state.selectedParts.has(mPid);
-      });
+      let filtered;
+      if (sceneBatcher.enabled) {
+        sceneBatcher._clearHoverProxies();
+        const uuids = hoverMeshes.filter(m => !state.selectedParts.has(state.meshPartMap.get(m.uuid))).map(m => m.uuid);
+        filtered = sceneBatcher.createProxies(uuids);
+        sceneBatcher._hoverProxies = filtered;
+      } else {
+        filtered = hoverMeshes.filter(m => !state.selectedParts.has(state.meshPartMap.get(m.uuid)));
+      }
       hoverOutlinePass.selectedObjects = filtered;
       state.ctrlHoveredPart = pid;
       renderer.domElement.style.cursor = 'copy';
     } else {
+      if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies();
       hoverOutlinePass.selectedObjects = [];
       state.ctrlHoveredPart = null;
-      renderer.domElement.style.cursor = 'pointer';
+      if (!slicer.active || slicer._hoveredFace < 0) renderer.domElement.style.cursor = 'pointer';
     }
 
     // Tooltip
@@ -2426,7 +3995,7 @@ renderer.domElement.addEventListener('pointermove', e => {
   hoverOutlinePass.selectedObjects = [];
   state.ctrlHoveredPart = null;
   tooltip.style.display = 'none';
-  renderer.domElement.style.cursor = 'grab';
+  if (!slicer.active || slicer._hoveredFace < 0) renderer.domElement.style.cursor = 'grab';
 });
 
 // ==================== UI EVENTS ====================
@@ -2454,12 +4023,17 @@ document.getElementById('backToKBBtn').onclick=()=>{
   }
 };
 document.getElementById('closePanelBtn').onclick=()=>{updateUI();};
+var panelTabMap = {settings:'tabSettings',parts:'tabParts',objectTarget:'tabObjectTarget',materials:'tabMaterials',toolEditor:'tabToolEditor'};
+function switchPanelTab(tabId){
+  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
+  var activeBtn=document.querySelector('.panel-tab[data-tab="'+tabId+'"]');
+  if(activeBtn) activeBtn.classList.add('active');
+  Object.values(panelTabMap).forEach(id=>{document.getElementById(id).classList.add('hidden');});
+  var target=panelTabMap[tabId];
+  if(target) document.getElementById(target).classList.remove('hidden');
+}
 document.querySelectorAll('.panel-tab[data-tab]').forEach(tab=>{
-  tab.onclick=()=>{
-    document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active');
-    document.getElementById('tabSettings').classList.toggle('hidden',tab.dataset.tab!=='settings');
-    document.getElementById('tabPlaceholder').classList.toggle('hidden',tab.dataset.tab==='settings');
-  };
+  tab.onclick=()=>switchPanelTab(tab.dataset.tab);
 });
 document.querySelectorAll('.toolbar-btn[data-menu]').forEach(btn=>{
   btn.onclick=(e)=>{
@@ -2488,9 +4062,7 @@ document.querySelectorAll('.toolbar-btn[data-menu]').forEach(btn=>{
       if(!wasActive) btn.classList.add('active');
       const tabMap = {subsystems:'settings', procedures:'settings', operations:'settings'};
       const tabId = tabMap[btn.dataset.menu]||'settings';
-      document.querySelectorAll('.panel-tab').forEach(t=>{t.classList.toggle('active',t.dataset.tab===tabId);});
-      document.getElementById('tabSettings').classList.toggle('hidden',tabId!=='settings');
-      document.getElementById('tabPlaceholder').classList.toggle('hidden',tabId==='settings');
+      switchPanelTab(tabId);
     }
   };
 });
@@ -2498,6 +4070,7 @@ document.querySelectorAll('.toolbar-btn[data-toggle]').forEach(btn=>{
   btn.onclick=()=>{
     btn.classList.toggle('active');
     if(btn.dataset.toggle==='xray'){state.xrayMode=!state.xrayMode;applyGlobalXray();}
+    if(btn.dataset.toggle==='slicer'){ toggleSlicer(btn.classList.contains('active')); }
   };
 });
 function applyGlobalXray(){
@@ -2506,7 +4079,348 @@ function applyGlobalXray(){
     if(state.xrayMode){c.material=new THREE.MeshStandardMaterial({color:0x4A90E2,transparent:true,opacity:0.3,wireframe:true,side:THREE.DoubleSide});}
     else{const o=state.originalMaterials.get(c.uuid);if(o)c.material=Array.isArray(o)?o.map(m=>m.clone()):o.clone();}
   }});
+  // Re-apply slicer clipping planes if active
+  if (slicer.active) slicer._applyClipping(true);
+  // Update occlusion culling transparency cache after material changes
+  if (occlusionCulling._built) {
+    for (let i = 0; i < occlusionCulling._meshCount; i++) {
+      occlusionCulling._isTransp[i] = occlusionCulling.isTransparent(occlusionCulling._meshes[i]) ? 1 : 0;
+    }
+    occlusionCulling.restoreAll();
+  }
 }
+// ==================== SLICER (Interactive Cube) ====================
+const slicer = {
+  active: false,
+  group: null,
+  faces: [],
+  faceData: [],
+  wireframe: null,
+  clipPlanes: [],
+  bounds: null,
+  box: null,
+
+  // Drag state
+  _dragging: false,
+  _dragFaceIdx: -1,
+  _dragPlane: null,
+  _dragStart: null,
+  _dragStartVal: 0,
+  _hoveredFace: -1,
+
+  // Axis colors: X=red, Y=green, Z=blue
+  _axisColors: [
+    new THREE.Color(0xE74C3C),
+    new THREE.Color(0x2ECC71),
+    new THREE.Color(0x3498DB),
+  ],
+
+  // Face vertex shader
+  _vertSrc: `
+    varying vec3 vViewDir;
+    varying vec3 vNormal;
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+      vViewDir = normalize(-mvPos.xyz);
+      vNormal = normalize(normalMatrix * normal);
+      gl_Position = projectionMatrix * mvPos;
+    }
+  `,
+
+  // Face fragment shader
+  _fragSrc: `
+    uniform vec3 uColor;
+    uniform float uHovered;
+    uniform float uDragging;
+    varying vec3 vViewDir;
+    varying vec3 vNormal;
+    varying vec2 vUv;
+    void main() {
+      float fresnel = 1.0 - abs(dot(vViewDir, vNormal));
+      fresnel = pow(fresnel, 1.5);
+      float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+      float border = 1.0 - smoothstep(0.0, 0.06, edgeDist);
+      float hover = uHovered;
+      float drag = uDragging;
+      float active = max(hover, drag);
+      float alpha = mix(0.0, 0.25, hover) + mix(0.0, 0.35, drag);
+      alpha += fresnel * mix(0.04, 0.2, active);
+      alpha += border * mix(0.18, 0.6, active);
+      vec3 col = mix(uColor, vec3(1.0), fresnel * 0.3 + hover * 0.2 + drag * 0.3);
+      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
+    }
+  `,
+
+  computeBounds() {
+    if (!fbxModel) return;
+    const box = new THREE.Box3().setFromObject(fbxModel);
+    state.importedModels.forEach(m => box.expandByObject(m));
+    const pad = box.getSize(new THREE.Vector3()).multiplyScalar(0.02);
+    this.bounds = { min: box.min.clone().sub(pad), max: box.max.clone().add(pad) };
+  },
+
+  enable() {
+    this.active = true;
+    this.computeBounds();
+    if (!this.bounds) return;
+    this.box = {
+      xMin: this.bounds.min.x, xMax: this.bounds.max.x,
+      yMin: this.bounds.min.y, yMax: this.bounds.max.y,
+      zMin: this.bounds.min.z, zMax: this.bounds.max.z,
+    };
+    this.clipPlanes = [
+      new THREE.Plane(new THREE.Vector3(-1,0,0), this.box.xMax),
+      new THREE.Plane(new THREE.Vector3( 1,0,0), -this.box.xMin),
+      new THREE.Plane(new THREE.Vector3(0,-1,0), this.box.yMax),
+      new THREE.Plane(new THREE.Vector3(0, 1,0), -this.box.yMin),
+      new THREE.Plane(new THREE.Vector3(0,0,-1), this.box.zMax),
+      new THREE.Plane(new THREE.Vector3(0,0, 1), -this.box.zMin),
+    ];
+    renderer.localClippingEnabled = true;
+    this._applyClipping(true);
+    this._buildCube();
+    document.getElementById('slicerPanel').classList.add('visible');
+  },
+
+  disable() {
+    this.active = false;
+    renderer.localClippingEnabled = false;
+    this._applyClipping(false);
+    this._destroyCube();
+    document.getElementById('slicerPanel').classList.remove('visible');
+    const btn = document.querySelector('.toolbar-btn[data-toggle="slicer"]');
+    if (btn) btn.classList.remove('active');
+  },
+
+  _applyClipping(enable) {
+    const planes = enable ? this.clipPlanes : [];
+    const traverse = (root) => {
+      root.traverse(c => {
+        if (!c.isMesh) return;
+        const mats = Array.isArray(c.material) ? c.material : [c.material];
+        mats.forEach(m => {
+          if (!m) return;
+          m.clippingPlanes = planes;
+          m.clipShadows = enable;
+          m.side = enable ? THREE.DoubleSide : THREE.FrontSide;
+          m.needsUpdate = true;
+        });
+      });
+    };
+    if (fbxModel) traverse(fbxModel);
+    state.importedModels.forEach(m => traverse(m));
+  },
+
+  _buildCube() {
+    this._destroyCube();
+    this.group = new THREE.Group();
+    this.group.name = 'slicerCube';
+    this.group.renderOrder = 999;
+
+    const faceGeo = new THREE.PlaneGeometry(1, 1);
+    // [axis, sign, euler rotation]
+    const defs = [
+      { axis: 'x', sign: +1, rot: [0, Math.PI/2, 0] },
+      { axis: 'x', sign: -1, rot: [0, -Math.PI/2, 0] },
+      { axis: 'y', sign: +1, rot: [-Math.PI/2, 0, 0] },
+      { axis: 'y', sign: -1, rot: [Math.PI/2, 0, 0] },
+      { axis: 'z', sign: +1, rot: [0, 0, 0] },
+      { axis: 'z', sign: -1, rot: [0, Math.PI, 0] },
+    ];
+
+    this.faces = [];
+    this.faceData = [];
+
+    for (let i = 0; i < 6; i++) {
+      const def = defs[i];
+      const colorIdx = def.axis === 'x' ? 0 : def.axis === 'y' ? 1 : 2;
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uColor: { value: this._axisColors[colorIdx].clone() },
+          uHovered: { value: 0.0 },
+          uDragging: { value: 0.0 },
+        },
+        vertexShader: this._vertSrc,
+        fragmentShader: this._fragSrc,
+        transparent: true,
+        depthWrite: false,
+        depthTest: true,
+        side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(faceGeo, mat);
+      mesh.rotation.set(def.rot[0], def.rot[1], def.rot[2]);
+      mesh.renderOrder = 999;
+      mesh.userData.slicerFace = i;
+      this.faces.push(mesh);
+      this.faceData.push(def);
+      this.group.add(mesh);
+    }
+
+    // Wireframe: 12 edges × 2 verts
+    const wireGeo = new THREE.BufferGeometry();
+    wireGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(72), 3));
+    this.wireframe = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({
+      color: 0xc0d0ee, opacity: 0.8, transparent: true, depthTest: true, depthWrite: false,
+    }));
+    this.wireframe.renderOrder = 999;
+    this.group.add(this.wireframe);
+
+    scene.add(this.group);
+    this._updateVisual();
+  },
+
+  _destroyCube() {
+    if (!this.group) return;
+    scene.remove(this.group);
+    this.faces.forEach(f => { f.geometry.dispose(); f.material.dispose(); });
+    if (this.wireframe) { this.wireframe.geometry.dispose(); this.wireframe.material.dispose(); }
+    this.group = null;
+    this.faces = [];
+    this.wireframe = null;
+  },
+
+  _updateVisual() {
+    if (!this.group || !this.box) return;
+    const b = this.box;
+    const cx = (b.xMin+b.xMax)/2, cy = (b.yMin+b.yMax)/2, cz = (b.zMin+b.zMax)/2;
+    const sx = b.xMax-b.xMin, sy = b.yMax-b.yMin, sz = b.zMax-b.zMin;
+
+    // Position & scale each face
+    this.faces[0].position.set(b.xMax, cy, cz); this.faces[0].scale.set(sz, sy, 1);
+    this.faces[1].position.set(b.xMin, cy, cz); this.faces[1].scale.set(sz, sy, 1);
+    this.faces[2].position.set(cx, b.yMax, cz); this.faces[2].scale.set(sx, sz, 1);
+    this.faces[3].position.set(cx, b.yMin, cz); this.faces[3].scale.set(sx, sz, 1);
+    this.faces[4].position.set(cx, cy, b.zMax); this.faces[4].scale.set(sx, sy, 1);
+    this.faces[5].position.set(cx, cy, b.zMin); this.faces[5].scale.set(sx, sy, 1);
+
+    // Wireframe: 8 corners, 12 edges
+    const c = [
+      [b.xMin,b.yMin,b.zMin],[b.xMax,b.yMin,b.zMin],
+      [b.xMax,b.yMax,b.zMin],[b.xMin,b.yMax,b.zMin],
+      [b.xMin,b.yMin,b.zMax],[b.xMax,b.yMin,b.zMax],
+      [b.xMax,b.yMax,b.zMax],[b.xMin,b.yMax,b.zMax],
+    ];
+    const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    const p = this.wireframe.geometry.attributes.position.array;
+    let k = 0;
+    for (const [a, d] of edges) {
+      p[k++]=c[a][0]; p[k++]=c[a][1]; p[k++]=c[a][2];
+      p[k++]=c[d][0]; p[k++]=c[d][1]; p[k++]=c[d][2];
+    }
+    this.wireframe.geometry.attributes.position.needsUpdate = true;
+
+    // Update clipping planes
+    this.clipPlanes[0].constant = b.xMax;
+    this.clipPlanes[1].constant = -b.xMin;
+    this.clipPlanes[2].constant = b.yMax;
+    this.clipPlanes[3].constant = -b.yMin;
+    this.clipPlanes[4].constant = b.zMax;
+    this.clipPlanes[5].constant = -b.zMin;
+  },
+
+  _facePos(idx) {
+    const d = this.faceData[idx];
+    return this.box[d.axis + (d.sign > 0 ? 'Max' : 'Min')];
+  },
+
+  _setFacePos(idx, val) {
+    const d = this.faceData[idx];
+    const key = d.axis + (d.sign > 0 ? 'Max' : 'Min');
+    const bSize = this.bounds.max[d.axis] - this.bounds.min[d.axis];
+    const minGap = bSize * 0.005;
+    if (d.sign > 0) {
+      const lo = this.box[d.axis + 'Min'] + minGap;
+      const hi = this.bounds.max[d.axis];
+      this.box[key] = Math.max(lo, Math.min(hi, val));
+    } else {
+      const lo = this.bounds.min[d.axis];
+      const hi = this.box[d.axis + 'Max'] - minGap;
+      this.box[key] = Math.max(lo, Math.min(hi, val));
+    }
+  },
+
+  raycast(rc) {
+    if (!this.active || !this.faces.length) return null;
+    const hits = rc.intersectObjects(this.faces, false);
+    return hits.length ? hits[0] : null;
+  },
+
+  setHover(faceIdx) {
+    if (this._hoveredFace === faceIdx) return;
+    if (this._hoveredFace >= 0 && this._hoveredFace !== this._dragFaceIdx)
+      this.faces[this._hoveredFace].material.uniforms.uHovered.value = 0;
+    this._hoveredFace = faceIdx;
+    if (faceIdx >= 0 && faceIdx !== this._dragFaceIdx)
+      this.faces[faceIdx].material.uniforms.uHovered.value = 1;
+  },
+
+  startDrag(faceIdx, worldPoint) {
+    this._dragging = true;
+    this._dragFaceIdx = faceIdx;
+    const d = this.faceData[faceIdx];
+
+    // Build a drag plane: contains the face's axis and is as perpendicular to the camera as possible
+    const camDir = new THREE.Vector3();
+    camera.getWorldDirection(camDir);
+    const axisVec = new THREE.Vector3();
+    axisVec[d.axis] = 1;
+    const planeNormal = new THREE.Vector3().crossVectors(camDir, axisVec).cross(axisVec).normalize();
+    if (planeNormal.lengthSq() < 0.001) {
+      planeNormal.crossVectors(camera.up, axisVec).cross(axisVec).normalize();
+    }
+    this._dragPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, worldPoint);
+    this._dragStart = worldPoint.clone();
+    this._dragStartVal = this._facePos(faceIdx);
+
+    this.faces[faceIdx].material.uniforms.uDragging.value = 1;
+    this.faces[faceIdx].material.uniforms.uHovered.value = 0;
+    orbitControls.enabled = false;
+  },
+
+  updateDrag(rc) {
+    if (!this._dragging) return;
+    const pt = new THREE.Vector3();
+    if (!rc.ray.intersectPlane(this._dragPlane, pt)) return;
+    const d = this.faceData[this._dragFaceIdx];
+    const delta = pt[d.axis] - this._dragStart[d.axis];
+    this._setFacePos(this._dragFaceIdx, this._dragStartVal + delta);
+    this._updateVisual();
+  },
+
+  endDrag() {
+    if (!this._dragging) return;
+    if (this._dragFaceIdx >= 0) {
+      this.faces[this._dragFaceIdx].material.uniforms.uDragging.value = 0;
+      this.faces[this._dragFaceIdx].material.uniforms.uHovered.value = 0;
+    }
+    this._dragging = false;
+    this._dragFaceIdx = -1;
+    this._dragPlane = null;
+    orbitControls.enabled = true;
+  },
+
+  reset() {
+    if (!this.bounds) return;
+    this.box = {
+      xMin: this.bounds.min.x, xMax: this.bounds.max.x,
+      yMin: this.bounds.min.y, yMax: this.bounds.max.y,
+      zMin: this.bounds.min.z, zMax: this.bounds.max.z,
+    };
+    this._updateVisual();
+  },
+};
+
+function toggleSlicer(active) {
+  if (active) slicer.enable();
+  else slicer.disable();
+}
+
+// Slicer reset & close
+document.getElementById('slicerReset').addEventListener('click', () => slicer.reset());
+document.getElementById('slicerClose').addEventListener('click', () => slicer.disable());
+
 document.getElementById('closeRightPanel').onclick=()=>{state.rightPanelOpen=false;updateUI();};
 document.getElementById('partsSearch').addEventListener('input',()=>renderPartsList());
 // Editor bottom toolbar 3-dots menu
@@ -2523,13 +4437,10 @@ document.getElementById('btMore').onclick=(e)=>{
 };
 document.getElementById('editorSettingsBtn').onclick=()=>{
   document.getElementById('editorMoreMenu').classList.remove('visible');
-  // Switch to settings tab in left panel
-  document.querySelectorAll('.panel-tab').forEach(t=>{t.classList.toggle('active',t.dataset.tab==='settings');});
-  document.getElementById('tabSettings').classList.remove('hidden');
-  document.getElementById('tabPlaceholder').classList.add('hidden');
+  switchPanelTab('settings');
 };
 document.getElementById('editorAnimBtn').onclick=()=>{document.getElementById('editorMoreMenu').classList.remove('visible');flShow('animManager');renderAnimList();};
-document.getElementById('btGrid').onclick=()=>{state.gridVisible=!state.gridVisible;gridHelper.visible=state.gridVisible;document.getElementById('btGrid').classList.toggle('active',state.gridVisible);};
+document.getElementById('btGrid').onclick=()=>{state.gridVisible=!state.gridVisible;infiniteGrid.mesh.visible=state.gridVisible;document.getElementById('btGrid').classList.toggle('active',state.gridVisible);};
 document.getElementById('btPreview').onclick=()=>{state.mode='viewer';state.viewerFromEditor=true;deselectAll();updateUI();};
 document.getElementById('viewerMoreBtn').onclick=(e)=>{e.stopPropagation();document.getElementById('viewerMoreMenu').classList.toggle('visible');};
 document.getElementById('editDTBtn').onclick=()=>{state.mode='editor';state.viewerFromEditor=false;document.getElementById('viewerMoreMenu').classList.remove('visible');updateUI();};
@@ -2735,6 +4646,25 @@ document.getElementById('setDefaultViewBtn').onclick=()=>{
 };
 window.toggleCheckbox=function(el){el.classList.toggle('checked');if(el.id==='chkTooltips')state.tooltipsEnabled=el.classList.contains('checked');};
 
+// Background color picker
+function darkenColor(hex, amount) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  r = Math.max(0, Math.round(r * (1 - amount)));
+  g = Math.max(0, Math.round(g * (1 - amount)));
+  b = Math.max(0, Math.round(b * (1 - amount)));
+  return '#' + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function applyBgColor(c) {
+  var dark = darkenColor(c, 0.4);
+  var grad = 'linear-gradient(180deg, ' + c + ' 0%, ' + dark + ' 100%)';
+  document.getElementById('bgColorSwatch').style.background = c;
+  document.getElementById('viewport').style.background = grad;
+  document.body.style.background = dark;
+}
+document.getElementById('bgColorInput').addEventListener('input', function(e) {
+  applyBgColor(e.target.value);
+});
+
 function updateUI(){
   const isViewer = state.mode==='viewer';
   const isEditor = !isViewer;
@@ -2758,7 +4688,7 @@ function updateUI(){
   // Viewer "..." button
   document.getElementById('viewerMoreBtn').classList.toggle('visible',isViewer);
   // Grid: only visible in editor (and only if toggled on)
-  gridHelper.visible = isEditor && state.gridVisible;
+  infiniteGrid.mesh.visible = isEditor && state.gridVisible;
   if(isViewer){document.getElementById('gizmoBar').classList.remove('visible');document.getElementById('selectionInfo').classList.remove('visible');document.getElementById('viewerMoreMenu').classList.remove('visible');}
   // Close hotspot edit/viewer panels on mode switch
   closeEditPanel(); closeViewerPopup();
@@ -3131,7 +5061,11 @@ function openViewerPopup(hsId) {
           const ms = state.partMeshMap.get(pid) || [];
           meshes.push(...ms);
         });
-        outlinePass.selectedObjects = meshes;
+        if (sceneBatcher.enabled) {
+          outlinePass.selectedObjects = sceneBatcher.createProxies(meshes.map(m => m.uuid));
+        } else {
+          outlinePass.selectedObjects = meshes;
+        }
         // Clear highlight after 3 seconds
         setTimeout(() => { outlinePass.selectedObjects = []; }, 3000);
       }
@@ -3166,7 +5100,7 @@ function startHotspotDrag(e, hsId) {
     const mx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
     const my = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(new THREE.Vector2(mx, my), camera);
-    const meshes = []; if(fbxModel) fbxModel.traverse(c => { if(c.isMesh && c.visible) meshes.push(c); });
+    const meshes = getSelectableMeshes();
     const hits = raycaster.intersectObjects(meshes, false);
     if (hits.length) {
       const hs = state.hotspots.find(h => h.id === hsId);
@@ -3348,14 +5282,14 @@ function scrollManagerToHotspot(hsId) {
 function createHotspotInstantly() {
   // Raycast from screen center to find a surface point
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  const meshes = []; if(fbxModel) fbxModel.traverse(c => { if(c.isMesh && c.visible) meshes.push(c); });
+  const meshes = getSelectableMeshes();
   const hits = raycaster.intersectObjects(meshes, false);
   let pos, constrainedPartId = null;
   if (hits.length) {
     pos = hits[0].point.clone();
     // Find which part was hit
-    const hitMesh = hits[0].object;
-    constrainedPartId = state.meshPartMap.get(hitMesh) || null;
+    const hitUUID = resolveHitUUID(hits[0]);
+    constrainedPartId = (hitUUID && state.meshPartMap.get(hitUUID)) || null;
   } else {
     const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     pos = camera.position.clone().add(dir.multiplyScalar(200));
@@ -3379,12 +5313,12 @@ function handleHotspotPlacement(e) {
   const mx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   const my = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(new THREE.Vector2(mx, my), camera);
-  const meshes = []; if(fbxModel) fbxModel.traverse(c => { if(c.isMesh && c.visible) meshes.push(c); });
+  const meshes = getSelectableMeshes();
   const hits = raycaster.intersectObjects(meshes, false);
   if (hits.length) {
     const newId = 'hs' + (state.hotspotIdCounter++);
-    const hitMesh = hits[0].object;
-    const constrainedPartId = state.meshPartMap.get(hitMesh) || null;
+    const hitUUID = resolveHitUUID(hits[0]);
+    const constrainedPartId = (hitUUID && state.meshPartMap.get(hitUUID)) || null;
     const autoName = getAutoName(null);
     state.hotspots.push({
       id: newId, title: autoName, description: '',
@@ -3695,6 +5629,419 @@ function startCameraLerp(targetCenter, cameraPos) {
 }
 let lastTime=performance.now();
 
+// ==================== OCCLUSION CULLING (Octree-optimized for 100k+ parts) ====================
+// Hierarchical GPU occlusion culling using WebGL2 queries + spatial octree.
+// Mirrors Unity DynamicCullingController: transparent parts are non-occluders.
+// Key optimizations vs per-mesh approach:
+//   - Octree groups meshes → ~500 leaf queries instead of 100k
+//   - Cached AABBs → no per-frame setFromObject() calls
+//   - Raw GL bounding box draws → zero Three.js object allocations per frame
+//   - Query budget → max 512 queries/frame, amortized over frames
+const occlusionCulling = {
+  enabled: true,
+  gl: renderer.getContext(),
+  supported: false,
+  _built: false,
+  _frameNum: 0,
+
+  // ---- Flat mesh registry (typed arrays for cache-friendly access) ----
+  _meshes: [],           // mesh references
+  _meshCount: 0,
+  _meshUuidToIdx: new Map(),
+  _cx: null, _cy: null, _cz: null, // Float32Array — cached AABB centers
+  _hx: null, _hy: null, _hz: null, // Float32Array — cached AABB half-extents
+  _isTransp: null,       // Uint8Array — transparency flag per mesh
+
+  // ---- Octree ----
+  _root: null,
+  _LEAF_MAX: 128,        // max meshes per leaf before subdividing
+  _DEPTH_MAX: 7,         // max octree depth
+
+  // ---- Query budget ----
+  _QUERY_BUDGET: 512,
+  _queriesUsed: 0,
+
+  // ---- Hysteresis: require N consecutive "occluded" frames before hiding ----
+  _VIS_GRACE_FRAMES: 3,
+
+  // ---- Depth pre-pass box shrink factor (reduces false occlusion from oversized AABBs) ----
+  _DEPTH_SHRINK: 0.6,
+
+  // ---- Reusable math (zero alloc in hot path) ----
+  _frustum: new THREE.Frustum(),
+  _projMat: new THREE.Matrix4(),
+  _vpMatrix: new THREE.Matrix4(),
+  _modelMat: new THREE.Matrix4(),
+  _mvpMat: new THREE.Matrix4(),
+
+  // ---- Raw GL resources ----
+  _program: null,
+  _vao: null,
+  _mvpLoc: null,
+
+  // ============ INIT ============
+  init() {
+    const gl = this.gl;
+    this.supported = gl instanceof WebGL2RenderingContext;
+    if (!this.supported) { console.warn('Occlusion culling: WebGL2 not available, disabled.'); return; }
+    this._initGL();
+  },
+
+  _initGL() {
+    const gl = this.gl;
+    const vs = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vs, '#version 300 es\nin vec3 p;uniform mat4 u;void main(){gl_Position=u*vec4(p,1);}');
+    gl.compileShader(vs);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, '#version 300 es\nprecision lowp float;out vec4 c;void main(){c=vec4(0);}');
+    gl.compileShader(fs);
+    this._program = gl.createProgram();
+    gl.attachShader(this._program, vs); gl.attachShader(this._program, fs);
+    gl.linkProgram(this._program);
+    gl.deleteShader(vs); gl.deleteShader(fs);
+    this._mvpLoc = gl.getUniformLocation(this._program, 'u');
+    // Unit cube VAO (36 verts, 6 faces × 2 tris)
+    const v = new Float32Array([
+      -.5,-.5,-.5, .5,-.5,-.5, .5,.5,-.5, -.5,-.5,-.5, .5,.5,-.5, -.5,.5,-.5,
+      -.5,-.5,.5, .5,.5,.5, .5,-.5,.5, -.5,-.5,.5, -.5,.5,.5, .5,.5,.5,
+      -.5,-.5,-.5, -.5,.5,.5, -.5,-.5,.5, -.5,-.5,-.5, -.5,.5,-.5, -.5,.5,.5,
+      .5,-.5,-.5, .5,-.5,.5, .5,.5,.5, .5,-.5,-.5, .5,.5,.5, .5,.5,-.5,
+      -.5,-.5,-.5, -.5,-.5,.5, .5,-.5,.5, -.5,-.5,-.5, .5,-.5,.5, .5,-.5,-.5,
+      -.5,.5,-.5, .5,.5,.5, -.5,.5,.5, -.5,.5,-.5, .5,.5,-.5, .5,.5,.5,
+    ]);
+    this._vao = gl.createVertexArray();
+    gl.bindVertexArray(this._vao);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, v, gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(this._program, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
+  },
+
+  // ============ REGISTRATION ============
+  isTransparent(mesh) {
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    return mats.some(m => m && ((m.transparent && m.opacity < 0.95) || m._isXray || m.wireframe));
+  },
+
+  /** Register all meshes from a model root. Rebuilds octree. */
+  registerModel(root) {
+    if (!this.supported) return;
+    // Collect new meshes
+    root.traverse(c => {
+      if (c.isMesh && !this._meshUuidToIdx.has(c.uuid)) {
+        this._meshUuidToIdx.set(c.uuid, this._meshCount);
+        this._meshes.push(c);
+        this._meshCount++;
+      }
+    });
+    this._rebuild();
+  },
+
+  _rebuild() {
+    const n = this._meshCount;
+    // Allocate typed arrays for cached AABBs
+    this._cx = new Float32Array(n); this._cy = new Float32Array(n); this._cz = new Float32Array(n);
+    this._hx = new Float32Array(n); this._hy = new Float32Array(n); this._hz = new Float32Array(n);
+    this._isTransp = new Uint8Array(n);
+    // Compute world-space AABBs (once)
+    const box = new THREE.Box3(), ctr = new THREE.Vector3(), sz = new THREE.Vector3();
+    const opaqueIndices = [];
+    for (let i = 0; i < n; i++) {
+      const mesh = this._meshes[i];
+      mesh.updateMatrixWorld(true);
+      box.setFromObject(mesh); box.getCenter(ctr); box.getSize(sz);
+      this._cx[i] = ctr.x; this._cy[i] = ctr.y; this._cz[i] = ctr.z;
+      this._hx[i] = sz.x / 2; this._hy[i] = sz.y / 2; this._hz[i] = sz.z / 2;
+      this._isTransp[i] = this.isTransparent(mesh) ? 1 : 0;
+      if (!this._isTransp[i]) opaqueIndices.push(i);
+    }
+    // Build octree from opaque meshes
+    if (opaqueIndices.length > 0) {
+      let mnx=Infinity, mny=Infinity, mnz=Infinity, mxx=-Infinity, mxy=-Infinity, mxz=-Infinity;
+      for (const i of opaqueIndices) {
+        mnx = Math.min(mnx, this._cx[i]-this._hx[i]); mny = Math.min(mny, this._cy[i]-this._hy[i]); mnz = Math.min(mnz, this._cz[i]-this._hz[i]);
+        mxx = Math.max(mxx, this._cx[i]+this._hx[i]); mxy = Math.max(mxy, this._cy[i]+this._hy[i]); mxz = Math.max(mxz, this._cz[i]+this._hz[i]);
+      }
+      this._root = this._makeNode(mnx,mny,mnz,mxx,mxy,mxz, opaqueIndices, 0);
+    }
+    this._built = true;
+    console.log(`Occlusion culling: ${n} meshes, ${opaqueIndices.length} opaque, octree built.`);
+  },
+
+  // ============ OCTREE BUILD ============
+  _makeNode(mnx,mny,mnz,mxx,mxy,mxz, indices, depth) {
+    // Compute tight AABB of contained meshes
+    let tmnx=Infinity, tmny=Infinity, tmnz=Infinity, tmxx=-Infinity, tmxy=-Infinity, tmxz=-Infinity;
+    for (const i of indices) {
+      tmnx = Math.min(tmnx, this._cx[i]-this._hx[i]); tmny = Math.min(tmny, this._cy[i]-this._hy[i]); tmnz = Math.min(tmnz, this._cz[i]-this._hz[i]);
+      tmxx = Math.max(tmxx, this._cx[i]+this._hx[i]); tmxy = Math.max(tmxy, this._cy[i]+this._hy[i]); tmxz = Math.max(tmxz, this._cz[i]+this._hz[i]);
+    }
+    const node = { tmnx, tmny, tmnz, tmxx, tmxy, tmxz, children: null, meshIndices: null, query: null, visible: true, lastVisFrame: 0 };
+    // Leaf condition
+    if (indices.length <= this._LEAF_MAX || depth >= this._DEPTH_MAX) {
+      node.meshIndices = indices;
+      return node;
+    }
+    // Split into 8 octants by center of spatial bounds
+    const cx = (mnx + mxx) / 2, cy = (mny + mxy) / 2, cz = (mnz + mxz) / 2;
+    const bins = [[], [], [], [], [], [], [], []];
+    for (const i of indices) {
+      const oct = ((this._cx[i] >= cx) ? 1 : 0) | ((this._cy[i] >= cy) ? 2 : 0) | ((this._cz[i] >= cz) ? 4 : 0);
+      bins[oct].push(i);
+    }
+    // Octant bounds: [x0,y0,z0, x1,y1,z1]
+    const ob = [
+      [mnx,mny,mnz, cx,cy,cz], [cx,mny,mnz, mxx,cy,cz],
+      [mnx,cy,mnz, cx,mxy,cz], [cx,cy,mnz, mxx,mxy,cz],
+      [mnx,mny,cz, cx,cy,mxz], [cx,mny,cz, mxx,cy,mxz],
+      [mnx,cy,cz, cx,mxy,mxz], [cx,cy,cz, mxx,mxy,mxz],
+    ];
+    node.children = new Array(8);
+    for (let i = 0; i < 8; i++) {
+      node.children[i] = bins[i].length > 0
+        ? this._makeNode(ob[i][0],ob[i][1],ob[i][2],ob[i][3],ob[i][4],ob[i][5], bins[i], depth+1)
+        : null;
+    }
+    return node;
+  },
+
+  // ============ FRUSTUM TEST (inline 6-plane AABB test) ============
+  _inFrustum(mnx,mny,mnz,mxx,mxy,mxz) {
+    const planes = this._frustum.planes;
+    for (let i = 0; i < 6; i++) {
+      const p = planes[i], nx = p.normal.x, ny = p.normal.y, nz = p.normal.z;
+      // P-vertex: corner most in direction of plane normal
+      if (nx*(nx>=0?mxx:mnx) + ny*(ny>=0?mxy:mny) + nz*(nz>=0?mxz:mnz) + p.constant < 0) return false;
+    }
+    return true;
+  },
+
+  // ============ RAW GL BOX DRAW (zero allocation) ============
+  _drawBox(cx, cy, cz, sx, sy, sz) {
+    const m = this._modelMat.elements;
+    m[0]=sx; m[1]=0; m[2]=0; m[3]=0;
+    m[4]=0; m[5]=sy; m[6]=0; m[7]=0;
+    m[8]=0; m[9]=0; m[10]=sz; m[11]=0;
+    m[12]=cx; m[13]=cy; m[14]=cz; m[15]=1;
+    this._mvpMat.multiplyMatrices(this._vpMatrix, this._modelMat);
+    this.gl.uniformMatrix4fv(this._mvpLoc, false, this._mvpMat.elements);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 36);
+  },
+
+  // ============ CAMERA-INSIDE-AABB CHECK ============
+  // Returns true if camera is inside or within `margin` of the AABB.
+  // Prevents near-plane clipping from causing flickering on close-up objects.
+  _cameraInsideAABB(mnx,mny,mnz,mxx,mxy,mxz, margin) {
+    const cx = this._camX, cy = this._camY, cz = this._camZ;
+    return cx >= mnx - margin && cx <= mxx + margin &&
+           cy >= mny - margin && cy <= mxy + margin &&
+           cz >= mnz - margin && cz <= mxz + margin;
+  },
+
+  // ============ PER-FRAME UPDATE ============
+  update() {
+    if (!this.supported || !this.enabled || !this._built || !this._root) return;
+    const gl = this.gl;
+    this._frameNum++;
+    this._queriesUsed = 0;
+
+    // Cache camera position for near-plane checks
+    camera.updateMatrixWorld();
+    this._camX = camera.matrixWorld.elements[12];
+    this._camY = camera.matrixWorld.elements[13];
+    this._camZ = camera.matrixWorld.elements[14];
+    this._nearMargin = camera.near * 4; // margin around AABBs to prevent near-plane flicker
+
+    // Update frustum
+    this._projMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    this._frustum.setFromProjectionMatrix(this._projMat);
+
+    // Set transparent + user-hidden mesh visibility (O(meshCount) but no heavy ops)
+    for (let i = 0; i < this._meshCount; i++) {
+      const mesh = this._meshes[i];
+      const partId = state.meshPartMap.get(mesh.uuid);
+      if (partId && state.hiddenParts.has(partId)) { mesh.visible = false; continue; }
+      if (this._isTransp[i]) { mesh.visible = true; continue; }
+      // Opaque mesh visibility is controlled by octree traversal below
+    }
+
+    // Phase 1: Read previous query results + traverse octree → set mesh visibility
+    this._traverseRead(this._root);
+
+    // Phase 2+3: Depth pre-pass + issue queries, all via raw GL
+    renderer.setRenderTarget(null);
+    const prevAutoClear = renderer.autoClear;
+    renderer.autoClear = false;
+    renderer.clear(true, true, true);
+
+    this._vpMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    gl.useProgram(this._program);
+    gl.bindVertexArray(this._vao);
+    gl.enable(gl.DEPTH_TEST);
+
+    // Phase 2: Depth pre-pass — draw VISIBLE leaf node AABBs (fills z-buffer)
+    gl.colorMask(false, false, false, false);
+    gl.depthMask(true);
+    gl.depthFunc(gl.LESS);
+    this._depthPass(this._root);
+
+    // Phase 3: Query pass — draw node AABBs inside occlusion queries (test against z-buffer)
+    gl.depthMask(false);
+    gl.depthFunc(gl.LEQUAL);
+    this._queryPass(this._root);
+
+    // Restore GL state
+    gl.colorMask(true, true, true, true);
+    gl.depthMask(true);
+    gl.depthFunc(gl.LESS);
+    gl.bindVertexArray(null);
+    gl.useProgram(null);
+    renderer.autoClear = prevAutoClear;
+    if (renderer.resetState) renderer.resetState();
+  },
+
+  // ---- Phase 1: Read queries & set mesh visibility ----
+  _traverseRead(node) {
+    if (!node) return;
+    // Frustum cull using tight AABB
+    if (!this._inFrustum(node.tmnx,node.tmny,node.tmnz,node.tmxx,node.tmxy,node.tmxz)) {
+      this._setSubtreeVis(node, false);
+      return;
+    }
+    // Camera inside/near AABB → force visible (prevents near-plane clipping flicker)
+    if (this._cameraInsideAABB(node.tmnx,node.tmny,node.tmnz,node.tmxx,node.tmxy,node.tmxz, this._nearMargin)) {
+      node.visible = true;
+      // Discard any pending query — it's unreliable at this distance
+      if (node.query) { this.gl.deleteQuery(node.query); node.query = null; }
+    } else {
+      // Read query result from previous frame
+      const gl = this.gl;
+      if (node.query) {
+        const avail = gl.getQueryParameter(node.query, gl.QUERY_RESULT_AVAILABLE);
+        if (avail) {
+          const passed = gl.getQueryParameter(node.query, gl.QUERY_RESULT) > 0;
+          gl.deleteQuery(node.query);
+          node.query = null;
+          if (passed) {
+            node.visible = true;
+            node.lastVisFrame = this._frameNum;
+          } else {
+            // Hysteresis: keep visible for a grace period to prevent flicker
+            node.visible = (this._frameNum - node.lastVisFrame) <= this._VIS_GRACE_FRAMES;
+          }
+        }
+      }
+    }
+    // Track last visible frame
+    if (node.visible) node.lastVisFrame = this._frameNum;
+    if (!node.visible) {
+      this._setSubtreeVis(node, false);
+      return;
+    }
+    // Node is visible — recurse or set leaf meshes visible
+    if (node.children) {
+      for (let i = 0; i < 8; i++) if (node.children[i]) this._traverseRead(node.children[i]);
+    } else if (node.meshIndices) {
+      for (const idx of node.meshIndices) {
+        const mesh = this._meshes[idx];
+        const partId = state.meshPartMap.get(mesh.uuid);
+        if (partId && state.hiddenParts.has(partId)) continue;
+        mesh.visible = true;
+      }
+    }
+  },
+
+  _setSubtreeVis(node, vis) {
+    if (!node) return;
+    if (node.children) {
+      for (let i = 0; i < 8; i++) if (node.children[i]) this._setSubtreeVis(node.children[i], vis);
+    } else if (node.meshIndices) {
+      for (const idx of node.meshIndices) {
+        const mesh = this._meshes[idx];
+        const partId = state.meshPartMap.get(mesh.uuid);
+        if (partId && state.hiddenParts.has(partId)) continue;
+        if (this._isTransp[idx]) continue;
+        mesh.visible = vis;
+      }
+    }
+  },
+
+  // ---- Phase 2: Depth pre-pass (draw visible leaf AABBs) ----
+  _depthPass(node) {
+    if (!node || !node.visible) return;
+    if (!this._inFrustum(node.tmnx,node.tmny,node.tmnz,node.tmxx,node.tmxy,node.tmxz)) return;
+    if (node.children) {
+      for (let i = 0; i < 8; i++) if (node.children[i]) this._depthPass(node.children[i]);
+    } else {
+      // Leaf: draw shrunk AABB as depth geometry (shrink to reduce false occlusion)
+      const cx = (node.tmnx+node.tmxx)/2, cy = (node.tmny+node.tmxy)/2, cz = (node.tmnz+node.tmxz)/2;
+      const s = this._DEPTH_SHRINK;
+      const sx = (node.tmxx-node.tmnx)*s, sy = (node.tmxy-node.tmny)*s, sz = (node.tmxz-node.tmnz)*s;
+      this._drawBox(cx,cy,cz,sx,sy,sz);
+    }
+  },
+
+  // ---- Phase 3: Issue occlusion queries for nodes ----
+  _queryPass(node) {
+    if (!node || this._queriesUsed >= this._QUERY_BUDGET) return;
+    if (!this._inFrustum(node.tmnx,node.tmny,node.tmnz,node.tmxx,node.tmxy,node.tmxz)) return;
+    // Skip query when camera is inside/near AABB — result would be unreliable
+    if (this._cameraInsideAABB(node.tmnx,node.tmny,node.tmnz,node.tmxx,node.tmxy,node.tmxz, this._nearMargin)) {
+      // Still recurse to children
+      if (node.visible && node.children) {
+        for (let i = 0; i < 8; i++) if (node.children[i]) this._queryPass(node.children[i]);
+      }
+      return;
+    }
+    // Issue query for this node if none pending
+    if (!node.query) {
+      const gl = this.gl;
+      const cx = (node.tmnx+node.tmxx)/2, cy = (node.tmny+node.tmxy)/2, cz = (node.tmnz+node.tmxz)/2;
+      const sx = node.tmxx-node.tmnx+0.02, sy = node.tmxy-node.tmny+0.02, sz = node.tmxz-node.tmnz+0.02;
+      const q = gl.createQuery();
+      gl.beginQuery(gl.ANY_SAMPLES_PASSED_CONSERVATIVE, q);
+      this._drawBox(cx,cy,cz,sx,sy,sz);
+      gl.endQuery(gl.ANY_SAMPLES_PASSED_CONSERVATIVE);
+      node.query = q;
+      this._queriesUsed++;
+    }
+    // Recurse to children (only if node is currently visible — don't waste budget on occluded subtrees)
+    if (node.visible && node.children) {
+      for (let i = 0; i < 8; i++) if (node.children[i]) this._queryPass(node.children[i]);
+    }
+  },
+
+  // ============ RESTORE ALL ============
+  restoreAll() {
+    for (let i = 0; i < this._meshCount; i++) {
+      const mesh = this._meshes[i];
+      const partId = state.meshPartMap.get(mesh.uuid);
+      if (!partId || !state.hiddenParts.has(partId)) mesh.visible = true;
+    }
+    this._resetNodeQueries(this._root);
+  },
+
+  _resetNodeQueries(node) {
+    if (!node) return;
+    if (node.query) { this.gl.deleteQuery(node.query); node.query = null; }
+    node.visible = true;
+    node.lastVisFrame = this._frameNum;
+    if (node.children) for (let i = 0; i < 8; i++) if (node.children[i]) this._resetNodeQueries(node.children[i]);
+  },
+
+  /** Recompute AABBs and rebuild octree (call after model transforms change) */
+  refresh() {
+    if (!this.supported || !this._meshCount) return;
+    this._resetNodeQueries(this._root);
+    this._rebuild();
+  }
+};
+
+occlusionCulling.init();
+
 // ==================== ANIMATE ====================
 function animate() {
   requestAnimationFrame(animate);
@@ -3707,7 +6054,10 @@ function animate() {
     if(cameraLerp.t>=1) cameraLerp.active=false;
   }
   orbitControls.update();
+  infiniteGrid.update(camera);
   if (state.hotspotMode) updateHotspotProjections();
+  // Run occlusion culling before main render
+  occlusionCulling.update();
   composer.render();
 }
 animate();
@@ -4283,11 +6633,566 @@ document.getElementById('btAddImportModel').addEventListener('click', () => {
   btAddMenu.classList.remove('visible');
   document.getElementById('modelFileInput').click();
 });
+
+// ==================== IMPORT SETTINGS MODAL ====================
+const ismModal = document.getElementById('importSettingsModal');
+let ismPendingFile = null;      // the File object user picked
+let ismParsedObject = null;     // parsed Three.js object (ready to add)
+let ismPreviewRenderer = null;  // tiny preview renderer
+let ismPreviewScene = null;
+let ismPreviewCamera = null;
+let ismPreviewAnimId = null;
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function yieldFrame() { return new Promise(r => requestAnimationFrame(r)); }
+
+// Open the modal and start async parsing
 document.getElementById('modelFileInput').addEventListener('change', e => {
   const files = e.target.files; if (!files.length) return;
-  for (const f of files) { state.parts.push({ id:'imported_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), name:f.name.replace(/\.[^.]+$/,''), children:[] }); }
-  renderPartsList(); e.target.value = '';
+  ismPendingFile = files[0]; // handle one file at a time
+  e.target.value = '';
+  openImportSettings(ismPendingFile);
 });
+
+async function openImportSettings(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const name = file.name.replace(/\.[^.]+$/, '');
+
+  // Reset UI
+  ismParsedObject = null;
+  document.getElementById('ismImport').disabled = true;
+  document.getElementById('ismImportLabel').textContent = 'Import';
+  document.getElementById('ismFileName').textContent = name;
+  document.getElementById('ismFormat').textContent = ext.toUpperCase();
+  document.getElementById('ismFileSize').textContent = formatFileSize(file.size);
+  document.getElementById('ismMeshCount').textContent = '...';
+  document.getElementById('ismVertCount').textContent = '...';
+  document.getElementById('ismTriCount').textContent = '...';
+  document.getElementById('ismPreviewPlaceholder').style.display = 'flex';
+  document.getElementById('ismPreviewSpinner').style.display = 'flex';
+
+  // Reset settings to defaults
+  document.getElementById('ismScaleMode').value = 'original';
+  document.getElementById('ismCustomScaleRow').style.display = 'none';
+  document.getElementById('ismScaleFactor').value = '1';
+  document.getElementById('ismUpAxis').value = 'auto';
+  document.getElementById('ismPlacement').value = 'auto';
+  document.getElementById('ismMaterials').value = 'keep';
+  document.getElementById('ismMergeMeshes').checked = false;
+  document.getElementById('ismCenterPivot').checked = true;
+
+  ismModal.classList.remove('hidden');
+
+  // Read file async
+  let data;
+  try {
+    data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = ev => resolve(ev.target.result);
+      reader.onerror = () => reject(new Error('Read failed'));
+      if (ext === 'obj' || ext === 'gltf') reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
+    });
+  } catch {
+    document.getElementById('ismPreviewSpinner').style.display = 'none';
+    document.getElementById('ismMeshCount').textContent = 'Error';
+    return;
+  }
+
+  await yieldFrame();
+
+  // Parse model async
+  let object;
+  try {
+    if (ext === 'glb' || ext === 'gltf') {
+      const loader = new GLTFLoader();
+      const gltf = await new Promise((resolve, reject) => loader.parse(data, '', resolve, reject));
+      object = gltf.scene;
+    } else {
+      let loader, isGeomOnly = false;
+      if (ext === 'fbx') loader = new FBXLoader();
+      else if (ext === 'obj') loader = new OBJLoader();
+      else if (ext === 'stl') { loader = new STLLoader(); isGeomOnly = true; }
+      else { document.getElementById('ismPreviewSpinner').style.display = 'none'; return; }
+      const parsed = loader.parse(data);
+      if (isGeomOnly) {
+        const mat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
+        object = new THREE.Mesh(parsed, mat);
+        object.name = name;
+      } else {
+        object = parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Parse error:', err);
+    document.getElementById('ismPreviewSpinner').style.display = 'none';
+    document.getElementById('ismMeshCount').textContent = 'Parse error';
+    document.getElementById('ismVertCount').textContent = '—';
+    document.getElementById('ismTriCount').textContent = '—';
+    return;
+  }
+
+  ismParsedObject = object;
+  await yieldFrame();
+
+  // Gather stats
+  let meshCount = 0, vertCount = 0, triCount = 0;
+  object.traverse(c => {
+    if (c.isMesh && c.geometry) {
+      meshCount++;
+      const geo = c.geometry;
+      if (geo.attributes.position) vertCount += geo.attributes.position.count;
+      if (geo.index) triCount += geo.index.count / 3;
+      else if (geo.attributes.position) triCount += geo.attributes.position.count / 3;
+    }
+  });
+  document.getElementById('ismMeshCount').textContent = meshCount.toLocaleString();
+  document.getElementById('ismVertCount').textContent = vertCount.toLocaleString();
+  document.getElementById('ismTriCount').textContent = Math.round(triCount).toLocaleString();
+
+  // Enable import button
+  document.getElementById('ismImport').disabled = false;
+
+  await yieldFrame();
+
+  // Skip 3D preview for very large models (cloning + rendering would freeze/crash)
+  if (meshCount > 10000) {
+    document.getElementById('ismPreviewSpinner').style.display = 'none';
+    document.getElementById('ismPreviewPlaceholder').style.display = 'flex';
+    document.getElementById('ismPreviewPlaceholder').innerHTML =
+      `<svg viewBox="0 0 24 24" fill="#868d9e" style="width:28px;height:28px"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5z"/></svg>
+       <span style="color:#868d9e;font-size:11px;text-align:center;line-height:1.4">Model too large for preview<br><b>${meshCount.toLocaleString()} meshes</b></span>`;
+  } else {
+    buildImportPreview(object);
+  }
+}
+
+function buildImportPreview(object) {
+  const container = document.getElementById('ismPreview');
+  document.getElementById('ismPreviewPlaceholder').style.display = 'none';
+
+  // Clean up old preview
+  disposeImportPreview();
+
+  ismPreviewScene = new THREE.Scene();
+  ismPreviewScene.background = new THREE.Color(0xe9e9e9);
+  ismPreviewScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dl = new THREE.DirectionalLight(0xffffff, 1.2);
+  dl.position.set(3, 5, 4);
+  ismPreviewScene.add(dl);
+  ismPreviewScene.add(new THREE.HemisphereLight(0x87ceeb, 0x362d1b, 0.3));
+
+  // Clone the object for preview
+  const clone = object.clone(true);
+  const box = new THREE.Box3().setFromObject(clone);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  clone.scale.multiplyScalar(2 / maxDim);
+  const nb = new THREE.Box3().setFromObject(clone);
+  clone.position.sub(nb.getCenter(new THREE.Vector3()));
+  ismPreviewScene.add(clone);
+
+  ismPreviewCamera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
+  ismPreviewCamera.position.set(1.6, 1.2, 1.6);
+  ismPreviewCamera.lookAt(0, 0, 0);
+
+  ismPreviewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  ismPreviewRenderer.setSize(240, 240);
+  ismPreviewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(ismPreviewRenderer.domElement);
+
+  document.getElementById('ismPreviewSpinner').style.display = 'none';
+
+  // Spin animation
+  let angle = 0;
+  function animatePreview() {
+    ismPreviewAnimId = requestAnimationFrame(animatePreview);
+    angle += 0.008;
+    ismPreviewCamera.position.x = Math.cos(angle) * 2.2;
+    ismPreviewCamera.position.z = Math.sin(angle) * 2.2;
+    ismPreviewCamera.position.y = 1.1;
+    ismPreviewCamera.lookAt(0, 0, 0);
+    ismPreviewRenderer.render(ismPreviewScene, ismPreviewCamera);
+  }
+  animatePreview();
+}
+
+function disposeImportPreview() {
+  if (ismPreviewAnimId) { cancelAnimationFrame(ismPreviewAnimId); ismPreviewAnimId = null; }
+  if (ismPreviewRenderer) {
+    ismPreviewRenderer.dispose();
+    if (ismPreviewRenderer.domElement && ismPreviewRenderer.domElement.parentNode) {
+      ismPreviewRenderer.domElement.parentNode.removeChild(ismPreviewRenderer.domElement);
+    }
+    ismPreviewRenderer = null;
+  }
+  ismPreviewScene = null;
+  ismPreviewCamera = null;
+}
+
+function closeImportSettings() {
+  ismModal.classList.add('hidden');
+  disposeImportPreview();
+  ismParsedObject = null;
+  ismPendingFile = null;
+}
+
+// Close handlers
+document.getElementById('ismClose').addEventListener('click', closeImportSettings);
+document.getElementById('ismCancel').addEventListener('click', closeImportSettings);
+ismModal.addEventListener('click', e => { if (e.target === ismModal) closeImportSettings(); });
+
+// Custom scale toggle
+document.getElementById('ismScaleMode').addEventListener('change', e => {
+  document.getElementById('ismCustomScaleRow').style.display = e.target.value === 'custom' ? 'flex' : 'none';
+});
+
+// ==================== IMPORT EXECUTION ====================
+document.getElementById('ismImport').addEventListener('click', async () => {
+  if (!ismParsedObject) return;
+
+  const object = ismParsedObject;
+  const name = document.getElementById('ismFileName').textContent;
+  const settings = {
+    scaleMode: document.getElementById('ismScaleMode').value,
+    scaleFactor: parseFloat(document.getElementById('ismScaleFactor').value) || 1,
+    upAxis: document.getElementById('ismUpAxis').value,
+    placement: document.getElementById('ismPlacement').value,
+    materials: document.getElementById('ismMaterials').value,
+    mergeMeshes: document.getElementById('ismMergeMeshes').checked,
+    centerPivot: document.getElementById('ismCenterPivot').checked,
+  };
+
+  // Disable button, show progress
+  const btn = document.getElementById('ismImport');
+  const label = document.getElementById('ismImportLabel');
+  const progBar = btn.querySelector('.ism-btn-progress');
+  const progFill = document.getElementById('ismProgressBar');
+  btn.disabled = true;
+  label.textContent = 'Importing...';
+  progBar.style.display = 'block';
+  progFill.style.width = '0%';
+
+  await yieldFrame();
+
+  try {
+    await addImportedModelToScene(object, name, settings, (pct) => {
+      progFill.style.width = pct + '%';
+    });
+  } catch (err) {
+    console.error('Import error:', err);
+    alert('Failed to import model: ' + (err.message || err));
+  }
+
+  closeImportSettings();
+});
+
+async function addImportedModelToScene(object, name, settings, onProgress) {
+  const _importStart = performance.now();
+  if (!object.name) object.name = name;
+  onProgress(5);
+
+  // --- Up axis correction ---
+  if (settings.upAxis === 'z' || (settings.upAxis === 'auto' && detectZUp(object))) {
+    object.rotation.x = -Math.PI / 2;
+    object.updateMatrixWorld(true);
+  }
+  await yieldFrame();
+  onProgress(10);
+
+  // --- Merge meshes if requested ---
+  if (settings.mergeMeshes) {
+    const geos = [], mats = [];
+    object.updateMatrixWorld(true);
+    object.traverse(c => {
+      if (c.isMesh && c.geometry) {
+        const g = c.geometry.clone();
+        g.applyMatrix4(c.matrixWorld);
+        geos.push(g);
+        mats.push(c.material);
+      }
+    });
+    if (geos.length > 0) {
+      const merged = mergeGeometries(geos);
+      if (merged) {
+        const mat = mats[0] || new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
+        const newMesh = new THREE.Mesh(merged, mat);
+        newMesh.name = name;
+        // Replace object
+        object = newMesh;
+      }
+    }
+  }
+  await yieldFrame();
+  onProgress(20);
+
+  // --- Collect existing scene objects (exclude batcher internals & hidden roots) ---
+  const existingObjects = [];
+  scene.children.forEach(c => {
+    if ((c.isMesh || c.isGroup || c.isObject3D) &&
+        !(c instanceof THREE.Light) && !(c instanceof THREE.GridHelper) &&
+        c !== transformControls && !c.__isHotspot &&
+        !c.isBatchedMesh && c !== sceneBatcher._proxyScene &&
+        c !== infiniteGrid.mesh && c.visible) {
+      existingObjects.push(c);
+    }
+  });
+
+  // --- Scaling ---
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  if (maxDim > 0) {
+    if (settings.scaleMode === 'fit') {
+      let targetSize = 200;
+      if (existingObjects.length > 0) {
+        const sceneBox = new THREE.Box3();
+        existingObjects.forEach(o => sceneBox.expandByObject(o));
+        const sceneSize = sceneBox.getSize(new THREE.Vector3());
+        targetSize = Math.max(sceneSize.x, sceneSize.y, sceneSize.z) * 0.5;
+      }
+      object.scale.setScalar(targetSize / maxDim);
+    } else if (settings.scaleMode === 'custom') {
+      object.scale.setScalar(settings.scaleFactor);
+    }
+    // 'original' keeps scale at 1
+  }
+  await yieldFrame();
+  onProgress(30);
+
+  // --- Center pivot ---
+  if (settings.centerPivot) {
+    const nb = new THREE.Box3().setFromObject(object);
+    const nc = nb.getCenter(new THREE.Vector3());
+    object.position.sub(nc);
+  }
+
+  // --- Placement ---
+  if (settings.placement === 'auto' && existingObjects.length > 0) {
+    const sceneBox = new THREE.Box3();
+    existingObjects.forEach(o => sceneBox.expandByObject(o));
+    const importedBox = new THREE.Box3().setFromObject(object);
+    const importedSize = importedBox.getSize(new THREE.Vector3());
+    object.position.x += sceneBox.max.x + importedSize.x * 0.6;
+  } else if (settings.placement === 'camera') {
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    const camPos = camera.position.clone();
+    const importedBox = new THREE.Box3().setFromObject(object);
+    const importedSize = importedBox.getSize(new THREE.Vector3());
+    const dist = Math.max(importedSize.x, importedSize.y, importedSize.z) * 2;
+    object.position.copy(camPos.add(dir.multiplyScalar(dist)));
+  }
+  // 'origin' keeps at 0,0,0 (already centered by centerPivot)
+  await yieldFrame();
+  onProgress(40);
+
+  // --- Materials ---
+  const allMeshes = [];
+  object.traverse(c => { if (c.isMesh) allMeshes.push(c); });
+
+  const BATCH = 40;
+  if (settings.materials === 'default') {
+    const defMat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
+    for (let i = 0; i < allMeshes.length; i += BATCH) {
+      for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
+        allMeshes[j].material = defMat.clone();
+      }
+      onProgress(40 + Math.round(((i + BATCH) / allMeshes.length) * 20));
+      await yieldFrame();
+    }
+  } else if (settings.materials === 'scene') {
+    const P = {
+      yellow: new THREE.MeshStandardMaterial({ color: 0xF5C518, metalness: 0.15, roughness: 0.45 }),
+      chrome: new THREE.MeshStandardMaterial({ color: 0xd0d0d0, metalness: 0.9, roughness: 0.08 }),
+      frame:  new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.5, roughness: 0.35 }),
+      silver: new THREE.MeshStandardMaterial({ color: 0xa8a8a8, metalness: 0.7, roughness: 0.2 }),
+    };
+    for (let i = 0; i < allMeshes.length; i += BATCH) {
+      for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
+        const c = j % 7;
+        allMeshes[j].material = (c < 3 ? P.yellow : c < 5 ? P.chrome : c === 5 ? P.frame : P.silver).clone();
+      }
+      onProgress(40 + Math.round(((i + BATCH) / allMeshes.length) * 20));
+      await yieldFrame();
+    }
+  } else {
+    // 'keep' — ensure materials exist
+    const defMat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
+    for (let i = 0; i < allMeshes.length; i += BATCH) {
+      for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
+        if (!allMeshes[j].material) allMeshes[j].material = defMat.clone();
+      }
+      onProgress(40 + Math.round(((i + BATCH) / allMeshes.length) * 20));
+      await yieldFrame();
+    }
+  }
+
+  // Store original materials for x-ray mode
+  for (let i = 0; i < allMeshes.length; i += BATCH) {
+    for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
+      const m = allMeshes[j];
+      state.originalMaterials.set(m.uuid, m.material.clone ? m.material.clone() : m.material);
+    }
+    if (i + BATCH < allMeshes.length) await yieldFrame();
+  }
+  onProgress(65);
+  await yieldFrame();
+
+  // --- Add to scene (meshes hidden — will be revealed progressively) ---
+  object.traverse(c => { if (c.isMesh) c.visible = false; });
+  scene.add(object);
+  state.importedModels.push(object);
+  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.registerModel) {
+    occlusionCulling.registerModel(object);
+  }
+  onProgress(70);
+  await yieldFrame();
+
+  // --- Build parts tree in batches ---
+  const partId = 'imported_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+
+  if (object.isMesh && (!object.children || object.children.length === 0)) {
+    const part = { id: partId, name, children: [], object3D: object };
+    state.partMeshMap.set(partId, [object]);
+    state.meshPartMap.set(object.uuid, partId);
+    state.parts.push(part);
+  } else {
+    const queue = [{ obj: object, parentPart: null }];
+    let rootPart = null;
+    let processed = 0;
+    const totalNodes = (() => { let n = 0; object.traverse(() => n++); return n; })();
+
+    while (queue.length > 0) {
+      const batchEnd = Math.min(BATCH, queue.length);
+      for (let b = 0; b < batchEnd; b++) {
+        const { obj, parentPart } = queue.shift();
+        processed++;
+        const hasMesh = obj.isMesh;
+        if (obj.name && obj.name.trim() && (hasMesh || obj.children.length > 0)) {
+          const id = partId + '_' + Math.random().toString(36).slice(2, 6);
+          const part = { id, name: obj.name.trim() || name, children: [], object3D: obj };
+          if (hasMesh) {
+            state.partMeshMap.set(id, [obj]);
+            state.meshPartMap.set(obj.uuid, id);
+          } else {
+            const ms = [];
+            obj.traverse(c => { if (c.isMesh) { ms.push(c); state.meshPartMap.set(c.uuid, id); } });
+            if (ms.length) state.partMeshMap.set(id, ms);
+          }
+          if (parentPart) parentPart.children.push(part);
+          else if (!rootPart) rootPart = part;
+          if (obj.children) {
+            for (const c of obj.children) {
+              if (c.isMesh && obj.children.length === 1) continue;
+              queue.push({ obj: c, parentPart: part });
+            }
+          }
+        } else if (obj.children) {
+          for (const c of obj.children) queue.push({ obj: c, parentPart });
+        }
+      }
+      onProgress(70 + Math.round((processed / totalNodes) * 20));
+      await yieldFrame();
+    }
+
+    if (rootPart) {
+      rootPart.name = name;
+      rootPart._expanded = true;
+      state.parts.push(rootPart);
+    } else {
+      const part = { id: partId, name, children: [], object3D: object };
+      const ms = [];
+      object.traverse(c => { if (c.isMesh) { ms.push(c); state.meshPartMap.set(c.uuid, partId); } });
+      if (ms.length) state.partMeshMap.set(partId, ms);
+      state.parts.push(part);
+    }
+  }
+
+  onProgress(95);
+  await yieldFrame();
+
+  renderPartsList();
+
+  // Focus camera on imported model
+  const finalBox = new THREE.Box3().setFromObject(object);
+  const fc = finalBox.getCenter(new THREE.Vector3());
+  const fs = finalBox.getSize(new THREE.Vector3());
+  const dist = Math.max(fs.x, fs.y, fs.z) * 2;
+  camera.position.set(fc.x + dist * 0.7, fc.y + dist * 0.5, fc.z + dist * 0.7);
+  orbitControls.target.copy(fc);
+  orbitControls.update();
+  onProgress(100);
+
+  // Batch imported model for performance
+  let _batchStats = null;
+  try { _batchStats = sceneBatcher.batchify(object); } catch(e) { console.warn('Scene batcher failed, falling back to individual meshes:', e); }
+
+  const _importTime = performance.now() - _importStart;
+
+  // Progressive reveal — meshes appear in batches bottom-to-top
+  progressiveReveal(object);
+
+  // Show import report
+  if (_batchStats) {
+    showImportReport({ ..._batchStats, loadTimeMs: _importTime, fileName: name });
+  } else {
+    let mc = 0; object.traverse(c => { if (c.isMesh) mc++; });
+    showImportReport({ totalMeshes: mc, loadTimeMs: _importTime, fileName: name });
+  }
+}
+
+// Helper: detect if model uses Z-up convention
+function detectZUp(object) {
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  // If the Z dimension is significantly taller than Y, it's likely Z-up
+  return size.z > size.y * 1.5 && size.z > size.x * 0.5;
+}
+
+// Helper: simple geometry merge (for merge meshes option)
+function mergeGeometries(geometries) {
+  if (!geometries.length) return null;
+  let totalVerts = 0, totalIdx = 0;
+  const hasIndex = geometries.every(g => g.index);
+
+  for (const g of geometries) {
+    totalVerts += g.attributes.position.count;
+    if (hasIndex && g.index) totalIdx += g.index.count;
+  }
+
+  const pos = new Float32Array(totalVerts * 3);
+  const norm = new Float32Array(totalVerts * 3);
+  let idx = hasIndex ? new Uint32Array(totalIdx) : null;
+  let vOffset = 0, iOffset = 0;
+
+  for (const g of geometries) {
+    const p = g.attributes.position;
+    for (let i = 0; i < p.count * 3; i++) pos[vOffset * 3 + i] = p.array[i];
+    if (g.attributes.normal) {
+      const n = g.attributes.normal;
+      for (let i = 0; i < n.count * 3; i++) norm[vOffset * 3 + i] = n.array[i];
+    }
+    if (hasIndex && g.index) {
+      for (let i = 0; i < g.index.count; i++) idx[iOffset + i] = g.index.array[i] + vOffset;
+      iOffset += g.index.count;
+    }
+    vOffset += p.count;
+  }
+
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  merged.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
+  if (idx) merged.setIndex(new THREE.BufferAttribute(idx, 1));
+  return merged;
+}
 document.getElementById('btAddEmptyPart').addEventListener('click', () => {
   btAddMenu.classList.remove('visible');
   state.parts.push({ id:'empty_'+Date.now(), name:'New Part', children:[] });

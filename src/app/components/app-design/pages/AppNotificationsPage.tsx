@@ -12,8 +12,6 @@ interface Notification {
 }
 
 const notifications: Notification[] = [
-  { id: '1', title: 'Knowledge Base', description: 'New procedure "Engine Calibration v2.1" has been published.', time: '10:30 AM', date: 'Today', read: false, type: 'knowledge-base' },
-  { id: '2', title: 'Remote Support', description: 'David Amrosa has invited you to a support session.', time: '09:15 AM', date: 'Today', read: false, type: 'remote-support' },
   { id: '3', title: 'Knowledge Base', description: 'Your procedure "Belt Replacement Guide" was approved.', time: '08:00 AM', date: 'Today', read: true, type: 'knowledge-base' },
   { id: '4', title: 'System', description: 'System maintenance scheduled for tonight at 2:00 AM.', time: '4:30 PM', date: 'Aug 8', read: true, type: 'system' },
   { id: '5', title: 'Knowledge Base', description: 'Carlos Oliveira updated "Routine Maintenance" procedure.', time: '2:15 PM', date: 'Aug 8', read: true, type: 'knowledge-base' },
@@ -129,7 +127,7 @@ export function AppNotificationsPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 sm:p-6 border-b border-border bg-card">
+      <div className="p-4 sm:p-6 border-b border-border bg-card" style={{ paddingRight: '48px' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-foreground" style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}>
             Notifications
