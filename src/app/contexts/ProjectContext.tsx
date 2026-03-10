@@ -732,7 +732,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           if (project.id !== 'generator') return project;
           const updateThumbs = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] =>
             items.map(item => {
-              const updated = (item.type === 'digital-twin' || (item.type === 'procedure' && item.thumbnail))
+              const updated = item.type === 'digital-twin'
                 ? { ...item, thumbnail: dataUrl }
                 : item;
               return updated.children ? { ...updated, children: updateThumbs(updated.children) } : updated;
