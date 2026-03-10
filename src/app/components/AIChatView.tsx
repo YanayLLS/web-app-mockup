@@ -5,7 +5,8 @@ import { useIsMobile } from './ui/use-mobile';
 import { MediaLibraryModal } from './MediaLibraryModal';
 import { ModelSelector } from './ModelSelector';
 import generatorImage from 'figma:asset/e07e13a2f3760fdde8be911bb7c14c56f85b7c2a.png';
-import { getSmartAIResponse, streamResponse } from '../utils/aiResponses';
+import { getSmartAIResponse, streamResponse, ProjectInfo } from '../utils/aiResponses';
+import { useProject } from '../contexts/ProjectContext';
 
 function IconClose() {
   return (
@@ -74,7 +75,7 @@ const mockContextSources: ContextSource[] = [
 ];
 
 // AI Response templates based on query type and context
-const getAIResponse = (userMessage: string, context: ContextSource, stage?: number): string => {
+const getAIResponse = (userMessage: string, context: ContextSource, stage?: number, projects?: ProjectInfo[]): string => {
   const lowerMessage = userMessage.toLowerCase();
   
   // Machine inspection conversation flow
@@ -136,7 +137,7 @@ const getAIResponse = (userMessage: string, context: ContextSource, stage?: numb
   }
   
   // Fall through to shared smart response engine
-  return getSmartAIResponse(userMessage);
+  return getSmartAIResponse(userMessage, projects);
 };
 
 /** Render markdown: **bold**, URLs, bullets, numbered lists, checkboxes, table rows */
@@ -186,8 +187,25 @@ export function AIChatView({
   onNavigateToAiStudio
 }: AIChatViewProps) {
   const isMobile = useIsMobile();
+  const { projects: rawProjects } = useProject();
   const [chatMessage, setChatMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // Convert project data for the AI engine
+  const projectInfos: ProjectInfo[] = rawProjects.map(p => ({
+    name: p.name,
+    items: (function flatten(items: typeof p.knowledgeBaseItems): ProjectInfo['items'] {
+      return items.map(item => ({
+        name: item.name,
+        type: item.type,
+        description: item.description,
+        isPublished: item.isPublished,
+        createdBy: item.createdBy,
+        lastEdited: item.lastEdited,
+        children: item.children ? flatten(item.children) : undefined,
+      }));
+    })(p.knowledgeBaseItems),
+  }));
   const [isTyping, setIsTyping] = useState(false);
   const [thinkingStage, setThinkingStage] = useState(0);
   const [attachedFiles, setAttachedFiles] = useState<Array<{name: string, size: number, preview?: string}>>([]);
@@ -445,7 +463,7 @@ export function AIChatView({
     // AI responds after a delay
     setTimeout(() => {
       setIsTyping(false);
-      const aiResponse = getAIResponse(messageToSend, selectedContext, 1);
+      const aiResponse = getAIResponse(messageToSend, selectedContext, 1, projectInfos);
       setChatMessages(prev => [
         ...prev,
         {
@@ -576,7 +594,7 @@ export function AIChatView({
     // Simulate AI thinking, then stream response
     const thinkingTime = 600 + Math.random() * 800;
     const aiMsgId = `msg-${Date.now()}-ai`;
-    const fullResponse = getAIResponse(userMsg.content, selectedContext, machineInspectionStage);
+    const fullResponse = getAIResponse(userMsg.content, selectedContext, machineInspectionStage, projectInfos);
 
     const thinkTimer = setTimeout(() => {
       setIsTyping(false);
@@ -627,7 +645,7 @@ export function AIChatView({
       setIsTyping(true);
 
       const retryAiId = `msg-${Date.now()}-ai`;
-      const retryResponse = getAIResponse(retryMsg.content, selectedContext, machineInspectionStage);
+      const retryResponse = getAIResponse(retryMsg.content, selectedContext, machineInspectionStage, projectInfos);
       setTimeout(() => {
         setIsTyping(false);
         setChatMessages(prev => [...prev, { role: 'assistant', content: '', timestamp: new Date(), id: retryAiId }]);

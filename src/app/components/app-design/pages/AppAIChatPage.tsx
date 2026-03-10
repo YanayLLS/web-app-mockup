@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, Menu, MoreVertical, Mic, Send, ThumbsUp, ThumbsDown, X, MessageSquare, Plus, Wrench } from 'lucide-react';
-import { getSmartAIResponse, streamResponse } from '../../../utils/aiResponses';
+import { getSmartAIResponse, streamResponse, ProjectInfo } from '../../../utils/aiResponses';
+import { useProject } from '../../../contexts/ProjectContext';
 
 interface ChatMessage {
   id: string;
@@ -19,8 +20,10 @@ const chatHistory = [
 ];
 
 const suggestions = [
-  'Guide me',
+  'List my procedures',
+  'Tell me about the Generator',
   'Which machines are supported?',
+  'Guide me',
 ];
 
 /** Render simple markdown: **bold**, bullet points, headings, checkboxes, table rows */
@@ -72,6 +75,23 @@ export function AppAIChatPage() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const { projects } = useProject();
+
+  // Convert project data to the format the AI engine expects
+  const projectInfos: ProjectInfo[] = projects.map(p => ({
+    name: p.name,
+    items: (function flatten(items: typeof p.knowledgeBaseItems): ProjectInfo['items'] {
+      return items.map(item => ({
+        name: item.name,
+        type: item.type,
+        description: item.description,
+        isPublished: item.isPublished,
+        createdBy: item.createdBy,
+        lastEdited: item.lastEdited,
+        children: item.children ? flatten(item.children) : undefined,
+      }));
+    })(p.knowledgeBaseItems),
+  }));
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -110,7 +130,7 @@ export function AppAIChatPage() {
     setFeedbackSubmitted(false);
     setFeedbackText('');
 
-    const fullResponse = getSmartAIResponse(messageText);
+    const fullResponse = getSmartAIResponse(messageText, projectInfos);
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // Start streaming after a brief "thinking" pause

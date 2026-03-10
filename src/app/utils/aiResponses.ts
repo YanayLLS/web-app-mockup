@@ -95,13 +95,181 @@ const responses: ResponseMatch[] = [
   },
 ];
 
+// ==================== PROJECT DATA TYPES ====================
+
+export interface KBItemInfo {
+  name: string;
+  type: 'procedure' | 'digital-twin' | 'media' | 'folder';
+  description?: string;
+  steps?: number;
+  version?: string;
+  isPublished?: boolean;
+  createdBy?: string;
+  lastEdited?: string;
+  children?: KBItemInfo[];
+}
+
+export interface ProjectInfo {
+  name: string;
+  items: KBItemInfo[];
+}
+
+/** Flatten nested KB items into a flat list */
+function flattenItems(items: KBItemInfo[]): KBItemInfo[] {
+  const result: KBItemInfo[] = [];
+  for (const item of items) {
+    result.push(item);
+    if (item.children) result.push(...flattenItems(item.children));
+  }
+  return result;
+}
+
+/** Try to generate a content-aware response from project data */
+function getContentAwareResponse(lower: string, projects?: ProjectInfo[]): string | null {
+  if (!projects || projects.length === 0) return null;
+
+  const allItems = projects.flatMap(p => flattenItems(p.items));
+  const procedures = allItems.filter(i => i.type === 'procedure');
+  const digitalTwins = allItems.filter(i => i.type === 'digital-twin');
+  const folders = allItems.filter(i => i.type === 'folder');
+
+  // --- "list/show procedures" or "what procedures" ---
+  if (lower.match(/list.*procedure|show.*procedure|what.*procedure|my procedure|all procedure|how many procedure|list.*flow|show.*flow|what.*flow/)) {
+    if (procedures.length === 0) {
+      return `I didn't find any procedures in your knowledge base yet. You can create one by going to a project and tapping **"+ New" → Flow**.`;
+    }
+    let response = `I found **${procedures.length} procedures** across your projects:\n\n`;
+    for (const project of projects) {
+      const procs = flattenItems(project.items).filter(i => i.type === 'procedure');
+      if (procs.length === 0) continue;
+      response += `**${project.name}:**\n`;
+      for (const p of procs) {
+        const meta = [p.steps ? `${p.steps} steps` : null, p.version ? `v${p.version}` : null, p.isPublished ? 'Published' : null].filter(Boolean).join(' · ');
+        response += `• ${p.name}${meta ? ` — ${meta}` : ''}\n`;
+      }
+      response += '\n';
+    }
+    response += `Would you like details on any of these? Just ask about one by name.`;
+    return response;
+  }
+
+  // --- "list/show digital twins" ---
+  if (lower.match(/list.*digital twin|show.*digital twin|what.*digital twin|my digital twin|all digital twin|list.*3d|show.*3d|my model/)) {
+    if (digitalTwins.length === 0) {
+      return `No digital twins found in your projects yet.`;
+    }
+    let response = `I found **${digitalTwins.length} digital twins**:\n\n`;
+    for (const dt of digitalTwins) {
+      response += `• **${dt.name}**${dt.description ? ` — ${dt.description}` : ''}\n`;
+    }
+    response += `\nWould you like to open one of these?`;
+    return response;
+  }
+
+  // --- "list/show projects" ---
+  if (lower.match(/list.*project|show.*project|what.*project|my project|all project|how many project/)) {
+    let response = `You have **${projects.length} projects**:\n\n`;
+    for (const project of projects) {
+      const items = flattenItems(project.items);
+      const procCount = items.filter(i => i.type === 'procedure').length;
+      const dtCount = items.filter(i => i.type === 'digital-twin').length;
+      response += `• **${project.name}** — ${procCount} procedures, ${dtCount} digital twins\n`;
+    }
+    response += `\nWhich project would you like to explore?`;
+    return response;
+  }
+
+  // --- Search for a specific item by name ---
+  const matchedItem = allItems.find(item => {
+    const itemWords = item.name.toLowerCase().split(/\s+/);
+    // Match if 2+ words from the item name appear in the query, or the full name
+    const matchCount = itemWords.filter(w => w.length > 2 && lower.includes(w)).length;
+    return matchCount >= 2 || lower.includes(item.name.toLowerCase());
+  });
+
+  if (matchedItem) {
+    const parentProject = projects.find(p => flattenItems(p.items).some(i => i.name === matchedItem.name));
+
+    if (matchedItem.type === 'procedure') {
+      let response = `Here's what I found about **"${matchedItem.name}"**:\n\n`;
+      response += `**Type:** Procedure\n`;
+      if (parentProject) response += `**Project:** ${parentProject.name}\n`;
+      if (matchedItem.steps) response += `**Steps:** ${matchedItem.steps}\n`;
+      if (matchedItem.version) response += `**Version:** ${matchedItem.version}\n`;
+      if (matchedItem.isPublished) response += `**Status:** Published\n`;
+      if (matchedItem.createdBy) response += `**Created by:** ${matchedItem.createdBy}\n`;
+      if (matchedItem.lastEdited) response += `**Last edited:** ${matchedItem.lastEdited}\n`;
+      if (matchedItem.description) response += `\n${matchedItem.description}\n`;
+      response += `\nWould you like me to open this procedure, or do you have questions about the steps?`;
+      return response;
+    }
+
+    if (matchedItem.type === 'digital-twin') {
+      let response = `Here's what I know about **"${matchedItem.name}"**:\n\n`;
+      response += `**Type:** Digital Twin (3D Model)\n`;
+      if (parentProject) response += `**Project:** ${parentProject.name}\n`;
+      if (matchedItem.description) response += `**Description:** ${matchedItem.description}\n`;
+      if (matchedItem.createdBy) response += `**Created by:** ${matchedItem.createdBy}\n`;
+      response += `\nYou can open this digital twin to:\n• View and inspect the 3D model\n• See connected procedures\n• Navigate to specific parts\n\nWould you like to open it?`;
+      return response;
+    }
+
+    if (matchedItem.type === 'folder') {
+      const folderItems = matchedItem.children ? flattenItems(matchedItem.children) : [];
+      let response = `**"${matchedItem.name}"** is a folder`;
+      if (parentProject) response += ` in ${parentProject.name}`;
+      response += `.\n\n`;
+      if (folderItems.length > 0) {
+        response += `It contains **${folderItems.length} items**:\n`;
+        for (const child of folderItems.slice(0, 8)) {
+          response += `• ${child.name} (${child.type})\n`;
+        }
+        if (folderItems.length > 8) response += `• ... and ${folderItems.length - 8} more\n`;
+      }
+      return response;
+    }
+  }
+
+  // --- General "about" a project by name ---
+  const matchedProject = projects.find(p => lower.includes(p.name.toLowerCase()));
+  if (matchedProject) {
+    const items = flattenItems(matchedProject.items);
+    const procs = items.filter(i => i.type === 'procedure');
+    const dts = items.filter(i => i.type === 'digital-twin');
+    const media = items.filter(i => i.type === 'media');
+
+    let response = `Here's an overview of **"${matchedProject.name}"**:\n\n`;
+    response += `**${items.length} total items:**\n`;
+    if (procs.length) response += `• ${procs.length} procedures\n`;
+    if (dts.length) response += `• ${dts.length} digital twins\n`;
+    if (media.length) response += `• ${media.length} media files\n`;
+    if (folders.length) response += `• ${folders.filter(f => flattenItems(matchedProject.items).includes(f)).length} folders\n`;
+    if (procs.length) {
+      response += `\n**Procedures:**\n`;
+      for (const p of procs) {
+        response += `• ${p.name}${p.steps ? ` (${p.steps} steps)` : ''}\n`;
+      }
+    }
+    response += `\nWhat would you like to know more about?`;
+    return response;
+  }
+
+  return null;
+}
+
 /**
  * Get an AI response based on the user's message.
  * Matches keywords and returns a contextual response.
+ * Optionally accepts project data for content-aware answers.
  */
-export function getSmartAIResponse(userMessage: string): string {
+export function getSmartAIResponse(userMessage: string, projects?: ProjectInfo[]): string {
   const lower = userMessage.toLowerCase();
 
+  // First, try content-aware responses if project data is available
+  const contentResponse = getContentAwareResponse(lower, projects);
+  if (contentResponse) return contentResponse;
+
+  // Then try static keyword matches
   for (const entry of responses) {
     if (entry.matchAll) {
       if (entry.keywords.every(kw => lower.includes(kw))) {

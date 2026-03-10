@@ -451,35 +451,63 @@ html.procedure .viewer-more-menu { display:none !important; }
 
 /* Material swatch grid */
 .mat-grid {
-  display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:8px;
 }
 .mat-swatch {
-  aspect-ratio:1; border-radius:8px; cursor:pointer; border:2px solid transparent;
-  position:relative; overflow:hidden; transition: border-color 0.15s, box-shadow 0.15s;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; position:relative; padding:6px 4px 4px;
+  border-radius:10px; border:2px solid transparent;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
-.mat-swatch:hover { border-color:#2f80ed; }
-.mat-swatch.active { border-color:#2f80ed; box-shadow:0 0 0 1px #2f80ed; }
+.mat-swatch:hover { background:rgba(47,128,237,0.06); }
 .mat-swatch.current { border-color:#11e874; box-shadow:0 0 0 1px #11e874; }
-.mat-swatch .swatch-color {
-  width:100%; height:100%; border-radius:6px;
+/* Sphere thumbnail */
+.mat-sphere {
+  width:48px; height:48px; border-radius:50%; position:relative;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.18), inset 0 -4px 8px rgba(0,0,0,0.12);
+  overflow:hidden; flex-shrink:0;
+}
+.mat-sphere::after {
+  content:''; position:absolute; top:6px; left:10px;
+  width:14px; height:10px; border-radius:50%;
+  background:radial-gradient(ellipse, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%);
+  transform:rotate(-20deg); pointer-events:none;
 }
 .mat-swatch .swatch-label {
-  position:absolute; bottom:0; left:0; right:0; padding:2px 4px;
-  font-size:9px; color:#fff; background:rgba(0,0,0,0.5); text-align:center;
+  font-size:9px; color:#5e677d; text-align:center; line-height:1.2;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:100%;
 }
 .mat-swatch .swatch-count {
-  position:absolute; top:2px; right:3px; font-size:8px; color:#fff;
-  background:rgba(0,0,0,0.45); padding:0 4px; border-radius:4px; line-height:14px;
+  position:absolute; top:2px; right:2px; font-size:8px; color:#fff;
+  background:rgba(0,0,0,0.5); padding:0 4px; border-radius:4px; line-height:14px;
 }
+/* Hover action overlay */
+.mat-swatch .mat-hover-action {
+  position:absolute; top:0; left:0; right:0; bottom:0; border-radius:8px;
+  background:rgba(47,128,237,0.85); display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:2px; z-index:2;
+}
+.mat-swatch:hover .mat-hover-action { display:flex; }
+.mat-hover-action button {
+  background:rgba(255,255,255,0.95); color:#2f80ed; border:none; border-radius:5px;
+  font-size:9px; font-weight:600; padding:3px 8px; cursor:pointer;
+  font-family:inherit; transition:background 0.12s; white-space:nowrap;
+}
+.mat-hover-action button:hover { background:#fff; }
 /* Material section headers */
 .mat-section { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#868d9e; padding:8px 0 4px; display:flex; align-items:center; gap:6px; }
 .mat-section::after { content:''; flex:1; height:1px; background:#e0e0e0; }
-/* Current material info */
-.mat-current-info { background:#f0f3fa; border-radius:8px; padding:8px 10px; display:flex; flex-direction:column; gap:4px; }
-.mat-current-info .mat-prop { display:flex; justify-content:space-between; font-size:11px; color:#36415d; }
-.mat-current-info .mat-prop span:first-child { color:#868d9e; }
-.mat-current-info .mat-prop .mat-mixed { color:#c0392b; font-style:italic; font-size:10px; }
+/* Current material info for selection */
+.mat-sel-preview {
+  display:flex; align-items:center; gap:10px; background:#f0f3fa;
+  border-radius:10px; padding:8px 10px;
+}
+.mat-sel-preview .mat-sphere { width:40px; height:40px; flex-shrink:0; }
+.mat-sel-info { flex:1; min-width:0; }
+.mat-sel-info .mat-sel-name { font-size:12px; font-weight:600; color:#36415d; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mat-sel-info .mat-sel-props { font-size:10px; color:#868d9e; margin-top:1px; }
+.mat-sel-mixed { font-size:10px; color:#c0392b; font-style:italic; }
 /* Material property sliders */
 .mat-prop-row { display:flex; align-items:center; gap:6px; font-size:11px; color:#36415d; }
 .mat-prop-row label { width:68px; flex-shrink:0; color:#868d9e; font-size:10px; font-weight:600; text-transform:uppercase; }
@@ -492,6 +520,17 @@ html.procedure .viewer-more-menu { display:none !important; }
 /* Import material button */
 .mat-import-zone { border:1.5px dashed #c2c9db; border-radius:8px; padding:10px; text-align:center; cursor:pointer; color:#868d9e; font-size:11px; transition:all 0.15s; }
 .mat-import-zone:hover { border-color:#2f80ed; color:#2f80ed; background:rgba(47,128,237,0.04); }
+/* Material edit popover */
+.mat-edit-popover {
+  position:fixed; z-index:200; width:220px; background:#fff; border-radius:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.18); border:1px solid #e0e0e0;
+  padding:10px; display:flex; flex-direction:column; gap:6px;
+  animation: matPopIn 0.15s ease-out;
+}
+@keyframes matPopIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+.mat-edit-popover .mat-pop-header { display:flex; align-items:center; gap:8px; margin-bottom:2px; }
+.mat-edit-popover .mat-pop-header .mat-sphere { width:32px; height:32px; }
+.mat-edit-popover .mat-pop-header .mat-pop-name { font-size:12px; font-weight:600; color:#36415d; flex:1; }
 
 /* Multi-select header */
 .multi-select-header {
@@ -2228,11 +2267,16 @@ html.embedded .right-panel { top:12px !important; }
 
   <!-- ==================== 5. MATERIAL EDITOR ==================== -->
   <div class="panel-content hidden" id="tabMaterials">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px 12px;">
-      <svg viewBox="0 0 24 24" width="32" height="32" fill="#868d9e"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1-.01-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-      <div style="font-size:12px;color:#868d9e;text-align:center;">Edit materials, browse the library, and assign materials to parts.</div>
-      <button id="openMatWindowBtn" style="background:#2f80ed;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#82b3f4'" onmouseout="this.style.background='#2f80ed'">Open Material Editor</button>
-    </div>
+    <!-- Selected part(s) material -->
+    <div id="matSelectionSection"></div>
+    <!-- Local scene materials -->
+    <div class="mat-section">Scene Materials</div>
+    <div id="matLocalGrid" class="mat-grid"></div>
+    <!-- Open library button -->
+    <button id="openMatLibBtn" style="width:100%;margin-top:10px;background:#2f80ed;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;" onmouseover="this.style.background='#82b3f4'" onmouseout="this.style.background='#2f80ed'">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+      Browse Material Library
+    </button>
   </div>
 
   <!-- ==================== 6. TOOLS EDITOR SETTINGS ==================== -->
@@ -2311,24 +2355,17 @@ html.embedded .right-panel { top:12px !important; }
 </div>
 
 <!-- ANIMATION MANAGER PANEL -->
-<!-- MATERIAL EDITOR WINDOW -->
+<!-- MATERIAL LIBRARY WINDOW -->
 <div id="matWindow" class="fl-window hidden">
   <div class="fl-header">
-    <svg class="fl-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1-.01-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-    <span class="fl-title">Material Editor</span>
+    <svg class="fl-icon" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+    <span class="fl-title">Material Library</span>
     <button class="fl-close" id="matWindowClose"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
   </div>
   <div class="fl-body" style="padding:10px;">
-    <!-- Selected part(s) material -->
-    <div id="matSelectionSection"></div>
-    <!-- Local scene materials -->
-    <div class="mat-section">Scene Materials</div>
-    <div id="matLocalGrid" class="mat-grid"></div>
-    <!-- Material library -->
-    <div class="mat-section">Library</div>
     <div class="mat-search" style="margin-bottom:6px">
       <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      <input type="text" id="matLibSearch" placeholder="Search library...">
+      <input type="text" id="matLibSearch" placeholder="Search materials...">
     </div>
     <div id="matLibGrid" class="mat-grid"></div>
     <!-- Import -->
@@ -2880,7 +2917,7 @@ const state = {
   activeHotspotId: null,
   managerOpen: false,
   hotspots: [],               // flat array; hierarchy via parentId
-  hotspotIdCounter: 10,
+  hotspotIdCounter: 13,
   hotspotSettings: { showLabels:false, showPulse:true, showLines:false, showByDefault:true },
   hsSelectedIds: new Set(),   // multi-select in manager
   hsLastClickedId: null,      // for shift-range select
@@ -4803,19 +4840,74 @@ const materialLibrary = [
 // Imported custom materials (persisted in session)
 const importedMaterials = []; // { id, name, color, metalness, roughness, map? (texture) }
 
-// Generate CSS gradient for a material definition
-function matSwatchGradient(def) {
-  const c = typeof def.color === 'number' ? '#' + def.color.toString(16).padStart(6,'0') : def.color;
-  // Parse hex to compute a lighter variant for gradient
-  const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
-  const lighter = `rgb(${Math.min(255,r+50)},${Math.min(255,g+50)},${Math.min(255,b+50)})`;
-  const darker  = `rgb(${Math.max(0,r-30)},${Math.max(0,g-30)},${Math.max(0,b-30)})`;
-  // Metallic → more specular highlight
-  if (def.metalness > 0.5) {
-    const highlight = `rgb(${Math.min(255,r+80)},${Math.min(255,g+80)},${Math.min(255,b+80)})`;
-    return `linear-gradient(135deg,${darker} 0%,${highlight} 45%,${c} 100%)`;
-  }
-  return `linear-gradient(135deg,${darker},${lighter})`;
+// Generate sphere-like CSS gradient for a material definition
+function matSphereStyle(def) {
+  const col = typeof def.color === 'number' ? def.color : parseInt(String(def.color).replace('#',''),16);
+  const r = (col >> 16) & 0xff, g = (col >> 8) & 0xff, b = col & 0xff;
+  const met = def.metalness || 0, rou = def.roughness || 0.5;
+  // Specular highlight intensity based on metalness and inverse roughness
+  const specStr = Math.round(40 + (1-rou) * 55 + met * 30);
+  const specR = Math.min(255, r + specStr), specG = Math.min(255, g + specStr), specB = Math.min(255, b + specStr);
+  // Darker edge for 3D depth
+  const darkR = Math.max(0, Math.round(r * 0.25)), darkG = Math.max(0, Math.round(g * 0.25)), darkB = Math.max(0, Math.round(b * 0.25));
+  // Mid tone
+  const midR = Math.round(r * 0.8), midG = Math.round(g * 0.8), midB = Math.round(b * 0.8);
+  // Specular size: smaller for smooth, larger for rough
+  const specSize = Math.round(18 + rou * 20);
+  const opacity = def.transparent ? (def.opacity || 0.3) : 1;
+  return `background:radial-gradient(circle at 35% 30%, rgb(${specR},${specG},${specB}) 0%, rgb(${r},${g},${b}) ${specSize}%, rgb(${midR},${midG},${midB}) 60%, rgb(${darkR},${darkG},${darkB}) 100%);opacity:${opacity};`;
+}
+
+// Build sphere HTML element string
+function matSphereHtml(def, size) {
+  size = size || 48;
+  return '<div class="mat-sphere" style="width:' + size + 'px;height:' + size + 'px;' + matSphereStyle(def) + '"></div>';
+}
+
+// Active edit popover state
+let _matPopover = null;
+function closeMatPopover() {
+  if (_matPopover) { _matPopover.remove(); _matPopover = null; }
+  document.removeEventListener('mousedown', _matPopoverOutside);
+}
+function _matPopoverOutside(e) {
+  if (_matPopover && !_matPopover.contains(e.target)) closeMatPopover();
+}
+function showMatEditPopover(anchorEl, def, onApply) {
+  closeMatPopover();
+  const rect = anchorEl.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'mat-edit-popover';
+  const hex = '#' + (typeof def.color === 'number' ? def.color : parseInt(String(def.color).replace('#',''),16)).toString(16).padStart(6,'0');
+  pop.innerHTML =
+    '<div class="mat-pop-header">' + matSphereHtml(def, 32) + '<span class="mat-pop-name">' + (def.name || 'Material') + '</span></div>' +
+    '<div class="mat-color-row"><label>Color</label><input type="color" class="mp-color" value="' + hex + '"><span class="mat-hex">' + hex.toUpperCase() + '</span></div>' +
+    '<div class="mat-prop-row"><label>Metalness</label><input type="range" class="mp-metal" min="0" max="1" step="0.01" value="' + (def.metalness||0).toFixed(2) + '"><span class="mat-val">' + (def.metalness||0).toFixed(2) + '</span></div>' +
+    '<div class="mat-prop-row"><label>Roughness</label><input type="range" class="mp-rough" min="0" max="1" step="0.01" value="' + (def.roughness||0.5).toFixed(2) + '"><span class="mat-val">' + (def.roughness||0.5).toFixed(2) + '</span></div>';
+  document.body.appendChild(pop);
+  // Position: try right of anchor, fallback left
+  let px = rect.right + 8, py = rect.top;
+  if (px + 230 > window.innerWidth) px = rect.left - 230;
+  if (py + 160 > window.innerHeight) py = window.innerHeight - 170;
+  pop.style.left = Math.max(4, px) + 'px';
+  pop.style.top = Math.max(4, py) + 'px';
+  _matPopover = pop;
+  setTimeout(() => document.addEventListener('mousedown', _matPopoverOutside), 10);
+  // Wire inputs
+  const cI = pop.querySelector('.mp-color'), mI = pop.querySelector('.mp-metal'), rI = pop.querySelector('.mp-rough');
+  const sphere = pop.querySelector('.mat-sphere');
+  const update = () => {
+    const c = parseInt(cI.value.slice(1),16), m = parseFloat(mI.value), ro = parseFloat(rI.value);
+    mI.nextElementSibling.textContent = m.toFixed(2);
+    rI.nextElementSibling.textContent = ro.toFixed(2);
+    cI.nextElementSibling.textContent = cI.value.toUpperCase();
+    const nd = { color: c, metalness: m, roughness: ro };
+    sphere.setAttribute('style', 'width:32px;height:32px;' + matSphereStyle(nd));
+    if (onApply) onApply(nd);
+  };
+  cI.addEventListener('input', update);
+  mI.addEventListener('input', update);
+  rI.addEventListener('input', update);
 }
 
 // Create a Three.js material from a definition
@@ -4869,6 +4961,18 @@ function getSceneMaterials() {
     }
   }
   walkParts(state.parts);
+  // Include imported materials that aren't already in the scene
+  for (const imp of importedMaterials) {
+    const key = imp.color.toString(16) + '_' + (imp.metalness||0).toFixed(2) + '_' + (imp.roughness||0.5).toFixed(2);
+    if (!seen.has(key)) {
+      seen.set(key, {
+        id: imp.id,
+        name: imp.name,
+        color: imp.color, metalness: imp.metalness||0, roughness: imp.roughness||0.5,
+        meshUuids: [], count: 0, imported: true
+      });
+    }
+  }
   return Array.from(seen.values()).sort((a,b) => b.count - a.count);
 }
 
@@ -4928,6 +5032,83 @@ function applyMaterialToSelection(def) {
   renderMaterialsPanel();
 }
 
+// ---- Bulk material actions ----
+
+// Select all parts that use a given material (by color/metalness/roughness match)
+function selectPartsByMaterial(matDef) {
+  deselectAll();
+  const col = matDef.color, met = matDef.metalness, rou = matDef.roughness;
+  function walkParts(parts) {
+    for (const p of parts) {
+      const meshes = state.partMeshMap.get(p.id);
+      if (meshes) {
+        for (const m of meshes) {
+          const mat = state.originalMaterials.get(m.uuid) || m.material;
+          const mats = Array.isArray(mat) ? mat : [mat];
+          for (const mt of mats) {
+            if (!mt || mt._isXray) continue;
+            const c = mt.color ? mt.color.getHex() : 0;
+            const me = mt.metalness !== undefined ? mt.metalness : 0;
+            const ro = mt.roughness !== undefined ? mt.roughness : 0.5;
+            if (c === col && Math.abs(me - met) < 0.02 && Math.abs(ro - rou) < 0.02) {
+              state.selectedParts.add(p.id);
+            }
+          }
+        }
+      }
+      if (p.children) walkParts(p.children);
+    }
+  }
+  walkParts(state.parts);
+  updateSelectionOutline();
+  attachGizmoToSelection();
+  renderPartsList();
+  renderMaterialsPanel();
+}
+
+// Replace a material everywhere in the scene with a new one
+function replaceMatInScene(oldDef, newDef) {
+  function walkParts(parts) {
+    for (const p of parts) {
+      const meshes = state.partMeshMap.get(p.id);
+      if (meshes) {
+        for (const m of meshes) {
+          if (state.xrayParts.has(p.id)) continue;
+          const mat = m.material;
+          const mats = Array.isArray(mat) ? mat : [mat];
+          let changed = false;
+          for (const mt of mats) {
+            if (!mt || mt._isXray) continue;
+            const c = mt.color ? mt.color.getHex() : 0;
+            const me = mt.metalness !== undefined ? mt.metalness : 0;
+            const ro = mt.roughness !== undefined ? mt.roughness : 0.5;
+            if (c === oldDef.color && Math.abs(me - oldDef.metalness) < 0.02 && Math.abs(ro - oldDef.roughness) < 0.02) {
+              if (mt.color) mt.color.setHex(newDef.color);
+              if (mt.metalness !== undefined) mt.metalness = newDef.metalness;
+              if (mt.roughness !== undefined) mt.roughness = newDef.roughness;
+              mt.needsUpdate = true;
+              changed = true;
+            }
+          }
+          if (changed) {
+            state.originalMaterials.set(m.uuid, Array.isArray(m.material) ? m.material.map(x=>x.clone()) : m.material.clone());
+          }
+        }
+      }
+      if (p.children) walkParts(p.children);
+    }
+  }
+  walkParts(state.parts);
+  renderMaterialsPanel();
+}
+
+// Remove an imported material that isn't used on any mesh
+function removeUnusedImportedMat(matDef) {
+  const idx = importedMaterials.findIndex(im => im.color === matDef.color && im.metalness === matDef.metalness && im.roughness === matDef.roughness);
+  if (idx !== -1) importedMaterials.splice(idx, 1);
+  renderMaterialsPanel();
+}
+
 // Render the full materials panel
 function renderMaterialsPanel() {
   renderMatSelectionSection();
@@ -4966,14 +5147,14 @@ function renderMatSelectionSection() {
   let html = '<div class="mat-section">Selection (' + state.selectedParts.size + ' part' + (state.selectedParts.size > 1 ? 's' : '') + ')</div>';
 
   if (allSame) {
+    const def = { color: firstCol, metalness: firstMet, roughness: firstRou, name: guessMatName(firstCol, firstMet, firstRou) };
     const hex = '#' + firstCol.toString(16).padStart(6,'0');
-    html += '<div class="mat-current-info">';
-    html += '<div class="mat-color-row"><label>Color</label><input type="color" id="matEditColor" value="' + hex + '"><span class="mat-hex">' + hex.toUpperCase() + '</span></div>';
-    html += '<div class="mat-prop-row"><label>Metalness</label><input type="range" id="matEditMetal" min="0" max="1" step="0.01" value="' + firstMet.toFixed(2) + '"><span class="mat-val">' + firstMet.toFixed(2) + '</span></div>';
-    html += '<div class="mat-prop-row"><label>Roughness</label><input type="range" id="matEditRough" min="0" max="1" step="0.01" value="' + firstRou.toFixed(2) + '"><span class="mat-val">' + firstRou.toFixed(2) + '</span></div>';
+    html += '<div class="mat-sel-preview" id="matSelPreview">';
+    html += matSphereHtml(def, 40);
+    html += '<div class="mat-sel-info"><div class="mat-sel-name">' + def.name + '</div>';
+    html += '<div class="mat-sel-props">' + hex.toUpperCase() + ' &middot; M:' + firstMet.toFixed(2) + ' R:' + firstRou.toFixed(2) + '</div></div>';
     html += '</div>';
   } else {
-    // Mixed materials — show unique ones
     const unique = new Map();
     for (const e of entries) {
       const c = e.material.color ? e.material.color.getHex() : 0;
@@ -4983,56 +5164,61 @@ function renderMatSelectionSection() {
       if (!unique.has(key)) unique.set(key, { color: c, metalness: m, roughness: r, count: 0 });
       unique.get(key).count++;
     }
-    html += '<div class="mat-current-info"><div style="font-size:10px;color:#c0392b;font-weight:600;margin-bottom:4px;">Mixed materials (' + unique.size + ' unique)</div>';
-    html += '<div class="mat-grid" style="gap:4px;">';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 0;">';
+    html += '<span class="mat-sel-mixed">Mixed (' + unique.size + ')</span>';
     for (const [, u] of unique) {
-      const def = { color: u.color, metalness: u.metalness, roughness: u.roughness };
-      html += '<div class="mat-swatch" style="aspect-ratio:1.4;" onclick="applyMaterialToSelection({color:' + u.color + ',metalness:' + u.metalness + ',roughness:' + u.roughness + '})" title="Apply to all selected">';
-      html += '<div class="swatch-color" style="background:' + matSwatchGradient(def) + '"></div>';
-      html += '<div class="swatch-count">×' + u.count + '</div>';
+      html += '<div style="cursor:pointer;position:relative;" title="Click to unify" data-mat-apply=\'{"color":' + u.color + ',"metalness":' + u.metalness + ',"roughness":' + u.roughness + '}\'>';
+      html += matSphereHtml(u, 30);
+      html += '<span style="position:absolute;bottom:-2px;right:-2px;font-size:7px;background:rgba(0,0,0,0.55);color:#fff;padding:0 3px;border-radius:3px;">' + u.count + '</span>';
       html += '</div>';
     }
-    html += '</div>';
-    html += '<div style="font-size:9px;color:#868d9e;margin-top:4px;">Click a swatch above to unify all selected parts to that material, or pick from below.</div>';
     html += '</div>';
   }
 
   el.innerHTML = html;
 
-  // Wire up live-edit sliders if single material
+  // Wire: click selection preview sphere → open edit popover
   if (allSame) {
-    const colorInput = document.getElementById('matEditColor');
-    const metalInput = document.getElementById('matEditMetal');
-    const roughInput = document.getElementById('matEditRough');
-    const applyLive = () => {
-      const col = parseInt(colorInput.value.slice(1), 16);
-      const met = parseFloat(metalInput.value);
-      const rou = parseFloat(roughInput.value);
-      metalInput.nextElementSibling.textContent = met.toFixed(2);
-      roughInput.nextElementSibling.textContent = rou.toFixed(2);
-      colorInput.nextElementSibling.textContent = colorInput.value.toUpperCase();
-      // Apply to all selected meshes
-      for (const pid of state.selectedParts) {
-        if (state.xrayParts.has(pid)) continue;
-        const meshes = state.partMeshMap.get(pid);
-        if (!meshes) continue;
-        for (const m of meshes) {
-          const mats = Array.isArray(m.material) ? m.material : [m.material];
-          for (const mt of mats) {
-            if (mt._isXray) continue;
-            if (mt.color) mt.color.setHex(col);
-            if (mt.metalness !== undefined) mt.metalness = met;
-            if (mt.roughness !== undefined) mt.roughness = rou;
-            mt.needsUpdate = true;
+    const preview = document.getElementById('matSelPreview');
+    if (preview) {
+      preview.style.cursor = 'pointer';
+      preview.addEventListener('click', () => {
+        showMatEditPopover(preview, { color: firstCol, metalness: firstMet, roughness: firstRou, name: guessMatName(firstCol, firstMet, firstRou) }, (nd) => {
+          // Live-apply to all selected
+          for (const pid of state.selectedParts) {
+            if (state.xrayParts.has(pid)) continue;
+            const meshes = state.partMeshMap.get(pid);
+            if (!meshes) continue;
+            for (const m of meshes) {
+              const mats = Array.isArray(m.material) ? m.material : [m.material];
+              for (const mt of mats) {
+                if (mt._isXray) continue;
+                if (mt.color) mt.color.setHex(nd.color);
+                if (mt.metalness !== undefined) mt.metalness = nd.metalness;
+                if (mt.roughness !== undefined) mt.roughness = nd.roughness;
+                mt.needsUpdate = true;
+              }
+              state.originalMaterials.set(m.uuid, Array.isArray(m.material) ? m.material.map(x=>x.clone()) : m.material.clone());
+            }
           }
-          state.originalMaterials.set(m.uuid, Array.isArray(m.material) ? m.material.map(x=>x.clone()) : m.material.clone());
-        }
-      }
-    };
-    colorInput.addEventListener('input', applyLive);
-    metalInput.addEventListener('input', applyLive);
-    roughInput.addEventListener('input', applyLive);
+          // Update preview sphere + info in realtime
+          const sph = preview.querySelector('.mat-sphere');
+          if (sph) sph.setAttribute('style', 'width:40px;height:40px;' + matSphereStyle(nd));
+          const nameEl = preview.querySelector('.mat-sel-name');
+          const propsEl = preview.querySelector('.mat-sel-props');
+          if (nameEl) nameEl.textContent = guessMatName(nd.color, nd.metalness, nd.roughness);
+          if (propsEl) propsEl.innerHTML = '#' + nd.color.toString(16).padStart(6,'0').toUpperCase() + ' &middot; M:' + nd.metalness.toFixed(2) + ' R:' + nd.roughness.toFixed(2);
+        });
+      });
+    }
   }
+
+  // Wire: click mixed material sphere → apply to all
+  el.querySelectorAll('[data-mat-apply]').forEach(div => {
+    div.addEventListener('click', () => {
+      applyMaterialToSelection(JSON.parse(div.dataset.matApply));
+    });
+  });
 }
 
 // ---- Local scene materials grid ----
@@ -5042,7 +5228,7 @@ function renderMatLocalGrid() {
   const sceneMats = getSceneMaterials();
   if (sceneMats.length === 0) { grid.innerHTML = '<div style="color:#868d9e;font-size:11px;padding:4px 0;">No materials in scene</div>'; return; }
 
-  // Check which scene materials are currently on the selection
+  const hasSel = state.selectedParts.size > 0;
   const selEntries = getSelectedPartsMaterials();
   const selKeys = new Set();
   for (const e of selEntries) {
@@ -5052,16 +5238,66 @@ function renderMatLocalGrid() {
     selKeys.add(c.toString(16) + '_' + m.toFixed(2) + '_' + r.toFixed(2));
   }
 
-  let html = '';
+  grid.innerHTML = '';
   for (const sm of sceneMats) {
     const isCurrent = selKeys.has(sm.color.toString(16) + '_' + sm.metalness.toFixed(2) + '_' + sm.roughness.toFixed(2));
-    html += '<div class="mat-swatch' + (isCurrent ? ' current' : '') + '" onclick="applyMaterialToSelection({color:' + sm.color + ',metalness:' + sm.metalness + ',roughness:' + sm.roughness + '})" title="' + sm.name + ' (×' + sm.count + ')">';
-    html += '<div class="swatch-color" style="background:' + matSwatchGradient(sm) + '"></div>';
-    html += '<div class="swatch-label">' + sm.name + '</div>';
-    html += '<div class="swatch-count">' + sm.count + '</div>';
-    html += '</div>';
+    const swatch = document.createElement('div');
+    swatch.className = 'mat-swatch' + (isCurrent ? ' current' : '');
+    swatch.title = sm.name + ' (\u00d7' + sm.count + ')';
+    let inner = matSphereHtml(sm);
+    inner += '<div class="swatch-label">' + sm.name + '</div>';
+    if (sm.count > 0) inner += '<div class="swatch-count">' + sm.count + '</div>';
+    // Hover action buttons
+    let actions = '';
+    if (hasSel) actions += '<button class="mat-assign-btn">Assign</button>';
+    if (sm.count > 0) actions += '<button class="mat-select-all-btn">Select All</button>';
+    if (sm.count === 0 && sm.imported) actions += '<button class="mat-remove-btn" style="background:rgba(255,31,31,0.9);color:#fff;">Remove</button>';
+    if (actions) inner += '<div class="mat-hover-action">' + actions + '</div>';
+    swatch.innerHTML = inner;
+
+    // Click → open edit popover with live scene-wide replace
+    const smRef = sm; // closure ref
+    swatch.addEventListener('click', (e) => {
+      if (e.target.closest('.mat-hover-action')) return; // don't open on button clicks
+      const oldDef = { color: smRef.color, metalness: smRef.metalness, roughness: smRef.roughness };
+      showMatEditPopover(swatch, { ...oldDef, name: smRef.name }, (nd) => {
+        replaceMatInScene(oldDef, nd);
+        // Update oldDef to track the new values for subsequent edits
+        oldDef.color = nd.color; oldDef.metalness = nd.metalness; oldDef.roughness = nd.roughness;
+        // Update sphere in swatch
+        const sph = swatch.querySelector('.mat-sphere');
+        if (sph) sph.setAttribute('style', 'width:48px;height:48px;' + matSphereStyle(nd));
+        const lbl = swatch.querySelector('.swatch-label');
+        if (lbl) lbl.textContent = guessMatName(nd.color, nd.metalness, nd.roughness);
+      });
+    });
+
+    // Assign button
+    const assignBtn = swatch.querySelector('.mat-assign-btn');
+    if (assignBtn) {
+      assignBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        applyMaterialToSelection({ color: sm.color, metalness: sm.metalness, roughness: sm.roughness });
+      });
+    }
+    // Select All button
+    const selectAllBtn = swatch.querySelector('.mat-select-all-btn');
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectPartsByMaterial({ color: sm.color, metalness: sm.metalness, roughness: sm.roughness });
+      });
+    }
+    // Remove unused imported
+    const removeBtn = swatch.querySelector('.mat-remove-btn');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeUnusedImportedMat({ color: sm.color, metalness: sm.metalness, roughness: sm.roughness });
+      });
+    }
+    grid.appendChild(swatch);
   }
-  grid.innerHTML = html;
 }
 
 // ---- Library grid ----
@@ -5072,19 +5308,46 @@ function renderMatLibGrid() {
   const all = [...materialLibrary, ...importedMaterials];
   const filtered = search ? all.filter(m => m.name.toLowerCase().includes(search) || (m.cat||'').toLowerCase().includes(search)) : all;
 
-  let html = '';
+  grid.innerHTML = '';
   let lastCat = '';
   for (const def of filtered) {
     if (def.cat && def.cat !== lastCat && !search) {
       lastCat = def.cat;
-      html += '<div style="grid-column:1/-1;font-size:9px;font-weight:700;color:#868d9e;text-transform:uppercase;padding:4px 0 0;">' + def.cat + '</div>';
+      const catDiv = document.createElement('div');
+      catDiv.style.cssText = 'grid-column:1/-1;font-size:9px;font-weight:700;color:#868d9e;text-transform:uppercase;padding:4px 0 0;';
+      catDiv.textContent = def.cat;
+      grid.appendChild(catDiv);
     }
-    html += '<div class="mat-swatch" onclick="applyMaterialToSelection({color:' + def.color + ',metalness:' + def.metalness + ',roughness:' + def.roughness + (def.transparent ? ',transparent:true,opacity:' + (def.opacity||0.3) : '') + '})" title="' + def.name + '">';
-    html += '<div class="swatch-color" style="background:' + matSwatchGradient(def) + ';' + (def.transparent ? 'opacity:0.6;' : '') + '"></div>';
-    html += '<div class="swatch-label">' + def.name + '</div>';
-    html += '</div>';
+    const swatch = document.createElement('div');
+    swatch.className = 'mat-swatch';
+    swatch.title = def.name;
+    let inner = matSphereHtml(def);
+    inner += '<div class="swatch-label">' + def.name + '</div>';
+    inner += '<div class="mat-hover-action"><button class="mat-import-btn">Import</button></div>';
+    swatch.innerHTML = inner;
+    // Right-click → edit popover
+    swatch.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showMatEditPopover(swatch, { ...def }, null);
+    });
+    // Import button → add to scene materials (importedMaterials)
+    swatch.querySelector('.mat-import-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Check if already imported
+      const key = def.color + '_' + def.metalness + '_' + def.roughness;
+      const already = importedMaterials.find(im => im.color === def.color && im.metalness === def.metalness && im.roughness === def.roughness);
+      if (!already) {
+        importedMaterials.push({ ...def, id: 'imported-' + Date.now(), cat: 'Imported' });
+      }
+      // Apply to selection if parts are selected
+      if (state.selectedParts.size > 0) {
+        applyMaterialToSelection({ color: def.color, metalness: def.metalness, roughness: def.roughness, transparent: def.transparent, opacity: def.opacity });
+      } else {
+        renderMaterialsPanel();
+      }
+    });
+    grid.appendChild(swatch);
   }
-  grid.innerHTML = html;
 }
 
 // Search handler
@@ -5174,28 +5437,16 @@ applyMaterialToSelection = function(def) {
   }
 };
 
-// Open / close material editor window
-document.getElementById('openMatWindowBtn')?.addEventListener('click', () => {
+// Open / close material library window
+document.getElementById('openMatLibBtn')?.addEventListener('click', () => {
   const mw = document.getElementById('matWindow');
   mw.classList.remove('hidden');
   flFocus('matWindow');
-  renderMaterialsPanel();
+  renderMatLibGrid();
 });
 document.getElementById('matWindowClose')?.addEventListener('click', () => {
   document.getElementById('matWindow').classList.add('hidden');
 });
-
-// Also open material window when clicking the materials tab
-const _origSwitchTab = switchPanelTab;
-switchPanelTab = function(tabId) {
-  _origSwitchTab(tabId);
-  if (tabId === 'materials') {
-    const mw = document.getElementById('matWindow');
-    mw.classList.remove('hidden');
-    flFocus('matWindow');
-    renderMaterialsPanel();
-  }
-};
 
 // Initial render
 setTimeout(renderMaterialsPanel, 500);
