@@ -42,7 +42,9 @@ html.embedded .left-panel { top:12px; }
 html.procedure .left-toolbar,
 html.procedure .left-panel,
 html.procedure .right-panel,
-html.procedure .fl-window { display:none !important; }
+html.procedure .fl-window,
+html.procedure .viewer-more-btn,
+html.procedure .viewer-more-menu { display:none !important; }
 
 /* ===== FRONTLINE WINDOW (shared floating panel system) ===== */
 .fl-window {
@@ -453,10 +455,11 @@ html.procedure .fl-window { display:none !important; }
 }
 .mat-swatch {
   aspect-ratio:1; border-radius:8px; cursor:pointer; border:2px solid transparent;
-  position:relative; overflow:hidden;
+  position:relative; overflow:hidden; transition: border-color 0.15s, box-shadow 0.15s;
 }
 .mat-swatch:hover { border-color:#2f80ed; }
 .mat-swatch.active { border-color:#2f80ed; box-shadow:0 0 0 1px #2f80ed; }
+.mat-swatch.current { border-color:#11e874; box-shadow:0 0 0 1px #11e874; }
 .mat-swatch .swatch-color {
   width:100%; height:100%; border-radius:6px;
 }
@@ -465,6 +468,30 @@ html.procedure .fl-window { display:none !important; }
   font-size:9px; color:#fff; background:rgba(0,0,0,0.5); text-align:center;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
+.mat-swatch .swatch-count {
+  position:absolute; top:2px; right:3px; font-size:8px; color:#fff;
+  background:rgba(0,0,0,0.45); padding:0 4px; border-radius:4px; line-height:14px;
+}
+/* Material section headers */
+.mat-section { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#868d9e; padding:8px 0 4px; display:flex; align-items:center; gap:6px; }
+.mat-section::after { content:''; flex:1; height:1px; background:#e0e0e0; }
+/* Current material info */
+.mat-current-info { background:#f0f3fa; border-radius:8px; padding:8px 10px; display:flex; flex-direction:column; gap:4px; }
+.mat-current-info .mat-prop { display:flex; justify-content:space-between; font-size:11px; color:#36415d; }
+.mat-current-info .mat-prop span:first-child { color:#868d9e; }
+.mat-current-info .mat-prop .mat-mixed { color:#c0392b; font-style:italic; font-size:10px; }
+/* Material property sliders */
+.mat-prop-row { display:flex; align-items:center; gap:6px; font-size:11px; color:#36415d; }
+.mat-prop-row label { width:68px; flex-shrink:0; color:#868d9e; font-size:10px; font-weight:600; text-transform:uppercase; }
+.mat-prop-row input[type=range] { flex:1; height:4px; accent-color:#2f80ed; cursor:pointer; }
+.mat-prop-row .mat-val { width:32px; text-align:right; font-size:10px; font-family:monospace; color:#5e677d; }
+.mat-color-row { display:flex; align-items:center; gap:6px; }
+.mat-color-row label { width:68px; flex-shrink:0; color:#868d9e; font-size:10px; font-weight:600; text-transform:uppercase; }
+.mat-color-row input[type=color] { width:28px; height:22px; border:1px solid #c2c9db; border-radius:4px; cursor:pointer; padding:1px; }
+.mat-color-row .mat-hex { font-size:10px; font-family:monospace; color:#5e677d; }
+/* Import material button */
+.mat-import-zone { border:1.5px dashed #c2c9db; border-radius:8px; padding:10px; text-align:center; cursor:pointer; color:#868d9e; font-size:11px; transition:all 0.15s; }
+.mat-import-zone:hover { border-color:#2f80ed; color:#2f80ed; background:rgba(47,128,237,0.04); }
 
 /* Multi-select header */
 .multi-select-header {
@@ -620,29 +647,31 @@ html.embedded .right-panel { top:12px !important; }
 /* ===== BOTTOM TOOLBAR ===== */
 .bottom-toolbar {
   position:fixed; bottom:17px; left:50%; transform:translateX(-50%); z-index:100;
-  background:#fff; border-radius:10px; box-shadow:0px 4px 20px rgba(0,0,0,0.25);
-  display:flex; align-items:center; gap:8px; padding:8px; height:51px;
+  background:#fff; border-radius:12px; box-shadow:0 2px 16px rgba(54,65,93,0.13), 0 0 0 1px rgba(194,201,219,0.35);
+  display:flex; align-items:center; gap:6px; padding:6px; height:48px;
 }
 .bt-btn {
-  width:35px; height:35px; background:#e9e9e9; border-radius:10px; display:flex;
+  width:36px; height:36px; background:transparent; border-radius:10px; display:flex;
   align-items:center; justify-content:center; cursor:pointer; border:none; flex-shrink:0;
+  transition:background 0.15s;
 }
-.bt-btn:hover { background:#d9e0f0; }
+.bt-btn:hover { background:#f0f2f7; }
 .bt-btn.active { background:#2f80ed; }
 .bt-btn.active svg { fill:#fff; }
-.bt-btn svg { width:14px; height:14px; fill:#36415d; }
-.bt-divider { width:2px; height:35px; background:#e9e9e9; border-radius:25px; flex-shrink:0; }
+.bt-btn svg { width:16px; height:16px; fill:#36415d; }
+.bt-divider { width:1px; height:24px; background:#e0e4ed; border-radius:25px; flex-shrink:0; margin:0 2px; }
 .bt-text-btn {
-  display:flex; align-items:center; gap:8px; padding:8px 4px; cursor:pointer;
-  border:none; background:none; border-radius:25px; white-space:nowrap;
+  display:flex; align-items:center; gap:6px; height:36px; padding:0 14px; cursor:pointer;
+  border:none; background:#8404b3; border-radius:10px; white-space:nowrap;
+  transition:background 0.15s;
 }
-.bt-text-btn:hover { background:#e9e9e9; }
-.bt-text-btn span { font-family:'Open Sans',sans-serif; font-weight:700; font-size:14px; color:#36415d; }
-.bt-text-btn svg { width:14px; height:14px; fill:#36415d; }
+.bt-text-btn:hover { background:#9b1fd1; }
+.bt-text-btn span { font-family:'Open Sans',sans-serif; font-weight:600; font-size:13px; color:#fff; }
+.bt-text-btn svg { width:12px; height:12px; fill:#fff; }
 .bt-save {
-  width:51px; height:35px; background:#2f80ed; border-radius:10px; border:none;
-  color:#fff; font-family:'Open Sans',sans-serif; font-size:12px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
+  height:36px; padding:0 16px; background:#2f80ed; border-radius:10px; border:none;
+  color:#fff; font-family:'Open Sans',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:background 0.15s;
 }
 .bt-save:hover { background:#5999f1; }
 
@@ -2199,33 +2228,10 @@ html.embedded .right-panel { top:12px !important; }
 
   <!-- ==================== 5. MATERIAL EDITOR ==================== -->
   <div class="panel-content hidden" id="tabMaterials">
-    <!-- Search -->
-    <div class="mat-search">
-      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      <input type="text" placeholder="Search materials...">
-    </div>
-
-    <!-- Controls row -->
-    <div style="display:flex;gap:6px;align-items:center;">
-      <button class="filter-toggle" onclick="this.classList.toggle('active')"><svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg> Used only</button>
-      <div style="flex:1"></div>
-      <button class="btn-secondary" style="height:28px;font-size:11px;"><svg viewBox="0 0 24 24" width="12" height="12" fill="#36415d"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg> Library</button>
-    </div>
-
-    <!-- Material swatches -->
-    <div class="mat-grid">
-      <div class="mat-swatch active"><div class="swatch-color" style="background:linear-gradient(135deg,#b0b0b0,#e0e0e0);"></div><div class="swatch-label">Steel</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#c0a050,#f0d888);"></div><div class="swatch-label">Brass</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#8b4513,#d2691e);"></div><div class="swatch-label">Copper</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#222,#555);"></div><div class="swatch-label">Dark Metal</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#1a5276,#2980b9);"></div><div class="swatch-label">Blue Paint</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#7b241c,#e74c3c);"></div><div class="swatch-label">Red Paint</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#1e8449,#27ae60);"></div><div class="swatch-label">Green Paint</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#d4ac0d,#f1c40f);"></div><div class="swatch-label">Yellow</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#eee,#fff);"></div><div class="swatch-label">White</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#333,#666);border:1px solid #c2c9db;"></div><div class="swatch-label">Rubber</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#87ceeb,#b0e0e6);"></div><div class="swatch-label">Glass</div></div>
-      <div class="mat-swatch"><div class="swatch-color" style="background:linear-gradient(135deg,#f5deb3,#deb887);"></div><div class="swatch-label">Wood</div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px 12px;">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="#868d9e"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1-.01-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      <div style="font-size:12px;color:#868d9e;text-align:center;">Edit materials, browse the library, and assign materials to parts.</div>
+      <button id="openMatWindowBtn" style="background:#2f80ed;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#82b3f4'" onmouseout="this.style.background='#2f80ed'">Open Material Editor</button>
     </div>
   </div>
 
@@ -2274,7 +2280,7 @@ html.embedded .right-panel { top:12px !important; }
   <button class="bt-btn" title="Toggle Grid" id="btGrid"><svg viewBox="0 0 24 24" fill="#36415d"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 20H4v-4h4v4zm0-6H4v-4h4v4zm0-6H4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4z"/></svg></button>
   <button class="bt-btn" title="Add" id="btAdd"><svg viewBox="0 0 24 24" fill="#36415d"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
   <div class="bt-divider"></div>
-  <button class="bt-text-btn" id="btPreview"><span>Preview</span><svg viewBox="0 0 24 24" fill="#36415d"><path d="M8 5v14l11-7z"/></svg></button>
+  <button class="bt-text-btn" id="btPreview"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg><span>Preview</span></button>
   <button class="bt-save" id="btSave">Save</button>
 </div>
 <!-- EDITOR MORE MENU (above bottom toolbar) -->
@@ -2305,6 +2311,35 @@ html.embedded .right-panel { top:12px !important; }
 </div>
 
 <!-- ANIMATION MANAGER PANEL -->
+<!-- MATERIAL EDITOR WINDOW -->
+<div id="matWindow" class="fl-window hidden">
+  <div class="fl-header">
+    <svg class="fl-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1-.01-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    <span class="fl-title">Material Editor</span>
+    <button class="fl-close" id="matWindowClose"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+  </div>
+  <div class="fl-body" style="padding:10px;">
+    <!-- Selected part(s) material -->
+    <div id="matSelectionSection"></div>
+    <!-- Local scene materials -->
+    <div class="mat-section">Scene Materials</div>
+    <div id="matLocalGrid" class="mat-grid"></div>
+    <!-- Material library -->
+    <div class="mat-section">Library</div>
+    <div class="mat-search" style="margin-bottom:6px">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" id="matLibSearch" placeholder="Search library...">
+    </div>
+    <div id="matLibGrid" class="mat-grid"></div>
+    <!-- Import -->
+    <div class="mat-import-zone" id="matImportZone" style="margin-top:8px">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      Import Material (texture image)
+      <input type="file" id="matImportInput" accept="image/*" style="display:none">
+    </div>
+  </div>
+</div>
+
 <div id="animManager" class="fl-window hidden">
   <div class="fl-header">
     <svg class="fl-icon" viewBox="0 0 24 24"><path d="M4 6.47L5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4z"/></svg>
@@ -2671,6 +2706,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
 
 // ==================== FRONTLINE WINDOW SYSTEM ====================
 let flZIndex = 60;
@@ -2874,13 +2911,34 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(viewport.clientWidth, viewport.clientHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMappingExposure = 1.15;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.VSMShadowMap;
 viewport.appendChild(renderer.domElement);
+
+// Environment map — HDRI for realistic PBR reflections
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
+new EXRLoader().load('./events_hall_interior_1k.exr', (texture) => {
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
+  scene.environmentIntensity = 0.4;
+  texture.dispose();
+  pmremGenerator.dispose();
+});
 
 // Post-processing
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
+
+// Screen-Space Ambient Occlusion
+const ssaoPass = new SSAOPass(scene, camera, viewport.clientWidth, viewport.clientHeight);
+ssaoPass.kernelRadius = 0.5;
+ssaoPass.minDistance = 0.001;
+ssaoPass.maxDistance = 0.15;
+ssaoPass.intensity = 1.0;
+composer.addPass(ssaoPass);
 
 // Selection outline (blue)
 const outlinePass = new OutlinePass(new THREE.Vector2(viewport.clientWidth, viewport.clientHeight), scene, camera);
@@ -2897,6 +2955,16 @@ hoverOutlinePass.pulsePeriod = 0;
 hoverOutlinePass.visibleEdgeColor.set('#82b3f4');
 hoverOutlinePass.hiddenEdgeColor.set('#5999f1');
 composer.addPass(hoverOutlinePass);
+
+// Brightness / Contrast
+const BrightnessContrastShader = {
+  uniforms: { tDiffuse: { value: null }, brightness: { value: 0.03 }, contrast: { value: 0.12 } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float brightness; uniform float contrast; varying vec2 vUv;
+    void main(){ vec4 c=texture2D(tDiffuse,vUv); c.rgb+=brightness; c.rgb=(c.rgb-0.5)*max(contrast+1.0,0.0)+0.5; gl_FragColor=c; }`
+};
+const bcPass = new ShaderPass(BrightnessContrastShader);
+composer.addPass(bcPass);
 
 const fxaaPass = new ShaderPass(FXAAShader);
 fxaaPass.uniforms['resolution'].value.set(1/viewport.clientWidth, 1/viewport.clientHeight);
@@ -2953,11 +3021,43 @@ transformControls.addEventListener('dragging-changed', (e) => {
   }
 });
 
-// Lights
-scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-const d1 = new THREE.DirectionalLight(0xffffff, 1.5); d1.position.set(150,200,100); scene.add(d1);
-const d2 = new THREE.DirectionalLight(0xffffff, 0.6); d2.position.set(-100,-50,-80); scene.add(d2);
-scene.add(new THREE.HemisphereLight(0x87ceeb, 0x362d1b, 0.4));
+// Lights — env map provides most illumination, these add directionality & shadows
+// Key light — warm, casts soft shadows
+const d1 = new THREE.DirectionalLight(0xfff4e6, 0.25);
+d1.position.set(150, 200, 100);
+d1.castShadow = true;
+d1.shadow.mapSize.width = 2048;
+d1.shadow.mapSize.height = 2048;
+d1.shadow.camera.near = 0.5;
+d1.shadow.camera.far = 600;
+d1.shadow.camera.left = -150;
+d1.shadow.camera.right = 150;
+d1.shadow.camera.top = 150;
+d1.shadow.camera.bottom = -150;
+d1.shadow.bias = -0.0002;
+d1.shadow.radius = 4;
+scene.add(d1);
+
+// Fill light — cool tint, from opposite side
+const d2 = new THREE.DirectionalLight(0xe0eaff, 0.15);
+d2.position.set(-120, 80, -90);
+scene.add(d2);
+
+// Rim / backlight — subtle edge definition
+const d3 = new THREE.DirectionalLight(0xffffff, 0.15);
+d3.position.set(0, 60, -160);
+scene.add(d3);
+
+// Shadow-catching ground plane — transparent except where shadows land
+const shadowGround = new THREE.Mesh(
+  new THREE.PlaneGeometry(600, 600),
+  new THREE.ShadowMaterial({ opacity: 0.18 })
+);
+shadowGround.rotation.x = -Math.PI / 2;
+shadowGround.position.y = 0;
+shadowGround.receiveShadow = true;
+shadowGround.raycast = () => {};
+scene.add(shadowGround);
 
 // ==================== INFINITE ADAPTIVE GRID ====================
 // Direct port of Unity DigitalTwinGrid.shader + DigitalTwinGridController.cs
@@ -3555,10 +3655,10 @@ let fbxModel = null;
 
 loader.load('./Generator.fbx', (object) => {
   fbxModel = object;
-  // FBXLoader converts to cm via UnitScaleFactor. Scene unit = 1 cm. Only center at origin.
+  // FBXLoader converts to cm via UnitScaleFactor. Center XZ at origin, sit on grid (y=0).
   const box = new THREE.Box3().setFromObject(object);
   const center = box.getCenter(new THREE.Vector3());
-  object.position.sub(center);
+  object.position.set(-center.x, -box.min.y, -center.z);
 
   // Hide all meshes before adding — they'll be revealed progressively
   object.traverse(c => { if (c.isMesh) c.visible = false; });
@@ -3589,8 +3689,10 @@ loader.load('./Generator.fbx', (object) => {
     if (child.isMesh) {
       const n = (child.name||'').toLowerCase();
       let mat;
+      // Cap — chrome
+      if (n.includes('cap')) mat=P.chrome;
       // Yellow body panels & covers
-      if (n.includes('panel')||n.includes('cover')||n.includes('housing')||n.includes('body')||n.includes('tank')||n.includes('fuel')) mat=P.yellow;
+      else if (n.includes('panel')||n.includes('cover')||n.includes('housing')||n.includes('body')||n.includes('tank')||n.includes('fuel')) mat=P.yellow;
       // Black steel frame/structure
       else if (n.includes('frame')||n.includes('structure')||n.includes('cage')||n.includes('rail')||n.includes('bracket')||n.includes('support')) mat=P.frame;
       // Shiny chrome engine parts
@@ -3608,10 +3710,16 @@ loader.load('./Generator.fbx', (object) => {
       // Fallback cycle: mostly yellow body & chrome engine mix
       else { const c=mi%7; mat=c<3?P.yellow:c<5?P.chrome:c===5?P.frame:P.silver; }
       child.material = mat.clone();
+      child.castShadow = true;
+      child.receiveShadow = true;
       mi++;
       state.originalMaterials.set(child.uuid, child.material.clone());
     }
   });
+
+  // Position shadow ground at model's base
+  const modelBounds = new THREE.Box3().setFromObject(object);
+  shadowGround.position.y = modelBounds.min.y - 0.05;
 
   // Initialize sample hotspots at positions relative to generator model
   const bb = new THREE.Box3().setFromObject(object);
@@ -3775,16 +3883,6 @@ function renderPartsList() {
     const eb = document.createElement('button'); eb.className='part-action-btn'+(isHid?' hidden-part':'');
     eb.innerHTML=isHid?'<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>';
     eb.onclick=(e)=>{e.stopPropagation();togglePartVisibility(part.id);}; item.appendChild(eb);
-
-    const xb = document.createElement('button'); xb.className='part-action-btn';
-    xb.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
-    xb.onclick=(e)=>{e.stopPropagation();xrayPart(part.id);}; item.appendChild(xb);
-
-    if (state.mode==='editor') {
-      const db = document.createElement('button'); db.className='part-action-btn part-delete-btn'; db.title='Delete';
-      db.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
-      db.onclick=(e)=>{e.stopPropagation();deleteParts([part.id]);}; item.appendChild(db);
-    }
 
     container.appendChild(item);
     if(hasKids&&part._expanded) for(const c of part.children) render(c,depth+1);
@@ -4662,8 +4760,446 @@ function switchPanelTab(tabId){
   if(target) document.getElementById(target).classList.remove('hidden');
 }
 document.querySelectorAll('.panel-tab[data-tab]').forEach(tab=>{
-  tab.onclick=()=>switchPanelTab(tab.dataset.tab);
+  tab.onclick=()=>{
+    switchPanelTab(tab.dataset.tab);
+    if (tab.dataset.tab === 'materials') renderMaterialsPanel();
+  };
 });
+
+// ==================== MATERIAL SYSTEM ====================
+// Material library — predefined PBR materials
+const materialLibrary = [
+  // Metals
+  { id:'lib-steel',     name:'Steel',       color:0xd0d0d0, metalness:0.9,  roughness:0.15, cat:'Metal' },
+  { id:'lib-brushed-steel', name:'Brushed Steel', color:0xc8c8c8, metalness:0.85, roughness:0.35, cat:'Metal' },
+  { id:'lib-aluminum',  name:'Aluminum',    color:0xe0e0e0, metalness:0.8,  roughness:0.25, cat:'Metal' },
+  { id:'lib-chrome',    name:'Chrome',      color:0xd0d0d0, metalness:0.95, roughness:0.05, cat:'Metal' },
+  { id:'lib-brass',     name:'Brass',       color:0xc5a43b, metalness:0.8,  roughness:0.2,  cat:'Metal' },
+  { id:'lib-copper',    name:'Copper',      color:0xb87333, metalness:0.75, roughness:0.15, cat:'Metal' },
+  { id:'lib-gold',      name:'Gold',        color:0xd4af37, metalness:0.95, roughness:0.1,  cat:'Metal' },
+  { id:'lib-cast-iron', name:'Cast Iron',   color:0x3a3a3a, metalness:0.6,  roughness:0.55, cat:'Metal' },
+  { id:'lib-dark-metal',name:'Dark Metal',  color:0x222222, metalness:0.5,  roughness:0.35, cat:'Metal' },
+  { id:'lib-silver',    name:'Silver',      color:0xa8a8a8, metalness:0.7,  roughness:0.2,  cat:'Metal' },
+  // Paints
+  { id:'lib-blue-paint',  name:'Blue Paint',  color:0x2980b9, metalness:0.0, roughness:0.4,  cat:'Paint' },
+  { id:'lib-red-paint',   name:'Red Paint',   color:0xcc2222, metalness:0.0, roughness:0.4,  cat:'Paint' },
+  { id:'lib-green-paint', name:'Green Paint', color:0x27ae60, metalness:0.0, roughness:0.4,  cat:'Paint' },
+  { id:'lib-yellow-paint',name:'Yellow Paint',color:0xF5C518, metalness:0.0, roughness:0.4,  cat:'Paint' },
+  { id:'lib-white-paint', name:'White Paint', color:0xf0f0f0, metalness:0.0, roughness:0.35, cat:'Paint' },
+  { id:'lib-black-paint', name:'Black Paint', color:0x1a1a1a, metalness:0.0, roughness:0.3,  cat:'Paint' },
+  { id:'lib-orange-paint',name:'Orange Paint',color:0xe67e22, metalness:0.0, roughness:0.4,  cat:'Paint' },
+  { id:'lib-purple-paint',name:'Purple Paint',color:0x8e44ad, metalness:0.0, roughness:0.4,  cat:'Paint' },
+  // Non-metal
+  { id:'lib-rubber',    name:'Rubber',      color:0x111111, metalness:0.0,  roughness:0.95, cat:'Other' },
+  { id:'lib-plastic-w', name:'White Plastic',color:0xe8e8e8, metalness:0.0, roughness:0.5,  cat:'Other' },
+  { id:'lib-plastic-b', name:'Black Plastic',color:0x2a2a2a, metalness:0.0, roughness:0.5,  cat:'Other' },
+  { id:'lib-glass',     name:'Glass',       color:0xc8dfe8, metalness:0.1,  roughness:0.05, cat:'Other', opacity:0.3, transparent:true },
+  { id:'lib-wood',      name:'Wood',        color:0xb8864e, metalness:0.0,  roughness:0.7,  cat:'Other' },
+  { id:'lib-concrete',  name:'Concrete',    color:0xa0a0a0, metalness:0.0,  roughness:0.9,  cat:'Other' },
+  { id:'lib-fabric',    name:'Fabric',      color:0x8899aa, metalness:0.0,  roughness:0.85, cat:'Other' },
+  { id:'lib-ceramic',   name:'Ceramic',     color:0xf5f0e8, metalness:0.0,  roughness:0.3,  cat:'Other' },
+];
+
+// Imported custom materials (persisted in session)
+const importedMaterials = []; // { id, name, color, metalness, roughness, map? (texture) }
+
+// Generate CSS gradient for a material definition
+function matSwatchGradient(def) {
+  const c = typeof def.color === 'number' ? '#' + def.color.toString(16).padStart(6,'0') : def.color;
+  // Parse hex to compute a lighter variant for gradient
+  const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+  const lighter = `rgb(${Math.min(255,r+50)},${Math.min(255,g+50)},${Math.min(255,b+50)})`;
+  const darker  = `rgb(${Math.max(0,r-30)},${Math.max(0,g-30)},${Math.max(0,b-30)})`;
+  // Metallic → more specular highlight
+  if (def.metalness > 0.5) {
+    const highlight = `rgb(${Math.min(255,r+80)},${Math.min(255,g+80)},${Math.min(255,b+80)})`;
+    return `linear-gradient(135deg,${darker} 0%,${highlight} 45%,${c} 100%)`;
+  }
+  return `linear-gradient(135deg,${darker},${lighter})`;
+}
+
+// Create a Three.js material from a definition
+function createMaterialFromDef(def) {
+  const opts = {
+    color: def.color,
+    metalness: def.metalness,
+    roughness: def.roughness,
+  };
+  if (def.transparent) { opts.transparent = true; opts.opacity = def.opacity || 0.3; opts.side = THREE.DoubleSide; }
+  const mat = new THREE.MeshStandardMaterial(opts);
+  if (def.map) mat.map = def.map;
+  return mat;
+}
+
+// Get all unique materials used in the scene (from originalMaterials)
+function getSceneMaterials() {
+  const seen = new Map(); // colorKey → { def, meshUuids[], count }
+  const processedParts = new Set();
+  // Walk all parts
+  function walkParts(parts) {
+    for (const p of parts) {
+      const meshes = state.partMeshMap.get(p.id);
+      if (meshes) {
+        for (const m of meshes) {
+          if (processedParts.has(m.uuid)) continue;
+          processedParts.add(m.uuid);
+          const mat = state.originalMaterials.get(m.uuid) || m.material;
+          const mats = Array.isArray(mat) ? mat : [mat];
+          for (const mt of mats) {
+            if (!mt || mt._isXray) continue;
+            const col = mt.color ? mt.color.getHex() : 0xaaaaaa;
+            const met = mt.metalness !== undefined ? mt.metalness : 0;
+            const rou = mt.roughness !== undefined ? mt.roughness : 0.5;
+            const key = col.toString(16) + '_' + met.toFixed(2) + '_' + rou.toFixed(2);
+            if (!seen.has(key)) {
+              seen.set(key, {
+                id: 'scene-' + key,
+                name: guessMatName(col, met, rou),
+                color: col, metalness: met, roughness: rou,
+                meshUuids: [], count: 0
+              });
+            }
+            const entry = seen.get(key);
+            entry.meshUuids.push(m.uuid);
+            entry.count++;
+          }
+        }
+      }
+      if (p.children) walkParts(p.children);
+    }
+  }
+  walkParts(state.parts);
+  return Array.from(seen.values()).sort((a,b) => b.count - a.count);
+}
+
+function guessMatName(color, metalness, roughness) {
+  // Try to name by closest library match
+  let best = null, bestDist = Infinity;
+  for (const lib of materialLibrary) {
+    const lr = (lib.color >> 16) & 0xff, lg = (lib.color >> 8) & 0xff, lb = lib.color & 0xff;
+    const cr = (color >> 16) & 0xff, cg = (color >> 8) & 0xff, cb = color & 0xff;
+    const dist = Math.abs(lr-cr) + Math.abs(lg-cg) + Math.abs(lb-cb) + Math.abs(lib.metalness - metalness)*100 + Math.abs(lib.roughness - roughness)*50;
+    if (dist < bestDist) { bestDist = dist; best = lib; }
+  }
+  if (bestDist < 80) return best.name;
+  // Fallback: describe
+  if (metalness > 0.5) return 'Metal #' + color.toString(16).padStart(6,'0');
+  return 'Material #' + color.toString(16).padStart(6,'0');
+}
+
+// Get materials of currently selected parts
+function getSelectedPartsMaterials() {
+  const result = []; // { mesh, partId, material, isArray }
+  for (const pid of state.selectedParts) {
+    const meshes = state.partMeshMap.get(pid);
+    if (!meshes) continue;
+    for (const m of meshes) {
+      const mat = m.material;
+      if (mat && !mat._isXray) {
+        if (Array.isArray(mat)) {
+          for (const sub of mat) result.push({ mesh: m, partId: pid, material: sub });
+        } else {
+          result.push({ mesh: m, partId: pid, material: mat });
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// Apply a material definition to all selected parts
+function applyMaterialToSelection(def) {
+  if (state.selectedParts.size === 0) return;
+  for (const pid of state.selectedParts) {
+    // Skip xrayed parts
+    if (state.xrayParts.has(pid)) continue;
+    const meshes = state.partMeshMap.get(pid);
+    if (!meshes) continue;
+    for (const m of meshes) {
+      const newMat = createMaterialFromDef(def);
+      newMat.castShadow = true;
+      m.material = newMat;
+      // Update original materials so x-ray restore works
+      state.originalMaterials.set(m.uuid, newMat.clone());
+      // Sync batched mesh if needed
+      if (sceneBatcher.enabled && sceneBatcher.syncMaterial) sceneBatcher.syncMaterial(m);
+    }
+  }
+  renderMaterialsPanel();
+}
+
+// Render the full materials panel
+function renderMaterialsPanel() {
+  renderMatSelectionSection();
+  renderMatLocalGrid();
+  renderMatLibGrid();
+}
+
+// ---- Selection section ----
+function renderMatSelectionSection() {
+  const el = document.getElementById('matSelectionSection');
+  if (!el) return;
+
+  if (state.selectedParts.size === 0) {
+    el.innerHTML = '<div style="color:#868d9e;font-size:11px;padding:6px 0;text-align:center;">Select part(s) to edit materials</div>';
+    return;
+  }
+
+  const entries = getSelectedPartsMaterials();
+  if (entries.length === 0) {
+    el.innerHTML = '<div style="color:#868d9e;font-size:11px;padding:6px 0;">No materials on selection</div>';
+    return;
+  }
+
+  // Check if all materials are the same
+  const firstCol = entries[0].material.color ? entries[0].material.color.getHex() : 0;
+  const firstMet = entries[0].material.metalness !== undefined ? entries[0].material.metalness : 0;
+  const firstRou = entries[0].material.roughness !== undefined ? entries[0].material.roughness : 0.5;
+  let allSame = true;
+  for (let i = 1; i < entries.length; i++) {
+    const c = entries[i].material.color ? entries[i].material.color.getHex() : 0;
+    const m = entries[i].material.metalness !== undefined ? entries[i].material.metalness : 0;
+    const r = entries[i].material.roughness !== undefined ? entries[i].material.roughness : 0.5;
+    if (c !== firstCol || Math.abs(m - firstMet) > 0.01 || Math.abs(r - firstRou) > 0.01) { allSame = false; break; }
+  }
+
+  let html = '<div class="mat-section">Selection (' + state.selectedParts.size + ' part' + (state.selectedParts.size > 1 ? 's' : '') + ')</div>';
+
+  if (allSame) {
+    const hex = '#' + firstCol.toString(16).padStart(6,'0');
+    html += '<div class="mat-current-info">';
+    html += '<div class="mat-color-row"><label>Color</label><input type="color" id="matEditColor" value="' + hex + '"><span class="mat-hex">' + hex.toUpperCase() + '</span></div>';
+    html += '<div class="mat-prop-row"><label>Metalness</label><input type="range" id="matEditMetal" min="0" max="1" step="0.01" value="' + firstMet.toFixed(2) + '"><span class="mat-val">' + firstMet.toFixed(2) + '</span></div>';
+    html += '<div class="mat-prop-row"><label>Roughness</label><input type="range" id="matEditRough" min="0" max="1" step="0.01" value="' + firstRou.toFixed(2) + '"><span class="mat-val">' + firstRou.toFixed(2) + '</span></div>';
+    html += '</div>';
+  } else {
+    // Mixed materials — show unique ones
+    const unique = new Map();
+    for (const e of entries) {
+      const c = e.material.color ? e.material.color.getHex() : 0;
+      const m = e.material.metalness !== undefined ? e.material.metalness : 0;
+      const r = e.material.roughness !== undefined ? e.material.roughness : 0.5;
+      const key = c + '_' + m.toFixed(2) + '_' + r.toFixed(2);
+      if (!unique.has(key)) unique.set(key, { color: c, metalness: m, roughness: r, count: 0 });
+      unique.get(key).count++;
+    }
+    html += '<div class="mat-current-info"><div style="font-size:10px;color:#c0392b;font-weight:600;margin-bottom:4px;">Mixed materials (' + unique.size + ' unique)</div>';
+    html += '<div class="mat-grid" style="gap:4px;">';
+    for (const [, u] of unique) {
+      const def = { color: u.color, metalness: u.metalness, roughness: u.roughness };
+      html += '<div class="mat-swatch" style="aspect-ratio:1.4;" onclick="applyMaterialToSelection({color:' + u.color + ',metalness:' + u.metalness + ',roughness:' + u.roughness + '})" title="Apply to all selected">';
+      html += '<div class="swatch-color" style="background:' + matSwatchGradient(def) + '"></div>';
+      html += '<div class="swatch-count">×' + u.count + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    html += '<div style="font-size:9px;color:#868d9e;margin-top:4px;">Click a swatch above to unify all selected parts to that material, or pick from below.</div>';
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+
+  // Wire up live-edit sliders if single material
+  if (allSame) {
+    const colorInput = document.getElementById('matEditColor');
+    const metalInput = document.getElementById('matEditMetal');
+    const roughInput = document.getElementById('matEditRough');
+    const applyLive = () => {
+      const col = parseInt(colorInput.value.slice(1), 16);
+      const met = parseFloat(metalInput.value);
+      const rou = parseFloat(roughInput.value);
+      metalInput.nextElementSibling.textContent = met.toFixed(2);
+      roughInput.nextElementSibling.textContent = rou.toFixed(2);
+      colorInput.nextElementSibling.textContent = colorInput.value.toUpperCase();
+      // Apply to all selected meshes
+      for (const pid of state.selectedParts) {
+        if (state.xrayParts.has(pid)) continue;
+        const meshes = state.partMeshMap.get(pid);
+        if (!meshes) continue;
+        for (const m of meshes) {
+          const mats = Array.isArray(m.material) ? m.material : [m.material];
+          for (const mt of mats) {
+            if (mt._isXray) continue;
+            if (mt.color) mt.color.setHex(col);
+            if (mt.metalness !== undefined) mt.metalness = met;
+            if (mt.roughness !== undefined) mt.roughness = rou;
+            mt.needsUpdate = true;
+          }
+          state.originalMaterials.set(m.uuid, Array.isArray(m.material) ? m.material.map(x=>x.clone()) : m.material.clone());
+        }
+      }
+    };
+    colorInput.addEventListener('input', applyLive);
+    metalInput.addEventListener('input', applyLive);
+    roughInput.addEventListener('input', applyLive);
+  }
+}
+
+// ---- Local scene materials grid ----
+function renderMatLocalGrid() {
+  const grid = document.getElementById('matLocalGrid');
+  if (!grid) return;
+  const sceneMats = getSceneMaterials();
+  if (sceneMats.length === 0) { grid.innerHTML = '<div style="color:#868d9e;font-size:11px;padding:4px 0;">No materials in scene</div>'; return; }
+
+  // Check which scene materials are currently on the selection
+  const selEntries = getSelectedPartsMaterials();
+  const selKeys = new Set();
+  for (const e of selEntries) {
+    const c = e.material.color ? e.material.color.getHex() : 0;
+    const m = e.material.metalness !== undefined ? e.material.metalness : 0;
+    const r = e.material.roughness !== undefined ? e.material.roughness : 0.5;
+    selKeys.add(c.toString(16) + '_' + m.toFixed(2) + '_' + r.toFixed(2));
+  }
+
+  let html = '';
+  for (const sm of sceneMats) {
+    const isCurrent = selKeys.has(sm.color.toString(16) + '_' + sm.metalness.toFixed(2) + '_' + sm.roughness.toFixed(2));
+    html += '<div class="mat-swatch' + (isCurrent ? ' current' : '') + '" onclick="applyMaterialToSelection({color:' + sm.color + ',metalness:' + sm.metalness + ',roughness:' + sm.roughness + '})" title="' + sm.name + ' (×' + sm.count + ')">';
+    html += '<div class="swatch-color" style="background:' + matSwatchGradient(sm) + '"></div>';
+    html += '<div class="swatch-label">' + sm.name + '</div>';
+    html += '<div class="swatch-count">' + sm.count + '</div>';
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+// ---- Library grid ----
+function renderMatLibGrid() {
+  const grid = document.getElementById('matLibGrid');
+  if (!grid) return;
+  const search = (document.getElementById('matLibSearch')?.value || '').toLowerCase();
+  const all = [...materialLibrary, ...importedMaterials];
+  const filtered = search ? all.filter(m => m.name.toLowerCase().includes(search) || (m.cat||'').toLowerCase().includes(search)) : all;
+
+  let html = '';
+  let lastCat = '';
+  for (const def of filtered) {
+    if (def.cat && def.cat !== lastCat && !search) {
+      lastCat = def.cat;
+      html += '<div style="grid-column:1/-1;font-size:9px;font-weight:700;color:#868d9e;text-transform:uppercase;padding:4px 0 0;">' + def.cat + '</div>';
+    }
+    html += '<div class="mat-swatch" onclick="applyMaterialToSelection({color:' + def.color + ',metalness:' + def.metalness + ',roughness:' + def.roughness + (def.transparent ? ',transparent:true,opacity:' + (def.opacity||0.3) : '') + '})" title="' + def.name + '">';
+    html += '<div class="swatch-color" style="background:' + matSwatchGradient(def) + ';' + (def.transparent ? 'opacity:0.6;' : '') + '"></div>';
+    html += '<div class="swatch-label">' + def.name + '</div>';
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+// Search handler
+document.getElementById('matLibSearch')?.addEventListener('input', renderMatLibGrid);
+
+// Import material from texture image
+document.getElementById('matImportZone')?.addEventListener('click', () => document.getElementById('matImportInput').click());
+document.getElementById('matImportInput')?.addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const tex = new THREE.Texture(img);
+      tex.needsUpdate = true;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      // Sample dominant color from center pixel
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const px = ctx.getImageData(Math.floor(img.width/2), Math.floor(img.height/2), 1, 1).data;
+      const sampledColor = (px[0] << 16) | (px[1] << 8) | px[2];
+
+      const name = file.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
+      const def = {
+        id: 'imported-' + Date.now(),
+        name: name.slice(0, 20),
+        color: sampledColor,
+        metalness: 0.0,
+        roughness: 0.5,
+        cat: 'Imported',
+        _texture: tex,
+      };
+      importedMaterials.push(def);
+      renderMaterialsPanel();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// Hook: refresh material panel when selection changes
+const _origSelectSinglePart = selectSinglePart;
+selectSinglePart = function(partId) { _origSelectSinglePart(partId); renderMaterialsPanel(); };
+const _origTogglePartInSelection = togglePartInSelection;
+togglePartInSelection = function(partId) { _origTogglePartInSelection(partId); renderMaterialsPanel(); };
+const _origDeselectAll = deselectAll;
+deselectAll = function() { _origDeselectAll(); renderMaterialsPanel(); };
+const _origHandlePartListClick = handlePartListClick;
+handlePartListClick = function(partId, event) { _origHandlePartListClick(partId, event); renderMaterialsPanel(); };
+
+// Also handle imported texture materials in applyMaterialToSelection
+const _origApplyMat = applyMaterialToSelection;
+applyMaterialToSelection = function(def) {
+  // Check if this matches an imported material with a texture
+  if (!def._texture) {
+    for (const imp of importedMaterials) {
+      if (imp.color === def.color && imp.metalness === def.metalness && imp.roughness === def.roughness && imp._texture) {
+        def._texture = imp._texture;
+        break;
+      }
+    }
+  }
+  if (def._texture) {
+    const origCreate = createMaterialFromDef;
+    // Temporarily override to include texture
+    const texDef = {...def, map: def._texture};
+    for (const pid of state.selectedParts) {
+      if (state.xrayParts.has(pid)) continue;
+      const meshes = state.partMeshMap.get(pid);
+      if (!meshes) continue;
+      for (const m of meshes) {
+        const newMat = new THREE.MeshStandardMaterial({
+          color: def.color, metalness: def.metalness, roughness: def.roughness,
+          map: def._texture,
+        });
+        m.material = newMat;
+        state.originalMaterials.set(m.uuid, newMat.clone());
+      }
+    }
+    renderMaterialsPanel();
+  } else {
+    _origApplyMat(def);
+  }
+};
+
+// Open / close material editor window
+document.getElementById('openMatWindowBtn')?.addEventListener('click', () => {
+  const mw = document.getElementById('matWindow');
+  mw.classList.remove('hidden');
+  flFocus('matWindow');
+  renderMaterialsPanel();
+});
+document.getElementById('matWindowClose')?.addEventListener('click', () => {
+  document.getElementById('matWindow').classList.add('hidden');
+});
+
+// Also open material window when clicking the materials tab
+const _origSwitchTab = switchPanelTab;
+switchPanelTab = function(tabId) {
+  _origSwitchTab(tabId);
+  if (tabId === 'materials') {
+    const mw = document.getElementById('matWindow');
+    mw.classList.remove('hidden');
+    flFocus('matWindow');
+    renderMaterialsPanel();
+  }
+};
+
+// Initial render
+setTimeout(renderMaterialsPanel, 500);
+
 document.querySelectorAll('.toolbar-btn[data-menu]').forEach(btn=>{
   btn.onclick=(e)=>{
     if(btn.dataset.menu==='parts'){
@@ -5488,6 +6024,13 @@ function captureSceneThumbnail() {
   }
   ctx.drawImage(src, sx, sy, sWidth, sHeight, 0, 0, tw, th);
   ta.innerHTML = ''; ta.appendChild(c);
+  // Send thumbnail to parent React app
+  try {
+    var dataUrl = c.toDataURL('image/jpeg', 0.85);
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'dt-thumbnail', dataUrl: dataUrl }, '*');
+    }
+  } catch(e) {}
 }
 document.getElementById('captureThumbnailBtn').onclick = captureSceneThumbnail;
 document.getElementById('setDefaultViewBtn').onclick=()=>{
@@ -6110,6 +6653,7 @@ function shouldShowHotspot3D(hs) {
 }
 // Drill into a parent hotspot
 function drillIntoHotspot(hsId) {
+  if (state.hsFocusedParent === hsId) return; // Already focused on this parent
   if (state.hsFocusedParent !== null) {
     state.hsFocusedStack.push(state.hsFocusedParent);
   }
@@ -7816,6 +8360,7 @@ window.addEventListener('resize',()=>{
   camera.aspect=w/h; camera.updateProjectionMatrix();
   renderer.setSize(w,h); composer.setSize(w,h);
   fxaaPass.uniforms['resolution'].value.set(1/w,1/h);
+  ssaoPass.setSize(w,h);
   outlinePass.setSize(w,h); hoverOutlinePass.setSize(w,h);
 });
 
@@ -8344,6 +8889,7 @@ flInit('hsViewerPopup',{ x: 360, y: topOff + 20, w: 290, h: 340, minW: 230, minH
 flInit('hsActionSetup',{ x: 400, y: topOff + 140, w: 280, h: 360, minW: 220, minH: 180 });
 flInit('procModal',    { x: Math.round(window.innerWidth/2 - 240), y: Math.round(window.innerHeight/2 - 250), w: 480, h: 500, minW: 300, minH: 280 });
 flInit('procPanel',    { x: 60, y: topOff + 20, w: 280, h: 420, minW: 220, minH: 200 });
+flInit('matWindow',    { x: 80, y: topOff + 20, w: 340, h: 520, minW: 260, minH: 280 });
 flInit('animManager',  { x: 80, y: topOff + 40, w: 320, h: 420, minW: 240, minH: 200 });
 flInit('bookmarksPanel', { x: window.innerWidth - 660, y: topOff + 20, w: 520, h: 700, minW: 320, minH: 300 });
 
@@ -8362,6 +8908,7 @@ requestAnimationFrame(() => {
   camera.aspect = w / h; camera.updateProjectionMatrix();
   renderer.setSize(w, h); composer.setSize(w, h);
   fxaaPass.uniforms['resolution'].value.set(1/w, 1/h);
+  ssaoPass.setSize(w, h);
   outlinePass.setSize(w, h); hoverOutlinePass.setSize(w, h);
 });
 
@@ -8582,11 +9129,13 @@ function buildImportPreview(object) {
 
   ismPreviewScene = new THREE.Scene();
   ismPreviewScene.background = new THREE.Color(0xe9e9e9);
-  ismPreviewScene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const dl = new THREE.DirectionalLight(0xffffff, 1.2);
+  if (scene.environment) ismPreviewScene.environment = scene.environment;
+  const dl = new THREE.DirectionalLight(0xfff4e6, 0.6);
   dl.position.set(3, 5, 4);
   ismPreviewScene.add(dl);
-  ismPreviewScene.add(new THREE.HemisphereLight(0x87ceeb, 0x362d1b, 0.3));
+  const dl2 = new THREE.DirectionalLight(0xe0eaff, 0.2);
+  dl2.position.set(-3, 2, -3);
+  ismPreviewScene.add(dl2);
 
   // Clone the object for preview
   const clone = object.clone(true);
@@ -8985,10 +9534,12 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     }
   }
 
-  // Store original materials for x-ray mode
+  // Store original materials for x-ray mode + enable shadows
   for (let i = 0; i < allMeshes.length; i += BATCH) {
     for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
       const m = allMeshes[j];
+      m.castShadow = true;
+      m.receiveShadow = true;
       state.originalMaterials.set(m.uuid, m.material.clone ? m.material.clone() : m.material);
     }
     if (i + BATCH < allMeshes.length) await yieldFrame();
@@ -8999,6 +9550,12 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
   // --- Add to scene (meshes hidden — will be revealed progressively) ---
   object.traverse(c => { if (c.isMesh) c.visible = false; });
   scene.add(object);
+
+  // Adjust shadow ground to encompass imported model
+  const importBounds = new THREE.Box3().setFromObject(object);
+  if (importBounds.min.y < shadowGround.position.y) {
+    shadowGround.position.y = importBounds.min.y - 0.05;
+  }
   state.importedModels.push(object);
   if (typeof occlusionCulling !== 'undefined' && occlusionCulling.registerModel) {
     occlusionCulling.registerModel(object);
