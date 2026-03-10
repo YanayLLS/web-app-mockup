@@ -130,6 +130,11 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showXRLogin, setShowXRLogin] = useState(false);
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
+  const [hasUpdate, setHasUpdate] = useState(true);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const updateButtonRef = useRef<HTMLButtonElement>(null);
+  const updatePopupRef = useRef<HTMLDivElement>(null);
 
   const openAccountSettings = (open: boolean) => { setShowAccountSettings(open); setUrlParam('account', open ? '1' : null); };
   const openXRLogin = (open: boolean) => { setShowXRLogin(open); setUrlParam('xrlogin', open ? '1' : null); };
@@ -177,6 +182,27 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showWorkspaceMenu]);
+
+  // Close update popup when clicking outside
+  useEffect(() => {
+    if (!showUpdatePopup) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (updatePopupRef.current && !updatePopupRef.current.contains(event.target as Node) &&
+          updateButtonRef.current && !updateButtonRef.current.contains(event.target as Node)) {
+        setShowUpdatePopup(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUpdatePopup]);
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsUpdating(false);
+    setShowUpdatePopup(false);
+    setHasUpdate(false);
+  };
 
   const canAccessWorkspaceManagement = hasAccess(currentRole, 'workspace-management');
 
@@ -421,8 +447,117 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           </button>
         </div>
 
-        {/* Right side - Install App and User Avatar */}
+        {/* Right side - Update, Install App and User Avatar */}
         <div className="flex-1 flex items-center justify-end gap-3">
+          {/* Update Button */}
+          {!isMobile && hasUpdate && (
+            <div className="relative">
+              <button
+                ref={updateButtonRef}
+                onClick={() => setShowUpdatePopup(!showUpdatePopup)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 border border-accent/30 text-accent rounded-[var(--radius)] hover:bg-accent/20 transition-colors"
+                style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-semibold)', fontFamily: 'var(--font-family)' }}
+              >
+                <svg className="block w-3.5 h-3.5" fill="none" viewBox="0 0 16 16">
+                  <path d="M8 3v7M5 7l3-4 3 4M3 12h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Update available
+                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              </button>
+
+              {showUpdatePopup && (
+                <div
+                  ref={updatePopupRef}
+                  className="absolute right-0 top-full mt-2 w-[380px] bg-card border border-border rounded-[var(--radius)] z-50 overflow-hidden"
+                  style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}
+                >
+                  {/* Header */}
+                  <div className="px-5 py-4 border-b border-border bg-accent/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-[var(--radius)] bg-accent/15 flex items-center justify-center">
+                        <svg className="block w-5 h-5 text-accent" fill="none" viewBox="0 0 20 20">
+                          <path d="M10 3v9M6.5 8.5L10 5l3.5 3.5M4 15h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-foreground" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
+                          Version 2.4.0
+                        </h3>
+                        <p className="text-muted" style={{ fontSize: 'var(--text-xs)' }}>
+                          Released March 10, 2026
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Changelog */}
+                  <div className="px-5 py-4">
+                    <p className="text-foreground mb-3" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)' }}>
+                      What's new
+                    </p>
+                    <div className="flex flex-col gap-2.5">
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 px-1.5 py-0.5 rounded bg-[#11e874]/15 text-[#0aad52] shrink-0" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-bold)' }}>NEW</span>
+                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>Flow editor with drag-and-drop canvas</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 px-1.5 py-0.5 rounded bg-[#11e874]/15 text-[#0aad52] shrink-0" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-bold)' }}>NEW</span>
+                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>Digital twin modal with connected flows</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 px-1.5 py-0.5 rounded bg-primary/15 text-primary shrink-0" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-bold)' }}>FIX</span>
+                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>Improved 3D scene performance and selection</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 px-1.5 py-0.5 rounded bg-accent/15 text-accent shrink-0" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-bold)' }}>UPD</span>
+                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>Media library integration with knowledge base</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 px-1.5 py-0.5 rounded bg-accent/15 text-accent shrink-0" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-bold)' }}>UPD</span>
+                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>Analytics dashboard with PDF export</span>
+                      </div>
+                    </div>
+                    <a
+                      href="https://helpdesk.frontline.io/portal/en/kb/whats-new/frontline-io-web-release-content"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-2 text-primary hover:underline"
+                      style={{ fontSize: 'var(--text-xs)' }}
+                    >
+                      View full release notes
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 2.5h5v5M9.5 2.5l-7 7"/></svg>
+                    </a>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-5 py-3 border-t border-border bg-secondary/30 flex items-center justify-between">
+                    <button
+                      onClick={() => setShowUpdatePopup(false)}
+                      className="text-muted hover:text-foreground transition-colors"
+                      style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                    >
+                      Later
+                    </button>
+                    <button
+                      onClick={handleUpdate}
+                      disabled={isUpdating}
+                      className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-[var(--radius)] hover:bg-accent/90 transition-colors disabled:opacity-60"
+                      style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+                    >
+                      {isUpdating && (
+                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                      )}
+                      {isUpdating ? 'Updating...' : 'Update now'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {!isMobile && (
             <button className="flex items-center gap-0.5 text-primary hover:opacity-80 transition-opacity">
               <IconDownload />

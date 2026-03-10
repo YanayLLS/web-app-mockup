@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Search, Bell, ChevronDown, ChevronUp, Menu, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Video } from 'lucide-react';
 import { AppKnowledgeBasePage } from './pages/AppKnowledgeBasePage';
@@ -125,6 +125,11 @@ export function AppLayout() {
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [showRecentPanel, setShowRecentPanel] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [hasUpdate, setHasUpdate] = useState(true);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const updateBtnRef = useRef<HTMLButtonElement>(null);
+  const updatePopupRef = useRef<HTMLDivElement>(null);
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [recentlyViewedOpen, setRecentlyViewedOpen] = useState(true);
 
@@ -165,6 +170,27 @@ export function AppLayout() {
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   }, []);
+
+  // Close update popup on outside click
+  useEffect(() => {
+    if (!showUpdatePopup) return;
+    const handleClick = (e: MouseEvent) => {
+      if (updatePopupRef.current && !updatePopupRef.current.contains(e.target as Node) &&
+          updateBtnRef.current && !updateBtnRef.current.contains(e.target as Node)) {
+        setShowUpdatePopup(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showUpdatePopup]);
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsUpdating(false);
+    setShowUpdatePopup(false);
+    setHasUpdate(false);
+  };
 
   if (!isLoggedIn) {
     return <AppLoginPage onLogin={() => setIsLoggedIn(true)} />;
@@ -246,12 +272,96 @@ export function AppLayout() {
         {/* Right side actions */}
         <div className="flex items-center gap-3 shrink-0">
           {/* Update button */}
-          <button
-            className="hidden sm:flex items-center px-4 text-sm hover:bg-black/5 transition-colors"
-            style={{ border: '1px solid #C2C9DB', borderRadius: '25px', height: '32px', fontWeight: 'var(--font-weight-semibold)', color: '#36415D' }}
-          >
-            Update
-          </button>
+          {hasUpdate && (
+            <div className="relative hidden sm:block">
+              <button
+                ref={updateBtnRef}
+                onClick={(e) => { e.stopPropagation(); setShowUpdatePopup(!showUpdatePopup); }}
+                className="flex items-center gap-1.5 px-4 text-sm hover:bg-black/5 transition-colors"
+                style={{ border: '1px solid #C2C9DB', borderRadius: '25px', height: '32px', fontWeight: 'var(--font-weight-semibold)', color: '#36415D' }}
+              >
+                Update
+                <span className="w-1.5 h-1.5 rounded-full bg-[#8404b3] animate-pulse" />
+              </button>
+
+              {showUpdatePopup && (
+                <div
+                  ref={updatePopupRef}
+                  className="absolute right-0 top-full mt-2 w-[340px] bg-white border border-[#C2C9DB] z-50 overflow-hidden"
+                  style={{ borderRadius: '12px', boxShadow: '0 8px 32px rgba(54,65,93,0.18)' }}
+                >
+                  {/* Header */}
+                  <div className="px-4 py-3 border-b border-[#E9E9E9]" style={{ background: 'linear-gradient(135deg, #f8f0ff 0%, #f0f4ff 100%)' }}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#8404b3]/15 flex items-center justify-center">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="#8404b3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M8 2.5v7M5.5 6L8 3.5 10.5 6M3 12.5h10"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#36415D' }}>Version 2.4.0</p>
+                        <p style={{ fontSize: '11px', color: '#868D9E' }}>Released March 10, 2026</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Changelog */}
+                  <div className="px-4 py-3">
+                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#36415D', marginBottom: '8px' }}>What's new</p>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { tag: 'NEW', color: '#0aad52', bg: 'rgba(17,232,116,0.12)', text: 'Flow editor with drag-and-drop canvas' },
+                        { tag: 'NEW', color: '#0aad52', bg: 'rgba(17,232,116,0.12)', text: 'Digital twin modal with connected flows' },
+                        { tag: 'FIX', color: '#2F80ED', bg: 'rgba(47,128,237,0.12)', text: 'Improved 3D scene performance and selection' },
+                        { tag: 'UPD', color: '#8404b3', bg: 'rgba(132,4,179,0.12)', text: 'Media library integration with knowledge base' },
+                        { tag: 'UPD', color: '#8404b3', bg: 'rgba(132,4,179,0.12)', text: 'Analytics dashboard with PDF export' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-0.5 shrink-0 px-1.5 py-px rounded" style={{ fontSize: '9px', fontWeight: 700, color: item.color, background: item.bg }}>{item.tag}</span>
+                          <span style={{ fontSize: '13px', color: '#36415D' }}>{item.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <a
+                      href="https://helpdesk.frontline.io/portal/en/kb/whats-new/frontline-io-web-release-content"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-2 hover:underline"
+                      style={{ fontSize: '12px', color: '#2F80ED' }}
+                    >
+                      View full release notes
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 2.5h5v5M9.5 2.5l-7 7"/></svg>
+                    </a>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-4 py-3 border-t border-[#E9E9E9] flex items-center justify-between" style={{ background: '#FAFAFA' }}>
+                    <button
+                      onClick={() => setShowUpdatePopup(false)}
+                      style={{ fontSize: '13px', color: '#868D9E' }}
+                      className="hover:text-[#36415D] transition-colors"
+                    >
+                      Later
+                    </button>
+                    <button
+                      onClick={handleUpdate}
+                      disabled={isUpdating}
+                      className="flex items-center gap-1.5 px-4 py-1.5 text-white transition-colors disabled:opacity-60"
+                      style={{ fontSize: '13px', fontWeight: 700, background: '#8404b3', borderRadius: '8px' }}
+                    >
+                      {isUpdating && (
+                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                      )}
+                      {isUpdating ? 'Updating...' : 'Update now'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Notifications */}
           <button
