@@ -39,15 +39,15 @@ const appPages: PageLink[] = [
     label: 'Knowledge Base',
     path: '/app/project/915-i-series/kb',
     children: [
-      { label: 'Folder: Procedures', path: '/app/project/915-i-series/folder/f1' },
+      { label: 'Folder: Flows', path: '/app/project/915-i-series/folder/f1' },
       { label: 'Folder: Protocols', path: '/app/project/915-i-series/folder/f2' },
       { label: 'Folder: Training', path: '/app/project/915-i-series/folder/f3' },
     ],
   },
 { label: 'Remote Support', path: '/app/remote-support' },
   { label: 'AI Chat', path: '/app/ai-chat' },
-  { label: 'Procedure Editor', path: '/app/procedure-editor/p1' },
-  { label: '3D Procedure (View)', path: '/app/procedure-editor/generator-maintenance?mode=view' },
+  { label: 'Flow Editor', path: '/app/procedure-editor/p1' },
+  { label: '3D Flow (View)', path: '/app/procedure-editor/generator-maintenance?mode=view' },
   { label: 'Digital Twin Viewer', path: '/app/3d-viewer' },
   { label: 'Digital Twin Editor', path: '/app/3d-viewer?mode=editor' },
   { label: 'Immersive Room', path: '/app/immersive' },
@@ -61,10 +61,15 @@ const webPages: PageLink[] = [
   { label: 'Archive', path: '/web/archive' },
   {
     label: 'Project',
-    path: '/web/project/project-phoenix/knowledgebase',
+    path: '/web/project/915-i-series/knowledgebase',
     children: [
-      { label: 'Analytics', path: '/web/project/project-phoenix/analytics' },
-      { label: 'Activity Log', path: '/web/project/project-phoenix/activity' },
+      { label: 'Analytics', path: '/web/project/915-i-series/analytics' },
+      { label: 'Activity Log', path: '/web/project/915-i-series/activity' },
+      { label: 'Media Library', path: '/web/project/915-i-series/knowledgebase?medialib=1' },
+      { label: 'Settings', path: '/web/project/915-i-series/knowledgebase?settings=1' },
+      { label: 'Flow Editor (Canvas)', path: '/web/project/915-i-series/knowledgebase?canvas=915-i-series-kb-1-1' },
+      { label: 'Flow Modal', path: '/web/project/915-i-series/knowledgebase?open=915-i-series-kb-1-1' },
+      { label: 'Digital Twin Modal', path: '/web/project/915-i-series/knowledgebase?twin=915-i-series-kb-4' },
     ],
   },
   {
@@ -104,7 +109,7 @@ const featureGroups: FeatureGroup[] = [
     features: [
       { id: 'xr-login', name: 'Login & Settings', icon: '\u{1F510}', desc: 'Log in to the XR app and configure connection settings.', demoSteps: 5, route: '/xr' },
       { id: 'xr-kb', name: 'Knowledge Base', icon: '\u{1F4DA}', desc: 'Browse projects, explore KB items, and view content with media.', demoSteps: 7, route: '/xr' },
-      { id: 'xr-procedures', name: 'Procedures', icon: '\u{1F4CB}', desc: 'Follow step-by-step guided procedures with media and validation.', demoSteps: 6, route: '/xr' },
+      { id: 'xr-procedures', name: 'Flows', icon: '\u{1F4CB}', desc: 'Follow step-by-step guided flows with media and validation.', demoSteps: 6, route: '/xr' },
       { id: 'xr-call', name: 'Remote Support & Calls', icon: '\u{1F4DE}', desc: 'Start a remote support call with video, chat, and participants.', demoSteps: 6, route: '/xr' },
       { id: 'xr-camera', name: 'XR Camera & Navigation', icon: '\u{1F3A5}', desc: 'Navigate the XR camera view with drag and keyboard controls.', demoSteps: 4, route: '/xr' },
     ],
@@ -474,10 +479,10 @@ export function DebugMenu() {
               </span>
             </div>
             <button
-              onClick={() => handleNavigate('/')}
+              onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.href = '/'; }}
               className="flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
               style={{ fontSize: '12px', color: '#FF1F1F', border: '1px solid #FF1F1F33', borderRadius: '6px' }}
-              title="Restart — go to product selector"
+              title="Restart — clears cache and returns to product selector"
             >
               <RotateCcw style={{ width: '10px', height: '10px' }} />
               Restart
