@@ -888,6 +888,30 @@ html.embedded .right-panel { top:12px !important; }
   0%,100% { opacity:0.08; }
   50% { opacity:0.2; }
 }
+/* AR placement toast */
+.ar-placement-toast {
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:210;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(10px);
+  color:#fff; font-size:13px; font-weight:600; padding:10px 20px;
+  border-radius:20px; white-space:nowrap; pointer-events:none;
+  display:none; animation:arToastIn 0.3s ease;
+}
+.ar-placement-toast.visible { display:block; }
+@keyframes arToastIn {
+  from { opacity:0; transform:translateX(-50%) translateY(10px); }
+  to { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+/* Confirm placement button */
+.ar-confirm-btn {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:210;
+  background:#11E874; color:#1a1a2e; font-size:14px; font-weight:700;
+  font-family:inherit; border:none; border-radius:14px;
+  padding:12px 32px; cursor:pointer; display:none;
+  box-shadow:0 4px 16px rgba(17,232,116,0.4);
+  transition:background 0.15s, transform 0.15s;
+}
+.ar-confirm-btn.visible { display:block; }
+.ar-confirm-btn:active { transform:translateX(-50%) scale(0.95); }
 
 /* ===== SLICER PANEL ===== */
 #slicerPanel {
@@ -2637,7 +2661,7 @@ html.embedded .right-panel { top:12px !important; }
 <div id="hsPlacingToast" class="hidden">Click on the 3D model to place hotspot</div>
 
 <!-- LEFT TOOLBAR (collapsed) -->
-<div class="left-toolbar lt-locked" id="leftToolbar">
+<div class="left-toolbar" id="leftToolbar">
   <div class="lt-back-row">
     <button class="collapse-btn" id="backToKBBtn" title="Back to Knowledge Base"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span class="back-label">Back</span></button>
     <button class="lt-lock-btn active" id="ltLockBtn" title="Lock menu expanded"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg></button>
@@ -3134,6 +3158,10 @@ html.embedded .right-panel { top:12px !important; }
   </div>
   <div class="ar-scan-text">Scanning environment...</div>
 </div>
+
+<!-- AR placement toast & confirm -->
+<div class="ar-placement-toast" id="arPlacementToast">Drag to move model on surface</div>
+<button class="ar-confirm-btn" id="arConfirmBtn">Confirm Placement</button>
 
 <!-- ANIMATION MANAGER PANEL -->
 <!-- MATERIAL LIBRARY WINDOW -->
@@ -11209,24 +11237,38 @@ function animate() {
   // ---- Performance systems per frame ----
   const _aw = renderer.domElement.clientWidth, _ah = renderer.domElement.clientHeight;
   const _moving = (now - adaptiveRes._lastMoveTime) < adaptiveRes._idleMs;
-  adaptiveRes.update(now);
-  outlinePass.enabled = !!(outlinePass.selectedObjects && outlinePass.selectedObjects.length);
-  hoverOutlinePass.enabled = !!(hoverOutlinePass.selectedObjects && hoverOutlinePass.selectedObjects.length);
-  ssaoPass.enabled = !_moving;
-  temporalAA.notifyMove(_moving);
-  camera.updateProjectionMatrix();
-  temporalAA.jitter(camera, _aw, _ah);
-  const _sf = _ah / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) * 0.5));
-  const _cpx = camera.position.x, _cpy = camera.position.y, _cpz = camera.position.z;
-  lodSystem.update(_cpx, _cpy, _cpz, _sf);
-  hlodSystem.update(_cpx, _cpy, _cpz, _sf);
-  occlusionCulling.update();
-  if (fbxModel) shadowFit.update(d1, dNear, camera, fbxModel);
-  const _renderT0 = performance.now();
-  composer.render();
-  const _renderTime = performance.now() - _renderT0;
-  temporalAA.unjitter(camera, _aw, _ah);
-  perfStats.tick(now, dt, _renderTime);
+  const _inAR = !!state._arActive;
+  if (_inAR) {
+    // AR perf mode: skip expensive post-processing, render directly
+    ssaoPass.enabled = false;
+    outlinePass.enabled = false;
+    hoverOutlinePass.enabled = false;
+    renderer.shadowMap.enabled = false;
+    const _renderT0 = performance.now();
+    composer.render();
+    const _renderTime = performance.now() - _renderT0;
+    perfStats.tick(now, dt, _renderTime);
+  } else {
+    adaptiveRes.update(now);
+    outlinePass.enabled = !!(outlinePass.selectedObjects && outlinePass.selectedObjects.length);
+    hoverOutlinePass.enabled = !!(hoverOutlinePass.selectedObjects && hoverOutlinePass.selectedObjects.length);
+    ssaoPass.enabled = !_moving;
+    renderer.shadowMap.enabled = true;
+    temporalAA.notifyMove(_moving);
+    camera.updateProjectionMatrix();
+    temporalAA.jitter(camera, _aw, _ah);
+    const _sf = _ah / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) * 0.5));
+    const _cpx = camera.position.x, _cpy = camera.position.y, _cpz = camera.position.z;
+    lodSystem.update(_cpx, _cpy, _cpz, _sf);
+    hlodSystem.update(_cpx, _cpy, _cpz, _sf);
+    occlusionCulling.update();
+    if (fbxModel) shadowFit.update(d1, dNear, camera, fbxModel);
+    const _renderT0 = performance.now();
+    composer.render();
+    const _renderTime = performance.now() - _renderT0;
+    temporalAA.unjitter(camera, _aw, _ah);
+    perfStats.tick(now, dt, _renderTime);
+  }
 }
 animate();
 
@@ -14936,6 +14978,8 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   const arPlacementMenu = document.getElementById('arPlacementMenu');
   const arCameraFeed = document.getElementById('arCameraFeed');
   const arScanOverlay = document.getElementById('arScanOverlay');
+  const arPlacementToast = document.getElementById('arPlacementToast');
+  const arConfirmBtn = document.getElementById('arConfirmBtn');
   const viewportEl   = document.getElementById('viewport');
 
   let arActive = false;
@@ -14943,6 +14987,15 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   let arPlacementMode = null;
   let cameraStream = null;
   let scanTimer = null;
+
+  // --- Manual placement state ---
+  let manualActive = false;
+  let placementClone = null;      // clone of model for placement
+  let surfaceIndicator = null;    // ring/disc on surface
+  let groundShadow = null;        // fake shadow under model
+  let groundPlane = null;         // invisible plane for raycasting
+  let isDragging = false;
+  let _arSavedPixelRatio = null;
 
   function updateARButtonVisibility() {
     const isViewerMobile = isMobile() && state.mode === 'viewer';
@@ -14953,7 +15006,7 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   async function startCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
       });
       cameraStream = stream;
       let video = arCameraFeed.querySelector('video');
@@ -14997,8 +15050,13 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
 
   async function enterAR() {
     arActive = true;
+    state._arActive = true;
     arMeshVisible = true;
     arPlacementMode = null;
+
+    // Lower pixel ratio for mobile perf
+    _arSavedPixelRatio = renderer.getPixelRatio();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     arBtn.classList.add('ar-active');
     arBtn.title = 'Exit AR';
@@ -15008,6 +15066,9 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
 
     viewportEl.style.background = 'transparent';
     renderer.setClearColor(0x000000, 0);
+
+    // Hide left toolbar in AR
+    document.getElementById('leftToolbar').classList.add('hidden');
 
     await startCamera();
     showScanEffect();
@@ -15020,8 +15081,18 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   }
 
   function exitAR() {
+    // Exit manual placement if active
+    if (manualActive) exitManualPlacement();
+
     arActive = false;
+    state._arActive = false;
     arPlacementMode = null;
+
+    // Restore pixel ratio
+    if (_arSavedPixelRatio !== null) {
+      renderer.setPixelRatio(_arSavedPixelRatio);
+      _arSavedPixelRatio = null;
+    }
 
     arBtn.classList.remove('ar-active');
     arBtn.title = 'Enter AR';
@@ -15043,11 +15114,227 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
       arMeshVisible = true;
     }
 
+    // Restore left toolbar
+    document.getElementById('leftToolbar').classList.remove('hidden');
+
     if (state.mode === 'viewer') {
       document.getElementById('viewerMoreBtn').classList.add('visible');
     }
   }
 
+  // ==================== MANUAL PLACEMENT ====================
+  function createSurfaceIndicator() {
+    // Glowing ring on the surface
+    const ringGeo = new THREE.RingGeometry(0.8, 1.0, 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0x2F80ED, transparent: true, opacity: 0.7, side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    surfaceIndicator = new THREE.Mesh(ringGeo, ringMat);
+    surfaceIndicator.rotation.x = -Math.PI / 2;
+    surfaceIndicator.visible = false;
+    scene.add(surfaceIndicator);
+
+    // Inner filled disc (subtle)
+    const discGeo = new THREE.CircleGeometry(0.8, 64);
+    const discMat = new THREE.MeshBasicMaterial({
+      color: 0x2F80ED, transparent: true, opacity: 0.12, side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const disc = new THREE.Mesh(discGeo, discMat);
+    disc.rotation.x = -Math.PI / 2;
+    disc.position.y = 0.001;
+    surfaceIndicator.add(disc);
+
+    // Pulsing animation via animate hook
+    surfaceIndicator._pulse = 0;
+  }
+
+  function createGroundShadow() {
+    // Soft circular shadow blob under the model
+    const shadowGeo = new THREE.CircleGeometry(1.2, 32);
+    const shadowMat = new THREE.MeshBasicMaterial({
+      color: 0x000000, transparent: true, opacity: 0.25, side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    groundShadow = new THREE.Mesh(shadowGeo, shadowMat);
+    groundShadow.rotation.x = -Math.PI / 2;
+    groundShadow.visible = false;
+    scene.add(groundShadow);
+  }
+
+  function createGroundPlane() {
+    // Large invisible plane at y=0 for raycasting
+    const planeGeo = new THREE.PlaneGeometry(500, 500);
+    const planeMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
+    groundPlane = new THREE.Mesh(planeGeo, planeMat);
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = 0;
+    scene.add(groundPlane);
+  }
+
+  function enterManualPlacement() {
+    manualActive = true;
+
+    // Create helpers
+    if (!surfaceIndicator) createSurfaceIndicator();
+    if (!groundShadow) createGroundShadow();
+    if (!groundPlane) createGroundPlane();
+
+    // Clone the model for placement preview
+    if (fbxModel) {
+      placementClone = fbxModel.clone();
+      // Make semi-transparent for placement preview
+      placementClone.traverse(child => {
+        if (child.isMesh) {
+          child.material = child.material.clone();
+          child.material.transparent = true;
+          child.material.opacity = 0.7;
+          child.material.depthWrite = true;
+        }
+      });
+      scene.add(placementClone);
+
+      // Compute bounding box for sizing the indicator
+      const box = new THREE.Box3().setFromObject(placementClone);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxExtent = Math.max(size.x, size.z) * 0.6;
+      surfaceIndicator.scale.setScalar(maxExtent);
+      groundShadow.scale.setScalar(maxExtent * 1.2);
+
+      // Place clone at center of camera view on ground
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      placementClone.position.sub(center); // center the clone
+      placementClone.position.y = -box.min.y; // sit on ground
+
+      // Hide original model
+      fbxModel.visible = false;
+    }
+
+    surfaceIndicator.visible = true;
+    groundShadow.visible = true;
+
+    // Disable orbit controls during placement
+    orbitControls.enabled = false;
+
+    // Show UI
+    arPlacementToast.classList.add('visible');
+    arConfirmBtn.classList.add('visible');
+
+    // Hide sub-buttons during placement
+    arSubBtns.classList.remove('visible');
+
+    // Add touch/pointer listeners
+    renderer.domElement.addEventListener('pointerdown', onPlacementPointerDown);
+    renderer.domElement.addEventListener('pointermove', onPlacementPointerMove);
+    renderer.domElement.addEventListener('pointerup', onPlacementPointerUp);
+  }
+
+  function exitManualPlacement() {
+    manualActive = false;
+
+    // Remove clone
+    if (placementClone) {
+      scene.remove(placementClone);
+      placementClone.traverse(child => {
+        if (child.isMesh) { child.material.dispose(); }
+      });
+      placementClone = null;
+    }
+
+    // Hide helpers
+    if (surfaceIndicator) surfaceIndicator.visible = false;
+    if (groundShadow) groundShadow.visible = false;
+
+    // Restore orbit controls
+    orbitControls.enabled = true;
+
+    // Hide UI
+    arPlacementToast.classList.remove('visible');
+    arConfirmBtn.classList.remove('visible');
+
+    // Restore sub-buttons
+    if (arActive) arSubBtns.classList.add('visible');
+
+    // Remove listeners
+    renderer.domElement.removeEventListener('pointerdown', onPlacementPointerDown);
+    renderer.domElement.removeEventListener('pointermove', onPlacementPointerMove);
+    renderer.domElement.removeEventListener('pointerup', onPlacementPointerUp);
+  }
+
+  function confirmPlacement() {
+    if (!placementClone || !fbxModel) { exitManualPlacement(); return; }
+
+    // Move original model to clone position
+    fbxModel.position.copy(placementClone.position);
+    fbxModel.visible = true;
+    fbxModel.traverse(child => {
+      if (child.isMesh) {
+        child.material.transparent = false;
+        child.material.opacity = 1.0;
+      }
+    });
+
+    exitManualPlacement();
+  }
+
+  // Raycaster for placement
+  const _arRaycaster = new THREE.Raycaster();
+  const _arPointer = new THREE.Vector2();
+
+  function getGroundHit(e) {
+    if (!groundPlane) return null;
+    const rect = renderer.domElement.getBoundingClientRect();
+    _arPointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    _arPointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    _arRaycaster.setFromCamera(_arPointer, camera);
+    const hits = _arRaycaster.intersectObject(groundPlane);
+    return hits.length > 0 ? hits[0].point : null;
+  }
+
+  function onPlacementPointerDown(e) {
+    if (!manualActive) return;
+    isDragging = true;
+    movePlacementTo(e);
+  }
+
+  function onPlacementPointerMove(e) {
+    if (!manualActive) return;
+    movePlacementTo(e);
+  }
+
+  function onPlacementPointerUp() {
+    isDragging = false;
+  }
+
+  function movePlacementTo(e) {
+    const pt = getGroundHit(e);
+    if (!pt) return;
+
+    if (placementClone) {
+      // Compute the bounding box to keep model sitting on ground
+      const box = new THREE.Box3().setFromObject(fbxModel.clone ? fbxModel : placementClone);
+      placementClone.position.set(pt.x, -box.min.y + pt.y, pt.z);
+    }
+    if (surfaceIndicator) {
+      surfaceIndicator.position.set(pt.x, pt.y + 0.01, pt.z);
+      // Pulsing
+      surfaceIndicator._pulse = (surfaceIndicator._pulse || 0) + 0.05;
+      const pulse = 0.9 + 0.1 * Math.sin(surfaceIndicator._pulse);
+      surfaceIndicator.scale.setScalar(
+        surfaceIndicator.scale.x > 0 ? surfaceIndicator.scale.x : 1
+      );
+    }
+    if (groundShadow) {
+      groundShadow.position.set(pt.x, pt.y + 0.005, pt.z);
+    }
+  }
+
+  arConfirmBtn.addEventListener('click', confirmPlacement);
+
+  // ==================== BUTTON HANDLERS ====================
   arBtn.addEventListener('click', () => {
     if (arActive) exitAR();
     else enterAR();
@@ -15079,7 +15366,16 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   arPlacementMenu.querySelectorAll('.ar-placement-option').forEach(opt => {
     opt.addEventListener('click', () => {
       const mode = opt.dataset.placement;
-      arPlacementMode = arPlacementMode === mode ? null : mode;
+      // Toggle: if same mode clicked again, deselect
+      if (arPlacementMode === mode) {
+        arPlacementMode = null;
+        if (mode === 'manual' && manualActive) exitManualPlacement();
+      } else {
+        // Exit previous manual if switching
+        if (manualActive) exitManualPlacement();
+        arPlacementMode = mode;
+        if (mode === 'manual') enterManualPlacement();
+      }
       arPlacementMenu.querySelectorAll('.ar-placement-option').forEach(o => o.classList.toggle('selected', o.dataset.placement === arPlacementMode));
       arPlacementMenu.classList.remove('visible');
       arPlacementBtn.classList.toggle('active', !!arPlacementMode);
