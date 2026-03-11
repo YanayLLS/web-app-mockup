@@ -12112,6 +12112,8 @@ function aeOpen(animId) {
   document.getElementById('animTimeline').classList.remove('hidden');
   document.getElementById('animManager').classList.add('hidden');
   document.documentElement.classList.add('anim-editor-active');
+  // Notify parent (procedure editor) that animation editor is now open
+  window.parent.postMessage({ type: 'animation-editor-opened' }, '*');
   aeRender();
 }
 
@@ -12122,6 +12124,8 @@ function aeClose() {
   document.getElementById('animEditorBar').classList.add('hidden');
   document.getElementById('animTimeline').classList.add('hidden');
   document.documentElement.classList.remove('anim-editor-active');
+  // Notify parent (procedure editor) that animation editor is now closed
+  window.parent.postMessage({ type: 'animation-editor-closed' }, '*');
   updateUI();
 }
 

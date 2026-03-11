@@ -16,6 +16,7 @@ import { Tutorial } from './Tutorial';
 import { SaveIndicator } from './SaveIndicator';
 import { ARPlacementFlow, type ObjectTarget, type PlacementMethod } from './ARPlacementFlow';
 import { ContextMenu } from './ContextMenu';
+import { DemoRunner, type DemoFeature } from './DemoRunner';
 import { GraduationCap, Undo, AlertCircle, X, MoreVertical, Keyboard, Glasses, Video, RotateCcw, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -34,6 +35,12 @@ export interface StepAction {
   nextStepId: string;
 }
 
+export interface TwinState {
+  camera: { cx: number; cy: number; cz: number; tx: number; ty: number; tz: number };
+  hiddenParts: string[];
+  xrayParts: string[];
+}
+
 export interface Step {
   id: string;
   title?: string;
@@ -43,6 +50,8 @@ export interface Step {
   thumbnailUrl?: string;
   color: string;
   hasAnimation: boolean;
+  animationId?: string | null; // ID of attached animation in the 3D scene
+  twinState?: TwinState | null; // Saved digital twin state for this step
   popups: Popup[];
   mediaFiles: MediaFile[];
   validation?: Validation; // Single validation per step
@@ -688,6 +697,9 @@ export function ProcedureEditor() {
   const [deletedPopup, setDeletedPopup] = useState<{ popup: Popup; stepIndex: number } | null>(null);
   const [showUndoPopupNotification, setShowUndoPopupNotification] = useState(false);
   
+  // Animation editor state — hides procedure UI when open
+  const [isAnimationEditorOpen, setIsAnimationEditorOpen] = useState(false);
+
   // AR Mode state
   const [isARMode, setIsARMode] = useState(false);
   const [showARPlacement, setShowARPlacement] = useState(false);
@@ -733,6 +745,15 @@ export function ProcedureEditor() {
   const lastSaveTimeRef = useRef<number>(0);
   
   const blobUrlsRef = useRef<Set<string>>(new Set());
+  const sceneIframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Demo runner state
+  const [activeDemo, setActiveDemo] = useState<DemoFeature | null>(null);
+
+  // Send a command to the 3D scene iframe
+  const postToScene = useCallback((msg: Record<string, unknown>) => {
+    sceneIframeRef.current?.contentWindow?.postMessage(msg, '*');
+  }, []);
 
   // Ensure current step has validation property
   const currentStep = (() => {
@@ -884,6 +905,114 @@ export function ProcedureEditor() {
     });
     triggerSave();
   }, [currentStepIndex, triggerSave]);
+
+  // Listen for messages back from the 3D scene iframe
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      const { type } = e.data;
+
+      if (type === 'twin-state-saved') {
+        const { camera, hiddenParts, xrayParts } = e.data as { camera: any; hiddenParts: string[]; xrayParts: string[] };
+        handleUpdateStep({ twinState: { camera, hiddenParts, xrayParts } });
+      }
+
+      if (type === 'animation-created') {
+        const { animationId } = e.data as { animationId: string };
+        handleUpdateStep({ hasAnimation: true, animationId });
+      }
+
+      if (type === 'animation-removed') {
+        handleUpdateStep({ hasAnimation: false, animationId: null });
+      }
+
+      if (type === 'animation-editor-opened') {
+        setIsAnimationEditorOpen(true);
+      }
+
+      if (type === 'animation-editor-closed') {
+        setIsAnimationEditorOpen(false);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [handleUpdateStep]);
+
+  // When step changes, restore twin state if saved
+  useEffect(() => {
+    if (currentStep.twinState) {
+      postToScene({ type: 'restore-twin-state', ...currentStep.twinState });
+    }
+  }, [currentStepIndex, postToScene]); // intentionally depend on index, not step object
+
+  // Demo definitions for procedure tutorials
+  const procDemos = useMemo<Record<string, DemoFeature>>(() => ({
+    'proc-twin-state': {
+      id: 'proc-twin-state',
+      name: 'Set State of a Digital Twin',
+      steps: [
+        {
+          target: '[data-tutorial="toolbar"]',
+          text: 'This is the <b>procedure toolbar</b>. It contains tools to manage your digital twin state, animations, validation, and publishing.',
+          pos: 'bottom',
+          wait: 'observe',
+        },
+        {
+          target: '[data-demo="twin-save"]',
+          text: 'This is the <b>Save Twin Setup</b> button. It lets you capture the current 3D scene state — camera angle, part visibility, and X-Ray — and attach it to this step.',
+          pos: 'bottom',
+          wait: 'observe',
+        },
+        {
+          target: '[data-demo="twin-save"]',
+          text: 'Click the <b>Save Twin Setup</b> button to open the state menu.',
+          pos: 'bottom',
+          wait: 'click',
+        },
+        {
+          target: '[data-demo="twin-set"]',
+          text: 'Click <b>Set State</b> to capture the current 3D view. This saves the camera position, hidden parts, and X-Ray parts for this step.',
+          pos: 'right',
+          wait: 'click',
+        },
+        {
+          target: '[data-demo="twin-save"]',
+          text: 'The <b>accent dot</b> on the button confirms a twin state is saved for this step. When users navigate to this step, the 3D scene will automatically restore this exact view.',
+          pos: 'bottom',
+          wait: 'validate',
+          validate: () => !!document.querySelector('[data-demo="twin-save"][aria-pressed="true"]'),
+        },
+        {
+          target: '[data-demo="twin-save"]',
+          text: 'You can <b>update</b> the state anytime by repeating the process, or <b>clear</b> it from the same menu. Twin state works like bookmarks — saving camera, visibility, and X-Ray settings per step.',
+          pos: 'bottom',
+          wait: 'observe',
+        },
+      ]
+    }
+  }), []);
+
+  // Listen for demo start events from DebugMenu
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.featureId && procDemos[detail.featureId]) {
+        setActiveDemo(procDemos[detail.featureId]);
+      }
+    };
+    window.addEventListener('procedure-demo-start', handler);
+    return () => window.removeEventListener('procedure-demo-start', handler);
+  }, [procDemos]);
+
+  // Notify parent (DebugMenu) that procedure demos are available
+  useEffect(() => {
+    window.postMessage({
+      type: 'procedureDemosAvailable',
+      features: Object.values(procDemos).map(d => ({
+        id: d.id, name: d.name, demoSteps: d.steps.length
+      }))
+    }, '*');
+  }, [procDemos]);
 
   const handleAddTitle = useCallback(() => {
     console.log('handleAddTitle called, currentStep.title:', currentStep.title);
@@ -1872,8 +2001,8 @@ export function ProcedureEditor() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full overflow-hidden">
-      {/* Save Indicator - Hidden on /mobile path */}
-      {!isMobilePath && <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />}
+      {/* Save Indicator - Hidden on /mobile path and during animation editing */}
+      {!isMobilePath && !isAnimationEditorOpen && <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />}
       
       <div
         className="h-full w-full relative overflow-hidden"
@@ -1888,6 +2017,7 @@ export function ProcedureEditor() {
           {/* 3D Scene - Embedded from external server */}
           {!showARPlacement && (
             <iframe
+              ref={sceneIframeRef}
               src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true&mode=procedure`}
               className="absolute inset-0 w-full h-full border-0"
               style={{ zIndex: 0 }}
@@ -1896,23 +2026,38 @@ export function ProcedureEditor() {
             />
           )}
 
-          {/* Header - Only show when editing is enabled and not during AR placement */}
-          {editingEnabled && !showARPlacement && (
+          {/* Header - Only show when editing is enabled and not during AR placement or animation editing */}
+          {editingEnabled && !showARPlacement && !isAnimationEditorOpen && (
             <Header
               hasAnimation={currentStep.hasAnimation}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenBookmarks={() => setShowBookmarks(true)}
-              onTogglePartsCatalog={() => setShowPartsCatalog(!showPartsCatalog)}
-              isPartsCatalogOpen={showPartsCatalog}
+              hasTwinState={!!currentStep.twinState}
+              onOpenSettings={() => {
+                // Navigate to the flow settings page in the web app
+                const procId = getProcedureIdFromUrl() || 'p1';
+                navigate(`/app/procedure-editor/${procId}?settings=true`);
+              }}
+              onOpenBookmarks={() => postToScene({ type: 'toggle-bookmarks' })}
+              onTogglePartsCatalog={() => postToScene({ type: 'toggle-parts-catalog' })}
+              isPartsCatalogOpen={false}
               onOpenPublish={() => setShowPublish(true)}
               onOpenValidation={() => setShowValidationPanel(true)}
               checkpointCount={currentStep.validation?.checkpoints?.length ?? 0}
               hasCritical={currentStep.validation?.checkpoints?.some(cp => cp.severity === 'critical') ?? false}
+              onAnimate={() => {
+                // Tell 3D scene to open animation editor for this step
+                postToScene({
+                  type: 'open-animation-editor',
+                  stepId: currentStep.id,
+                  animationId: currentStep.animationId || null
+                });
+              }}
+              onSaveTwinState={() => postToScene({ type: 'capture-twin-state' })}
+              onClearTwinState={() => handleUpdateStep({ twinState: null })}
             />
           )}
 
           {/* Part Selection Banner - Shows when selecting validation parts */}
-          {isSelectingValidationParts && editingEnabled && !showARPlacement && (
+          {isSelectingValidationParts && editingEnabled && !showARPlacement && !isAnimationEditorOpen && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -2098,7 +2243,7 @@ export function ProcedureEditor() {
           )}
 
           {/* Arrow Direction Setting Banner - shown when setting arrow direction */}
-          {isSettingArrowDirection && !isMobileView && (
+          {isSettingArrowDirection && !isMobileView && !isAnimationEditorOpen && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -2239,13 +2384,13 @@ export function ProcedureEditor() {
             </motion.div>
           )}
 
-          {/* Spacer - Only show when not in AR placement */}
-          {!showARPlacement && (
+          {/* Spacer - Only show when not in AR placement or animation editing */}
+          {!showARPlacement && !isAnimationEditorOpen && (
             <div className="flex-[1_0_0] min-h-px min-w-px w-full" />
           )}
 
-          {/* Conditional rendering: AR Placement Flow or Procedure Panel with Media Viewer */}
-          {showARPlacement ? (
+          {/* Conditional rendering: AR Placement Flow or Procedure Panel with Media Viewer (hidden during animation editing) */}
+          {isAnimationEditorOpen ? null : showARPlacement ? (
             // AR Placement Flow in full screen
             <ARPlacementFlow
               onComplete={handleARPlacementComplete}
@@ -2316,8 +2461,8 @@ export function ProcedureEditor() {
             </div>
           )}
 
-          {/* Top-right scene buttons: close & more (hidden in preview mode) */}
-          <div className="absolute top-3 right-3 flex flex-col gap-2 z-10" style={{ display: isPreviewMode ? 'none' : undefined }}>
+          {/* Top-right scene buttons: close & more (hidden in preview mode and during animation editing) */}
+          <div className="absolute top-3 right-3 flex flex-col gap-2 z-10" style={{ display: (isPreviewMode || isAnimationEditorOpen) ? 'none' : undefined }}>
             <button
               onClick={handleBack}
               className="size-8 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors"
@@ -2385,15 +2530,6 @@ export function ProcedureEditor() {
             </div>
           </div>
 
-          {/* Settings Modal */}
-          {showSettings && (
-            <SettingsModal 
-              onClose={() => setShowSettings(false)}
-              procedureTitle={procedureTitle}
-              onProcedureTitleChange={handleProcedureTitleChange}
-            />
-          )}
-
           {/* Publish Modal */}
           {showPublish && (
             <PublishModal
@@ -2447,15 +2583,12 @@ export function ProcedureEditor() {
             />
           )}
 
-          {/* Bookmarks Modal */}
-          {showBookmarks && (
-            <BookmarksModal onClose={() => setShowBookmarks(false)} />
-          )}
+          {/* Bookmarks and Parts Catalog are now opened inside the 3D scene via postMessage */}
         </div>
       </div>
 
-      {/* Table of Contents - Overlay on left */}
-      {showTOC && (
+      {/* Table of Contents - Overlay on left (hidden during animation editing) */}
+      {showTOC && !isAnimationEditorOpen && (
         <TableOfContents
           steps={steps}
           currentStepIndex={currentStepIndex}
@@ -2661,12 +2794,7 @@ export function ProcedureEditor() {
         />
       )}
 
-      {/* Parts Catalog Panel - Outside main container for proper overlay */}
-      <PartsCatalogPanel
-        isOpen={showPartsCatalog}
-        onClose={() => setShowPartsCatalog(false)}
-        hierarchy={modelHierarchy}
-      />
+      {/* Parts Catalog is now opened inside the 3D scene via postMessage */}
 
       {/* Tutorial */}
       {showTutorial && (
@@ -2742,6 +2870,15 @@ export function ProcedureEditor() {
           onIsolate={handleIsolate}
         />
       )}
+
+      {/* Demo Runner for procedure tutorials */}
+      <DemoRunner
+        feature={activeDemo}
+        onEnd={() => {
+          setActiveDemo(null);
+          window.postMessage({ type: 'debugDemoEnded', featureId: activeDemo?.id }, '*');
+        }}
+      />
     </div>
   );
 }
