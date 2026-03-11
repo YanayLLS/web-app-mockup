@@ -30,6 +30,7 @@ import {
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useToast } from '../../contexts/ToastContext';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
 
 type MediaType = 'image' | 'video' | 'document' | 'model' | 'all';
 type ViewMode = 'grid' | 'list';
@@ -865,7 +866,7 @@ function DraggableMediaItem({
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
               isSelected
                 ? 'bg-primary border-primary'
-                : 'bg-card/80 backdrop-blur-sm border-border opacity-0 group-hover:opacity-100'
+                : 'bg-card/80 backdrop-blur-sm border-border md:opacity-0 md:group-hover:opacity-100'
             }`}
           >
             {isSelected && <Check size={12} className="text-primary-foreground" />}
@@ -877,7 +878,7 @@ function DraggableMediaItem({
             e.stopPropagation();
             onOpenOptions(item, e);
           }}
-          className="absolute top-2 right-2 z-10 p-1 bg-card/80 backdrop-blur-sm border border-border rounded hover:bg-secondary transition-colors opacity-0 group-hover:opacity-100"
+          className="absolute top-2 right-2 z-10 p-1 bg-card/80 backdrop-blur-sm border border-border rounded hover:bg-secondary transition-colors md:opacity-0 md:group-hover:opacity-100"
           aria-label={`Options for ${item.name}`}
         >
           <MoreVertical size={14} className="text-muted" />
@@ -1282,6 +1283,10 @@ const generateMockMedia = (): MediaItem[] => {
 
 function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectItem }: MediaLibraryModalProps) {
   const { showToast } = useToast();
+  const { currentRole } = useRole();
+  const canCreate = hasAccess(currentRole, 'create-content');
+  const canDelete = hasAccess(currentRole, 'delete-content');
+  const canEdit = hasAccess(currentRole, 'projects-edit');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<MediaType>('all');
@@ -1559,7 +1564,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
           onClick={onClose}
         />
 
-        <div role="dialog" aria-modal="true" aria-labelledby="media-library-title" className="relative w-full max-w-[95vw] h-[90vh] bg-card border border-border rounded-[var(--radius)] shadow-2xl flex flex-col m-4">
+        <div role="dialog" aria-modal="true" aria-labelledby="media-library-title" className="relative w-full max-w-[95vw] h-[90vh] max-h-[calc(100vh-32px)] bg-card border border-border rounded-[var(--radius)] shadow-2xl flex flex-col m-4">
           {/* Selection Mode Banner */}
           {selectionMode && (
             <div className="shrink-0 bg-primary/10 border-b border-primary/20 px-6 py-3 flex items-center justify-between">
@@ -1585,19 +1590,21 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
             </div>
           )}
 
-          <div className="flex-1 flex min-h-0">
+          <div className="flex-1 flex flex-col md:flex-row min-h-0">
           {/* Folder Sidebar */}
-          <div className="w-64 border-r border-border flex flex-col shrink-0">
+          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-border flex flex-col shrink-0 max-h-[200px] md:max-h-none">
             <div className="border-b border-border px-4 py-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 style={{ fontWeight: 'var(--font-weight-bold)' }}>Folders</h3>
-                <button
-                  onClick={() => setIsCreateFolderModalOpen(true)}
-                  className="p-1 hover:bg-secondary rounded transition-colors"
-                  aria-label="Create new folder"
-                >
-                  <Plus size={16} className="text-muted" />
-                </button>
+                {canCreate && (
+                  <button
+                    onClick={() => setIsCreateFolderModalOpen(true)}
+                    className="p-1 hover:bg-secondary rounded transition-colors"
+                    aria-label="Create new folder"
+                  >
+                    <Plus size={16} className="text-muted" />
+                  </button>
+                )}
               </div>
             </div>
             
@@ -1629,7 +1636,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
               </div>
 
               {/* Search and Controls */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 {/* Search */}
                 <div className="relative flex-1">
                   <Search
@@ -1664,7 +1671,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                         className="fixed inset-0 z-10"
                         onClick={() => setShowFilterMenu(false)}
                       />
-                      <div className="absolute top-full mt-2 right-0 w-56 bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 py-1">
+                      <div className="absolute top-full mt-2 right-0 w-56 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 py-1">
                         {filterOptions.map((option) => (
                           <button
                             key={option.id}
@@ -1721,14 +1728,16 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                 </div>
 
                 {/* Upload Button */}
-                <button
-                  onClick={() => setIsUploadModalOpen(true)}
-                  className="flex items-center gap-2 px-4 h-10 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-                  style={{ fontWeight: 'var(--font-weight-bold)' }}
-                >
-                  <Upload size={16} />
-                  Upload
-                </button>
+                {canCreate && (
+                  <button
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="flex items-center gap-2 px-4 h-10 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                    style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  >
+                    <Upload size={16} />
+                    Upload
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1887,16 +1896,18 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                       <Move size={14} className="inline mr-1" />
                       Move
                     </button>
-                    <button 
-                      onClick={() => {
-                        const firstSelectedItem = mediaItems.find(item => selectedItems.has(item.id));
-                        if (firstSelectedItem) setDeleteModal(firstSelectedItem);
-                      }}
-                      className="text-sm text-muted hover:text-foreground transition-colors"
-                    >
-                      <Trash2 size={14} className="inline mr-1" />
-                      Delete
-                    </button>
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          const firstSelectedItem = mediaItems.find(item => selectedItems.has(item.id));
+                          if (firstSelectedItem) setDeleteModal(firstSelectedItem);
+                        }}
+                        className="text-sm text-muted hover:text-foreground transition-colors"
+                      >
+                        <Trash2 size={14} className="inline mr-1" />
+                        Delete
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -2019,16 +2030,18 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
               transform: 'translate(-100%, 0)',
             }}
           >
-            <button
-              onClick={() => {
-                setRenameModal({ item: optionsMenu.item, type: 'file' });
-                setOptionsMenu(null);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-            >
-              <Edit size={16} />
-              <span>Rename</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  setRenameModal({ item: optionsMenu.item, type: 'file' });
+                  setOptionsMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+              >
+                <Edit size={16} />
+                <span>Rename</span>
+              </button>
+            )}
             <button
               onClick={() => {
                 handleDownload(optionsMenu.item);
@@ -2039,27 +2052,33 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
               <Download size={16} />
               <span>Download</span>
             </button>
-            <button
-              onClick={() => {
-                setReplaceModal(optionsMenu.item);
-                setOptionsMenu(null);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-            >
-              <RefreshCw size={16} />
-              <span>Replace</span>
-            </button>
-            <div className="h-px bg-border my-1" />
-            <button
-              onClick={() => {
-                setDeleteModal(optionsMenu.item);
-                setOptionsMenu(null);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-            >
-              <Trash2 size={16} />
-              <span>Delete</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  setReplaceModal(optionsMenu.item);
+                  setOptionsMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+              >
+                <RefreshCw size={16} />
+                <span>Replace</span>
+              </button>
+            )}
+            {canDelete && (
+              <>
+                <div className="h-px bg-border my-1" />
+                <button
+                  onClick={() => {
+                    setDeleteModal(optionsMenu.item);
+                    setOptionsMenu(null);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              </>
+            )}
           </div>
         </>
       )}

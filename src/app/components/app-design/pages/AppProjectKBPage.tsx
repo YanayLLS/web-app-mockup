@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { AppProcedureInfoModal } from '../components/AppProcedureInfoModal';
 import { getUrlParam, setUrlParam } from '../../../utils/urlParams';
 import { useProject } from '../../../contexts/ProjectContext';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
 
 type KBItemType = 'folder' | 'procedure' | 'digital-twin' | 'media';
 
@@ -78,6 +79,8 @@ export function AppProjectKBPage() {
   const [loadingDT, setLoadingDT] = useState<KBItem | null>(null);
   const [loadProgress, setLoadProgress] = useState(0);
   const { dtThumbnail } = useProject();
+  const { currentRole } = useRole();
+  const canCreate = hasAccess(currentRole, 'create-content');
 
   const selectItem = (item: KBItem | null) => {
     setSelectedItem(item);
@@ -142,19 +145,21 @@ export function AppProjectKBPage() {
           backgroundColor: 'white',
         }}
       >
-        <button
-          onClick={() => setShowCreateDialog(true)}
-          className="flex items-center gap-1 text-sm hover:opacity-80 transition-opacity"
-          style={{ color: '#2F80ED', fontWeight: 'var(--font-weight-bold)' }}
-        >
-          <Plus className="size-4" />
-          Create
-        </button>
+        {canCreate && (
+          <button
+            onClick={() => setShowCreateDialog(true)}
+            className="flex items-center gap-1 text-sm hover:opacity-80 transition-opacity min-h-[44px]"
+            style={{ color: '#2F80ED', fontWeight: 'var(--font-weight-bold)' }}
+          >
+            <Plus className="size-4" />
+            Create
+          </button>
+        )}
         <div className="flex-1" />
-        <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
+        <button className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" style={{ color: '#7F7F7F' }}>
           <Eye className="size-4" />
         </button>
-        <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
+        <button className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" style={{ color: '#7F7F7F' }}>
           <RefreshCw className="size-4" />
         </button>
       </div>
@@ -175,7 +180,7 @@ export function AppProjectKBPage() {
       </div>
 
       {/* Item grid */}
-      <div className="flex flex-wrap" style={{ gap: '10px' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(230px, 100%), 1fr))', gap: '10px' }}>
         {/* Folders */}
         {folders.map((item) => (
           <div
@@ -183,7 +188,7 @@ export function AppProjectKBPage() {
             onClick={() => navigate(`/app/project/${projectId}/folder/${item.id}`)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
-              width: '249px',
+              width: '100%',
               height: '172px',
               borderRadius: '10px',
               backgroundColor: 'white',
@@ -209,7 +214,7 @@ export function AppProjectKBPage() {
             onClick={() => selectItem(item)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
-              width: '249px',
+              width: '100%',
               height: '172px',
               borderRadius: '10px',
               position: 'relative',
@@ -219,13 +224,13 @@ export function AppProjectKBPage() {
               <img src={item.image} alt={item.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
               <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#E9E9E9' }}>
-                <FileText style={{ width: '48px', height: '48px', color: '#6DC20D' }} />
+                <FileText style={{ width: '48px', height: '48px', color: '#2F80ED' }} />
               </div>
             )}
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%)' }} />
             <div
               className="absolute flex items-center gap-1 px-2 py-1"
-              style={{ top: '8px', left: '8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: 'white', border: '1px solid #6DC20D', backgroundColor: 'rgba(109,194,13,0.5)' }}
+              style={{ top: '8px', left: '8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: 'white', border: '1px solid #2F80ED', backgroundColor: 'rgba(47,128,237,0.5)' }}
             >
               <FileText style={{ width: '12px', height: '12px' }} />
               Flow
@@ -243,7 +248,7 @@ export function AppProjectKBPage() {
             onClick={() => setLoadingDT(item)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
-              width: '249px',
+              width: '100%',
               height: '172px',
               borderRadius: '10px',
               position: 'relative',
@@ -251,11 +256,11 @@ export function AppProjectKBPage() {
             }}
           >
             <div className="w-full h-full flex items-center justify-center">
-              <Cuboid style={{ width: '48px', height: '48px', color: '#2F80ED' }} />
+              <Cuboid style={{ width: '48px', height: '48px', color: '#8404B3' }} />
             </div>
             <div
               className="absolute flex items-center gap-1 px-2 py-1"
-              style={{ top: '8px', left: '8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: 'white', border: '1px solid #2F80ED', backgroundColor: 'rgba(47,128,237,0.5)' }}
+              style={{ top: '8px', left: '8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: 'white', border: '1px solid #8404B3', backgroundColor: 'rgba(132,4,179,0.5)' }}
             >
               <Cuboid style={{ width: '12px', height: '12px' }} />
               Digital Twin
@@ -273,7 +278,7 @@ export function AppProjectKBPage() {
             onClick={() => navigate(`/app/project/${projectId}/procedure/${item.id}`)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
-              width: '249px',
+              width: '100%',
               height: '172px',
               borderRadius: '10px',
               backgroundColor: 'white',
@@ -281,7 +286,7 @@ export function AppProjectKBPage() {
             }}
           >
             <div className="flex flex-col items-center justify-center h-full">
-              <Film style={{ width: '48px', height: '48px', color: '#11E874' }} />
+              <Film style={{ width: '48px', height: '48px', color: '#ff9500' }} />
               <div className="mt-2 text-center px-3 truncate w-full" style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                 {item.name}
               </div>
@@ -364,29 +369,31 @@ export function AppProjectKBPage() {
                 {loadingDT.version && <span>Version {loadingDT.version}</span>}
               </div>
 
-              {/* Content creator area */}
-              <div
-                className="w-full flex items-center justify-between"
-                style={{
-                  backgroundColor: '#E9E9E9',
-                  borderRadius: '25px',
-                  padding: '10px 16px',
-                  marginBottom: '20px',
-                }}
-              >
-                <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
-                  Content creator area
-                </span>
-                <button
-                  onClick={() => {
-                    window.open(`/web/project/915-i-series/knowledgebase?open=${loadingDT.id}`, '_blank');
+              {/* Content creator area - only for roles with edit access */}
+              {hasAccess(currentRole, 'projects-edit') && (
+                <div
+                  className="w-full flex items-center justify-between"
+                  style={{
+                    backgroundColor: '#E9E9E9',
+                    borderRadius: '25px',
+                    padding: '10px 16px',
+                    marginBottom: '20px',
                   }}
-                  className="hover:underline"
-                  style={{ fontSize: '12px', color: '#2F80ED' }}
                 >
-                  Settings (external)
-                </button>
-              </div>
+                  <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
+                    Content creator area
+                  </span>
+                  <button
+                    onClick={() => {
+                      window.open(`/web/project/915-i-series/knowledgebase?open=${loadingDT.id}`, '_blank');
+                    }}
+                    className="hover:underline"
+                    style={{ fontSize: '12px', color: '#2F80ED' }}
+                  >
+                    Settings (external)
+                  </button>
+                </div>
+              )}
 
               {/* Loading progress */}
               <div className="w-full flex flex-col items-center" style={{ gap: '8px' }}>
@@ -466,14 +473,14 @@ export function AppProjectKBPage() {
               <div className="flex items-center justify-end gap-3">
                 <button
                   onClick={() => { setShowCreateDialog(false); setNewProcName(''); setNewProcTwin(''); }}
-                  className="px-5 py-2.5 bg-destructive text-white rounded-[var(--radius-button)] text-sm hover:bg-destructive/90 transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-[var(--radius-button)] text-sm hover:bg-destructive/90 transition-colors"
                   style={{ fontWeight: 'var(--font-weight-semibold)' }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => { setShowCreateDialog(false); setNewProcName(''); setNewProcTwin(''); }}
-                  className="px-5 py-2.5 bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
                   style={{ fontWeight: 'var(--font-weight-semibold)' }}
                 >
                   Create

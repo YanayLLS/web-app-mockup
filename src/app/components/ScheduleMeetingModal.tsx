@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, Users, Globe, X } from 'lucide-react';
+import { useClickOutside } from '../hooks/useClickOutside';
+import { MemberAvatar } from './MemberAvatar';
 
 const TIMEZONES = [
   { name: 'Pacific/Midway', label: 'Midway Island, Samoa', offset: 'UTC-11:00' },
@@ -143,19 +145,10 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
   }, [initialTitle, editingMeeting]);
 
   // Close timezone dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (timezoneDropdownRef.current && !timezoneDropdownRef.current.contains(event.target as Node)) {
-        setIsTimezoneDropdownOpen(false);
-        setTimezoneSearchQuery('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useClickOutside(timezoneDropdownRef, () => {
+    setIsTimezoneDropdownOpen(false);
+    setTimezoneSearchQuery('');
+  });
 
   if (!isOpen) return null;
 
@@ -217,8 +210,8 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div 
-        className="bg-card rounded-[var(--radius)] w-full max-w-[680px] max-h-[90vh] flex flex-col border border-border"
+      <div
+        className="bg-card rounded-[var(--radius)] w-full max-w-[680px] max-h-[calc(100vh-32px)] flex flex-col border border-border"
         style={{ boxShadow: 'var(--elevation-md)' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -257,7 +250,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
               <label className="block text-foreground mb-2.5" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                 Date & Time
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Start Date/Time */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-[var(--radius)]">
@@ -329,8 +322,8 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
               </button>
 
               {isTimezoneDropdownOpen && (
-                <div 
-                  className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                <div
+                  className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50 max-w-[calc(100vw-32px)]"
                   style={{ boxShadow: 'var(--elevation-md)' }}
                 >
                   <div className="p-3 border-b border-border bg-secondary/20">
@@ -378,14 +371,14 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
 
             {/* Participants */}
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <label className="text-foreground" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                   <Users size={16} className="inline-block mr-2 mb-0.5" />
                   Participants {selectedParticipants.length > 0 && (
                     <span className="text-primary ml-1">({selectedParticipants.length})</span>
                   )}
                 </label>
-                <div className="bg-card border border-border focus-within:border-primary rounded-[var(--radius)] w-[240px] flex items-center gap-2 px-3 py-2 transition-colors">
+                <div className="bg-card border border-border focus-within:border-primary rounded-[var(--radius)] w-full sm:w-[240px] flex items-center gap-2 px-3 py-2 transition-colors">
                   <IconSearch />
                   <input
                     type="text"
@@ -405,15 +398,16 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                     key={person.id}
                     className="flex items-center gap-3 px-4 py-3 border-b border-border hover:bg-secondary/30 transition-colors"
                   >
-                    <div className="relative size-9 shrink-0">
-                      <div
-                        className="size-9 rounded-full flex items-center justify-center text-white border-2 border-card"
-                        style={{ backgroundColor: person.color, fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-sm)' }}
-                      >
-                        {person.initial}
-                      </div>
-                      <div className="absolute size-2.5 bg-destructive rounded-full border-2 border-card right-0 bottom-0" />
-                    </div>
+                    <MemberAvatar
+                      name={person.name}
+                      id={person.id}
+                      initials={person.initial}
+                      color={person.color}
+                      size="xl"
+                      border
+                      showTooltip={false}
+                      showProfileOnClick={false}
+                    />
                     <div className="flex-1 text-foreground">
                       {person.name}
                     </div>
@@ -445,15 +439,16 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                     key={person.id}
                     className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-secondary/30 transition-colors"
                   >
-                    <div className="relative size-9 shrink-0">
-                      <div
-                        className="size-9 rounded-full flex items-center justify-center text-white border-2 border-card"
-                        style={{ backgroundColor: person.color, fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-sm)' }}
-                      >
-                        {person.initial}
-                      </div>
-                      <div className="absolute size-2.5 bg-destructive rounded-full border-2 border-card right-0 bottom-0" />
-                    </div>
+                    <MemberAvatar
+                      name={person.name}
+                      id={person.id}
+                      initials={person.initial}
+                      color={person.color}
+                      size="xl"
+                      border
+                      showTooltip={false}
+                      showProfileOnClick={false}
+                    />
                     <div className="flex-1 text-foreground">
                       {person.name}
                     </div>

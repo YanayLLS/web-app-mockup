@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useClickOutside } from '../../hooks/useClickOutside';
 import {
   X,
   Share2,
@@ -66,6 +67,12 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
   // Check if user has edit permissions
   const canEdit = hasAccess(currentRole, 'projects-edit');
+  const canDelete = hasAccess(currentRole, 'delete-content');
+  const canPublish = hasAccess(currentRole, 'publish-content');
+  const canDuplicate = hasAccess(currentRole, 'duplicate-content');
+  const canShare = hasAccess(currentRole, 'share-content');
+  const canViewCollaborators = hasAccess(currentRole, 'view-collaborators');
+  const canEditCollaborators = hasAccess(currentRole, 'edit-collaborators');
 
   // For DT mode: find procedures connected to this digital twin
   // The DT KB item's id is a KB id (e.g. 'generator-kb-1'), but procedures reference the
@@ -146,19 +153,8 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDigitalTwinDropdown(false);
-      }
-      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
-        setShowShareMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(dropdownRef, () => setShowDigitalTwinDropdown(false));
+  useClickOutside(shareMenuRef, () => setShowShareMenu(false));
 
   // Focus title input when editing
   useEffect(() => {
@@ -374,43 +370,45 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
-              <div className="relative" ref={shareMenuRef}>
-                <button
-                  onClick={() => setShowShareMenu(!showShareMenu)}
-                  className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-primary text-primary hover:bg-primary/10 transition-colors"
-                  aria-haspopup="true"
-                  aria-expanded={showShareMenu}
-                >
-                  <Share2 size={14} />
-                  <span className="text-sm">Share</span>
-                </button>
-
-                {showShareMenu && (
-                  <div 
-                    className="absolute right-0 top-full mt-1 w-96 bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 p-4"
-                    style={{ boxShadow: 'var(--elevation-sm)' }}
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              {canShare && (
+                <div className="relative" ref={shareMenuRef}>
+                  <button
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-primary text-primary hover:bg-primary/10 transition-colors"
+                    aria-haspopup="true"
+                    aria-expanded={showShareMenu}
                   >
-                    <p className="text-sm text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                      Share this {isDT ? 'digital twin' : 'flow'}
-                    </p>
-                    <p className="text-xs text-muted mb-3">
-                      Anyone with the link can view this {isDT ? 'digital twin' : 'flow'}
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={`https://app.example.com/procedure/${procedure.id}`}
-                        className="flex-1 h-9 px-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground"
-                      />
-                      <button className="h-9 px-3 bg-primary text-primary-foreground rounded-[var(--radius)] text-xs hover:bg-primary/90 shrink-0">
-                        Copy
-                      </button>
+                    <Share2 size={14} />
+                    <span className="text-sm">Share</span>
+                  </button>
+
+                  {showShareMenu && (
+                    <div
+                      className="absolute right-0 top-full mt-1 w-96 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 p-4"
+                      style={{ boxShadow: 'var(--elevation-sm)' }}
+                    >
+                      <p className="text-sm text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                        Share this {isDT ? 'digital twin' : 'flow'}
+                      </p>
+                      <p className="text-xs text-muted mb-3">
+                        Anyone with the link can view this {isDT ? 'digital twin' : 'flow'}
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={`https://app.example.com/procedure/${procedure.id}`}
+                          className="flex-1 h-9 px-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground"
+                        />
+                        <button className="h-9 px-3 bg-primary text-primary-foreground rounded-[var(--radius)] text-xs hover:bg-primary/90 shrink-0">
+                          Copy
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               <button
                 onClick={() => {
@@ -453,7 +451,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
         {/* Sub-header with Title and Status */}
         <div className="shrink-0 bg-card border-b border-border">
-          <div className="flex items-center gap-3 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 px-4 py-3">
             {/* Icon */}
             <div className="p-2 bg-accent/10 rounded-[var(--radius)]">
               {isDT ? <Box size={20} className="text-accent" /> : <FileText size={20} className="text-accent" />}
@@ -506,7 +504,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
               )}
             </div>
 
-            <div className="flex-1" />
+            <div className="hidden md:block flex-1" />
 
             {/* Status Indicators - Only for editing roles */}
             {canEdit && hasUnsavedChanges && (
@@ -540,29 +538,28 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
             )}
 
             {/* Action Buttons */}
-            {canEdit && (
-              <>
-                {hasUnsavedChanges ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCancelChanges}
-                      className="h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
-                    >
-                      <span className="text-sm">Cancel</span>
-                    </button>
-                    <button
-                      onClick={handleSaveChanges}
-                      className="h-9 px-4 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                      <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Save</span>
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handlePublish}
-                    disabled={isPublishing}
-                    className="h-9 px-4 rounded-[var(--radius)] bg-[#11e874] text-white hover:bg-[#0fd968] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
+            {canEdit && hasUnsavedChanges && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancelChanges}
+                  className="h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
+                >
+                  <span className="text-sm">Cancel</span>
+                </button>
+                <button
+                  onClick={handleSaveChanges}
+                  className="h-9 px-4 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Save</span>
+                </button>
+              </div>
+            )}
+            {canPublish && !hasUnsavedChanges && (
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="h-9 px-4 rounded-[var(--radius)] border-2 border-[#11e874] text-[#0B9E4D] hover:bg-[#11e874]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
                 {isPublishing && (
                   <svg className="animate-spin size-4" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
@@ -574,14 +571,12 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                 </span>
               </button>
             )}
-            </>
-          )}
           </div>
         </div>
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto custom-scrollbar">
-          <div className="flex gap-3 p-4 min-h-full">
+          <div className="flex flex-col md:flex-row gap-3 p-4 min-h-full">
             {/* Main Content */}
             <div className="flex-1 flex flex-col gap-3 min-w-0">
               {/* Preview Section */}
@@ -622,7 +617,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
                       {showDigitalTwinDropdown && canEdit && (
                         <div
-                          className="absolute right-0 top-full mt-1 w-64 bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 max-h-60 overflow-auto"
+                          className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 max-h-60 overflow-auto"
                           style={{ boxShadow: 'var(--elevation-sm)' }}
                         >
                           {digitalTwins.map((twin) => {
@@ -712,9 +707,9 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                         <button
                           disabled={selectedDigitalTwinIds.length === 0}
                           onClick={() => window.open(`${import.meta.env.BASE_URL}app/procedure-editor/${procedure.id}?mode=edit`, '_blank')}
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 border-2 border-primary text-primary rounded-[var(--radius)] hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span className="text-sm">Edit in app</span>
+                          <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Edit in app</span>
                           <ExternalLink size={12} />
                         </button>
                         <button
@@ -722,7 +717,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                           disabled={selectedDigitalTwinIds.length === 0}
                           className="flex-1 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span className="text-sm">Edit in canvas</span>
+                          <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Edit in canvas</span>
                         </button>
                       </>
                     )}
@@ -765,7 +760,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
             {/* Side Menu - Only for editing roles */}
             {canEdit && (
-              <div className="w-[400px] shrink-0 flex flex-col gap-3">
+              <div className="w-full md:w-[400px] shrink-0 flex flex-col gap-3">
                 {isDT ? (
                   /* Connected Procedures - DT mode */
                   <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden">

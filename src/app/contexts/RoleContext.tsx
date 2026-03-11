@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type UserRole = 
+export type UserRole =
+  | 'guest'
   | 'operator'
   | 'operator-mr'
   | 'field-service-engineer'
@@ -17,6 +18,11 @@ export interface RoleInfo {
 }
 
 export const ROLES: Record<UserRole, RoleInfo> = {
+  'guest': {
+    id: 'guest',
+    label: 'Guest',
+    description: 'External visitor with view-only access to shared content'
+  },
   'operator': {
     id: 'operator',
     label: 'Operator',
@@ -70,8 +76,15 @@ const RoleContext = createContext<RoleContextType | undefined>(undefined);
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [currentRole, setCurrentRole] = useState<UserRole>('admin');
 
+  // Persist the current role to localStorage so standalone HTML pages (e.g.
+  // digital-twin-scene.html loaded in an iframe) can read it.
+  useEffect(() => {
+    localStorage.setItem('currentRole', currentRole);
+  }, [currentRole]);
+
   const setRole = (role: UserRole) => {
     setCurrentRole(role);
+    localStorage.setItem('currentRole', role);
     console.log('Role switched to:', ROLES[role].label);
   };
 
@@ -107,14 +120,14 @@ export function useRole() {
 export function hasAccess(role: UserRole, feature: string): boolean {
   const accessMap: Record<string, UserRole[]> = {
     // Main menu items
-    'home': ['operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
-    'notifications': ['operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
+    'home': ['guest', 'operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
+    'notifications': ['guest', 'operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
     'remote-support': ['operator-mr', 'field-service-engineer', 'service-support-expert', 'service-support-manager', 'admin'],
     'ai-studio': ['instructor', 'content-creator', 'service-support-manager', 'admin'],
     'archive': ['content-creator', 'admin'],
     
     // Projects (Knowledge Base)
-    'projects': ['operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
+    'projects': ['guest', 'operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
     'projects-edit': ['instructor', 'content-creator', 'admin'], // Can edit procedures
     
     // Workspace management
@@ -128,12 +141,33 @@ export function hasAccess(role: UserRole, feature: string): boolean {
     
     // AI Chat
     'ai-chat': ['field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],
-    
+
     // Scheduling
     'schedule-meeting': ['field-service-engineer', 'service-support-expert', 'service-support-manager', 'admin'],
-    
+
     // Project management
     'new-project': ['instructor', 'content-creator', 'admin'],
+
+    // Content creation & editing
+    'create-content': ['instructor', 'content-creator', 'admin'],
+    'delete-content': ['content-creator', 'admin'],
+    'publish-content': ['instructor', 'content-creator', 'admin'],
+    'view-unpublished': ['instructor', 'service-support-manager', 'content-creator', 'admin'],
+    'duplicate-content': ['instructor', 'content-creator', 'admin'],
+
+    // Collaboration & sharing
+    'share-content': ['instructor', 'service-support-expert', 'service-support-manager', 'content-creator', 'admin'],
+    'view-collaborators': ['instructor', 'service-support-expert', 'service-support-manager', 'content-creator', 'admin'],
+    'edit-collaborators': ['instructor', 'admin'],
+
+    // AI Studio config
+    'ai-studio-edit': ['instructor', 'content-creator', 'admin'],
+
+    // Archive
+    'archive-delete': ['admin'],
+
+    // Remote support actions
+    'start-call': ['operator-mr', 'field-service-engineer', 'service-support-expert', 'service-support-manager', 'admin'],
   };
 
   return accessMap[feature]?.includes(role) ?? false;

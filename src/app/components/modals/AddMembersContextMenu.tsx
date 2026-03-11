@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Search, Users } from 'lucide-react';
 import { Checkbox } from './Checkbox';
+import { MemberAvatar } from '../MemberAvatar';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 export interface MemberOption {
   id: string;
@@ -47,6 +49,8 @@ export function AddMembersContextMenu({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Handle escape key and clicks outside
+  useClickOutside(menuRef, onClose);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -54,19 +58,24 @@ export function AddMembersContextMenu({
       }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-
     window.addEventListener('keydown', handleEscape);
-    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       window.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [onClose]);
+
+  // Clamp menu position within viewport
+  useEffect(() => {
+    if (!menuRef.current || !position) return;
+    const menu = menuRef.current;
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      menu.style.left = `${Math.max(16, window.innerWidth - rect.width - 16)}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      menu.style.top = `${Math.max(16, window.innerHeight - rect.height - 16)}px`;
+    }
+  }, [position]);
 
   const filteredMembers = availableMembers.filter(
     (member) =>
@@ -115,7 +124,7 @@ export function AddMembersContextMenu({
   return (
     <div
       ref={menuRef}
-      className="shadow-lg border-2 w-[320px] max-h-[500px] flex flex-col"
+      className="shadow-lg border-2 w-[320px] max-w-[calc(100vw-32px)] max-h-[500px] flex flex-col"
       style={{
         ...menuStyle,
         borderRadius: 'var(--radius-lg)',
@@ -129,7 +138,7 @@ export function AddMembersContextMenu({
         </h3>
         <button
           onClick={onClose}
-          className="p-1 transition-colors"
+          className="p-1 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
           style={{ borderRadius: 'var(--radius-md)' }}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -150,7 +159,7 @@ export function AddMembersContextMenu({
             placeholder={`Search ${showGroups ? 'members and groups' : 'members'}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 border focus:outline-none"
+            className="w-full pl-10 pr-3 py-2 min-h-[44px] border focus:outline-none"
             style={{
               backgroundColor: 'var(--background)',
               borderColor: 'var(--border)',
@@ -186,7 +195,7 @@ export function AddMembersContextMenu({
               <div
                 key={group.id}
                 onClick={() => toggleGroup(group.id)}
-                className="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-3 px-3 py-2 min-h-[44px] cursor-pointer transition-colors"
                 style={{ borderRadius: 'var(--radius-md)' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -227,21 +236,13 @@ export function AddMembersContextMenu({
               <div
                 key={member.id}
                 onClick={() => toggleMember(member.id)}
-                className="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-3 px-3 py-2 min-h-[44px] cursor-pointer transition-colors"
                 style={{ borderRadius: 'var(--radius-md)' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <Checkbox checked={selectedMembers.includes(member.id)} onChange={(e) => e.stopPropagation()} />
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold"
-                  style={{
-                    backgroundColor: member.color,
-                    fontFamily: 'var(--font-family)',
-                  }}
-                >
-                  {member.initials}
-                </div>
+                <MemberAvatar name={member.name} size="md" color={member.color} initials={member.initials} />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
                     {member.name}
@@ -287,9 +288,9 @@ export function AddMembersContextMenu({
         <div className="flex items-center gap-2">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 transition-colors text-sm"
-            style={{ 
-              color: 'var(--foreground)', 
+            className="px-3 py-1.5 min-h-[44px] transition-colors text-sm"
+            style={{
+              color: 'var(--foreground)',
               fontFamily: 'var(--font-family)',
               borderRadius: 'var(--radius-md)',
             }}
@@ -300,7 +301,7 @@ export function AddMembersContextMenu({
           </button>
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 transition-colors hover:opacity-90 text-sm"
+            className="px-3 py-1.5 min-h-[44px] transition-colors hover:opacity-90 text-sm"
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',

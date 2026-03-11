@@ -208,7 +208,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
 
   body {
@@ -356,5 +356,72 @@ html {
 @media (max-width: 768px) {
   input, select, textarea {
     font-size: max(16px, 1rem) !important;
+  }
+}
+
+/* ====== RESPONSIVE BREAKPOINTS ====== */
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  :root {
+    --text-h1: 28px;
+    --text-h2: 20px;
+    --spacing-xl: 20px;
+    --spacing-2xl: 24px;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  :root {
+    --text-h1: 24px;
+    --text-h2: 18px;
+    --text-h3: 16px;
+    --spacing-xl: 16px;
+    --spacing-2xl: 20px;
+    --text-xs: 11px;
+  }
+}
+
+/* Small phone breakpoint */
+@media (max-width: 480px) {
+  :root {
+    --text-h1: 22px;
+    --text-h2: 17px;
+    --spacing-xl: 12px;
+    --spacing-2xl: 16px;
+  }
+}
+
+/* Mobile-safe modal constraints */
+@media (max-width: 768px) {
+  .modal-mobile-safe {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    max-width: calc(100vw - 32px);
+    overflow-y: auto;
+  }
+}
+
+/* Safe area support for notched devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-area-top { padding-top: env(safe-area-inset-top); }
+  .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-area-left { padding-left: env(safe-area-inset-left); }
+  .safe-area-right { padding-right: env(safe-area-inset-right); }
+}
+
+/* Overscroll containment for mobile drawers/sidebars */
+.overscroll-contain {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile touch-friendly menu items */
+@media (max-width: 768px) {
+  .mobile-touch-target {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
 }

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Handle, Position } from 'reactflow';
 import type { NodeProps } from 'reactflow';
-import { 
-  ListChecks, 
+import { useClickOutside } from '../../../hooks/useClickOutside';
+import {
+  ListChecks,
   Plus, 
   X,
   Trash2,
@@ -50,6 +51,7 @@ export interface DynamicNodeData {
   popups: PopupNotice[];
   checklist: ChecklistItem[];
   media: string[]; // Array of media IDs attached to this step
+  editingEnabled?: boolean;
   onChange?: (data: Partial<DynamicNodeData>) => void;
   onAction?: (action: 'delete' | 'duplicate') => void;
   onAddOption?: () => void;
@@ -115,16 +117,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
   }, [localDesc]);
 
   // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node) && 
-          containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setActiveMenu('none');
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside([menuRef, containerRef], () => setActiveMenu('none'));
 
   const updateData = (updates: Partial<DynamicNodeData>) => {
     if (data.onChange) {
@@ -174,7 +167,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
   return (
     <div 
       ref={containerRef}
-      className="relative group transition-all duration-200 min-w-[280px] w-max max-w-[400px]"
+      className="relative group transition-all duration-200 min-w-[220px] sm:min-w-[280px] w-max max-w-[90vw] sm:max-w-[400px]"
     >
       <div
         className="relative border-2 rounded-lg transition-all"
@@ -185,12 +178,12 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
           fontFamily: 'var(--font-family)',
         }}
       >
-        {/* Input Handle */}
-        <Handle 
-          type="target" 
-          position={Position.Top} 
-          className="!w-4 !h-4 !border-2 !left-1/2 !-translate-x-1/2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair"
-          style={{ 
+        {/* Input Handle — outer touch area is 44px via ::after */}
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!w-4 !h-4 !border-2 !left-1/2 !-translate-x-1/2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
+          style={{
             backgroundColor: 'var(--muted)',
             borderColor: 'var(--card)'
           }}
@@ -255,7 +248,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
           </div>
 
           {/* Feature Toolbar */}
-          <div className="flex items-center gap-1 p-1 rounded-md border self-start mt-1" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
+          {data.editingEnabled !== false && <div className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-md border self-start mt-1 flex-wrap" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
             <button 
               onClick={() => handleToggleMenu('colorize')}
               className={`p-1.5 rounded transition-all relative ${data.isColorized ? 'bg-amber-100' : 'hover:bg-secondary'}`}
@@ -310,14 +303,14 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               <ImageIcon size={14} style={{ color: data.media && data.media.length > 0 ? '#3b82f6' : 'var(--muted)' }} />
               {data.media && data.media.length > 0 && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />}
             </button>
-          </div>
+          </div>}
         </div>
 
         {/* Floating Configuration Menus */}
         {activeMenu !== 'none' && (
-          <div 
+          <div
             ref={menuRef}
-            className="absolute top-0 left-full ml-3 rounded-lg border p-4 z-50 min-w-[240px] max-w-[280px] animate-in slide-in-from-left-2 duration-200"
+            className="absolute top-full mt-2 left-0 sm:top-0 sm:left-full sm:ml-3 rounded-lg border p-4 z-50 min-w-[220px] sm:min-w-[240px] max-w-[calc(100vw-2rem)] sm:max-w-[280px] animate-in slide-in-from-left-2 duration-200"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
@@ -659,7 +652,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                             {mediaId.split('-').pop() || `Media ${idx + 1}`}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                           {idx > 0 && (
                             <button
                               onClick={() => {
@@ -806,7 +799,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                     type="source"
                     position={Position.Bottom}
                     id={opt.id}
-                    className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair"
+                    className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
                     style={{
                       backgroundColor: 'var(--primary)',
                       borderColor: 'var(--card)'
@@ -821,13 +814,13 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                   >
                     {opt.text}
                   </div>
-                  {!isConnected && (
+                  {!isConnected && data.editingEnabled !== false && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         data.onAddConnectedStep?.(opt.id);
                       }}
-                      className="absolute top-12 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-125 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
+                      className="absolute top-12 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
                       style={{
                         backgroundColor: 'var(--card)',
                         borderColor: 'var(--border)',
@@ -858,19 +851,19 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               type="source"
               position={Position.Bottom}
               id="default"
-              className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair"
+              className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
               style={{
                 backgroundColor: 'var(--muted)',
                 borderColor: 'var(--card)'
               }}
             />
-            {!data.connectedHandles?.has('default') && (
+            {!data.connectedHandles?.has('default') && data.editingEnabled !== false && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   data.onAddConnectedStep?.();
                 }}
-                className="absolute top-6 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-125 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
+                className="absolute top-6 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)',
@@ -895,7 +888,8 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
         )}
 
         {/* Hover Action Menu */}
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur rounded p-1 shadow-sm border z-20"
+        {data.editingEnabled !== false && (
+        <div className="absolute top-2 right-2 flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur rounded p-1 shadow-sm border z-20"
           style={{
             backgroundColor: 'rgba(var(--card-rgb, 255, 255, 255), 0.9)',
             borderColor: 'var(--border)'
@@ -922,6 +916,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
             <Trash2 size={12} />
           </button>
         </div>
+        )}
       </div>
     </div>
   );

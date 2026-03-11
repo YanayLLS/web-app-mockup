@@ -7,6 +7,7 @@ import { useAvatar } from '../contexts/AvatarContext';
 import { useRole, ROLES, UserRole, hasAccess } from '../contexts/RoleContext';
 import { getUrlParam, setUrlParam } from '../utils/urlParams';
 import { ChevronDown, Search, Settings as SettingsIcon } from 'lucide-react';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 interface TopBarProps {
   isChatOpen: boolean;
@@ -146,40 +147,19 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
   const workspaceButtonRef = useRef<HTMLButtonElement>(null);
   const workspaceMenuRef = useRef<HTMLDivElement>(null);
   const { currentRole, setRole, roleInfo } = useRole();
+  const canAccessAiChat = hasAccess(currentRole, 'ai-chat');
 
   // Close user menu when clicking outside
-  useEffect(() => {
-    if (!isUserMenuOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node) && 
-          userButtonRef.current && !userButtonRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isUserMenuOpen]);
+  useClickOutside([userMenuRef, userButtonRef], () => setIsUserMenuOpen(false), isUserMenuOpen);
 
   // Close workspace menu when clicking outside
-  useEffect(() => {
-    if (!showWorkspaceMenu) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (workspaceMenuRef.current && !workspaceMenuRef.current.contains(event.target as Node) && 
-          workspaceButtonRef.current && !workspaceButtonRef.current.contains(event.target as Node)) {
-        setShowWorkspaceMenu(false);
-        setWorkspaceSearchQuery('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showWorkspaceMenu]);
+  useClickOutside([workspaceMenuRef, workspaceButtonRef], () => {
+    setShowWorkspaceMenu(false);
+    setWorkspaceSearchQuery('');
+  }, showWorkspaceMenu);
 
 
-  const canAccessWorkspaceManagement = hasAccess(currentRole, 'workspace-management');
+  const canAccessWorkspaceManagement = hasAccess(currentRole, 'workspace-management') || hasAccess(currentRole, 'workspace-members');
 
   // Mock workspace data
   const allWorkspaces = [
@@ -243,7 +223,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           {isMobile && onMenuClick && (
             <button
               onClick={onMenuClick}
-              className="p-2 -ml-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2.5 -ml-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
               aria-label="Open menu"
             >
               <IconMenu />
@@ -280,7 +260,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     {currentWorkspace.initials}
                   </div>
                 )}
-                <span className="text-sidebar-foreground" style={{ 
+                <span className="text-sidebar-foreground truncate max-w-[160px]" style={{
                   fontWeight: 'var(--font-weight-bold)',
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'var(--font-family)'
@@ -294,7 +274,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               {showWorkspaceMenu && (
                 <div 
                   ref={workspaceMenuRef}
-                  className="absolute top-full left-0 mt-2 w-80 bg-card border border-border rounded-[var(--radius)] z-50"
+                  className="absolute top-full left-0 mt-2 w-80 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] z-50"
                   style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}
                 >
                   {/* Workspace Header */}
@@ -401,9 +381,9 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
 
         {/* Center - Search and Chat Button */}
         <div className="flex items-center gap-2">
-          {/* Search Field */}
+          {/* Search Field - Desktop */}
           {!isMobile && (
-            <div className="flex items-center gap-3 bg-background border border-input rounded-[var(--radius)] px-3 py-2 w-[420px] transition-all hover:border-primary/50 hover:shadow-sm focus-within:border-primary focus-within:shadow-md active:scale-[0.99]">
+            <div className="flex items-center gap-3 bg-background border border-input rounded-[var(--radius)] px-3 py-2 w-full max-w-[420px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm focus-within:border-primary focus-within:shadow-md active:scale-[0.99]">
               <IconSearch />
               <input
                 type="text"
@@ -414,19 +394,31 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
             </div>
           )}
 
+          {/* Search Icon - Mobile */}
+          {isMobile && (
+            <button
+              className="p-2.5 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+              aria-label="Search"
+            >
+              <Search size={20} />
+            </button>
+          )}
+
           {/* Chat Button */}
-          <button
-            onClick={onToggleChat}
-            className={`p-2 rounded-[var(--radius)] transition-all ${
-              isChatOpen
-                ? 'bg-primary/10 border border-primary shadow-[0px_4px_17.7px_0px_rgba(151,71,255,0.3)]'
-                : 'border border-primary/30 hover:border-primary hover:shadow-[0px_4px_17.7px_0px_rgba(151,71,255,0.2)]'
-            }`}
-            aria-label="Toggle AI chat"
-            aria-expanded={isChatOpen}
-          >
-            <IconAi />
-          </button>
+          {canAccessAiChat && (
+            <button
+              onClick={onToggleChat}
+              className={`p-2.5 rounded-[var(--radius)] transition-all ${
+                isChatOpen
+                  ? 'bg-primary/10 border border-primary shadow-[0px_4px_17.7px_0px_rgba(151,71,255,0.3)]'
+                  : 'border border-primary/30 hover:border-primary hover:shadow-[0px_4px_17.7px_0px_rgba(151,71,255,0.2)]'
+              }`}
+              aria-label="Toggle AI chat"
+              aria-expanded={isChatOpen}
+            >
+              <IconAi />
+            </button>
+          )}
         </div>
 
         {/* Right side - Install App and User Avatar */}
@@ -442,7 +434,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
             <button
               ref={userButtonRef}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="cursor-pointer"
+              className="cursor-pointer p-1.5 rounded-[var(--radius)] hover:bg-secondary transition-colors"
               aria-label="User settings"
               aria-expanded={isUserMenuOpen}
               aria-haspopup="true"
@@ -458,7 +450,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
             {isUserMenuOpen && (
               <div
                 ref={userMenuRef}
-                className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-[var(--radius)] py-1 z-50"
+                className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] py-1 z-50"
                 style={{ boxShadow: 'var(--elevation-lg)' }}
               >
                 {/* User Info */}
@@ -558,7 +550,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
       {showRoleSwitcher && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div 
-            className="bg-card border border-border rounded-[var(--radius-lg)] w-full max-w-2xl max-h-[80vh] overflow-hidden"
+            className="bg-card border border-border rounded-[var(--radius-lg)] w-full max-w-2xl max-h-[80vh] max-h-[80dvh] overflow-hidden"
             style={{ boxShadow: 'var(--elevation-lg)' }}
           >
             {/* Header */}

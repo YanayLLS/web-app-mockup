@@ -105,7 +105,7 @@ const DraggableMediaItem = ({ file, index, onRemove, onMove }: DraggableMediaIte
       {/* Delete Button */}
       <button
         onClick={() => onRemove(file.id)}
-        className="p-2 rounded hover:bg-destructive/20 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+        className="p-2 rounded hover:bg-destructive/20 text-destructive opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label="Delete media"
       >
         <Trash2 className="size-4" />
@@ -234,13 +234,13 @@ function MediaManagerContent({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, o
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       
-      <div className="relative bg-card rounded-lg w-full max-w-[600px] shadow-elevation-sm max-h-[90vh] flex flex-col border border-border">
+      <div className="relative bg-card rounded-lg w-full max-w-[min(600px,calc(100vw-32px))] shadow-elevation-sm max-h-[90vh] flex flex-col border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border">
           <h3 id="media-manager-title" className="text-card-foreground">Media Manager</h3>
-          <button 
-            onClick={onClose} 
-            className="text-muted hover:text-foreground transition-colors"
+          <button
+            onClick={onClose}
+            className="text-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Close media manager"
           >
             <X className="size-5" />
@@ -248,7 +248,7 @@ function MediaManagerContent({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, o
         </div>
 
         {/* Upload Area */}
-        <div className="p-4 border-b border-border">
+        <div className="px-4 sm:px-6 py-4 border-b border-border">
           <input
             ref={fileInputRef}
             type="file"
@@ -325,13 +325,13 @@ function MediaManagerContent({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, o
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-t border-border">
           <p className="text-muted text-sm">
             {mediaFiles.length} / 10 files
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-button hover:opacity-90 transition-opacity"
+            className="px-4 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-button hover:opacity-90 transition-opacity"
           >
             Done
           </button>

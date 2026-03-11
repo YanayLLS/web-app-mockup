@@ -1,5 +1,7 @@
 import { Search, X, Link as LinkIcon } from 'lucide-react';
 import { useState } from 'react';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { MemberAvatar } from '../../MemberAvatar';
 
 const allParticipants = [
   { id: '1', name: 'Luy Robin', role: 'Field Engineer', avatar: 'LR', color: '#2F80ED', added: true },
@@ -16,6 +18,8 @@ interface AppScheduleMeetingModalProps {
 }
 
 export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingModalProps) {
+  const { currentRole } = useRole();
+  const canSchedule = hasAccess(currentRole, 'schedule-meeting');
   const [title, setTitle] = useState('Remote Support Meeting');
   const [startDate, setStartDate] = useState('2026-03-08');
   const [startTime, setStartTime] = useState('10:00');
@@ -49,7 +53,7 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
             <h3 style={{ fontSize: '16px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Schedule Meeting</h3>
-            <button onClick={onClose} className="p-1 hover:bg-secondary rounded transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-secondary rounded transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Close">
               <X className="size-4" style={{ color: '#36415D' }} />
             </button>
           </div>
@@ -80,26 +84,26 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="h-10 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors"
+                  className="h-11 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors flex-1 min-w-[130px]"
                 />
                 <input
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="h-10 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors"
+                  className="h-11 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors min-w-[100px]"
                 />
                 <span className="text-sm text-muted px-1">to</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="h-10 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors"
+                  className="h-11 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors flex-1 min-w-[130px]"
                 />
                 <input
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="h-10 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors"
+                  className="h-11 px-3 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground focus:border-primary transition-colors min-w-[100px]"
                 />
               </div>
             </div>
@@ -144,12 +148,13 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
               <div className="bg-card border border-border rounded-lg divide-y divide-border overflow-hidden max-h-48 overflow-y-auto">
                 {filteredParticipants.map((p) => (
                   <div key={p.id} className="flex items-center gap-3 px-4 py-2.5">
-                    <div
-                      className="size-8 rounded-full flex items-center justify-center text-white text-xs shrink-0"
-                      style={{ backgroundColor: p.color, fontWeight: 'var(--font-weight-bold)' }}
-                    >
-                      {p.avatar}
-                    </div>
+                    <MemberAvatar
+                      name={p.name}
+                      initials={p.avatar}
+                      color={p.color}
+                      size="lg"
+                      role={p.role}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                         {p.name}
@@ -158,7 +163,7 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
                     </div>
                     <button
                       onClick={() => toggleParticipant(p.id)}
-                      className={`text-xs shrink-0 ${p.added ? 'text-destructive hover:text-destructive/80' : 'text-primary hover:text-primary/80'}`}
+                      className={`text-xs shrink-0 min-h-[44px] px-2 ${p.added ? 'text-destructive hover:text-destructive/80' : 'text-primary hover:text-primary/80'}`}
                       style={{ fontWeight: 'var(--font-weight-medium)' }}
                     >
                       {p.added ? 'Remove' : '+ Add'}
@@ -176,17 +181,19 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-border flex items-center justify-end gap-2 shrink-0">
+          <div className="p-4 border-t border-border flex items-center justify-end gap-2 shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
             <button
               onClick={onClose}
-              className="px-5 py-2 text-sm text-foreground bg-secondary rounded-[var(--radius-button)] hover:bg-secondary/80 transition-colors"
-              style={{ fontWeight: 'var(--font-weight-semibold)' }}
+              className="px-5 text-sm text-foreground bg-secondary rounded-[var(--radius-button)] hover:bg-secondary/80 transition-colors"
+              style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '44px' }}
             >
               Cancel
             </button>
             <button
-              className="px-5 py-2 text-sm text-white bg-primary rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors"
-              style={{ fontWeight: 'var(--font-weight-semibold)' }}
+              disabled={!canSchedule}
+              className={`px-5 text-sm rounded-[var(--radius-button)] transition-colors ${canSchedule ? 'text-white bg-primary hover:bg-primary/90' : 'text-muted bg-muted/30 cursor-not-allowed'}`}
+              style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '44px' }}
+              title={!canSchedule ? 'You do not have permission to schedule meetings' : undefined}
             >
               Schedule Meeting
             </button>

@@ -3,6 +3,7 @@ import { FolderOpen, FileText, ChevronRight, Cuboid, Plus, Eye, RefreshCw, X } f
 import { useState, useEffect } from 'react';
 import { AppProcedureInfoModal } from '../components/AppProcedureInfoModal';
 import { getUrlParam, setUrlParam } from '../../../utils/urlParams';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
 
 type TabType = 'flows-media' | 'digital-twins';
 
@@ -104,6 +105,8 @@ export function AppFolderBrowsePage() {
   const [selectedItem, setSelectedItem] = useState<FolderItem | null>(null);
   const [loadingDT, setLoadingDT] = useState<FolderItem | null>(null);
   const [loadProgress, setLoadProgress] = useState(0);
+  const { currentRole } = useRole();
+  const canCreate = hasAccess(currentRole, 'create-content');
 
   const selectItem = (item: FolderItem | null) => {
     setSelectedItem(item);
@@ -174,18 +177,20 @@ export function AppFolderBrowsePage() {
           backgroundColor: 'white',
         }}
       >
-        <button
-          className="flex items-center gap-1 text-sm hover:opacity-80 transition-opacity"
-          style={{ color: '#2F80ED', fontWeight: 'var(--font-weight-bold)' }}
-        >
-          <Plus className="size-4" />
-          Create
-        </button>
+        {canCreate && (
+          <button
+            className="flex items-center gap-1 text-sm hover:opacity-80 transition-opacity min-h-[44px]"
+            style={{ color: '#2F80ED', fontWeight: 'var(--font-weight-bold)' }}
+          >
+            <Plus className="size-4" />
+            Create
+          </button>
+        )}
         <div className="flex-1" />
-        <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
+        <button className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" style={{ color: '#7F7F7F' }}>
           <Eye className="size-4" />
         </button>
-        <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }}>
+        <button className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" style={{ color: '#7F7F7F' }}>
           <RefreshCw className="size-4" />
         </button>
       </div>
@@ -196,7 +201,7 @@ export function AppFolderBrowsePage() {
           <span key={crumb.id} className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => navigate(`/app/project/${projectId}/kb`)}
-              className="hover:underline transition-colors"
+              className="hover:underline transition-colors min-h-[44px] flex items-center"
               style={{ color: '#2F80ED', fontWeight: 'var(--font-weight-normal)' }}
             >
               {crumb.name}
@@ -210,14 +215,15 @@ export function AppFolderBrowsePage() {
       </div>
 
       {/* Item grid */}
-      <div className="flex flex-wrap" style={{ gap: '10px' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(230px, 100%), 1fr))', gap: '10px' }}>
         {activeTab === 'flows-media' && filteredFlowsMedia.map((item) => (
           <div
             key={item.id}
             onClick={() => handleItemClick(item)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
-              width: '249px',
+              width: '100%',
+              maxWidth: '249px',
               height: '172px',
               borderRadius: '10px',
               position: 'relative',
@@ -252,9 +258,9 @@ export function AppFolderBrowsePage() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#E9E9E9' }}>
                     {item.badgeType === 'digital-twin' ? (
-                      <Cuboid style={{ width: '48px', height: '48px', color: '#2F80ED' }} />
+                      <Cuboid style={{ width: '48px', height: '48px', color: '#8404B3' }} />
                     ) : (
-                      <FileText style={{ width: '48px', height: '48px', color: '#6DC20D' }} />
+                      <FileText style={{ width: '48px', height: '48px', color: '#2F80ED' }} />
                     )}
                   </div>
                 )}
@@ -274,8 +280,8 @@ export function AppFolderBrowsePage() {
                       fontSize: '10px',
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'white',
-                      border: item.badgeType === 'digital-twin' ? '1px solid #2F80ED' : '1px solid #6DC20D',
-                      backgroundColor: item.badgeType === 'digital-twin' ? 'rgba(47,128,237,0.5)' : 'rgba(109,194,13,0.5)',
+                      border: item.badgeType === 'digital-twin' ? '1px solid #8404B3' : '1px solid #2F80ED',
+                      backgroundColor: item.badgeType === 'digital-twin' ? 'rgba(132,4,179,0.5)' : 'rgba(47,128,237,0.5)',
                     }}
                   >
                     {item.badgeType === 'digital-twin' ? (
@@ -304,14 +310,15 @@ export function AppFolderBrowsePage() {
             onClick={() => handleItemClick(item)}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all flex flex-col items-center justify-center"
             style={{
-              width: '249px',
+              width: '100%',
+              maxWidth: '249px',
               height: '172px',
               borderRadius: '10px',
               backgroundColor: 'white',
               border: '1px solid #E9E9E9',
             }}
           >
-            <Cuboid style={{ width: '48px', height: '48px', color: '#2F80ED' }} />
+            <Cuboid style={{ width: '48px', height: '48px', color: '#8404B3' }} />
             <div
               className="mt-2 text-center px-3 truncate w-full"
               style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}
@@ -389,19 +396,22 @@ export function AppFolderBrowsePage() {
                 <span>Last updated: {loadingDT.date}</span>
                 {loadingDT.version && <><span>|</span><span>Version {loadingDT.version}</span></>}
               </div>
-              <div
-                className="w-full flex items-center justify-between"
-                style={{ backgroundColor: '#E9E9E9', borderRadius: '25px', padding: '10px 16px', marginBottom: '20px' }}
-              >
-                <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Content creator area</span>
-                <button
-                  onClick={() => window.open(`/web/project/915-i-series/knowledgebase?open=${loadingDT.id}`, '_blank')}
-                  className="hover:underline"
-                  style={{ fontSize: '12px', color: '#2F80ED' }}
+              {/* Content creator area - only for roles with edit access */}
+              {hasAccess(currentRole, 'projects-edit') && (
+                <div
+                  className="w-full flex items-center justify-between"
+                  style={{ backgroundColor: '#E9E9E9', borderRadius: '25px', padding: '10px 16px', marginBottom: '20px' }}
                 >
-                  Settings (external)
-                </button>
-              </div>
+                  <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Content creator area</span>
+                  <button
+                    onClick={() => window.open(`/web/project/915-i-series/knowledgebase?open=${loadingDT.id}`, '_blank')}
+                    className="hover:underline"
+                    style={{ fontSize: '12px', color: '#2F80ED' }}
+                  >
+                    Settings (external)
+                  </button>
+                </div>
+              )}
               <div className="w-full flex flex-col items-center" style={{ gap: '8px' }}>
                 <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-semibold)', color: '#36415D' }}>
                   Loading &nbsp;{Math.min(Math.round(loadProgress), 100)} %

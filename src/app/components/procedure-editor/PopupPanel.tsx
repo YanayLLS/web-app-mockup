@@ -3,6 +3,7 @@ import { X, ChevronLeft, ChevronRight, Plus, Palette, AlertCircle, Upload, Trash
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MediaManagerModal } from './MediaManagerModal';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface PopupPanelProps {
   popups: Popup[];
@@ -89,22 +90,7 @@ export function PopupPanel({
   }, [currentPopupIndex]);
 
   // Click outside handler for color picker
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        showColorPicker &&
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node) &&
-        colorButtonRef.current &&
-        !colorButtonRef.current.contains(event.target as Node)
-      ) {
-        setShowColorPicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showColorPicker]);
+  useClickOutside([colorPickerRef, colorButtonRef], () => setShowColorPicker(false), showColorPicker);
 
   const handleAddPopup = () => {
     if (popups.length >= 10) {
@@ -316,7 +302,7 @@ export function PopupPanel({
                 <button
                   ref={colorButtonRef}
                   onClick={() => setShowColorPicker(!showColorPicker)}
-                  className="p-2 rounded-lg hover:bg-black/10 transition-colors"
+                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors"
                   style={{ color: 'var(--foreground)' }}
                   title="Change color"
                   aria-label="Change warning color"
@@ -329,7 +315,7 @@ export function PopupPanel({
               {editingEnabled && (
                 <button
                   onClick={handleDeletePopup}
-                  className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
+                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-destructive/10 transition-colors"
                   style={{ color: 'var(--destructive)' }}
                   title="Delete warning"
                   aria-label="Delete warning"
@@ -341,7 +327,7 @@ export function PopupPanel({
               {/* Close */}
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-black/10 transition-colors"
+                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors"
                 style={{ color: 'var(--foreground)' }}
                 title="Close"
                 aria-label="Close"
@@ -506,7 +492,7 @@ export function PopupPanel({
                       {editingEnabled && (
                         <button
                           onClick={() => handleRemoveMedia(currentPopup.mediaFiles[currentMediaIndex].id)}
-                          className="absolute top-2 right-2 p-1.5 rounded-lg transition-opacity"
+                          className="absolute top-2 right-2 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg transition-opacity"
                           style={{
                             backgroundColor: 'var(--destructive)',
                             color: 'var(--destructive-foreground)'
@@ -524,7 +510,7 @@ export function PopupPanel({
                         <button
                           onClick={handlePreviousMedia}
                           disabled={currentMediaIndex === 0}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                           style={{ color: 'white' }}
                           aria-label="Previous media"
                         >
@@ -533,7 +519,7 @@ export function PopupPanel({
                         <button
                           onClick={handleNextMedia}
                           disabled={currentMediaIndex === currentPopup.mediaFiles.length - 1}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                           style={{ color: 'white' }}
                           aria-label="Next media"
                         >
@@ -780,7 +766,7 @@ export function PopupPanel({
                   <button
                     onClick={handlePrevious}
                     disabled={currentPopupIndex === 0}
-                    className="flex items-center px-4 py-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex items-center px-4 py-2 min-h-[44px] rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{
                       fontFamily: 'var(--font-family)',
                       fontSize: 'var(--text-sm)',
@@ -805,7 +791,7 @@ export function PopupPanel({
                   <button
                     onClick={handleNext}
                     disabled={currentPopupIndex === popups.length - 1}
-                    className="flex items-center px-4 py-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex items-center px-4 py-2 min-h-[44px] rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{
                       fontFamily: 'var(--font-family)',
                       fontSize: 'var(--text-sm)',
@@ -843,7 +829,7 @@ export function PopupPanel({
             >
               <button
                 onClick={handleAddPopup}
-                className="py-2 px-4 rounded-lg transition-all flex items-center hover:opacity-80"
+                className="py-2 px-4 min-h-[44px] rounded-lg transition-all flex items-center hover:opacity-80"
                 style={{
                   backgroundColor: 'var(--secondary)',
                   color: 'var(--secondary-foreground)',
@@ -882,7 +868,8 @@ export function PopupPanel({
                 borderColor: 'var(--border)',
                 padding: 'var(--spacing-lg)',
                 minWidth: '240px',
-                left: `${colorButtonRef.current.getBoundingClientRect().left}px`,
+                maxWidth: 'calc(100vw - 16px)',
+                left: `${Math.min(Math.max(8, colorButtonRef.current.getBoundingClientRect().left), window.innerWidth - 256)}px`,
                 top: `${colorButtonRef.current.getBoundingClientRect().bottom + 8}px`
               }}
             >
@@ -901,7 +888,7 @@ export function PopupPanel({
                   <button
                     key={color}
                     onClick={() => handleColorChange(color)}
-                    className="size-12 rounded-lg hover:scale-110 transition-transform border-2 relative"
+                    className="size-12 min-h-[44px] min-w-[44px] rounded-lg hover:scale-110 transition-transform border-2 relative"
                     style={{
                       backgroundColor: color,
                       borderColor:

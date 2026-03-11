@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { 
-  Clock, 
-  BookOpen, 
-  Video, 
-  TrendingUp, 
-  Users, 
+import { useState, useMemo } from 'react';
+import {
+  Clock,
+  BookOpen,
+  Video,
+  TrendingUp,
+  Users,
   Calendar,
   ArrowRight,
   PlayCircle,
@@ -14,6 +14,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import svgPaths from "../../imports/svg-albmkprcym";
+import { useRole, hasAccess } from '../contexts/RoleContext';
 
 function IconLogo() {
   return (
@@ -39,7 +40,7 @@ function QuickActionCard({ icon, title, description, onClick }: QuickActionProps
   return (
     <button
       onClick={onClick}
-      className="bg-card border border-border rounded-[var(--radius)] p-6 hover:border-primary transition-all hover:shadow-[var(--elevation-sm)] flex flex-col items-start text-left group"
+      className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6 hover:border-primary transition-all hover:shadow-[var(--elevation-sm)] flex flex-col items-start text-left group"
     >
       <div className="w-12 h-12 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
         {icon}
@@ -138,33 +139,48 @@ export function HomePage({
   onScheduleMeeting
 }: HomePageProps) {
   const [userName] = useState('John Smith');
+  const { currentRole } = useRole();
+  const canCreate = hasAccess(currentRole, 'create-content');
+  const canRemoteSupport = hasAccess(currentRole, 'remote-support');
+  const canAIChat = hasAccess(currentRole, 'ai-chat');
+  const canSchedule = hasAccess(currentRole, 'schedule-meeting');
 
-  const quickActions = [
-    {
-      icon: <FileText size={24} />,
-      title: 'Create Flow',
-      description: 'Build step-by-step guides with our visual editor',
-      onClick: onNavigateToKnowledgeBase,
-    },
-    {
-      icon: <Video size={24} />,
-      title: 'Start Remote Support',
-      description: 'Connect with team members for live assistance',
-      onClick: onNavigateToRemoteSupport,
-    },
-    {
-      icon: <MessageSquare size={24} />,
-      title: 'Ask AI Assistant',
-      description: 'Get instant help with flows and questions',
-      onClick: onOpenAIChat,
-    },
-    {
-      icon: <Calendar size={24} />,
-      title: 'Schedule Meeting',
-      description: 'Set up training or support sessions',
-      onClick: onScheduleMeeting,
-    },
-  ];
+  const quickActions = useMemo(() => {
+    const actions = [];
+    if (canCreate) {
+      actions.push({
+        icon: <FileText size={24} />,
+        title: 'Create Flow',
+        description: 'Build step-by-step guides with our visual editor',
+        onClick: onNavigateToKnowledgeBase,
+      });
+    }
+    if (canRemoteSupport) {
+      actions.push({
+        icon: <Video size={24} />,
+        title: 'Start Remote Support',
+        description: 'Connect with team members for live assistance',
+        onClick: onNavigateToRemoteSupport,
+      });
+    }
+    if (canAIChat) {
+      actions.push({
+        icon: <MessageSquare size={24} />,
+        title: 'Ask AI Assistant',
+        description: 'Get instant help with flows and questions',
+        onClick: onOpenAIChat,
+      });
+    }
+    if (canSchedule) {
+      actions.push({
+        icon: <Calendar size={24} />,
+        title: 'Schedule Meeting',
+        description: 'Set up training or support sessions',
+        onClick: onScheduleMeeting,
+      });
+    }
+    return actions;
+  }, [canCreate, canRemoteSupport, canAIChat, canSchedule, onNavigateToKnowledgeBase, onNavigateToRemoteSupport, onOpenAIChat, onScheduleMeeting]);
 
   const recentItems = [
     {
@@ -203,27 +219,27 @@ export function HomePage({
     <>
     <div className="flex flex-col h-full bg-card">
       {/* Header */}
-      <div className="px-8 py-6 border-b border-border bg-card">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-foreground mb-1">Welcome back, {userName}</h1>
+      <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-border bg-card">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-foreground mb-1 truncate">Welcome back, {userName}</h1>
             <p className="text-muted" style={{ fontSize: 'var(--text-base)' }}>
               Here's what's happening with your workspace today
             </p>
           </div>
-          <div className="w-16 h-16 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center text-primary p-3">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center text-primary p-2 sm:p-3 shrink-0">
             <IconLogo />
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-8 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Stats Overview */}
           <section>
             <h2 className="text-foreground mb-4">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard
                 icon={<FileText size={20} />}
                 value="142"
@@ -258,7 +274,7 @@ export function HomePage({
           {/* Quick Actions */}
           <section>
             <h2 className="text-foreground mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {quickActions.map((action, index) => (
                 <QuickActionCard key={index} {...action} />
               ))}
@@ -266,7 +282,7 @@ export function HomePage({
           </section>
 
           {/* Recent Activity & Upcoming */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Recent Activity */}
             <section className="lg:col-span-2">
               <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden" style={{ boxShadow: 'var(--elevation-sm)' }}>
@@ -275,7 +291,7 @@ export function HomePage({
                     <Clock size={20} className="text-primary" />
                     <h3 className="text-foreground">Recent Activity</h3>
                   </div>
-                  <button className="text-primary hover:underline" style={{ fontSize: 'var(--text-sm)' }}>
+                  <button className="text-primary hover:underline px-2 py-1.5" style={{ fontSize: 'var(--text-sm)' }}>
                     View all
                   </button>
                 </div>
@@ -295,7 +311,7 @@ export function HomePage({
                   <Calendar size={20} className="text-primary" />
                   <h3 className="text-foreground">Upcoming</h3>
                 </div>
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-start gap-3 mb-4 pb-4 border-b border-border last:border-0 last:mb-0 last:pb-0">
                     <div className="w-12 h-12 rounded-[var(--radius)] bg-accent/10 flex flex-col items-center justify-center flex-shrink-0">
                       <div className="text-accent" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
@@ -341,8 +357,9 @@ export function HomePage({
                     </div>
                   </div>
                 </div>
+                {canSchedule && (
                 <div className="px-6 py-4 border-t border-border">
-                  <button 
+                  <button
                     onClick={onScheduleMeeting}
                     className="w-full bg-primary text-primary-foreground px-4 py-2.5 rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   >
@@ -350,10 +367,11 @@ export function HomePage({
                     <span>Schedule New Meeting</span>
                   </button>
                 </div>
+                )}
               </div>
 
               {/* Quick Tip */}
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-[var(--radius)] p-6">
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-[var(--radius)] p-4 sm:p-6">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
                     <Zap size={16} />
@@ -363,14 +381,16 @@ export function HomePage({
                 <p className="text-foreground mb-4" style={{ fontSize: 'var(--text-sm)' }}>
                   Use the AI Assistant to quickly generate procedure templates based on your workflow descriptions.
                 </p>
-                <button 
+                {canAIChat && (
+                <button
                   onClick={onOpenAIChat}
-                  className="text-primary hover:underline flex items-center gap-1" 
+                  className="text-primary hover:underline flex items-center gap-1 px-2 py-1.5"
                   style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
                 >
                   <span>Try it now</span>
                   <ArrowRight size={14} />
                 </button>
+                )}
               </div>
             </section>
           </div>

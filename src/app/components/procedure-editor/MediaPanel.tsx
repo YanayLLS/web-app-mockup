@@ -135,7 +135,7 @@ export function MediaPanel({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, onR
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[500px] max-h-[80vh] flex flex-col mx-4"
+            className="relative w-full max-w-[min(500px,calc(100vw-32px))] max-h-[80vh] flex flex-col mx-4"
             style={{
               background: 'var(--background)',
               borderRadius: 'var(--radius-lg)',
@@ -159,7 +159,7 @@ export function MediaPanel({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, onR
               </h4>
               <button
                 onClick={onClose}
-                className="hover:bg-secondary/50 rounded-lg p-2 transition-colors"
+                className="hover:bg-secondary/50 rounded-lg p-2 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
                 aria-label="Close media panel"
               >
                 <X className="size-5" style={{ color: 'var(--muted-foreground)' }} />
@@ -203,7 +203,7 @@ export function MediaPanel({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, onR
                   Drop files here or{' '}
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="hover:underline"
+                    className="hover:underline min-h-[44px]"
                     style={{ color: 'var(--accent)' }}
                     disabled={isUploading}
                   >
@@ -301,7 +301,7 @@ export function MediaPanel({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, onR
                           {/* Delete Button */}
                           <button
                             onClick={() => onRemoveMediaFile(file.id)}
-                            className="absolute top-1 right-1 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1 right-1 p-1.5 rounded-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px] flex items-center justify-center"
                             style={{
                               background: 'var(--destructive, #ef4444)'
                             }}

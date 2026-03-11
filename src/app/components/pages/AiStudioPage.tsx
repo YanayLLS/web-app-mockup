@@ -5,6 +5,8 @@ import svgPathsSelect from '../../../imports/svg-7gjkqr91l0';
 import svgPathsChat from '../../../imports/svg-0y0pillmc3';
 import { Search, Filter, X, Upload, Trash2, Download, Check, Paperclip, Send, AlertTriangle, Mail, Bug, Loader2, Info, HelpCircle } from 'lucide-react';
 import { ModelSelector } from '../ModelSelector';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
 
 interface KnowledgeSource {
   id: string;
@@ -203,6 +205,9 @@ const getAIResponse = (userMessage: string, sources: KnowledgeSource[]): string 
 };
 
 export function AiStudioPage() {
+  const { currentRole } = useRole();
+  const canEditAiStudio = hasAccess(currentRole, 'ai-studio-edit');
+
   const [sources, setSources] = useState<KnowledgeSource[]>(mockKnowledgeSources);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -258,19 +263,8 @@ export function AiStudioPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isTyping]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
-        setShowFilterMenu(false);
-      }
-      if (locationSelectRef.current && !locationSelectRef.current.contains(event.target as Node)) {
-        setShowLocationSelect(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(filterMenuRef, () => setShowFilterMenu(false));
+  useClickOutside(locationSelectRef, () => setShowLocationSelect(false));
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -757,13 +751,15 @@ export function AiStudioPage() {
 
       {/* Search and Actions Bar */}
       <div className="shrink-0 rounded-[var(--radius)] px-[9px] py-[8px] relative" style={{ backgroundColor: 'white' }}>
-        <div className="flex items-center gap-[10px]">
+        <div className="flex items-center gap-[10px] flex-wrap">
           {/* Search */}
           <div
-            className="relative flex items-center justify-between px-[12px] h-[32px] rounded-[var(--radius)] border border-border shrink-0"
+            className="relative flex items-center justify-between px-[12px] h-[32px] rounded-[var(--radius)] border border-border"
             style={{
               backgroundColor: 'var(--input-background)',
-              width: '228px',
+              width: '100%',
+              maxWidth: '228px',
+              minWidth: '120px',
             }}
           >
             <input
@@ -806,6 +802,7 @@ export function AiStudioPage() {
                 className="absolute top-[38px] left-0 z-50 bg-card p-[15px] rounded-[var(--radius)] gap-[6px] flex flex-col"
                 style={{
                   width: '436px',
+                  maxWidth: 'calc(100vw - 32px)',
                   border: '2px solid var(--border)',
                   boxShadow: 'var(--elevation-sm)',
                 }}
@@ -849,7 +846,8 @@ export function AiStudioPage() {
                     <button
                       className="h-[30px] px-[6px] rounded-[var(--radius)] border border-border flex items-center justify-between"
                       style={{
-                        width: '252px',
+                        width: '100%',
+                        maxWidth: '252px',
                         fontSize: 'var(--text-sm)',
                         color: 'var(--foreground)',
                       }}
@@ -868,6 +866,7 @@ export function AiStudioPage() {
                         className="absolute top-[36px] right-0 z-50 bg-card p-[12px] rounded-[var(--radius)] flex flex-col gap-[6px]"
                         style={{
                           width: '280px',
+                          maxWidth: 'calc(100vw - 32px)',
                           maxHeight: '400px',
                           boxShadow: '0px 4px 15.4px 0px rgba(0,0,0,0.25)',
                         }}
@@ -944,14 +943,15 @@ export function AiStudioPage() {
             onMouseLeave={() => setShowUploadTooltip(false)}
           >
             <button
-              className="flex items-center gap-[6px] justify-center h-[30px] px-[12px] py-[8px] rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
+              className={`flex items-center gap-[6px] justify-center h-[30px] px-[12px] py-[8px] rounded-[var(--radius-button)] transition-opacity ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
                 fontSize: '10px',
                 fontWeight: 'var(--font-weight-bold)',
               }}
-              onClick={handleUploadFiles}
+              onClick={canEditAiStudio ? handleUploadFiles : undefined}
+              disabled={!canEditAiStudio}
             >
               <Upload size={14} />
               Upload files
@@ -965,6 +965,7 @@ export function AiStudioPage() {
                   backgroundColor: 'var(--card)',
                   boxShadow: 'var(--elevation-md)',
                   width: '280px',
+                  maxWidth: 'calc(100vw - 32px)',
                 }}
               >
                 <div className="flex items-start gap-2 mb-2">
@@ -1010,7 +1011,7 @@ export function AiStudioPage() {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto custom-scrollbar" style={{ backgroundColor: 'white' }}>
+      <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar" style={{ backgroundColor: 'white' }}>
         <div className="min-w-full">
           {/* Table Header */}
           <div className="shrink-0 border-b border-border relative" style={{ backgroundColor: 'white' }}>
@@ -1018,9 +1019,10 @@ export function AiStudioPage() {
               {/* Checkbox Column */}
               <div className="flex items-center" style={{ width: `${columnWidths.checkbox}px` }}>
                 <button
-                  className="w-[20px] h-[20px] rounded-[5px] border-[1.5px] flex items-center justify-center hover:bg-secondary/50 transition-colors"
+                  className={`w-[20px] h-[20px] rounded-[5px] border-[1.5px] flex items-center justify-center transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary/50'}`}
                   style={{ borderColor: 'var(--border)' }}
-                  onClick={toggleSelectAll}
+                  onClick={canEditAiStudio ? toggleSelectAll : undefined}
+                  disabled={!canEditAiStudio}
                 >
                   {selectedIds.size === filteredSources.length &&
                     filteredSources.length > 0 && (
@@ -1191,9 +1193,10 @@ export function AiStudioPage() {
                 {/* Checkbox */}
                 <div className="flex items-center" style={{ width: `${columnWidths.checkbox}px` }}>
                   <button
-                    className="w-[20px] h-[20px] rounded-[5px] border-[1.5px] flex items-center justify-center hover:bg-secondary/50 transition-colors"
+                    className={`w-[20px] h-[20px] rounded-[5px] border-[1.5px] flex items-center justify-center transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary/50'}`}
                     style={{ borderColor: 'var(--border)' }}
-                    onClick={() => toggleSelect(source.id)}
+                    onClick={canEditAiStudio ? () => toggleSelect(source.id) : undefined}
+                    disabled={!canEditAiStudio}
                   >
                     {selectedIds.has(source.id) && (
                       <div
@@ -1223,7 +1226,7 @@ export function AiStudioPage() {
                 {/* Enabled Status */}
                 <div className="h-[32px] flex items-center" style={{ width: `${columnWidths.enabled}px` }}>
                   <button
-                    className="px-[12px] py-[8px] rounded-[22px] hover:opacity-80 transition-opacity"
+                    className={`px-[12px] py-[8px] rounded-[22px] transition-opacity ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
                     style={{
                       backgroundColor: source.enabled
                         ? '#ebf9f1'
@@ -1231,7 +1234,8 @@ export function AiStudioPage() {
                       color: source.enabled ? '#1f9254' : 'var(--foreground)',
                       fontSize: 'var(--text-sm)',
                     }}
-                    onClick={() => toggleEnabled(source.id)}
+                    onClick={canEditAiStudio ? () => toggleEnabled(source.id) : undefined}
+                    disabled={!canEditAiStudio}
                   >
                     {source.enabled ? 'Enabled' : 'Disabled'}
                   </button>
@@ -1241,8 +1245,9 @@ export function AiStudioPage() {
                 <div className="flex items-center justify-center" style={{ width: `${columnWidths.exposeFile}px` }}>
                   {source.enabled ? (
                     <button
-                      className="w-[25px] h-[28px] hover:opacity-70 transition-opacity flex items-center justify-center"
-                      onClick={() => toggleExposeFile(source.id)}
+                      className={`w-[25px] h-[28px] transition-opacity flex items-center justify-center ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-70'}`}
+                      onClick={canEditAiStudio ? () => toggleExposeFile(source.id) : undefined}
+                      disabled={!canEditAiStudio}
                     >
                       {source.exposeFile ? (
                         <svg width="25" height="28" fill="none" viewBox="0 0 25 28">
@@ -1330,8 +1335,8 @@ export function AiStudioPage() {
 
       {/* Bottom Bar with Selection Actions */}
       {selectedIds.size > 0 && (
-        <div className="shrink-0 py-[12px] px-[16px] border-t border-border bg-card">
-          <div className="flex items-center justify-center gap-[12px]">
+        <div className="shrink-0 py-[12px] px-[16px] border-t border-border bg-card max-w-[calc(100vw-32px)]">
+          <div className="flex items-center justify-center gap-[12px] flex-wrap">
             <div className="flex items-center gap-[8px] px-[12px] py-[6px] rounded-[var(--radius)] border border-border bg-background">
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                 {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''} selected
@@ -1347,40 +1352,45 @@ export function AiStudioPage() {
             </div>
 
             <button
-              className="px-[12px] py-[6px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
-              onClick={() => console.log('Specify roles for selected')}
+              onClick={canEditAiStudio ? () => console.log('Specify roles for selected') : undefined}
+              disabled={!canEditAiStudio}
             >
               Specify roles
             </button>
 
             <button
-              className="px-[12px] py-[6px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
-              onClick={bulkEnable}
+              onClick={canEditAiStudio ? bulkEnable : undefined}
+              disabled={!canEditAiStudio}
             >
               Enable
             </button>
 
             <button
-              className="px-[12px] py-[6px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
-              onClick={bulkDisable}
+              onClick={canEditAiStudio ? bulkDisable : undefined}
+              disabled={!canEditAiStudio}
             >
               Disable
             </button>
 
             <button
-              className="px-[12px] py-[6px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
-              onClick={bulkExpose}
+              onClick={canEditAiStudio ? bulkExpose : undefined}
+              disabled={!canEditAiStudio}
             >
               Expose
             </button>
 
             <button
-              className="w-[32px] h-[32px] rounded-[var(--radius)] border border-border hover:bg-destructive/10 transition-colors flex items-center justify-center"
-              onClick={bulkDelete}
+              className={`w-[32px] h-[32px] rounded-[var(--radius)] border border-border transition-colors flex items-center justify-center ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-destructive/10'}`}
+              onClick={canEditAiStudio ? bulkDelete : undefined}
+              disabled={!canEditAiStudio}
             >
               <Trash2 size={16} style={{ color: 'var(--destructive)' }} />
             </button>
@@ -1390,13 +1400,17 @@ export function AiStudioPage() {
 
       {/* Footer Actions */}
       <div className="shrink-0 h-[60px] flex items-center justify-between px-[16px] border-t border-border bg-card">
-        <button
-          className="px-[16px] py-[8px] rounded-[var(--radius)] hover:bg-secondary transition-colors"
-          style={{ fontSize: 'var(--text-base)', color: 'var(--foreground)' }}
-          onClick={handleDiscard}
-        >
-          Discard
-        </button>
+        {canEditAiStudio ? (
+          <button
+            className="px-[16px] py-[8px] rounded-[var(--radius)] hover:bg-secondary transition-colors"
+            style={{ fontSize: 'var(--text-base)', color: 'var(--foreground)' }}
+            onClick={handleDiscard}
+          >
+            Discard
+          </button>
+        ) : (
+          <div />
+        )}
 
         <div className="flex items-center gap-[12px]">
           <button
@@ -1408,28 +1422,29 @@ export function AiStudioPage() {
             Test
           </button>
 
-          <button
-            className="px-[16px] py-[8px] rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-            style={{
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-              fontSize: 'var(--text-base)',
-            }}
-            onClick={handlePublish}
-            title="Save and publish your knowledge sources to make them live for all users"
-          >
-            Publish
-          </button>
+          {canEditAiStudio && (
+            <button
+              className="px-[16px] py-[8px] rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+              style={{
+                backgroundColor: 'var(--primary)',
+                color: 'var(--primary-foreground)',
+                fontSize: 'var(--text-base)',
+              }}
+              onClick={handlePublish}
+              title="Save and publish your knowledge sources to make them live for all users"
+            >
+              Publish
+            </button>
+          )}
         </div>
       </div>
 
       {/* Publish Confirmation Modal */}
       {showPublishModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-[16px]">
           <div
-            className="bg-card rounded-[var(--radius)] p-[24px] flex flex-col gap-[20px]"
+            className="bg-card rounded-[var(--radius)] p-[24px] flex flex-col gap-[20px] w-full max-w-[480px]"
             style={{
-              width: '480px',
               boxShadow: 'var(--elevation-lg)',
             }}
           >
@@ -1507,9 +1522,8 @@ export function AiStudioPage() {
       {showTestChat && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-[20px]">
           <div
-            className="bg-card rounded-[var(--radius)] overflow-hidden"
+            className="bg-card rounded-[var(--radius)] overflow-hidden w-full max-w-[500px] max-h-[90vh]"
             style={{
-              width: '500px',
               height: '700px',
               border: '1px solid #5b19b4',
               boxShadow: '0px 4px 99.8px 0px rgba(14,122,254,0.5)',

@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Digital Twin Scene</title>
 <script>
-// Auto-redirect to React-wrapped route when accessed standalone (not embedded in iframe)
+// When accessed standalone (not in iframe), add embedded param so the scene renders directly
 (function() {
   var params = new URLSearchParams(window.location.search);
   if (!params.has('embedded')) {
-    // Preserve other query params (e.g. mode=editor)
-    params.delete('embedded');
-    var qs = params.toString();
-    var target = '/app/3d-viewer' + (qs ? '?' + qs : '');
-    window.location.replace(target);
+    params.set('embedded', 'true');
+    window.location.replace(window.location.pathname + '?' + params.toString());
   }
+  // Apply mode classes early to prevent UI flash
+  if (params.has('embedded')) document.documentElement.classList.add('embedded');
+  if (params.get('mode') === 'procedure') document.documentElement.classList.add('procedure');
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -2270,6 +2270,25 @@ html.embedded .right-panel { top:12px !important; }
 .bk-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:400; background:#36415d; color:#fff; padding:10px 20px; border-radius:10px; font-size:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); opacity:0; transition:opacity 0.3s; pointer-events:none; }
 .bk-toast.visible { opacity:1; }
 
+/* ===== SYSTEM WARNING TOAST ===== */
+.sys-warning-toast {
+  background:rgba(54,65,93,0.95); backdrop-filter:blur(12px); color:#fff;
+  padding:12px 20px 12px 16px; border-radius:10px; font-size:12px; line-height:1.4;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25); display:flex; align-items:flex-start; gap:10px;
+  width:420px; opacity:0; transform:translateY(10px); transition:opacity 0.3s, transform 0.3s; pointer-events:auto;
+  border-left:3px solid #FF8C00;
+}
+.sys-warning-toast.visible { opacity:1; transform:translateY(0); }
+.sys-warning-toast .sw-icon { flex-shrink:0; width:18px; height:18px; color:#FF8C00; margin-top:1px; }
+.sys-warning-toast .sw-body { flex:1; }
+.sys-warning-toast .sw-title { font-weight:600; font-size:12px; margin-bottom:2px; }
+.sys-warning-toast .sw-msg { font-size:11px; color:#C2C9DB; }
+.sys-warning-toast .sw-close {
+  flex-shrink:0; width:20px; height:20px; border:none; background:none; cursor:pointer;
+  color:#868D9E; display:flex; align-items:center; justify-content:center; border-radius:4px; margin-top:-2px;
+}
+.sys-warning-toast .sw-close:hover { color:#fff; background:rgba(255,255,255,0.1); }
+
 /* ===== PERFORMANCE STATS OVERLAY ===== */
 #perfStatsPanel {
   position:fixed; top:48px; right:12px; z-index:250;
@@ -3068,6 +3087,9 @@ html.embedded .right-panel { top:12px !important; }
 <!-- BOOKMARK TOAST -->
 <div class="bk-toast" id="bkToast"></div>
 
+<!-- SYSTEM WARNING TOAST CONTAINER -->
+<div id="sysWarningContainer" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none;"></div>
+
 <div id="partTooltip"></div>
 
 <!-- ADD BUTTON CONTEXT MENU -->
@@ -3504,6 +3526,7 @@ const state = {
   partMeshMap: new Map(),
   meshPartMap: new Map(),
   hiddenParts: new Set(),
+  deletedMeshUUIDs: new Set(),  // soft-deleted mesh UUIDs (for occlusion culling skip)
   originalMaterials: new Map(),
   ctrlHoveredPart: null,       // part ID hovered while Ctrl held
   // Hotspot system
@@ -3530,7 +3553,56 @@ const state = {
   bkHistory: [],              // undo/redo state snapshots
   bkHistoryIdx: -1,
   bkDragId: null,             // currently dragged item ID
+  isTransforming: false,      // true while gizmo drag is in progress
+  // Optimization system availability flags
+  batcherAvailable: false,
+  hlodAvailable: false,
+  bvhAvailable: false,
 };
+
+// ==================== MODE TRANSITIONS ====================
+const VALID_MODES = new Set(['viewer', 'editor']);
+
+/**
+ * Transition between viewer/editor modes safely.
+ * - Validates the target mode
+ * - Prevents re-entry (no-op if already in target mode)
+ * - Blocks mode change while a gizmo transform is in progress
+ * - Performs cleanup for the outgoing mode
+ * - Calls updateUI() exactly once at the end
+ * @param {string} newMode - 'viewer' or 'editor'
+ * @param {object} [opts] - optional flags
+ * @param {boolean} [opts.viewerFromEditor] - set viewerFromEditor flag
+ * @param {boolean} [opts.deselectAll] - call deselectAll() during transition
+ * @param {boolean} [opts.closeViewerMenu] - close viewer more-menu during transition
+ * @param {boolean} [opts.force] - bypass isTransforming guard (for init only)
+ * @returns {boolean} true if transition happened, false if blocked/no-op
+ */
+function setMode(newMode, opts = {}) {
+  if (!VALID_MODES.has(newMode)) {
+    console.warn('[setMode] Invalid mode:', newMode);
+    return false;
+  }
+  if (state.mode === newMode) return false;
+  if (state.isTransforming && !opts.force) {
+    console.warn('[setMode] Blocked — gizmo transform in progress');
+    return false;
+  }
+
+  // --- Cleanup for the outgoing mode can go here in the future ---
+
+  // Apply optional side-effects before the mode switch
+  if (opts.viewerFromEditor !== undefined) state.viewerFromEditor = opts.viewerFromEditor;
+  if (opts.deselectAll && typeof deselectAll === 'function') deselectAll();
+  if (opts.closeViewerMenu) {
+    const menu = document.getElementById('viewerMoreMenu');
+    if (menu) menu.classList.remove('visible');
+  }
+
+  state.mode = newMode;
+  updateUI();
+  return true;
+}
 
 // ==================== THREE.JS SETUP ====================
 const viewport = document.getElementById('viewport');
@@ -3551,16 +3623,22 @@ viewport.appendChild(renderer.domElement);
 // Environment map — HDRI for realistic PBR reflections
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 pmremGenerator.compileEquirectangularShader();
+let envRenderTarget = null;   // keep reference so we can dispose later
 new EXRLoader().load('./events_hall_interior_1k.exr', (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
-  scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
+  if (envRenderTarget) { envRenderTarget.dispose(); envRenderTarget = null; }
+  envRenderTarget = pmremGenerator.fromEquirectangular(texture);
+  scene.environment = envRenderTarget.texture;
   scene.environmentIntensity = 0.4;
   texture.dispose();
   pmremGenerator.dispose();
 });
 
 // Post-processing
-const composer = new EffectComposer(renderer);
+const composerRT = new THREE.WebGLRenderTarget(viewport.clientWidth, viewport.clientHeight, {
+  samples: 4   // 4x MSAA — hardware anti-aliasing through the post-processing pipeline
+});
+const composer = new EffectComposer(renderer, composerRT);
 composer.addPass(new RenderPass(scene, camera));
 
 // Screen-Space Ambient Occlusion
@@ -3603,29 +3681,89 @@ const CombinedFinalShader = {
     uniform float brightness;
     uniform float contrast;
     varying vec2 vUv;
+
+    // FXAA 3.11 quality — 12-tap edge search with subpixel smoothing
+    #define FXAA_EDGE_THRESHOLD 0.0833
+    #define FXAA_EDGE_THRESHOLD_MIN 0.0312
+    #define FXAA_SUBPIX 0.75
+    #define FXAA_SEARCH_STEPS 10
+
+    float lum(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
+
+    vec3 fxaa(sampler2D tex, vec2 uv, vec2 res) {
+      vec3 rgbM  = texture2D(tex, uv).rgb;
+      vec3 rgbN  = texture2D(tex, uv + vec2( 0,-1) * res).rgb;
+      vec3 rgbS  = texture2D(tex, uv + vec2( 0, 1) * res).rgb;
+      vec3 rgbW  = texture2D(tex, uv + vec2(-1, 0) * res).rgb;
+      vec3 rgbE  = texture2D(tex, uv + vec2( 1, 0) * res).rgb;
+      vec3 rgbNW = texture2D(tex, uv + vec2(-1,-1) * res).rgb;
+      vec3 rgbNE = texture2D(tex, uv + vec2( 1,-1) * res).rgb;
+      vec3 rgbSW = texture2D(tex, uv + vec2(-1, 1) * res).rgb;
+      vec3 rgbSE = texture2D(tex, uv + vec2( 1, 1) * res).rgb;
+
+      float lumM  = lum(rgbM),  lumN  = lum(rgbN),  lumS  = lum(rgbS);
+      float lumW  = lum(rgbW),  lumE  = lum(rgbE);
+      float lumNW = lum(rgbNW), lumNE = lum(rgbNE);
+      float lumSW = lum(rgbSW), lumSE = lum(rgbSE);
+
+      float rangeMax = max(lumM, max(max(lumN, lumS), max(lumW, lumE)));
+      float rangeMin = min(lumM, min(min(lumN, lumS), min(lumW, lumE)));
+      float range = rangeMax - rangeMin;
+      if (range < max(FXAA_EDGE_THRESHOLD_MIN, rangeMax * FXAA_EDGE_THRESHOLD)) return rgbM;
+
+      // Subpixel aliasing detection
+      float lumAvg = (lumN + lumS + lumW + lumE) * 0.25;
+      float subpix = clamp(abs(lumAvg - lumM) / range, 0.0, 1.0);
+      subpix = smoothstep(0.0, 1.0, subpix);
+      subpix = subpix * subpix * FXAA_SUBPIX;
+
+      // Edge direction
+      float edgeH = abs(-2.0*lumN + lumNW + lumNE) + abs(-2.0*lumM + lumW + lumE)*2.0 + abs(-2.0*lumS + lumSW + lumSE);
+      float edgeV = abs(-2.0*lumW + lumNW + lumSW) + abs(-2.0*lumM + lumN + lumS)*2.0 + abs(-2.0*lumE + lumNE + lumSE);
+      bool isHorz = edgeH >= edgeV;
+
+      float lumP = isHorz ? lumS : lumE;
+      float lumN2 = isHorz ? lumN : lumW;
+      float gradP = abs(lumP - lumM);
+      float gradN = abs(lumN2 - lumM);
+
+      float stepLen = isHorz ? res.y : res.x;
+      float lumEnd;
+      if (gradP < gradN) { stepLen = -stepLen; lumEnd = lumP; } else { lumEnd = lumN2; }
+      float lumAvgEdge = (lumM + lumEnd) * 0.5;
+      float gradScaled = max(gradP, gradN) * 0.25;
+
+      // Edge search along dominant direction
+      vec2 posP = uv, posN = uv;
+      vec2 offEdge = isHorz ? vec2(res.x, 0.0) : vec2(0.0, res.y);
+      vec2 uvOff = isHorz ? vec2(0.0, stepLen * 0.5) : vec2(stepLen * 0.5, 0.0);
+      posP += uvOff; posN += uvOff;
+      bool doneP = false, doneN = false;
+      for (int i = 0; i < FXAA_SEARCH_STEPS; i++) {
+        if (!doneP) { posP += offEdge; float lP = lum(texture2D(tex, posP).rgb); doneP = abs(lP - lumAvgEdge) >= gradScaled; }
+        if (!doneN) { posN -= offEdge; float lN = lum(texture2D(tex, posN).rgb); doneN = abs(lN - lumAvgEdge) >= gradScaled; }
+        if (doneP && doneN) break;
+      }
+
+      float distP = isHorz ? (posP.x - uv.x) : (posP.y - uv.y);
+      float distN = isHorz ? (uv.x - posN.x) : (uv.y - posN.y);
+      float spanLen = distP + distN;
+      float pixelOff = (-distN / spanLen + 0.5) * stepLen;
+
+      vec2 finalUV = uv;
+      if (isHorz) finalUV.y += pixelOff; else finalUV.x += pixelOff;
+      vec3 rgbF = texture2D(tex, finalUV).rgb;
+
+      // Blend subpixel result
+      vec3 rgbSub = (rgbN + rgbS + rgbW + rgbE + rgbNW + rgbNE + rgbSW + rgbSE) * (1.0/8.0);
+      return mix(rgbF, rgbSub, subpix);
+    }
+
     void main(){
-      vec3 rgbNW=texture2D(tDiffuse,vUv+vec2(-1,-1)*resolution).rgb;
-      vec3 rgbNE=texture2D(tDiffuse,vUv+vec2(1,-1)*resolution).rgb;
-      vec3 rgbSW=texture2D(tDiffuse,vUv+vec2(-1,1)*resolution).rgb;
-      vec3 rgbSE=texture2D(tDiffuse,vUv+vec2(1,1)*resolution).rgb;
-      vec3 rgbM=texture2D(tDiffuse,vUv).rgb;
-      vec3 luma=vec3(0.299,0.587,0.114);
-      float lumaNW=dot(rgbNW,luma),lumaNE=dot(rgbNE,luma);
-      float lumaSW=dot(rgbSW,luma),lumaSE=dot(rgbSE,luma);
-      float lumaM=dot(rgbM,luma);
-      float lumaMin=min(lumaM,min(min(lumaNW,lumaNE),min(lumaSW,lumaSE)));
-      float lumaMax=max(lumaM,max(max(lumaNW,lumaNE),max(lumaSW,lumaSE)));
-      vec2 dir=vec2(-((lumaNW+lumaNE)-(lumaSW+lumaSE)),((lumaNW+lumaSW)-(lumaNE+lumaSE)));
-      float dirReduce=max((lumaNW+lumaNE+lumaSW+lumaSE)*0.03125,0.0078125);
-      float rcpMin=1.0/(min(abs(dir.x),abs(dir.y))+dirReduce);
-      dir=clamp(dir*rcpMin,vec2(-8),vec2(8))*resolution;
-      vec3 rgbA=0.5*(texture2D(tDiffuse,vUv+dir*(1.0/3.0-0.5)).rgb+texture2D(tDiffuse,vUv+dir*(2.0/3.0-0.5)).rgb);
-      vec3 rgbB=rgbA*0.5+0.25*(texture2D(tDiffuse,vUv+dir*-0.5).rgb+texture2D(tDiffuse,vUv+dir*0.5).rgb);
-      float lumaB=dot(rgbB,luma);
-      vec3 color=(lumaB<lumaMin||lumaB>lumaMax)?rgbA:rgbB;
-      color+=brightness;
-      color=(color-0.5)*max(contrast+1.0,0.0)+0.5;
-      gl_FragColor=vec4(color,texture2D(tDiffuse,vUv).a);
+      vec3 color = fxaa(tDiffuse, vUv, resolution);
+      color += brightness;
+      color = (color - 0.5) * max(contrast + 1.0, 0.0) + 0.5;
+      gl_FragColor = vec4(color, texture2D(tDiffuse, vUv).a);
     }`
 };
 const finalPass = new ShaderPass(CombinedFinalShader);
@@ -3654,25 +3792,53 @@ const adaptiveRes = {
   _current: Math.min(window.devicePixelRatio, 2),
   _target: Math.min(window.devicePixelRatio, 2),
   _lastMoveTime: 0,
-  _motionScale: 0.5,     // render at 50% during motion
-  _fastScale: 0.35,      // render at 35% during fast orbit
-  _rampSpeed: 0.1,       // interpolation speed back to full res
-  _idleMs: 150,          // ms after last movement to consider idle
+  _motionScale: 0.85,    // render at 85% during normal motion
+  _fastScale: 0.7,       // render at 70% during fast orbit
+  _rampSpeed: 0.3,       // interpolation speed back to full res, ~3 frames
+  _idleMs: 100,          // ms after last movement to consider idle
   _isFast: false,
+  _prevCamPos: null,      // previous camera position for speed detection
+  _prevTargetPos: null,   // previous orbit target for speed detection
+  _fastThreshold: 0.15,  // combined delta threshold to classify as "fast" motion
 
-  notifyMove(fast) { this._lastMoveTime = performance.now(); this._isFast = !!fast; },
+  notifyMove() {
+    this._lastMoveTime = performance.now();
+    // Speed detection: compare camera + target deltas to threshold
+    const cp = camera.position;
+    const ct = orbitControls.target;
+    if (this._prevCamPos && this._prevTargetPos) {
+      const dx = cp.x - this._prevCamPos.x, dy = cp.y - this._prevCamPos.y, dz = cp.z - this._prevCamPos.z;
+      const tx = ct.x - this._prevTargetPos.x, ty = ct.y - this._prevTargetPos.y, tz = ct.z - this._prevTargetPos.z;
+      const camDelta = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      const tgtDelta = Math.sqrt(tx*tx + ty*ty + tz*tz);
+      this._isFast = (camDelta + tgtDelta) > this._fastThreshold;
+    }
+    if (!this._prevCamPos) this._prevCamPos = { x: cp.x, y: cp.y, z: cp.z };
+    else { this._prevCamPos.x = cp.x; this._prevCamPos.y = cp.y; this._prevCamPos.z = cp.z; }
+    if (!this._prevTargetPos) this._prevTargetPos = { x: ct.x, y: ct.y, z: ct.z };
+    else { this._prevTargetPos.x = ct.x; this._prevTargetPos.y = ct.y; this._prevTargetPos.z = ct.z; }
+  },
 
+  _step: 0.125, // quantize to discrete steps to avoid constant canvas resizing
   update(now) {
     if (!this.enabled) return;
     const idle = (now - this._lastMoveTime) > this._idleMs;
     this._target = idle ? this._baseRatio : this._baseRatio * (this._isFast ? this._fastScale : this._motionScale);
     this._current += (this._target - this._current) * this._rampSpeed;
-    if (Math.abs(this._current - renderer.getPixelRatio()) > 0.01) {
-      renderer.setPixelRatio(this._current);
+    // Snap when close to avoid endless interpolation
+    if (Math.abs(this._current - this._target) < 0.02) this._current = this._target;
+    // Quantize to discrete steps — avoids jitter from constant sub-pixel canvas resizes
+    const quantized = Math.round(this._current / this._step) * this._step;
+    if (Math.abs(quantized - renderer.getPixelRatio()) > 0.001) {
+      renderer.setPixelRatio(quantized);
+      // Update FXAA resolution uniform to match actual render resolution
+      const s = renderer.getSize(new THREE.Vector2());
+      const dpr = renderer.getPixelRatio();
+      finalPass.uniforms['resolution'].value.set(1/(s.x*dpr), 1/(s.y*dpr));
     }
   }
 };
-orbitControls.addEventListener('change', () => adaptiveRes.notifyMove(false));
+orbitControls.addEventListener('change', () => adaptiveRes.notifyMove());
 
 // Invisible pivot for centering the gizmo on selection
 const gizmoPivot = new THREE.Object3D();
@@ -3701,6 +3867,7 @@ function _restoreSnaps(snaps) {
 
 transformControls.addEventListener('dragging-changed', (e) => {
   orbitControls.enabled = !e.value;
+  state.isTransforming = !!e.value;
   if (!transformControls.object) return;
   if (e.value) {
     preTransform = { meshes: _snapMeshes() };
@@ -3924,14 +4091,17 @@ const sceneBatcher = {
     // ---- Phase 0: Detect duplicate geometries (mesh instancing) ----
     // Groups meshes that share identical/similar geometry so BatchedMesh
     // uses addGeometry once per unique shape and addInstance per copy.
-    const instGroups = this._findInstances(meshes);
-    // Map each mesh → its prototype geometry (the first in its instance group)
+    // Only use instancing if BatchedMesh.addInstance API is available (r167+).
+    const hasInstancing = typeof THREE.BatchedMesh.prototype.addInstance === 'function';
     const meshProtoMap = new Map(); // mesh → prototype mesh
-    for (const group of instGroups) {
-      const proto = group[0];
-      for (const m of group) meshProtoMap.set(m, proto);
+    if (hasInstancing) {
+      const instGroups = this._findInstances(meshes);
+      for (const group of instGroups) {
+        const proto = group[0];
+        for (const m of group) meshProtoMap.set(m, proto);
+      }
     }
-    // Meshes not in any group are their own prototype
+    // Meshes not in any group (or instancing unavailable) are their own prototype
     for (const m of meshes) { if (!meshProtoMap.has(m)) meshProtoMap.set(m, m); }
 
     // Group by material hash + geometry attribute signature
@@ -3965,31 +4135,33 @@ const sceneBatcher = {
         const bm = new THREE.BatchedMesh(curInstances.length, cv, ci, group.material.clone());
         const meshMap = new Map(), uuidMap = new Map();
 
-        // addGeometry once per unique prototype, addInstance per copy
+        // addGeometry per unique prototype (with addInstance for copies), or
+        // addGeometry per mesh when instancing API is unavailable
         const geoIdMap = new Map(); // proto uuid → geoId in this batch
         for (const { proto, instances } of curProtos) {
-          const geoId = bm.addGeometry(proto.geometry);
-          geoIdMap.set(proto.uuid, geoId);
-          uniqueGeos++;
-          const hasInstancing = bm.addInstance !== undefined;
-          let isFirst = true;
-          for (const m of instances) {
-            let instId;
-            if (!hasInstancing) {
-              // No instancing API — geoId is the only handle
-              instId = geoId;
-            } else if (isFirst) {
-              // addGeometry already created instance 0 (the geoId itself)
-              instId = geoId;
-              isFirst = false;
-            } else {
-              instId = bm.addInstance(geoId);
+          if (hasInstancing) {
+            const geoId = bm.addGeometry(proto.geometry);
+            geoIdMap.set(proto.uuid, geoId);
+            uniqueGeos++;
+            for (const m of instances) {
+              // r183+: addInstance must be called for ALL instances (including first)
+              const instId = bm.addInstance(geoId);
+              bm.setMatrixAt(instId, m.matrixWorld);
+              bm.setVisibleAt(instId, m.visible);
+              meshMap.set(instId, m.uuid);
+              uuidMap.set(m.uuid, instId);
+              if (m !== proto) totalInstanced++;
             }
-            bm.setMatrixAt(instId, m.matrixWorld);
-            bm.setVisibleAt(instId, m.visible);
-            meshMap.set(instId, m.uuid);
-            uuidMap.set(m.uuid, instId);
-            if (m !== proto) totalInstanced++;
+          } else {
+            // No addInstance — each mesh gets its own addGeometry call
+            for (const m of instances) {
+              const geoId = bm.addGeometry(m.geometry);
+              bm.setMatrixAt(geoId, m.matrixWorld);
+              bm.setVisibleAt(geoId, m.visible);
+              meshMap.set(geoId, m.uuid);
+              uuidMap.set(m.uuid, geoId);
+              uniqueGeos++;
+            }
           }
         }
 
@@ -4011,10 +4183,14 @@ const sceneBatcher = {
         const geo = pg.proto.geometry;
         const vc = geo.attributes.position.count;
         const ic = geo.index ? geo.index.count : vc;
-        if (cv + vc > this.MAX_VERTS && curInstances.length > 0) flush();
+        // With addInstance, one geometry copy serves all instances.
+        // Without it, each instance needs its own geometry copy in the buffer.
+        const copies = hasInstancing ? 1 : pg.instances.length;
+        const totalVc = vc * copies, totalIc = ic * copies;
+        if (cv + totalVc > this.MAX_VERTS && curInstances.length > 0) flush();
         curProtos.push(pg);
         curInstances.push(...pg.instances);
-        cv += vc; ci += ic;
+        cv += totalVc; ci += totalIc;
       }
       flush();
     }
@@ -4032,6 +4208,9 @@ const sceneBatcher = {
         set(v) {
           if (_vis !== v) {
             _vis = v;
+            // Block batch instance restore when part has per-part xray proxy — proxy manages visibility
+            const pid = state.meshPartMap.get(mesh.uuid);
+            if (v && pid && _xrayProxies.has(pid)) return;
             if (entry.batch && entry.batch.batchedMesh) entry.batch.batchedMesh.setVisibleAt(entry.instId, v);
           }
         },
@@ -4139,6 +4318,8 @@ const sceneBatcher = {
     }
     for (const indices of hashMap.values()) {
       if (indices.length < 2) continue;
+      // Skip huge buckets — O(n²) comparison would freeze the browser
+      if (indices.length > 200) continue;
       // Verify exact match within hash bucket
       const groups = [];
       const used = new Set();
@@ -4238,16 +4419,40 @@ const sceneBatcher = {
     return proxies;
   },
 
+  // Dispose a single proxy mesh's GPU resources
+  _disposeProxy(proxy) {
+    if (proxy.geometry) proxy.geometry.dispose();
+    if (proxy.material) {
+      const mats = Array.isArray(proxy.material) ? proxy.material : [proxy.material];
+      for (const mat of mats) {
+        if (mat.map) mat.map.dispose();
+        if (mat.normalMap) mat.normalMap.dispose();
+        if (mat.roughnessMap) mat.roughnessMap.dispose();
+        if (mat.metalnessMap) mat.metalnessMap.dispose();
+        if (mat.aoMap) mat.aoMap.dispose();
+        if (mat.emissiveMap) mat.emissiveMap.dispose();
+        if (mat.envMap) mat.envMap.dispose();
+        mat.dispose();
+      }
+    }
+  },
+
   // Clean up selection proxies
   _clearProxies() {
-    for (const p of this._activeProxies) this._proxyScene.remove(p);
+    for (const p of this._activeProxies) {
+      this._proxyScene.remove(p);
+      this._disposeProxy(p);
+    }
     this._activeProxies = [];
     if (this._hoverProxies.length === 0) this._proxyScene.visible = false;
   },
 
   // Clean up hover proxies
   _clearHoverProxies() {
-    for (const p of this._hoverProxies) this._proxyScene.remove(p);
+    for (const p of this._hoverProxies) {
+      this._proxyScene.remove(p);
+      this._disposeProxy(p);
+    }
     this._hoverProxies = [];
     if (this._activeProxies.length === 0) this._proxyScene.visible = false;
   },
@@ -4341,13 +4546,14 @@ function showImportReport({ totalMeshes = 0, batchedDraws = 0, uniqueGeometries 
 // Works with any format (FBX, GLB, OBJ, STL, etc.)
 function progressiveReveal(object, { batchSize = 30, onDone = null } = {}) {
   // Collect all meshes and compute their world-space Y centers
+  // Use matrixWorld translation instead of expensive setFromObject per mesh
   const meshes = [];
-  const box = new THREE.Box3(), ctr = new THREE.Vector3();
+  object.updateMatrixWorld(true);
   object.traverse(c => {
     if (c.isMesh) {
       c.visible = false;
-      box.setFromObject(c); box.getCenter(ctr);
-      meshes.push({ mesh: c, y: ctr.y });
+      const e = c.matrixWorld.elements;
+      meshes.push({ mesh: c, y: e[13] }); // world Y position
     }
   });
   // Sort bottom-to-top so the model "builds up"
@@ -4377,12 +4583,134 @@ function progressiveReveal(object, { batchSize = 30, onDone = null } = {}) {
 }
 
 // ==================== LOAD FBX ====================
-const loader = new FBXLoader();
+// Suppress 404s for missing FBX textures (materials are replaced after load anyway).
+// LoadingManager intercepts texture URLs → transparent 1px data URI (no network request).
+// Also setResourcePath so FBXLoader resolves textures against a data: prefix.
+const _silentLoadMgr = new THREE.LoadingManager();
+const _1pxPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+_silentLoadMgr.setURLModifier(url => /\.(png|jpe?g|tga|bmp|tiff?)$/i.test(url) ? _1pxPng : url);
+const loader = new FBXLoader(_silentLoadMgr);
+loader.setResourcePath('data:,');  // force texture base path to a no-op data URI
 let fbxModel = null;
+
+/**
+ * Dispose the current fbxModel and all associated GPU resources.
+ * Call BEFORE loading or importing a replacement model to prevent memory leaks.
+ */
+function disposeCurrentModel() {
+  // --- Dispose sceneBatcher (BatchedMesh instances, proxy scene) ---
+  if (sceneBatcher.enabled) {
+    sceneBatcher._clearProxies();
+    sceneBatcher._clearHoverProxies();
+    for (const batch of sceneBatcher.batches) {
+      const bm = batch.batchedMesh;
+      if (bm) {
+        scene.remove(bm);
+        if (bm.geometry) bm.geometry.dispose();
+        if (bm.material) {
+          const mats = Array.isArray(bm.material) ? bm.material : [bm.material];
+          for (const mat of mats) { if (mat && mat.dispose) mat.dispose(); }
+        }
+        bm.dispose();
+      }
+    }
+    scene.remove(sceneBatcher._proxyScene);
+    // Reset batcher state
+    sceneBatcher.batches = [];
+    sceneBatcher.meshToBatch.clear();
+    sceneBatcher._batchByObj.clear();
+    sceneBatcher._meshByUUID.clear();
+    sceneBatcher._proxyScene = new THREE.Group();
+    sceneBatcher._activeProxies = [];
+    sceneBatcher._hoverProxies = [];
+    sceneBatcher.enabled = false;
+  }
+
+  // --- Dispose HLOD proxy meshes ---
+  for (const p of hlodSystem._proxies) {
+    if (p.proxyMesh) {
+      scene.remove(p.proxyMesh);
+      if (p.proxyMesh.geometry) p.proxyMesh.geometry.dispose();
+      if (p.proxyMesh.material) p.proxyMesh.material.dispose();
+    }
+  }
+  hlodSystem._proxies = [];
+
+  // --- Dispose LOD generated geometries ---
+  for (const [, entry] of lodSystem._entries) {
+    if (entry.geo1) entry.geo1.dispose();
+    if (entry.geo2) entry.geo2.dispose();
+  }
+  lodSystem._entries.clear();
+
+  // --- Clear BVH data ---
+  bvhRaycast._nodes = null;
+  bvhRaycast._meshes = null;
+  bvhRaycast._built = false;
+
+  // --- Dispose occlusion culling (deletes pending GL queries + clears mesh registry) ---
+  occlusionCulling.dispose();
+
+  // --- Helper: dispose a material and all its texture maps ---
+  function disposeMaterial(mat) {
+    if (!mat) return;
+    const maps = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'envMap',
+                  'lightMap', 'bumpMap', 'displacementMap', 'alphaMap', 'specularMap'];
+    for (const key of maps) {
+      if (mat[key]) { mat[key].dispose(); mat[key] = null; }
+    }
+    mat.dispose();
+  }
+
+  // --- Traverse and dispose fbxModel geometries, materials, textures ---
+  if (fbxModel) {
+    fbxModel.traverse(child => {
+      if (child.isMesh) {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            for (const mat of child.material) disposeMaterial(mat);
+          } else {
+            disposeMaterial(child.material);
+          }
+        }
+      }
+    });
+    scene.remove(fbxModel);
+    fbxModel = null;
+  }
+
+  // --- Dispose all imported models ---
+  for (const model of state.importedModels) {
+    model.traverse(child => {
+      if (child.isMesh) {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            for (const mat of child.material) disposeMaterial(mat);
+          } else {
+            disposeMaterial(child.material);
+          }
+        }
+      }
+    });
+    scene.remove(model);
+  }
+  state.importedModels = [];
+
+  // --- Clear state maps ---
+  state.parts = [];
+  state.partMeshMap.clear();
+  state.meshPartMap.clear();
+  state.originalMaterials.clear();
+  state.selectedParts.clear();
+  state.hiddenParts.clear();
+  state.xrayParts.clear();
+}
 
 loader.load('./Generator.fbx', (object) => {
   fbxModel = object;
-  // FBXLoader converts to cm via UnitScaleFactor. Center XZ at origin, sit on grid (y=0).
+  // FBX imported at native scale (scale factor 1.0, no unit conversion). Center XZ at origin, sit on grid (y=0).
   const box = new THREE.Box3().setFromObject(object);
   const center = box.getCenter(new THREE.Vector3());
   object.position.set(-center.x, -box.min.y, -center.z);
@@ -4398,6 +4726,7 @@ loader.load('./Generator.fbx', (object) => {
   orbitControls.target.copy(nc); orbitControls.update();
 
   buildPartsTree(object);
+  _partsFlatDirty = true;
   renderPartsList();
 
   // Apply materials matching real generator look (yellow body, black frame, chrome engine)
@@ -4522,7 +4851,15 @@ loader.load('./Generator.fbx', (object) => {
 
   // Batch meshes into BatchedMesh draws (big perf win for large models)
   let _batchStats = null;
-  try { _batchStats = sceneBatcher.batchify(object); } catch(e) { console.warn('Scene batcher failed, falling back to individual meshes:', e); }
+  try {
+    _batchStats = sceneBatcher.batchify(object);
+    state.batcherAvailable = true;
+  } catch(e) {
+    console.warn('Scene batcher failed, falling back to individual meshes:', e);
+    state.batcherAvailable = false;
+    sceneBatcher.enabled = false;
+    showSystemWarning('Model optimization failed', 'Draw call batching is unavailable — rendering performance may be reduced.');
+  }
 
   // Generate LOD chains for all meshes (simplified geometry at distance)
   { const t0 = performance.now(); let cnt = 0;
@@ -4530,10 +4867,26 @@ loader.load('./Generator.fbx', (object) => {
     console.log(`LOD: registered ${lodSystem._entries.size}/${cnt} meshes in ${(performance.now()-t0).toFixed(0)}ms.`);
   }
   // Build HLOD proxy meshes from octree clusters
-  try { hlodSystem.build(); } catch(e) { console.warn('HLOD build failed:', e); }
+  try {
+    hlodSystem.build();
+    state.hlodAvailable = true;
+  } catch(e) {
+    console.warn('HLOD build failed:', e);
+    state.hlodAvailable = false;
+    hlodSystem.enabled = false;
+    showSystemWarning('Level-of-detail optimization failed', 'Distant objects will not be simplified — performance may be reduced for large scenes.');
+  }
   // Build BVH for fast raycasting
   { const bm = []; object.traverse(c => { if (c.isMesh) bm.push(c); });
-    try { bvhRaycast.build(bm); } catch(e) { console.warn('BVH build failed:', e); }
+    try {
+      bvhRaycast.build(bm);
+      state.bvhAvailable = true;
+    } catch(e) {
+      console.warn('BVH build failed:', e);
+      state.bvhAvailable = false;
+      bvhRaycast._built = false;
+      showSystemWarning('Raycasting optimization failed', 'Object selection may be slower on complex models. Standard raycasting will be used instead.');
+    }
   }
 
   // Dismiss loading overlay and start progressive reveal
@@ -4577,19 +4930,32 @@ function buildPartsTree(object) {
 
 // ==================== RENDER PARTS LIST (Virtual Scrolling) ====================
 const _partsVS = { ROW_H: 28, OVERSCAN: 8, flat: [], total: 0, _runway: null, _listening: false };
+let _partsFlatDirty = true;
+let _cachedFlatParts = [];
+let _cachedTotalParts = 0;
+let _lastPartsFilter = '';
+let _cachedFlatPartIds = null;
 function renderPartsList() {
   const container = document.getElementById('partsList');
   const filter = document.getElementById('partsSearch').value.toLowerCase();
-  _partsVS.total = 0;
-  (function cnt(ps) { for(const p of ps){ _partsVS.total++; if(p.children)cnt(p.children); } })(state.parts);
-  _partsVS.flat = [];
-  (function flatten(parts, depth) {
-    for (const p of parts) {
-      if (filter && !matchFilter(p, filter)) continue;
-      _partsVS.flat.push({ part: p, depth });
-      if (p.children && p.children.length > 0 && p._expanded) flatten(p.children, depth + 1);
-    }
-  })(state.parts, 0);
+  // Invalidate cache if filter changed
+  if (filter !== _lastPartsFilter) { _partsFlatDirty = true; _lastPartsFilter = filter; }
+  if (_partsFlatDirty) {
+    _cachedTotalParts = 0;
+    (function cnt(ps) { for(const p of ps){ _cachedTotalParts++; if(p.children)cnt(p.children); } })(state.parts);
+    _cachedFlatParts = [];
+    (function flatten(parts, depth) {
+      for (const p of parts) {
+        if (filter && !matchFilter(p, filter)) continue;
+        _cachedFlatParts.push({ part: p, depth });
+        if (p.children && p.children.length > 0 && p._expanded) flatten(p.children, depth + 1);
+      }
+    })(state.parts, 0);
+    _cachedFlatPartIds = null; // also invalidate ID cache
+    _partsFlatDirty = false;
+  }
+  _partsVS.total = _cachedTotalParts;
+  _partsVS.flat = _cachedFlatParts;
   if (!_partsVS._runway) {
     _partsVS._runway = document.createElement('div');
     _partsVS._runway.style.cssText = 'position:relative;width:100%;pointer-events:none;';
@@ -4635,6 +5001,7 @@ function _partsVSRow(part, depth) {
     const expand = !part._expanded;
     if (e.ctrlKey || e.metaKey || e.altKey) { (function setAll(p, val) { p._expanded = val; if (p.children) p.children.forEach(c => setAll(c, val)); })(part, expand); }
     else { part._expanded = expand; }
+    _partsFlatDirty = true;
     renderPartsList();
   };
   item.appendChild(chev);
@@ -4657,6 +5024,8 @@ function matchFilter(p,f){ if(p.name.toLowerCase().includes(f))return true; if(p
 // ==================== SELECTION (multi-select support) ====================
 // Build flat ordered list of visible part IDs (for shift range select)
 function getFlatPartIds() {
+  // Reuse cached flat list when available (same traversal as renderPartsList)
+  if (_cachedFlatPartIds && !_partsFlatDirty) return _cachedFlatPartIds;
   const ids = [];
   const filter = document.getElementById('partsSearch').value.toLowerCase();
   function walk(parts) {
@@ -4667,6 +5036,7 @@ function getFlatPartIds() {
     }
   }
   walk(state.parts);
+  _cachedFlatPartIds = ids;
   return ids;
 }
 
@@ -4744,6 +5114,13 @@ function updateSelectionOutline() {
     sceneBatcher._clearProxies();
     const uuids = allMeshes.map(m => m.uuid);
     const proxies = sceneBatcher.createProxies(uuids);
+    // Make proxies for xray'd parts invisible in main render (OutlinePass uses override material so outline still works)
+    for (let i = 0; i < proxies.length; i++) {
+      const partId = state.meshPartMap.get(uuids[i]);
+      if (partId && state.xrayParts.has(partId)) {
+        proxies[i].material = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false });
+      }
+    }
     sceneBatcher._activeProxies = proxies;
     outlinePass.selectedObjects = proxies;
   } else {
@@ -4790,7 +5167,27 @@ transformControls.addEventListener('objectChange', () => {
   const pivot = transformControls.object;
   if (!pivot || !gizmoLinkedMeshes.length) return;
   const delta = new THREE.Vector3().subVectors(pivot.position, gizmoLastPos);
-  gizmoLinkedMeshes.forEach(m => m.position.add(delta));
+  // Convert world-space delta to each mesh's parent local space to avoid
+  // amplification by parent transforms (e.g. GLB meter→cm scale).
+  const _inv = new THREE.Matrix4();
+  const _o = new THREE.Vector3();
+  const _d = new THREE.Vector3();
+  const parentCache = new Map();
+  gizmoLinkedMeshes.forEach(m => {
+    if (m.parent && m.parent !== scene) {
+      let localDelta = parentCache.get(m.parent);
+      if (!localDelta) {
+        _inv.copy(m.parent.matrixWorld).invert();
+        _o.set(0, 0, 0).applyMatrix4(_inv);
+        _d.copy(delta).applyMatrix4(_inv);
+        localDelta = _d.sub(_o);
+        parentCache.set(m.parent, localDelta.clone());
+      }
+      m.position.add(localDelta);
+    } else {
+      m.position.add(delta);
+    }
+  });
   gizmoLastPos.copy(pivot.position);
   // Sync moved meshes to BatchedMesh instances
   if (sceneBatcher.enabled) {
@@ -4849,29 +5246,73 @@ function getAllLeafPartIds() {
   walk(state.parts);
   return ids;
 }
+// Xray proxy tracking — when batcher is active, xray uses proxy meshes
+const _xrayProxies = new Map(); // partId → [proxy meshes]
+
 // Set xray on a single leaf part by ID (directly applies material)
 function setLeafPartXray(id, enable) {
   var meshes = state.partMeshMap.get(id); if (!meshes) return;
   if (enable) {
     state.xrayParts.add(id);
-    meshes.forEach(function(mesh) {
-      var origMat = state.originalMaterials.get(mesh.uuid);
-      var baseMat = origMat ? (Array.isArray(origMat) ? origMat[0] : origMat) : mesh.material;
-      var origColor = (baseMat && baseMat.color) ? baseMat.color.getHex() : 0x4A90E2;
-      var x = new THREE.MeshStandardMaterial({color:origColor,transparent:true,opacity:0.12,wireframe:false,side:THREE.DoubleSide,depthWrite:false,metalness:0,roughness:1,emissive:origColor,emissiveIntensity:0.15});
-      x._isXray = true;
-      mesh.material = x;
-      var idx = occlusionCulling._meshUuidToIdx ? occlusionCulling._meshUuidToIdx.get(mesh.uuid) : undefined;
-      if (idx !== undefined) occlusionCulling._isTransp[idx] = 1;
-    });
+    if (sceneBatcher.enabled) {
+      // Batcher active: hide batch instances + create visible xray proxy meshes
+      var proxies = [];
+      meshes.forEach(function(mesh) {
+        // Hide instance in BatchedMesh via mesh.visible setter (triggers setVisibleAt through the property proxy)
+        mesh.visible = false;
+        // Create xray proxy
+        var origMat = state.originalMaterials.get(mesh.uuid);
+        var baseMat = origMat ? (Array.isArray(origMat) ? origMat[0] : origMat) : mesh.material;
+        var origColor = (baseMat && baseMat.color) ? baseMat.color.getHex() : 0x4A90E2;
+        var xMat = new THREE.MeshStandardMaterial({color:origColor,transparent:true,opacity:0.12,wireframe:false,side:THREE.DoubleSide,depthWrite:false,metalness:0,roughness:1,emissive:origColor,emissiveIntensity:0.15});
+        xMat._isXray = true;
+        var proxy = new THREE.Mesh(mesh.geometry, xMat);
+        proxy.matrixAutoUpdate = false;
+        proxy.matrix.copy(mesh.matrixWorld);
+        proxy.matrixWorld.copy(mesh.matrixWorld);
+        proxy.renderOrder = 999;
+        proxy._isXrayProxy = true;
+        scene.add(proxy);
+        proxies.push(proxy);
+      });
+      _xrayProxies.set(id, proxies);
+    } else {
+      meshes.forEach(function(mesh) {
+        var origMat = state.originalMaterials.get(mesh.uuid);
+        var baseMat = origMat ? (Array.isArray(origMat) ? origMat[0] : origMat) : mesh.material;
+        var origColor = (baseMat && baseMat.color) ? baseMat.color.getHex() : 0x4A90E2;
+        var x = new THREE.MeshStandardMaterial({color:origColor,transparent:true,opacity:0.12,wireframe:false,side:THREE.DoubleSide,depthWrite:false,metalness:0,roughness:1,emissive:origColor,emissiveIntensity:0.15});
+        x._isXray = true;
+        mesh.material = x;
+        var idx = occlusionCulling._meshUuidToIdx ? occlusionCulling._meshUuidToIdx.get(mesh.uuid) : undefined;
+        if (idx !== undefined) {
+          occlusionCulling._isTransp[idx] = 1;
+          mesh.layers.disable(occlusionCulling._DEPTH_LAYER);
+        }
+      });
+    }
   } else {
     state.xrayParts.delete(id);
-    meshes.forEach(function(mesh) {
-      var o = state.originalMaterials.get(mesh.uuid);
-      if (o) mesh.material = Array.isArray(o) ? o.map(function(m){return m.clone();}) : o.clone();
-      var idx = occlusionCulling._meshUuidToIdx ? occlusionCulling._meshUuidToIdx.get(mesh.uuid) : undefined;
-      if (idx !== undefined) occlusionCulling._isTransp[idx] = occlusionCulling.isTransparent(mesh) ? 1 : 0;
-    });
+    if (sceneBatcher.enabled) {
+      // Remove xray proxies and show batch instances again
+      var proxies = _xrayProxies.get(id);
+      if (proxies) {
+        proxies.forEach(function(p) { scene.remove(p); if (p.material) p.material.dispose(); });
+        _xrayProxies.delete(id);
+      }
+      meshes.forEach(function(mesh) { mesh.visible = true; });
+    } else {
+      meshes.forEach(function(mesh) {
+        var o = state.originalMaterials.get(mesh.uuid);
+        if (o) mesh.material = Array.isArray(o) ? o.map(function(m){return m.clone();}) : o.clone();
+        var idx = occlusionCulling._meshUuidToIdx ? occlusionCulling._meshUuidToIdx.get(mesh.uuid) : undefined;
+        if (idx !== undefined) {
+          occlusionCulling._isTransp[idx] = occlusionCulling.isTransparent(mesh) ? 1 : 0;
+          if (occlusionCulling._isTransp[idx]) mesh.layers.disable(occlusionCulling._DEPTH_LAYER);
+          else mesh.layers.enable(occlusionCulling._DEPTH_LAYER);
+        }
+      });
+    }
   }
 }
 // Set xray on a part — resolves to leaf parts if it has children
@@ -4885,7 +5326,7 @@ function xrayPart(id) {
   var allXrayed = leaves.length > 0 && leaves.every(function(lid) { return state.xrayParts.has(lid); });
   setPartXray(id, !allXrayed);
 }
-function expandToPartId(id){ function ex(ps){for(const p of ps){if(p.id===id)return true;if(p.children&&ex(p.children)){p._expanded=true;return true;}}return false;} ex(state.parts); renderPartsList(); }
+function expandToPartId(id){ function ex(ps){for(const p of ps){if(p.id===id)return true;if(p.children&&ex(p.children)){p._expanded=true;return true;}}return false;} ex(state.parts); _partsFlatDirty = true; renderPartsList(); }
 
 // ==================== 3D SCENE CONTEXT MENU ====================
 function findPartParent(parts, targetId, parent) {
@@ -4950,6 +5391,8 @@ function isolateSelection() {
 }
 function xraySelection() {
   for (const pid of state.selectedParts) xrayPart(pid);
+  // Refresh selection outline — proxies for xray'd parts need transparent material
+  if (sceneBatcher.enabled) updateSelectionOutline();
 }
 function resetSelection() {
   for (const pid of state.selectedParts) {
@@ -5047,20 +5490,105 @@ function findBySimilarity() {
   }
 }
 function performUndo() {
-  if (undoStack.length) {
-    const entry = undoStack.pop();
+  if (!undoStack.length) return;
+  const entry = undoStack.pop();
+  if (entry.type === 'delete') {
+    restoreDeletedParts(entry);
+    redoStack.push(entry);
+  } else {
     const redo = { meshes: entry.meshes.map(s => ({ object: s.object, pos: s.object.position.clone(), rot: s.object.rotation.clone(), scl: s.object.scale.clone() })) };
     redoStack.push(redo);
     _restoreSnaps(entry.meshes);
   }
 }
 function performRedo() {
-  if (redoStack.length) {
-    const entry = redoStack.pop();
+  if (!redoStack.length) return;
+  const entry = redoStack.pop();
+  if (entry.type === 'delete') {
+    reDeleteParts(entry);
+    undoStack.push(entry);
+  } else {
     const undo = { meshes: entry.meshes.map(s => ({ object: s.object, pos: s.object.position.clone(), rot: s.object.rotation.clone(), scl: s.object.scale.clone() })) };
     undoStack.push(undo);
     _restoreSnaps(entry.meshes);
   }
+}
+
+// Restore soft-deleted parts (undo delete)
+function restoreDeletedParts(dd) {
+  for (let i = dd.subtrees.length - 1; i >= 0; i--) {
+    const { part, parentId, index } = dd.subtrees[i];
+    const parent = parentId ? findPartById(state.parts, parentId) : null;
+    const target = parent ? (parent.children || (parent.children = [])) : state.parts;
+    target.splice(Math.min(index, target.length), 0, part);
+  }
+  for (const [partId, meshes] of dd.meshMap) {
+    state.partMeshMap.set(partId, meshes);
+    for (const mesh of meshes) {
+      // Re-add to scene graph before setting visible (so batcher proxy works)
+      state.deletedMeshUUIDs.delete(mesh.uuid);
+      if (dd.meshParents) { const p = dd.meshParents.get(mesh.uuid); if (p) p.add(mesh); }
+      mesh.visible = true;
+      state.meshPartMap.set(mesh.uuid, partId);
+    }
+  }
+  for (const [uuid, mat] of dd.originalMats) state.originalMaterials.set(uuid, mat);
+  for (const id of dd.hiddenIds) state.hiddenParts.add(id);
+  for (const id of dd.selectedIds) state.selectedParts.add(id);
+  for (const id of dd.xrayIds) state.xrayParts.add(id);
+  if (sceneBatcher.enabled) {
+    for (const [uuid, info] of dd.batcherEntries) {
+      const mesh = dd.allMeshes.get(uuid);
+      if (info.batch && info.batch.batchedMesh) {
+        info.batch.batchedMesh.setVisibleAt(info.instId, true);
+        if (info.batch.uuidMap) info.batch.uuidMap.set(uuid, info.instId);
+        if (info.batch.meshMap) info.batch.meshMap.set(info.instId, mesh);
+      }
+      sceneBatcher.meshToBatch.set(uuid, { batch: info.batch, instId: info.instId });
+      if (mesh) sceneBatcher._meshByUUID.set(uuid, mesh);
+    }
+  }
+  for (const ref of dd.importedRefs) state.importedModels.splice(Math.min(ref.idx, state.importedModels.length), 0, ref.obj);
+  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.refresh) occlusionCulling.refresh();
+  _rebuildHLOD();
+  updateSelectionOutline(); attachGizmoToSelection(); _partsFlatDirty = true; renderPartsList();
+}
+
+// Re-delete parts (redo delete)
+function reDeleteParts(dd) {
+  for (const [partId, meshes] of dd.meshMap) {
+    for (const mesh of meshes) {
+      if (sceneBatcher.enabled) {
+        const e = sceneBatcher.meshToBatch.get(mesh.uuid);
+        if (e && e.batch && e.batch.batchedMesh) {
+          e.batch.batchedMesh.setVisibleAt(e.instId, false);
+          if (e.batch.uuidMap) e.batch.uuidMap.delete(mesh.uuid);
+          if (e.batch.meshMap) e.batch.meshMap.delete(e.instId);
+        }
+        sceneBatcher.meshToBatch.delete(mesh.uuid); sceneBatcher._meshByUUID.delete(mesh.uuid);
+      }
+      mesh.visible = false;
+      state.deletedMeshUUIDs.add(mesh.uuid);
+      // Remove from scene graph again
+      if (mesh.parent) mesh.parent.remove(mesh);
+    }
+  }
+  for (const [partId] of dd.meshMap) {
+    state.partMeshMap.delete(partId); state.hiddenParts.delete(partId);
+    state.selectedParts.delete(partId); state.xrayParts.delete(partId);
+  }
+  for (const [uuid] of dd.meshPartMap) { state.meshPartMap.delete(uuid); state.originalMaterials.delete(uuid); }
+  for (const ref of dd.importedRefs) {
+    const idx = state.importedModels.indexOf(ref.obj);
+    if (idx !== -1) state.importedModels.splice(idx, 1);
+  }
+  const allIds = new Set();
+  for (const { part } of dd.subtrees) collectPartIds(part).forEach(cid => allIds.add(cid));
+  function rmTree(parts, ids) { for (let i = parts.length - 1; i >= 0; i--) { if (ids.has(parts[i].id)) { parts.splice(i, 1); continue; } if (parts[i].children) rmTree(parts[i].children, ids); } }
+  rmTree(state.parts, allIds);
+  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.refresh) occlusionCulling.refresh();
+  _rebuildHLOD();
+  updateSelectionOutline(); attachGizmoToSelection(); _partsFlatDirty = true; renderPartsList();
 }
 
 const sceneCtxMenu = document.getElementById('sceneCtxMenu');
@@ -5080,6 +5608,7 @@ const _icons = {
   info:    '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
   up:      '<polyline points="18 15 12 9 6 15"/>',
   search:  '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  trash:   '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
 };
 function openSceneContextMenu(e) {
   e.preventDefault();
@@ -5104,6 +5633,10 @@ function openSceneContextMenu(e) {
     html += '<button class="scene-ctx-opt" data-act="metadata">' + _svgIcon(_icons.info) + 'Metadata</button>';
     html += '<button class="scene-ctx-opt" data-act="parent">' + _svgIcon(_icons.up) + 'Go to Parent</button>';
     html += '<button class="scene-ctx-opt" data-act="similar">' + _svgIcon(_icons.search) + 'Find by Similarity</button>';
+    if (state.mode === 'editor') {
+      html += '<div class="scene-ctx-sep"></div>';
+      html += '<button class="scene-ctx-opt danger" data-act="deleteParts">' + _svgIcon(_icons.trash, '#FF1F1F') + '<span style="color:#FF1F1F">Delete</span></button>';
+    }
     html += '<div class="scene-ctx-sep"></div>';
     html += '<button class="scene-ctx-opt' + (undoStack.length ? '' : ' disabled') + '" data-act="undo">' + _svgIcon(_icons.undo) + 'Undo</button>';
     html += '<button class="scene-ctx-opt' + (redoStack.length ? '' : ' disabled') + '" data-act="redo">' + _svgIcon(_icons.redo) + 'Redo</button>';
@@ -5145,6 +5678,7 @@ function openSceneContextMenu(e) {
       else if (act === 'metadata') showPartMetadata();
       else if (act === 'parent') goToParent();
       else if (act === 'similar') findBySimilarity();
+      else if (act === 'deleteParts') deleteSelectedParts();
     };
   });
 }
@@ -5164,6 +5698,19 @@ renderer.domElement.addEventListener('contextmenu', function(e) {
   openSceneContextMenu(e);
 });
 
+// Dispose + rebuild HLOD proxies (needed after part deletion since proxies bake geometry)
+function _rebuildHLOD() {
+  for (const p of hlodSystem._proxies) {
+    if (p.proxyMesh) {
+      scene.remove(p.proxyMesh);
+      if (p.proxyMesh.geometry) p.proxyMesh.geometry.dispose();
+      if (p.proxyMesh.material) p.proxyMesh.material.dispose();
+    }
+  }
+  hlodSystem._proxies = [];
+  if (occlusionCulling._built && hlodSystem.enabled) hlodSystem.build();
+}
+
 // ==================== DELETE PARTS ====================
 function collectPartIds(part) {
   const ids = [part.id];
@@ -5181,56 +5728,108 @@ function deleteParts(partIds) {
     if (part) collectPartIds(part).forEach(cid => allIds.add(cid));
   }
 
-  // Collect all meshes from those parts
-  const meshesToRemove = [];
+  // Build undo snapshot BEFORE modifying state
+  const dd = {
+    type: 'delete',
+    subtrees: [],           // [{ part, parentId, index }] top-level removed subtrees
+    meshMap: new Map(),      // partId -> meshes array
+    meshPartMap: new Map(),  // mesh.uuid -> partId
+    originalMats: new Map(), // mesh.uuid -> material
+    batcherEntries: new Map(), // mesh.uuid -> { batch, instId }
+    allMeshes: new Map(),    // mesh.uuid -> mesh (for batcher restore)
+    hiddenIds: [],
+    selectedIds: [],
+    xrayIds: [],
+    importedRefs: [],        // [{ obj, idx }]
+  };
+
+  // Capture state sets
+  for (const id of allIds) {
+    if (state.hiddenParts.has(id)) dd.hiddenIds.push(id);
+    if (state.selectedParts.has(id)) dd.selectedIds.push(id);
+    if (state.xrayParts.has(id)) dd.xrayIds.push(id);
+  }
+
+  // Capture mesh data
   for (const id of allIds) {
     const meshes = state.partMeshMap.get(id);
-    if (meshes) meshesToRemove.push(...meshes);
-  }
-
-  // Hide from BatchedMesh (set visibility to false for each instance)
-  for (const mesh of meshesToRemove) {
-    mesh.visible = false; // triggers BatchedMesh setVisibleAt via interceptor
-    // Clean up batcher maps
-    if (sceneBatcher.enabled) {
-      const entry = sceneBatcher.meshToBatch.get(mesh.uuid);
-      if (entry) {
-        entry.batch.uuidMap.delete(mesh.uuid);
-        entry.batch.meshMap.delete(entry.instId);
-        sceneBatcher.meshToBatch.delete(mesh.uuid);
+    if (meshes) {
+      dd.meshMap.set(id, [...meshes]);
+      for (const mesh of meshes) {
+        dd.meshPartMap.set(mesh.uuid, id);
+        dd.allMeshes.set(mesh.uuid, mesh);
+        if (state.originalMaterials.has(mesh.uuid)) dd.originalMats.set(mesh.uuid, state.originalMaterials.get(mesh.uuid));
+        if (sceneBatcher.enabled) {
+          const entry = sceneBatcher.meshToBatch.get(mesh.uuid);
+          if (entry) dd.batcherEntries.set(mesh.uuid, { batch: entry.batch, instId: entry.instId });
+        }
       }
-      sceneBatcher._meshByUUID.delete(mesh.uuid);
     }
   }
 
-  // Remove meshes from scene graph
-  for (const mesh of meshesToRemove) {
-    if (mesh.geometry) mesh.geometry.dispose();
-    if (mesh.material) {
-      if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
-      else mesh.material.dispose();
-    }
-    if (mesh.parent) mesh.parent.remove(mesh);
-  }
-
-  // Clean up state maps
-  for (const id of allIds) {
-    state.partMeshMap.delete(id);
-    state.hiddenParts.delete(id);
-    state.selectedParts.delete(id);
-  }
-  for (const mesh of meshesToRemove) {
-    state.meshPartMap.delete(mesh.uuid);
-    state.originalMaterials.delete(mesh.uuid);
-  }
-
-  // Remove from importedModels if the deleted part's root object is there
+  // Capture imported model refs
   for (const id of allIds) {
     const part = findPartById(state.parts, id);
     if (part && part.object3D) {
       const idx = state.importedModels.indexOf(part.object3D);
-      if (idx !== -1) state.importedModels.splice(idx, 1);
+      if (idx !== -1) dd.importedRefs.push({ obj: part.object3D, idx });
     }
+  }
+
+  // Capture top-level subtrees (parts whose parent is NOT also being deleted)
+  function findSubtrees(parts, parentId) {
+    for (let i = 0; i < parts.length; i++) {
+      if (allIds.has(parts[i].id)) {
+        if (!parentId || !allIds.has(parentId)) {
+          dd.subtrees.push({ part: parts[i], parentId: parentId, index: i });
+        }
+      } else if (parts[i].children) {
+        findSubtrees(parts[i].children, parts[i].id);
+      }
+    }
+  }
+  findSubtrees(state.parts, null);
+
+  // === Soft delete: hide meshes, detach from scene (don't dispose) ===
+  dd.meshParents = new Map(); // mesh.uuid -> parent Object3D
+  for (const id of allIds) {
+    const meshes = state.partMeshMap.get(id);
+    if (meshes) {
+      for (const mesh of meshes) {
+        if (sceneBatcher.enabled) {
+          const entry = sceneBatcher.meshToBatch.get(mesh.uuid);
+          if (entry && entry.batch && entry.batch.batchedMesh) {
+            entry.batch.batchedMesh.setVisibleAt(entry.instId, false);
+            entry.batch.uuidMap.delete(mesh.uuid);
+            entry.batch.meshMap.delete(entry.instId);
+          }
+          sceneBatcher.meshToBatch.delete(mesh.uuid);
+          sceneBatcher._meshByUUID.delete(mesh.uuid);
+        }
+        mesh.visible = false;
+        state.deletedMeshUUIDs.add(mesh.uuid);
+        // Remove from scene graph so no system (occlusion, render) can re-show it
+        if (mesh.parent) { dd.meshParents.set(mesh.uuid, mesh.parent); mesh.parent.remove(mesh); }
+      }
+    }
+  }
+
+  // Clean up state maps (no disposal)
+  for (const id of allIds) {
+    state.partMeshMap.delete(id);
+    state.hiddenParts.delete(id);
+    state.selectedParts.delete(id);
+    state.xrayParts.delete(id);
+  }
+  for (const [uuid] of dd.meshPartMap) {
+    state.meshPartMap.delete(uuid);
+    state.originalMaterials.delete(uuid);
+  }
+
+  // Remove from importedModels
+  for (const ref of dd.importedRefs) {
+    const idx = state.importedModels.indexOf(ref.obj);
+    if (idx !== -1) state.importedModels.splice(idx, 1);
   }
 
   // Remove from parts tree
@@ -5242,14 +5841,16 @@ function deleteParts(partIds) {
   }
   removeFromTree(state.parts, allIds);
 
-  // Refresh occlusion culling
-  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.refresh) {
-    occlusionCulling.refresh();
-  }
+  // Push to undo stack
+  undoStack.push(dd);
+  redoStack.length = 0;
 
-  // Update UI
+  // Refresh occlusion + HLOD (proxy meshes bake geometry from all parts)
+  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.refresh) occlusionCulling.refresh();
+  _rebuildHLOD();
   updateSelectionOutline();
   attachGizmoToSelection();
+  _partsFlatDirty = true;
   renderPartsList();
 }
 
@@ -5310,25 +5911,14 @@ document.addEventListener('keydown', e => {
     else if(state.hsFocusedParent !== null) drillBack();
     else if(state.managerOpen) closeHotspotManager();
   }
-  // Undo / Redo (restores all meshes in the snapshot, not just anchor)
+  // Undo / Redo
   if ((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey) {
     e.preventDefault();
-    if (undoStack.length) {
-      const entry = undoStack.pop();
-      // Snapshot current state for redo
-      const redo = { meshes: entry.meshes.map(s => ({ object: s.object, pos: s.object.position.clone(), rot: s.object.rotation.clone(), scl: s.object.scale.clone() })) };
-      redoStack.push(redo);
-      _restoreSnaps(entry.meshes);
-    }
+    performUndo();
   }
   if ((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.key==='z' && e.shiftKey))) {
     e.preventDefault();
-    if (redoStack.length) {
-      const entry = redoStack.pop();
-      const undo = { meshes: entry.meshes.map(s => ({ object: s.object, pos: s.object.position.clone(), rot: s.object.rotation.clone(), scl: s.object.scale.clone() })) };
-      undoStack.push(undo);
-      _restoreSnaps(entry.meshes);
-    }
+    performRedo();
   }
   // Delete selected parts
   if ((e.key==='Delete'||e.key==='Backspace') && state.mode==='editor' && state.selectedParts.size>0) {
@@ -5362,7 +5952,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   ctrlDown = e.ctrlKey||e.metaKey; altDown = e.altKey;
   // Clear hover outline when Ctrl released
-  if (!ctrlDown) { if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies(); hoverOutlinePass.selectedObjects = []; state.ctrlHoveredPart = null; }
+  if (!ctrlDown) { if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies(); hoverOutlinePass.selectedObjects = []; state.ctrlHoveredPart = null; _lastHoverCtrl = false; }
 });
 
 renderer.domElement.addEventListener('pointerdown', e => {
@@ -5433,6 +6023,8 @@ renderer.domElement.addEventListener('dblclick', e => {
 // Hover: Ctrl shows outline preview, normal shows tooltip (RAF-throttled)
 const tooltip = document.getElementById('partTooltip');
 let _hoverRAF = 0, _hoverEvt = null;
+let _lastHoverPartId = null;  // track last hovered part to skip redundant proxy recreation
+let _lastHoverCtrl = false;   // track whether Ctrl was held for the last hover
 function _hoverTick() {
   _hoverRAF = 0;
   const e = _hoverEvt;
@@ -5459,23 +6051,36 @@ function _hoverTick() {
     const part = pid && !partXrayed && findPartById(state.parts, pid);
 
     if ((e.ctrlKey||e.metaKey) && pid && !partXrayed) {
-      const hoverMeshes = state.partMeshMap.get(pid) || [];
-      let filtered;
-      if (sceneBatcher.enabled) {
-        sceneBatcher._clearHoverProxies();
-        const uuids = hoverMeshes.filter(m => !state.selectedParts.has(state.meshPartMap.get(m.uuid))).map(m => m.uuid);
-        filtered = sceneBatcher.createProxies(uuids);
-        sceneBatcher._hoverProxies = filtered;
+      // Skip proxy recreation if hovering the same part with Ctrl still held
+      if (pid === _lastHoverPartId && _lastHoverCtrl) {
+        // Same part still hovered — just keep cursor, skip expensive proxy work
+        renderer.domElement.style.cursor = 'copy';
       } else {
-        filtered = hoverMeshes.filter(m => !state.selectedParts.has(state.meshPartMap.get(m.uuid)));
+        const hoverMeshes = state.partMeshMap.get(pid) || [];
+        let filtered;
+        if (sceneBatcher.enabled) {
+          sceneBatcher._clearHoverProxies();
+          const uuids = hoverMeshes.filter(m => !state.selectedParts.has(state.meshPartMap.get(m.uuid))).map(m => m.uuid);
+          filtered = sceneBatcher.createProxies(uuids);
+          sceneBatcher._hoverProxies = filtered;
+        } else {
+          filtered = hoverMeshes.filter(m => !state.selectedParts.has(state.meshPartMap.get(m.uuid)));
+        }
+        hoverOutlinePass.selectedObjects = filtered;
+        state.ctrlHoveredPart = pid;
+        renderer.domElement.style.cursor = 'copy';
       }
-      hoverOutlinePass.selectedObjects = filtered;
-      state.ctrlHoveredPart = pid;
-      renderer.domElement.style.cursor = 'copy';
+      _lastHoverPartId = pid;
+      _lastHoverCtrl = true;
     } else {
-      if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies();
-      hoverOutlinePass.selectedObjects = [];
-      state.ctrlHoveredPart = null;
+      if (_lastHoverCtrl || _lastHoverPartId !== pid) {
+        // Hover target changed or Ctrl released — clear stale proxies
+        if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies();
+        hoverOutlinePass.selectedObjects = [];
+        state.ctrlHoveredPart = null;
+      }
+      _lastHoverPartId = pid;
+      _lastHoverCtrl = false;
       if (!slicer.active || slicer._hoveredFace < 0) renderer.domElement.style.cursor = 'pointer';
     }
 
@@ -5487,8 +6092,14 @@ function _hoverTick() {
     return;
   }
 
-  hoverOutlinePass.selectedObjects = [];
-  state.ctrlHoveredPart = null;
+  // Hover miss — only clear proxies if there was a previous hover target
+  if (_lastHoverPartId !== null || _lastHoverCtrl) {
+    if (sceneBatcher.enabled) sceneBatcher._clearHoverProxies();
+    hoverOutlinePass.selectedObjects = [];
+    state.ctrlHoveredPart = null;
+  }
+  _lastHoverPartId = null;
+  _lastHoverCtrl = false;
   tooltip.style.display = 'none';
   if (!slicer.active || slicer._hoveredFace < 0) renderer.domElement.style.cursor = 'grab';
 }
@@ -5524,7 +6135,7 @@ document.getElementById('ltLockBtn').onclick=()=>{
 document.getElementById('backToKBBtn').onclick=()=>{
   if(state.mode==='viewer' && state.viewerFromEditor){
     // Preview mode from editor → go back to editor
-    state.mode='editor'; state.viewerFromEditor=false; updateUI();
+    setMode('editor', { viewerFromEditor: false });
   } else if(window.parent !== window){
     // Embedded → tell parent to go back
     window.parent.postMessage({ type:'backToKB' }, '*');
@@ -6249,9 +6860,27 @@ document.querySelectorAll('.toolbar-btn[data-toggle]').forEach(btn=>{
 function xrayAllParts(enable) {
   state.xrayMode = enable;
   var allLeafIds = getAllLeafPartIds();
-  for (var i = 0; i < allLeafIds.length; i++) setLeafPartXray(allLeafIds[i], enable);
-  // BatchedMesh: apply/restore batch material
   if (sceneBatcher.enabled) {
+    // Batcher: use batch-level material swap (much cheaper than per-part proxies)
+    // First clean up any per-part xray proxies that may exist
+    for (const [pid, proxies] of _xrayProxies) {
+      proxies.forEach(function(p) { scene.remove(p); if (p.material) p.material.dispose(); });
+    }
+    _xrayProxies.clear();
+    // Track xray state without creating proxies
+    for (var i = 0; i < allLeafIds.length; i++) {
+      if (enable) state.xrayParts.add(allLeafIds[i]);
+      else state.xrayParts.delete(allLeafIds[i]);
+    }
+    // Restore batch instance visibility
+    // When enabling: ensure all instances visible for the transparent material swap
+    //   (some may have been hidden by occlusion culling before xray was toggled)
+    // When disabling: restore instances that per-part xray may have hidden
+    for (var i = 0; i < allLeafIds.length; i++) {
+      var ms = state.partMeshMap.get(allLeafIds[i]);
+      if (ms) ms.forEach(function(m) { m.visible = true; });
+    }
+    // Swap batch material
     for (const batch of sceneBatcher.batches) {
       if (enable) {
         if (!batch._origMaterial) batch._origMaterial = batch.batchedMesh.material.clone();
@@ -6260,9 +6889,13 @@ function xrayAllParts(enable) {
         if (batch._origMaterial) { batch.batchedMesh.material = batch._origMaterial; batch._origMaterial = null; }
       }
     }
+  } else {
+    for (var i = 0; i < allLeafIds.length; i++) setLeafPartXray(allLeafIds[i], enable);
   }
   if (slicer.active) slicer._applyClipping(true);
   if (occlusionCulling._built) occlusionCulling.restoreAll();
+  // Refresh selection outline — proxies need transparent material when xray is active
+  if (sceneBatcher.enabled && state.selectedParts.size > 0) updateSelectionOutline();
 }
 // Legacy alias used in existing code paths
 function applyGlobalXray() { xrayAllParts(state.xrayMode); }
@@ -6778,10 +7411,30 @@ const perfStats = {
 
 document.getElementById('editorStatsBtn').onclick = () => { document.getElementById('editorMoreMenu').classList.remove('visible'); perfStats.toggle(); };
 
-document.getElementById('btPreview').onclick=()=>{state.mode='viewer';state.viewerFromEditor=true;deselectAll();updateUI();};
+document.getElementById('btPreview').onclick=()=>{setMode('viewer',{viewerFromEditor:true,deselectAll:true});};
 document.getElementById('viewerMoreBtn').onclick=(e)=>{e.stopPropagation();document.getElementById('viewerMoreMenu').classList.toggle('visible');};
-document.getElementById('editDTBtn').onclick=()=>{state.mode='editor';state.viewerFromEditor=false;document.getElementById('viewerMoreMenu').classList.remove('visible');updateUI();};
+document.getElementById('editDTBtn').onclick=()=>{setMode('editor',{viewerFromEditor:false,closeViewerMenu:true});};
 document.getElementById('manageAnimBtn').onclick=()=>{document.getElementById('viewerMoreMenu').classList.remove('visible');flShow('animManager');renderAnimList();};
+
+// Role-gate: hide "Edit digital twin" and "Manage animations" for non-editing roles
+(function applyRoleGating() {
+  var currentRole = localStorage.getItem('currentRole') || 'admin';
+  var editRoles = ['instructor', 'content-creator', 'admin'];
+  if (!editRoles.includes(currentRole)) {
+    document.getElementById('editDTBtn').style.display = 'none';
+    document.getElementById('manageAnimBtn').style.display = 'none';
+  }
+  // Listen for role changes from the parent React app
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'currentRole') {
+      var role = e.newValue || 'admin';
+      var canEdit = editRoles.includes(role);
+      document.getElementById('editDTBtn').style.display = canEdit ? '' : 'none';
+      document.getElementById('manageAnimBtn').style.display = canEdit ? '' : 'none';
+    }
+  });
+})();
+
 document.addEventListener('click',()=>{document.getElementById('viewerMoreMenu').classList.remove('visible');document.getElementById('editorMoreMenu').classList.remove('visible');document.getElementById('animContextMenu').classList.remove('visible');document.getElementById('animFilterMenu').classList.remove('visible');});
 document.getElementById('btSave').onclick=()=>{
   const b=document.getElementById('btSave');
@@ -7809,12 +8462,24 @@ function openViewerPopup(hsId) {
           meshes.push(...ms);
         });
         if (sceneBatcher.enabled) {
-          outlinePass.selectedObjects = sceneBatcher.createProxies(meshes.map(m => m.uuid));
+          const highlightProxies = sceneBatcher.createProxies(meshes.map(m => m.uuid));
+          outlinePass.selectedObjects = highlightProxies;
+          // Clear highlight after 3 seconds and dispose proxies
+          setTimeout(() => {
+            outlinePass.selectedObjects = [];
+            for (const p of highlightProxies) {
+              sceneBatcher._proxyScene.remove(p);
+              sceneBatcher._disposeProxy(p);
+            }
+            if (sceneBatcher._activeProxies.length === 0 && sceneBatcher._hoverProxies.length === 0) {
+              sceneBatcher._proxyScene.visible = false;
+            }
+          }, 3000);
         } else {
           outlinePass.selectedObjects = meshes;
+          // Clear highlight after 3 seconds
+          setTimeout(() => { outlinePass.selectedObjects = []; }, 3000);
         }
-        // Clear highlight after 3 seconds
-        setTimeout(() => { outlinePass.selectedObjects = []; }, 3000);
       } else if (a.type === 'animation' && a.animationId) {
         playAnimation(a.animationId, a.playMode || 'once');
       } else if (a.type === 'bookmark' && a.bookmarkId) {
@@ -7893,6 +8558,51 @@ function startHotspotDrag(e, hsId) {
 }
 
 // ===== HOTSPOT HIERARCHY HELPERS =====
+
+// Validate and set a hotspot's parentId safely.
+// Returns true if the parentId was set, false if rejected.
+function setHotspotParent(hotspotId, newParentId) {
+  const hs = state.hotspots.find(h => h.id === hotspotId);
+  if (!hs) return false;
+
+  // Setting to null (root) is always valid
+  if (newParentId === null || newParentId === undefined) {
+    hs.parentId = null;
+    return true;
+  }
+
+  // Validate that the target parent actually exists
+  const parentHs = state.hotspots.find(h => h.id === newParentId);
+  if (!parentHs) {
+    console.warn(`[Hotspot] Cannot set parentId='${newParentId}' on '${hotspotId}': target does not exist. Defaulting to root.`);
+    hs.parentId = null;
+    return false;
+  }
+
+  // Prevent self-parenting
+  if (newParentId === hotspotId) {
+    console.warn(`[Hotspot] Cannot set '${hotspotId}' as its own parent. Skipping.`);
+    return false;
+  }
+
+  // Prevent circular references: walk up from newParentId to ensure hotspotId isn't an ancestor
+  let cur = newParentId;
+  const visited = new Set();
+  while (cur) {
+    if (visited.has(cur)) break; // already a cycle in existing data, bail
+    visited.add(cur);
+    if (cur === hotspotId) {
+      console.warn(`[Hotspot] Circular reference detected: '${newParentId}' is a descendant of '${hotspotId}'. Skipping.`);
+      return false;
+    }
+    const p = state.hotspots.find(h => h.id === cur);
+    cur = p ? p.parentId : null;
+  }
+
+  hs.parentId = newParentId;
+  return true;
+}
+
 function getChildren(parentId) {
   return state.hotspots.filter(h => h.parentId === parentId);
 }
@@ -8116,14 +8826,19 @@ function handleHotspotPlacement(e) {
 }
 
 function deleteHotspot(hsId) {
-  // Also delete all descendants
-  const toDelete = new Set([hsId, ...getAllDescendantIds(hsId)]);
-  state.hotspots = state.hotspots.filter(h => !toDelete.has(h.id));
-  if (toDelete.has(state.activeHotspotId)) { closeEditPanel(); closeViewerPopup(); state.activeHotspotId = null; }
-  state.hsSelectedIds.forEach(id => { if (toDelete.has(id)) state.hsSelectedIds.delete(id); });
+  const hs = state.hotspots.find(h => h.id === hsId);
+  const promotedParent = hs ? hs.parentId : null;
+  // Re-parent direct children to the deleted hotspot's parent (promote up)
+  state.hotspots.forEach(h => {
+    if (h.parentId === hsId) h.parentId = promotedParent;
+  });
+  // Remove only the target hotspot (children are now re-parented)
+  state.hotspots = state.hotspots.filter(h => h.id !== hsId);
+  if (state.activeHotspotId === hsId) { closeEditPanel(); closeViewerPopup(); state.activeHotspotId = null; }
+  state.hsSelectedIds.delete(hsId);
   // If focused parent was deleted, reset drill-down
-  if (state.hsFocusedParent && toDelete.has(state.hsFocusedParent)) drillReset();
-  state.hsFocusedStack = state.hsFocusedStack.filter(id => !toDelete.has(id));
+  if (state.hsFocusedParent === hsId) drillReset();
+  state.hsFocusedStack = state.hsFocusedStack.filter(id => id !== hsId);
   createHotspotMarkers();
   renderHotspotManager();
 }
@@ -8131,9 +8846,15 @@ function deleteHotspot(hsId) {
 function deleteSelectedHotspots() {
   const ids = [...state.hsSelectedIds];
   ids.forEach(id => {
-    const toDelete = new Set([id, ...getAllDescendantIds(id)]);
-    state.hotspots = state.hotspots.filter(h => !toDelete.has(h.id));
-    if (toDelete.has(state.activeHotspotId)) { closeEditPanel(); closeViewerPopup(); }
+    const hs = state.hotspots.find(h => h.id === id);
+    if (!hs) return;
+    const promotedParent = hs.parentId;
+    // Re-parent direct children to the deleted hotspot's parent
+    state.hotspots.forEach(h => {
+      if (h.parentId === id) h.parentId = promotedParent;
+    });
+    state.hotspots = state.hotspots.filter(h => h.id !== id);
+    if (state.activeHotspotId === id) { closeEditPanel(); closeViewerPopup(); }
   });
   state.hsSelectedIds.clear();
   createHotspotMarkers();
@@ -8344,7 +9065,7 @@ function createManagerItem(hs, depth) {
       for (const did of draggedIds) {
         if (did === hs.id || isDescendantOf(hs.id, did)) continue;
         const draggedHs = state.hotspots.find(h => h.id === did);
-        if (draggedHs && draggedHs.parentId !== hs.id) draggedHs.parentId = hs.id;
+        if (draggedHs && draggedHs.parentId !== hs.id) setHotspotParent(did, hs.id);
       }
       hs.expanded = true;
     } else {
@@ -8355,7 +9076,7 @@ function createManagerItem(hs, depth) {
         const draggedHs = state.hotspots.find(h => h.id === did);
         if (!draggedHs) continue;
         // Move to same parent
-        draggedHs.parentId = targetParent;
+        setHotspotParent(did, targetParent);
         // Reorder within the flat list
         const dragIdx = state.hotspots.indexOf(draggedHs);
         const targetIdx = state.hotspots.indexOf(hs);
@@ -8387,8 +9108,7 @@ function createManagerItem(hs, depth) {
       if (state.hsDragOverId) return;
       const draggedIds = [...state.hsSelectedIds];
       draggedIds.forEach(did => {
-        const draggedHs = state.hotspots.find(h => h.id === did);
-        if (draggedHs) draggedHs.parentId = null;
+        setHotspotParent(did, null);
       });
       state.hsSelectedIds.clear();
       createHotspotMarkers();
@@ -8465,8 +9185,8 @@ function applyBookmarkState(bk) {
   if (!bk.cameraTarget || !bk.cameraPosition) return;
   stopAllAnimations();
   state.hiddenParts.clear();
-  if (fbxModel) fbxModel.traverse(c => { if (c.isMesh) c.visible = true; });
-  state.importedModels.forEach(m => m.traverse(c => { if (c.isMesh) c.visible = true; }));
+  if (fbxModel) fbxModel.traverse(c => { if (c.isMesh && !state.deletedMeshUUIDs.has(c.uuid)) c.visible = true; });
+  state.importedModels.forEach(m => m.traverse(c => { if (c.isMesh && !state.deletedMeshUUIDs.has(c.uuid)) c.visible = true; }));
   if (bk.hiddenParts && bk.hiddenParts.length > 0) {
     bk.hiddenParts.forEach(id => {
       state.hiddenParts.add(id);
@@ -8555,6 +9275,28 @@ function showBookmarkToast(msg) {
   toast.classList.add('visible');
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => toast.classList.remove('visible'), 2500);
+}
+
+// ==================== SYSTEM WARNING TOAST ====================
+function showSystemWarning(title, message, durationMs) {
+  durationMs = durationMs || 5000;
+  const container = document.getElementById('sysWarningContainer');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'sys-warning-toast';
+  el.innerHTML =
+    '<svg class="sw-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>' +
+    '<div class="sw-body"><div class="sw-title">' + title + '</div><div class="sw-msg">' + message + '</div></div>' +
+    '<button class="sw-close" title="Dismiss"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+  container.appendChild(el);
+  requestAnimationFrame(function() { requestAnimationFrame(function() { el.classList.add('visible'); }); });
+  el.querySelector('.sw-close').onclick = function() { dismiss(); };
+  var timer = setTimeout(dismiss, durationMs);
+  function dismiss() {
+    clearTimeout(timer);
+    el.classList.remove('visible');
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 350);
+  }
 }
 
 // --- Render bookmarks list with tree structure ---
@@ -9265,6 +10007,15 @@ const occlusionCulling = {
   _hx: null, _hy: null, _hz: null, // Float32Array — cached AABB half-extents
   _isTransp: null,       // Uint8Array — transparency flag per mesh
 
+  // ---- Per-mesh occlusion queries (actual geometry, not AABBs) ----
+  _meshVAOs: [],         // per-mesh { vao, posBuf, idxBuf, idxCount, idxType, posCount }
+  _meshQueries: [],      // per-mesh GL query objects (null if no pending)
+  _meshOccVis: null,     // Uint8Array — per-mesh occlusion result (1=visible, 0=occluded)
+  _meshOccFail: null,    // Uint8Array — consecutive "occluded" query frames per mesh
+  _OCC_GRACE: 5,         // require N consecutive occluded frames before hiding (prevents flicker)
+  _DEPTH_LAYER: 1,       // Three.js layer for depth-pass-eligible (opaque) meshes
+  _PER_MESH_QUERY_MAX: 1000, // skip per-mesh GPU queries for models with more meshes than this
+
   // ---- Octree ----
   _root: null,
   _LEAF_MAX: 16,         // max meshes per leaf before subdividing
@@ -9275,10 +10026,10 @@ const occlusionCulling = {
   _queriesUsed: 0,
 
   // ---- Hysteresis: require N consecutive "occluded" frames before hiding ----
-  _VIS_GRACE_FRAMES: 3,
+  _VIS_GRACE_FRAMES: 5,
 
-  // ---- Depth pre-pass box shrink factor (reduces false occlusion from oversized AABBs) ----
-  _DEPTH_SHRINK: 0.6,
+  // ---- Depth proxy size: match query box size (no shrink) so LESS depth test eliminates self-occlusion ----
+  _DEPTH_SHRINK: 1.0,
 
   // ---- Contribution culling: skip nodes whose screen projection < N pixels ----
   _CONTRIB_PX: 2.0,          // minimum screen-space size in pixels to be visible
@@ -9302,6 +10053,11 @@ const occlusionCulling = {
     this.supported = gl instanceof WebGL2RenderingContext;
     if (!this.supported) { console.warn('Occlusion culling: WebGL2 not available, disabled.'); return; }
     this._initGL();
+    // Depth-only material for real-geometry depth pre-pass (replaces proxy AABBs)
+    this._depthMat = new THREE.MeshBasicMaterial();
+    this._depthMat.colorWrite = false;
+    this._depthMat.depthWrite = true;
+    this._depthMat.depthTest = true;
   },
 
   _initGL() {
@@ -9373,10 +10129,15 @@ const occlusionCulling = {
       this._cx[i] = ctr.x; this._cy[i] = ctr.y; this._cz[i] = ctr.z;
       this._hx[i] = sz.x / 2; this._hy[i] = sz.y / 2; this._hz[i] = sz.z / 2;
       this._isTransp[i] = this.isTransparent(mesh) ? 1 : 0;
-      if (!this._isTransp[i]) opaqueIndices.push(i);
+      if (!this._isTransp[i]) {
+        opaqueIndices.push(i);
+        mesh.layers.enable(this._DEPTH_LAYER); // include in depth pre-pass
+      } else {
+        mesh.layers.disable(this._DEPTH_LAYER); // exclude from depth pre-pass
+      }
     }
-    // Build octree from opaque meshes
-    if (opaqueIndices.length > 0) {
+    // Build octree from opaque meshes (skip for very large models — octree is unused by per-mesh query path)
+    if (opaqueIndices.length > 0 && n <= this._PER_MESH_QUERY_MAX) {
       let mnx=Infinity, mny=Infinity, mnz=Infinity, mxx=-Infinity, mxy=-Infinity, mxz=-Infinity;
       for (const i of opaqueIndices) {
         mnx = Math.min(mnx, this._cx[i]-this._hx[i]); mny = Math.min(mny, this._cy[i]-this._hy[i]); mnz = Math.min(mnz, this._cz[i]-this._hz[i]);
@@ -9385,6 +10146,7 @@ const occlusionCulling = {
       this._root = this._makeNode(mnx,mny,mnz,mxx,mxy,mxz, opaqueIndices, 0);
     }
     this._built = true;
+    this._uploadMeshGeometry();
     console.log(`Occlusion culling: ${n} meshes, ${opaqueIndices.length} opaque, octree built. Contribution culling: ${this._CONTRIB_PX}px threshold.`);
   },
 
@@ -9473,9 +10235,68 @@ const occlusionCulling = {
            cz >= mnz - margin && cz <= mxz + margin;
   },
 
+  // ============ UPLOAD MESH GEOMETRY FOR PER-MESH QUERIES ============
+  _uploadMeshGeometry() {
+    const gl = this.gl;
+    this._disposeMeshGeometry();
+    this._meshQueries = new Array(this._meshCount).fill(null);
+    this._meshOccVis = new Uint8Array(this._meshCount).fill(1); // default visible
+    this._meshOccFail = new Uint8Array(this._meshCount); // consecutive fail counter
+
+    // Skip per-mesh GL buffer upload for large models to avoid GPU memory exhaustion
+    if (this._meshCount > this._PER_MESH_QUERY_MAX) {
+      this._meshVAOs = []; // empty — Phase 3 will be skipped, frustum+contribution only
+      console.log(`Occlusion culling: ${this._meshCount} meshes exceeds per-mesh query limit (${this._PER_MESH_QUERY_MAX}). Using frustum+contribution culling only.`);
+      return;
+    }
+
+    this._meshVAOs = new Array(this._meshCount);
+    const posLoc = gl.getAttribLocation(this._program, 'p');
+    for (let i = 0; i < this._meshCount; i++) {
+      const geo = this._meshes[i].geometry;
+      const posAttr = geo && geo.attributes ? geo.attributes.position : null;
+      if (!posAttr || !posAttr.array) { this._meshVAOs[i] = null; continue; }
+      const vao = gl.createVertexArray();
+      gl.bindVertexArray(vao);
+      const posBuf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, posAttr.array, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(posLoc);
+      gl.vertexAttribPointer(posLoc, posAttr.itemSize, gl.FLOAT, false, 0, 0);
+      let idxBuf = null, idxCount = 0, idxType = gl.UNSIGNED_SHORT;
+      if (geo.index && geo.index.array) {
+        idxBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geo.index.array, gl.STATIC_DRAW);
+        idxCount = geo.index.count;
+        idxType = geo.index.array instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+      }
+      gl.bindVertexArray(null);
+      this._meshVAOs[i] = { vao, posBuf, idxBuf, idxCount, idxType, posCount: posAttr.count };
+    }
+    console.log(`Occlusion culling: uploaded ${this._meshCount} mesh geometries for per-mesh queries.`);
+  },
+
+  _disposeMeshGeometry() {
+    if (!this._meshVAOs) return;
+    const gl = this.gl;
+    for (let i = 0; i < this._meshVAOs.length; i++) {
+      if (this._meshQueries && this._meshQueries[i]) { gl.deleteQuery(this._meshQueries[i]); }
+      const e = this._meshVAOs[i];
+      if (!e) continue;
+      gl.deleteVertexArray(e.vao);
+      gl.deleteBuffer(e.posBuf);
+      if (e.idxBuf) gl.deleteBuffer(e.idxBuf);
+    }
+    this._meshVAOs = [];
+    this._meshQueries = [];
+    this._meshOccVis = null;
+    this._meshOccFail = null;
+  },
+
   // ============ PER-FRAME UPDATE ============
   update() {
-    if (!this.supported || !this.enabled || !this._built || !this._root) return;
+    if (!this.supported || !this.enabled || !this._built) return;
     const gl = this.gl;
     this._frameNum++;
     this._queriesUsed = 0;
@@ -9485,57 +10306,123 @@ const occlusionCulling = {
     this._camX = camera.matrixWorld.elements[12];
     this._camY = camera.matrixWorld.elements[13];
     this._camZ = camera.matrixWorld.elements[14];
-    this._nearMargin = camera.near * 4; // margin around AABBs to prevent near-plane flicker
+    this._nearMargin = camera.near * 4;
 
-    // Cache screen-height factor for contribution culling: viewportHeight / (2 * tan(fov/2))
+    // Cache screen-height factor for contribution culling
     this._screenHeightFactor = renderer.domElement.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) * 0.5));
 
     // Update frustum
     this._projMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this._frustum.setFromProjectionMatrix(this._projMat);
 
-    // Set transparent + user-hidden mesh visibility (O(meshCount) but no heavy ops)
+    const hasPerMeshQueries = this._meshVAOs && this._meshVAOs.length > 0;
+
+    // --- Phase 0: Read previous per-mesh occlusion query results (with hysteresis) ---
+    if (hasPerMeshQueries) {
+      for (let i = 0; i < this._meshCount; i++) {
+        if (!this._meshQueries[i]) continue;
+        const avail = gl.getQueryParameter(this._meshQueries[i], gl.QUERY_RESULT_AVAILABLE);
+        if (avail) {
+          const passed = gl.getQueryParameter(this._meshQueries[i], gl.QUERY_RESULT) > 0;
+          gl.deleteQuery(this._meshQueries[i]);
+          this._meshQueries[i] = null;
+          if (passed) {
+            this._meshOccVis[i] = 1;
+            this._meshOccFail[i] = 0;
+          } else {
+            // Require consecutive fails before hiding (prevents flicker on small parts)
+            this._meshOccFail[i] = Math.min(this._meshOccFail[i] + 1, 255);
+            if (this._meshOccFail[i] >= this._OCC_GRACE) this._meshOccVis[i] = 0;
+          }
+        }
+      }
+    }
+
+    // --- Phase 1: Set per-mesh visibility (frustum + contribution + occlusion) ---
     for (let i = 0; i < this._meshCount; i++) {
       const mesh = this._meshes[i];
       const partId = state.meshPartMap.get(mesh.uuid);
+      if (state.deletedMeshUUIDs.has(mesh.uuid)) { mesh.visible = false; continue; }
       if (partId && state.hiddenParts.has(partId)) { mesh.visible = false; continue; }
+      // Skip xray'd parts when batcher is active — their batch instance visibility is managed by setLeafPartXray
+      if (partId && state.xrayParts.has(partId) && sceneBatcher.enabled) continue;
       if (this._isTransp[i]) { mesh.visible = true; continue; }
-      // Opaque mesh visibility is controlled by octree traversal below
+
+      const mnx = this._cx[i] - this._hx[i], mny = this._cy[i] - this._hy[i], mnz = this._cz[i] - this._hz[i];
+      const mxx = this._cx[i] + this._hx[i], mxy = this._cy[i] + this._hy[i], mxz = this._cz[i] + this._hz[i];
+
+      // Per-mesh frustum cull
+      if (!this._inFrustum(mnx, mny, mnz, mxx, mxy, mxz)) { mesh.visible = false; continue; }
+      // Per-mesh contribution cull
+      if (this._screenSize(mnx, mny, mnz, mxx, mxy, mxz) < this._CONTRIB_PX) { mesh.visible = false; continue; }
+      // Camera inside AABB → force visible
+      if (this._cameraInsideAABB(mnx, mny, mnz, mxx, mxy, mxz, this._nearMargin)) { mesh.visible = true; continue; }
+      // Occlusion result from previous frame (default visible if no result yet)
+      mesh.visible = this._meshOccVis[i] === 1;
     }
 
-    // Phase 1: Read previous query results + traverse octree → set mesh visibility
-    this._traverseRead(this._root);
+    // --- Phases 2 & 3 only run when per-mesh GPU queries are active ---
+    if (hasPerMeshQueries) {
+      // --- Phase 2: Real geometry depth pass (opaque meshes only) ---
+      renderer.setRenderTarget(null);
+      const prevAutoClear = renderer.autoClear;
+      renderer.autoClear = false;
+      renderer.clear(true, true, true);
+      const savedOverride = scene.overrideMaterial;
+      const savedCamMask = camera.layers.mask;
+      scene.overrideMaterial = this._depthMat;
+      camera.layers.disableAll();
+      camera.layers.enable(this._DEPTH_LAYER); // only render opaque registered meshes
+      renderer.render(scene, camera);
+      camera.layers.mask = savedCamMask;
+      scene.overrideMaterial = savedOverride;
 
-    // Phase 2+3: Depth pre-pass + issue queries, all via raw GL
-    renderer.setRenderTarget(null);
-    const prevAutoClear = renderer.autoClear;
-    renderer.autoClear = false;
-    renderer.clear(true, true, true);
+      // --- Phase 3: Per-mesh occlusion queries — draw ACTUAL mesh geometry with LEQUAL ---
+      this._vpMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      gl.useProgram(this._program);
+      gl.enable(gl.DEPTH_TEST);
+      gl.colorMask(false, false, false, false);
+      gl.depthMask(false);
+      gl.depthFunc(gl.LEQUAL);
 
-    this._vpMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-    gl.useProgram(this._program);
-    gl.bindVertexArray(this._vao);
-    gl.enable(gl.DEPTH_TEST);
+      for (let i = 0; i < this._meshCount; i++) {
+        if (this._isTransp[i]) continue;
+        if (this._meshQueries[i]) continue; // pending query, skip
+        const entry = this._meshVAOs[i];
+        if (!entry) continue;
 
-    // Phase 2: Depth pre-pass — draw VISIBLE leaf node AABBs (fills z-buffer)
-    gl.colorMask(false, false, false, false);
-    gl.depthMask(true);
-    gl.depthFunc(gl.LESS);
-    this._depthPass(this._root);
+        const mnx = this._cx[i] - this._hx[i], mny = this._cy[i] - this._hy[i], mnz = this._cz[i] - this._hz[i];
+        const mxx = this._cx[i] + this._hx[i], mxy = this._cy[i] + this._hy[i], mxz = this._cz[i] + this._hz[i];
+        if (!this._inFrustum(mnx, mny, mnz, mxx, mxy, mxz)) continue;
+        if (this._screenSize(mnx, mny, mnz, mxx, mxy, mxz) < this._CONTRIB_PX) continue;
+        if (this._cameraInsideAABB(mnx, mny, mnz, mxx, mxy, mxz, this._nearMargin)) continue;
 
-    // Phase 3: Query pass — draw node AABBs inside occlusion queries (test against z-buffer)
-    gl.depthMask(false);
-    gl.depthFunc(gl.LEQUAL);
-    this._queryPass(this._root);
+        // MVP = VP × mesh world matrix (geometry is in local space)
+        this._mvpMat.multiplyMatrices(this._vpMatrix, this._meshes[i].matrixWorld);
+        gl.uniformMatrix4fv(this._mvpLoc, false, this._mvpMat.elements);
 
-    // Restore GL state
-    gl.colorMask(true, true, true, true);
-    gl.depthMask(true);
-    gl.depthFunc(gl.LESS);
-    gl.bindVertexArray(null);
-    gl.useProgram(null);
-    renderer.autoClear = prevAutoClear;
-    if (renderer.resetState) renderer.resetState();
+        gl.bindVertexArray(entry.vao);
+        const q = gl.createQuery();
+        gl.beginQuery(gl.ANY_SAMPLES_PASSED_CONSERVATIVE, q);
+        if (entry.idxBuf) {
+          gl.drawElements(gl.TRIANGLES, entry.idxCount, entry.idxType, 0);
+        } else {
+          gl.drawArrays(gl.TRIANGLES, 0, entry.posCount);
+        }
+        gl.endQuery(gl.ANY_SAMPLES_PASSED_CONSERVATIVE);
+        this._meshQueries[i] = q;
+        this._queriesUsed++;
+      }
+
+      // Restore GL state
+      gl.colorMask(true, true, true, true);
+      gl.depthMask(true);
+      gl.depthFunc(gl.LESS);
+      gl.bindVertexArray(null);
+      gl.useProgram(null);
+      renderer.autoClear = prevAutoClear;
+      if (renderer.resetState) renderer.resetState();
+    }
   },
 
   // ---- Phase 1: Read queries & set mesh visibility ----
@@ -9587,8 +10474,16 @@ const occlusionCulling = {
     } else if (node.meshIndices) {
       for (const idx of node.meshIndices) {
         const mesh = this._meshes[idx];
+        if (state.deletedMeshUUIDs.has(mesh.uuid)) continue;
         const partId = state.meshPartMap.get(mesh.uuid);
         if (partId && state.hiddenParts.has(partId)) continue;
+        if (partId && state.xrayParts.has(partId) && sceneBatcher.enabled) continue;
+        // Per-mesh frustum cull using cached AABB
+        const mnx = this._cx[idx] - this._hx[idx], mny = this._cy[idx] - this._hy[idx], mnz = this._cz[idx] - this._hz[idx];
+        const mxx = this._cx[idx] + this._hx[idx], mxy = this._cy[idx] + this._hy[idx], mxz = this._cz[idx] + this._hz[idx];
+        if (!this._inFrustum(mnx, mny, mnz, mxx, mxy, mxz)) continue;
+        // Per-mesh contribution cull (skip meshes too small on screen)
+        if (this._screenSize(mnx, mny, mnz, mxx, mxy, mxz) < this._CONTRIB_PX) continue;
         mesh.visible = true;
       }
     }
@@ -9596,20 +10491,24 @@ const occlusionCulling = {
 
   _setSubtreeVis(node, vis) {
     if (!node) return;
+    // Delete any pending query on this node to prevent orphaned GL query objects
+    if (node.query) { this.gl.deleteQuery(node.query); node.query = null; }
     if (node.children) {
       for (let i = 0; i < 8; i++) if (node.children[i]) this._setSubtreeVis(node.children[i], vis);
     } else if (node.meshIndices) {
       for (const idx of node.meshIndices) {
         const mesh = this._meshes[idx];
+        if (state.deletedMeshUUIDs.has(mesh.uuid)) continue;
         const partId = state.meshPartMap.get(mesh.uuid);
         if (partId && state.hiddenParts.has(partId)) continue;
+        if (partId && state.xrayParts.has(partId) && sceneBatcher.enabled) continue;
         if (this._isTransp[idx]) continue;
         mesh.visible = vis;
       }
     }
   },
 
-  // ---- Phase 2: Depth pre-pass (draw visible leaf AABBs) ----
+  // ---- Phase 2: Depth pre-pass (draw visible leaf AABBs at full size) ----
   _depthPass(node) {
     if (!node || !node.visible) return;
     if (!this._inFrustum(node.tmnx,node.tmny,node.tmnz,node.tmxx,node.tmxy,node.tmxz)) return;
@@ -9617,10 +10516,9 @@ const occlusionCulling = {
     if (node.children) {
       for (let i = 0; i < 8; i++) if (node.children[i]) this._depthPass(node.children[i]);
     } else {
-      // Leaf: draw shrunk AABB as depth geometry (shrink to reduce false occlusion)
+      // Leaf: draw AABB as depth geometry for z-buffer (query pass tests against this with LEQUAL)
       const cx = (node.tmnx+node.tmxx)/2, cy = (node.tmny+node.tmxy)/2, cz = (node.tmnz+node.tmxz)/2;
-      const s = this._DEPTH_SHRINK;
-      const sx = (node.tmxx-node.tmnx)*s, sy = (node.tmxy-node.tmny)*s, sz = (node.tmxz-node.tmnz)*s;
+      const sx = node.tmxx-node.tmnx+0.02, sy = node.tmxy-node.tmny+0.02, sz = node.tmxz-node.tmnz+0.02;
       this._drawBox(cx,cy,cz,sx,sy,sz);
     }
   },
@@ -9661,7 +10559,11 @@ const occlusionCulling = {
     for (let i = 0; i < this._meshCount; i++) {
       const mesh = this._meshes[i];
       const partId = state.meshPartMap.get(mesh.uuid);
-      if (!partId || !state.hiddenParts.has(partId)) mesh.visible = true;
+      if (!state.deletedMeshUUIDs.has(mesh.uuid) && (!partId || !state.hiddenParts.has(partId)) && !(partId && _xrayProxies.has(partId) && sceneBatcher.enabled)) mesh.visible = true;
+      // Reset per-mesh occlusion state
+      if (this._meshQueries[i]) { this.gl.deleteQuery(this._meshQueries[i]); this._meshQueries[i] = null; }
+      if (this._meshOccVis) this._meshOccVis[i] = 1;
+      if (this._meshOccFail) this._meshOccFail[i] = 0;
     }
     this._resetNodeQueries(this._root);
   },
@@ -9676,9 +10578,32 @@ const occlusionCulling = {
 
   /** Recompute AABBs and rebuild octree (call after model transforms change) */
   refresh() {
-    if (!this.supported || !this._meshCount) return;
+    if (!this.supported) return;
     this._resetNodeQueries(this._root);
+    // Filter out meshes that have been removed from the scene graph
+    const kept = this._meshes.filter(m => m.parent);
+    this._meshes = kept;
+    this._meshCount = kept.length;
+    this._meshUuidToIdx.clear();
+    for (let i = 0; i < kept.length; i++) this._meshUuidToIdx.set(kept[i].uuid, i);
+    if (!this._meshCount) { this._built = false; return; }
     this._rebuild();
+  },
+
+  /** Delete all pending GL query objects and reset mesh registry.
+   *  Call before discarding the octree or when disabling occlusion culling. */
+  dispose() {
+    this._resetNodeQueries(this._root);
+    this._disposeMeshGeometry();
+    this._meshes = [];
+    this._meshCount = 0;
+    this._meshUuidToIdx.clear();
+    this._cx = null; this._cy = null; this._cz = null;
+    this._hx = null; this._hy = null; this._hz = null;
+    this._isTransp = null;
+    this._root = null;
+    this._built = false;
+    if (this._depthMat) { this._depthMat.dispose(); this._depthMat = null; }
   }
 };
 
@@ -9690,7 +10615,7 @@ occlusionCulling.init();
 const lodSystem = {
   enabled: true,
   _entries: new Map(),    // mesh uuid -> { geo0, geo1, geo2, mesh, currentLOD }
-  _thresholds: [80, 20, 5], // screen-pixel thresholds for LOD 0->1, 1->2, 2->cull
+  _thresholds: [50, 15, 4], // screen-pixel thresholds for LOD 0->1, 1->2, 2->cull
 
   /** Generate LOD chain for a mesh. Call once at load time. */
   register(mesh) {
@@ -9698,8 +10623,8 @@ const lodSystem = {
     const geo = mesh.geometry;
     const vc = geo.attributes.position.count;
     if (vc < 200) return; // too small to benefit
-    const geo1 = this._decimate(geo, 0.4);
-    const geo2 = this._decimate(geo, 0.1);
+    const geo1 = this._decimate(geo, 0.5);
+    const geo2 = this._decimate(geo, 0.25);
     if (geo1 && geo2) this._entries.set(mesh.uuid, { geo0: geo, geo1, geo2, mesh, currentLOD: 0 });
   },
 
@@ -9720,7 +10645,7 @@ const lodSystem = {
       const px = (bs.radius * 2 / dist) * screenFactor;
       let level = 0;
       if (px < this._thresholds[2]) level = 2;
-      else if (px < this._thresholds[1]) level = 2;
+      else if (px < this._thresholds[1]) level = 1;
       else if (px < this._thresholds[0]) level = 1;
       if (level !== e.currentLOD) {
         e.currentLOD = level;
@@ -9827,7 +10752,7 @@ const hlodSystem = {
     const proxyGeo = new THREE.BufferGeometry();
     proxyGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions.slice(0, off), 3));
     proxyGeo.computeVertexNormals(); proxyGeo.computeBoundingSphere();
-    const decimated = lodSystem._decimate(proxyGeo, 0.08);
+    const decimated = lodSystem._decimate(proxyGeo, 0.2);
     proxyGeo.dispose();
     if (!decimated) return;
     const proxyMesh = new THREE.Mesh(decimated, new THREE.MeshStandardMaterial({ color:0x888888, metalness:0.2, roughness:0.6 }));
@@ -9930,7 +10855,7 @@ const bvhRaycast = {
 // ==================== TEMPORAL ANTI-ALIASING (TAA) ====================
 // Jitters camera sub-pixel each frame, accumulates over N frames.
 const temporalAA = {
-  enabled: true,
+  enabled: false,  // Disabled: jitter without accumulation causes visible wobble. MSAA+FXAA handles AA now.
   _frameIdx: 0,
   _sampleCount: 8,
   _jitterScale: 1.0,
@@ -10101,7 +11026,7 @@ function animate() {
     camera.position.lerpVectors(cameraLerp.startPos,cameraLerp.endPos,e);
     orbitControls.target.lerpVectors(cameraLerp.startTarget,cameraLerp.endTarget,e);
     if(cameraLerp.t>=1) cameraLerp.active=false;
-    adaptiveRes.notifyMove(false);
+    adaptiveRes.notifyMove();
   }
   orbitControls.update();
   infiniteGrid.update(camera);
@@ -10696,7 +11621,7 @@ document.getElementById('hsEditDesc').addEventListener('input', function() {
 var urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('embedded')) document.documentElement.classList.add('embedded');
 if (urlParams.get('mode') === 'procedure') document.documentElement.classList.add('procedure');
-if (urlParams.get('startMode') === 'editor') { state.mode = 'editor'; updateUI(); }
+if (urlParams.get('startMode') === 'editor') { setMode('editor', { force: true }); }
 
 // ==================== ANIMATION EDITOR / TIMELINE ====================
 const animEditor = {
@@ -12754,28 +13679,30 @@ let ismFileQueue = [];          // remaining File objects to import
 let ismQueueIndex = 0;          // current position in the original queue
 let ismQueueTotal = 0;          // total files selected
 let ismAutoDetectedUnits = 'cm'; // auto-detected source units for current file
+let ismDeferredParse = false;    // true when file is too large for preview — parse on import
 
 // ---- Unit conversion system ----
-// Scene works in centimeters. Imported models must be converted to cm.
+// 3D Model Import Scale & Orientation Rules:
+// FBX: scale 1.0 (native units, no conversion), apply -90° X rotation (Y-up → Z-up)
+// GLB/GLTF: spec = meters, convert to scene cm (×100), no rotation needed (Y-up matches Three.js)
+// OBJ/STL: heuristic unit detection, convert to scene units
 const SCENE_UNIT = 'cm';
 const UNIT_TO_CM = { mm: 0.1, cm: 1, m: 100, 'in': 2.54, ft: 30.48 };
 
 function detectSourceUnits(ext, object) {
-  // GLTF/GLB spec defines units as meters
+  // FBX: import at native file units — no unit conversion
+  if (ext === 'fbx') return 'none';
+  // GLB/GLTF: spec defines meters, scene is in cm → convert
   if (ext === 'glb' || ext === 'gltf') return 'm';
-  // FBXLoader converts to cm internally via UnitScaleFactor
-  if (ext === 'fbx') return 'cm';
   // OBJ / STL: no unit metadata — heuristic from bounding box
   const box = new THREE.Box3().setFromObject(object);
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
   if (ext === 'stl') {
-    // STL is commonly used for 3D printing in mm
     if (maxDim > 500) return 'mm';
     if (maxDim < 2) return 'm';
     return 'mm';
   }
-  // OBJ: guess from magnitude
   if (maxDim > 500) return 'mm';
   if (maxDim < 2) return 'm';
   return 'cm';
@@ -12792,6 +13719,9 @@ function formatFileSize(bytes) {
 }
 
 function yieldFrame() { return new Promise(r => requestAnimationFrame(r)); }
+
+// Guard: reject files too large to parse in-browser (>150 MB)
+const MAX_IMPORT_SIZE = 150 * 1024 * 1024;
 
 // Open the modal and start async parsing
 document.getElementById('modelFileInput').addEventListener('change', e => {
@@ -12835,12 +13765,29 @@ async function openImportSettings(file) {
   document.getElementById('ismUnitHint').textContent = '';
   document.getElementById('ismScaleFactor').value = '1';
   document.getElementById('ismUpAxis').value = 'auto';
-  document.getElementById('ismPlacement').value = 'auto';
+  document.getElementById('ismPlacement').value = 'origin';
   document.getElementById('ismMaterials').value = 'keep';
   document.getElementById('ismMergeMeshes').checked = false;
   document.getElementById('ismCenterPivot').checked = true;
 
   ismModal.classList.remove('hidden');
+
+  // Large file: skip preview parse to avoid crashing — defer to import time
+  if (file.size > MAX_IMPORT_SIZE) {
+    ismDeferredParse = true;
+    document.getElementById('ismPreviewSpinner').style.display = 'none';
+    document.getElementById('ismPreviewPlaceholder').style.display = 'flex';
+    document.getElementById('ismPreviewPlaceholder').innerHTML =
+      `<svg viewBox="0 0 24 24" fill="#F59E0B" style="width:28px;height:28px"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+       <span style="color:#868d9e;font-size:11px;text-align:center;line-height:1.4">Large file (${formatFileSize(file.size)})<br>Preview skipped — will parse on import</span>`;
+    document.getElementById('ismMeshCount').textContent = '—';
+    document.getElementById('ismVertCount').textContent = '—';
+    document.getElementById('ismTriCount').textContent = '—';
+    // Enable import so user can proceed
+    document.getElementById('ismImport').disabled = false;
+    return;
+  }
+  ismDeferredParse = false;
 
   // Read file async
   let data;
@@ -12860,7 +13807,7 @@ async function openImportSettings(file) {
 
   await yieldFrame();
 
-  // Parse model async
+  // Parse model — run synchronous parsers via setTimeout to avoid watchdog kills
   let object;
   try {
     if (ext === 'glb' || ext === 'gltf') {
@@ -12869,11 +13816,15 @@ async function openImportSettings(file) {
       object = gltf.scene;
     } else {
       let loader, isGeomOnly = false;
-      if (ext === 'fbx') loader = new FBXLoader();
+      if (ext === 'fbx') loader = new FBXLoader(_silentLoadMgr);
       else if (ext === 'obj') loader = new OBJLoader();
       else if (ext === 'stl') { loader = new STLLoader(); isGeomOnly = true; }
       else { document.getElementById('ismPreviewSpinner').style.display = 'none'; return; }
-      const parsed = loader.parse(data);
+      // Defer synchronous parse to next macrotask so the browser can paint/GC first
+      const parsed = await new Promise((resolve, reject) => {
+        setTimeout(() => { try { resolve(loader.parse(data)); } catch(e) { reject(e); } }, 0);
+      });
+      data = null; // release ArrayBuffer — parser already consumed it
       if (isGeomOnly) {
         const mat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
         object = new THREE.Mesh(parsed, mat);
@@ -13006,6 +13957,7 @@ function closeImportSettings() {
   ismParsedObject = null;
   ismParsedExt = null;
   ismPendingFile = null;
+  ismDeferredParse = false;
   ismFileQueue = [];
   ismQueueIndex = 0;
   ismQueueTotal = 0;
@@ -13017,6 +13969,7 @@ function advanceImportQueue() {
   ismParsedObject = null;
   ismParsedExt = null;
   ismPendingFile = null;
+  ismDeferredParse = false;
   if (ismFileQueue.length > 0) {
     ismQueueIndex++;
     const next = ismFileQueue.shift();
@@ -13051,6 +14004,34 @@ document.getElementById('ismSourceUnits').addEventListener('change', e => {
 
 // ==================== IMPORT EXECUTION ====================
 document.getElementById('ismImport').addEventListener('click', async () => {
+  // Disable buttons, show progress
+  const btn = document.getElementById('ismImport');
+  const allBtn = document.getElementById('ismImportAll');
+  const label = document.getElementById('ismImportLabel');
+  const progBar = btn.querySelector('.ism-btn-progress');
+  const progFill = document.getElementById('ismProgressBar');
+  btn.disabled = true;
+  allBtn.disabled = true;
+  progBar.style.display = 'block';
+  progFill.style.width = '0%';
+
+  // Deferred parse: large files weren't parsed during preview — do it now
+  if (ismDeferredParse && !ismParsedObject && ismPendingFile) {
+    try {
+      const result = await parseModelFile(ismPendingFile, msg => { label.textContent = msg; });
+      ismParsedObject = result.object;
+      ismParsedExt = result.ext;
+    } catch (err) {
+      console.error('Deferred parse error:', err);
+      alert('Failed to parse model: ' + (err.message || err));
+      progBar.style.display = 'none';
+      label.textContent = 'Import';
+      btn.disabled = false;
+      return;
+    }
+    ismDeferredParse = false;
+  }
+
   if (!ismParsedObject) return;
 
   const object = ismParsedObject;
@@ -13066,18 +14047,10 @@ document.getElementById('ismImport').addEventListener('click', async () => {
     materials: document.getElementById('ismMaterials').value,
     mergeMeshes: document.getElementById('ismMergeMeshes').checked,
     centerPivot: document.getElementById('ismCenterPivot').checked,
+    _ext: ismParsedExt || '',
   };
 
-  // Disable buttons, show progress
-  const btn = document.getElementById('ismImport');
-  const allBtn = document.getElementById('ismImportAll');
-  const label = document.getElementById('ismImportLabel');
-  const progBar = btn.querySelector('.ism-btn-progress');
-  const progFill = document.getElementById('ismProgressBar');
-  btn.disabled = true;
-  allBtn.disabled = true;
   label.textContent = 'Importing...';
-  progBar.style.display = 'block';
   progFill.style.width = '0%';
 
   await yieldFrame();
@@ -13094,16 +14067,77 @@ document.getElementById('ismImport').addEventListener('click', async () => {
   advanceImportQueue();
 });
 
+// Helper: read + parse a model file, returns { object, ext }
+async function parseModelFile(file, statusCallback) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const name = file.name.replace(/\.[^.]+$/, '');
+  if (statusCallback) statusCallback('Reading ' + file.name + '...');
+  let data = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => resolve(ev.target.result);
+    reader.onerror = () => reject(new Error('Read failed'));
+    if (ext === 'obj' || ext === 'gltf') reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+  });
+  if (statusCallback) statusCallback('Parsing ' + file.name + '...');
+  await yieldFrame();
+  let object;
+  if (ext === 'glb' || ext === 'gltf') {
+    const loader = _enhancedGLTFLoader;
+    const gltf = await new Promise((resolve, reject) => loader.parse(data, '', resolve, reject));
+    object = gltf.scene;
+  } else {
+    let loader, isGeomOnly = false;
+    if (ext === 'fbx') loader = new FBXLoader(_silentLoadMgr);
+    else if (ext === 'obj') loader = new OBJLoader();
+    else if (ext === 'stl') { loader = new STLLoader(); isGeomOnly = true; }
+    else throw new Error('Unsupported format: ' + ext);
+    const parsed = await new Promise((resolve, reject) => {
+      setTimeout(() => { try { resolve(loader.parse(data)); } catch(e) { reject(e); } }, 0);
+    });
+    data = null;
+    if (isGeomOnly) {
+      object = new THREE.Mesh(parsed, new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 }));
+      object.name = name;
+    } else {
+      object = parsed;
+    }
+  }
+  return { object, ext };
+}
+
 // Import All — import current + all remaining files with same settings
 document.getElementById('ismImportAll').addEventListener('click', async () => {
-  if (!ismParsedObject) return;
-
   const btn = document.getElementById('ismImport');
   const allBtn = document.getElementById('ismImportAll');
   const label = document.getElementById('ismImportLabel');
   const progBar = btn.querySelector('.ism-btn-progress');
   const progFill = document.getElementById('ismProgressBar');
   const badge = document.getElementById('ismQueueBadge');
+
+  btn.disabled = true;
+  allBtn.disabled = true;
+  progBar.style.display = 'block';
+
+  // If current file was deferred, parse it now
+  if (ismDeferredParse && !ismParsedObject && ismPendingFile) {
+    try {
+      const result = await parseModelFile(ismPendingFile, msg => { label.textContent = msg; });
+      ismParsedObject = result.object;
+      ismParsedExt = result.ext;
+    } catch (err) {
+      console.error('Deferred parse error:', err);
+      alert('Failed to parse model: ' + (err.message || err));
+      progBar.style.display = 'none';
+      label.textContent = 'Import All';
+      btn.disabled = false;
+      allBtn.disabled = false;
+      return;
+    }
+    ismDeferredParse = false;
+  }
+
+  if (!ismParsedObject) return;
 
   // Gather settings once (applied to all files)
   const baseSettings = {
@@ -13120,10 +14154,6 @@ document.getElementById('ismImportAll').addEventListener('click', async () => {
   const allFiles = [{ object: ismParsedObject, name: document.getElementById('ismFileName').textContent, ext: ismParsedExt }];
   const remaining = ismFileQueue.slice();
   ismFileQueue = [];
-
-  btn.disabled = true;
-  allBtn.disabled = true;
-  progBar.style.display = 'block';
 
   for (let i = 0; i < allFiles.length + remaining.length; i++) {
     const fileNum = ismQueueIndex + i;
@@ -13144,31 +14174,8 @@ document.getElementById('ismImportAll').addEventListener('click', async () => {
       ext = file.name.split('.').pop().toLowerCase();
       name = file.name.replace(/\.[^.]+$/, '');
       try {
-        const data = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = ev => resolve(ev.target.result);
-          reader.onerror = () => reject(new Error('Read failed'));
-          if (ext === 'obj' || ext === 'gltf') reader.readAsText(file);
-          else reader.readAsArrayBuffer(file);
-        });
-        if (ext === 'glb' || ext === 'gltf') {
-          const loader = _enhancedGLTFLoader; // Uses Draco + KTX2 decoders
-          const gltf = await new Promise((resolve, reject) => loader.parse(data, '', resolve, reject));
-          object = gltf.scene;
-        } else {
-          let loader, isGeomOnly = false;
-          if (ext === 'fbx') loader = new FBXLoader();
-          else if (ext === 'obj') loader = new OBJLoader();
-          else if (ext === 'stl') { loader = new STLLoader(); isGeomOnly = true; }
-          else continue;
-          const parsed = loader.parse(data);
-          if (isGeomOnly) {
-            object = new THREE.Mesh(parsed, new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 }));
-            object.name = name;
-          } else {
-            object = parsed;
-          }
-        }
+        const result = await parseModelFile(file, msg => { label.textContent = msg; });
+        object = result.object;
       } catch (err) {
         console.error('Parse error for ' + name + ':', err);
         continue;
@@ -13187,7 +14194,7 @@ document.getElementById('ismImportAll').addEventListener('click', async () => {
     }
 
     try {
-      await addImportedModelToScene(object, name, { ...baseSettings, sourceUnits }, (pct) => {
+      await addImportedModelToScene(object, name, { ...baseSettings, sourceUnits, _ext: ext }, (pct) => {
         progFill.style.width = pct + '%';
       });
     } catch (err) {
@@ -13202,11 +14209,26 @@ document.getElementById('ismImportAll').addEventListener('click', async () => {
 
 async function addImportedModelToScene(object, name, settings, onProgress) {
   const _importStart = performance.now();
+  await yieldFrame();
+
   if (!object.name) object.name = name;
+
+  // Count meshes up-front to gate expensive post-processing on huge models
+  let _meshCount = 0;
+  object.traverse(c => { if (c.isMesh) _meshCount++; });
+  const _isHugeModel = _meshCount > 5000;
+  if (_isHugeModel) console.log(`Large model detected: ${_meshCount} meshes — skipping LOD, batcher, and BVH for stability`);
+
   onProgress(5);
 
   // --- Up axis correction ---
-  if (settings.upAxis === 'z' || (settings.upAxis === 'auto' && detectZUp(object))) {
+  // FBX: always apply -90° X rotation (converts from Z-up authoring to Y-up Three.js)
+  const ext = settings._ext || '';
+  const isFBX = ext === 'fbx';
+  if (isFBX) {
+    object.rotation.x = -Math.PI / 2;
+    object.updateMatrixWorld(true);
+  } else if (settings.upAxis === 'z' || (settings.upAxis === 'auto' && detectZUp(object))) {
     object.rotation.x = -Math.PI / 2;
     object.updateMatrixWorld(true);
   }
@@ -13261,8 +14283,11 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     const unitFactor = UNIT_TO_CM[settings.sourceUnits] || 1;
 
     if (settings.scaleMode === 'original') {
-      // Real-world 1:1 — convert source units to scene centimeters
-      if (unitFactor !== 1) object.scale.setScalar(unitFactor);
+      // 'none' = no unit conversion (FBX at native scale)
+      // Otherwise convert source units to scene cm
+      if (settings.sourceUnits !== 'none' && unitFactor !== 1) {
+        object.scale.setScalar(unitFactor);
+      }
     } else if (settings.scaleMode === 'fit') {
       let targetSize = 200;
       if (existingObjects.length > 0) {
@@ -13292,7 +14317,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     existingObjects.forEach(o => sceneBox.expandByObject(o));
     const importedBox = new THREE.Box3().setFromObject(object);
     const importedSize = importedBox.getSize(new THREE.Vector3());
-    object.position.x += sceneBox.max.x + importedSize.x * 0.6;
+    object.position.x += sceneBox.max.x + importedSize.x * 0.15;
   } else if (settings.placement === 'camera') {
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
@@ -13315,7 +14340,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     const defMat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
     for (let i = 0; i < allMeshes.length; i += BATCH) {
       for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
-        allMeshes[j].material = defMat.clone();
+        allMeshes[j].material = defMat;
       }
       onProgress(40 + Math.round(((i + BATCH) / allMeshes.length) * 20));
       await yieldFrame();
@@ -13331,7 +14356,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     for (let i = 0; i < allMeshes.length; i += BATCH) {
       for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
         const c = j % 7;
-        allMeshes[j].material = (c < 3 ? P.yellow : c < 5 ? P.chrome : c === 5 ? P.frame : P.silver).clone();
+        allMeshes[j].material = c < 3 ? P.yellow : c < 5 ? P.chrome : c === 5 ? P.frame : P.silver;
       }
       onProgress(40 + Math.round(((i + BATCH) / allMeshes.length) * 20));
       await yieldFrame();
@@ -13341,7 +14366,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     const defMat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.3, roughness: 0.5 });
     for (let i = 0; i < allMeshes.length; i += BATCH) {
       for (let j = i; j < Math.min(i + BATCH, allMeshes.length); j++) {
-        if (!allMeshes[j].material) allMeshes[j].material = defMat.clone();
+        if (!allMeshes[j].material) allMeshes[j].material = defMat;
       }
       onProgress(40 + Math.round(((i + BATCH) / allMeshes.length) * 20));
       await yieldFrame();
@@ -13354,7 +14379,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
       const m = allMeshes[j];
       m.castShadow = true;
       m.receiveShadow = true;
-      state.originalMaterials.set(m.uuid, m.material.clone ? m.material.clone() : m.material);
+      state.originalMaterials.set(m.uuid, m.material);
     }
     if (i + BATCH < allMeshes.length) await yieldFrame();
   }
@@ -13371,8 +14396,8 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     shadowGround.position.y = importBounds.min.y - 0.05;
   }
   state.importedModels.push(object);
-  if (typeof occlusionCulling !== 'undefined' && occlusionCulling.registerModel) {
-    occlusionCulling.registerModel(object);
+  if (!_isHugeModel && typeof occlusionCulling !== 'undefined' && occlusionCulling.registerModel) {
+    try { occlusionCulling.registerModel(object); } catch(e) { console.warn('Occlusion culling registration failed:', e); }
   }
   onProgress(70);
   await yieldFrame();
@@ -13387,14 +14412,15 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
     state.parts.push(part);
   } else {
     const queue = [{ obj: object, parentPart: null }];
-    let rootPart = null;
+    const topLevelParts = [];
     let processed = 0;
+    let queueHead = 0; // index-based dequeue to avoid O(n) shift()
     const totalNodes = (() => { let n = 0; object.traverse(() => n++); return n; })();
 
-    while (queue.length > 0) {
-      const batchEnd = Math.min(BATCH, queue.length);
+    while (queueHead < queue.length) {
+      const batchEnd = Math.min(BATCH, queue.length - queueHead);
       for (let b = 0; b < batchEnd; b++) {
-        const { obj, parentPart } = queue.shift();
+        const { obj, parentPart } = queue[queueHead++];
         processed++;
         const hasMesh = obj.isMesh;
         if (obj.name && obj.name.trim() && (hasMesh || obj.children.length > 0)) {
@@ -13409,7 +14435,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
             if (ms.length) state.partMeshMap.set(id, ms);
           }
           if (parentPart) parentPart.children.push(part);
-          else if (!rootPart) rootPart = part;
+          else topLevelParts.push(part);
           if (obj.children) {
             for (const c of obj.children) {
               if (c.isMesh && obj.children.length === 1) continue;
@@ -13424,11 +14450,19 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
       await yieldFrame();
     }
 
-    if (rootPart) {
-      rootPart.name = name;
-      rootPart._expanded = true;
-      state.parts.push(rootPart);
+    if (topLevelParts.length === 1) {
+      topLevelParts[0].name = name;
+      topLevelParts[0]._expanded = true;
+      state.parts.push(topLevelParts[0]);
+    } else if (topLevelParts.length > 1) {
+      // Multiple top-level parts — wrap in a synthetic root so all appear in catalog
+      const wrapper = { id: partId, name, children: topLevelParts, object3D: object, _expanded: true };
+      const ms = [];
+      object.traverse(c => { if (c.isMesh) ms.push(c); });
+      if (ms.length) state.partMeshMap.set(partId, ms);
+      state.parts.push(wrapper);
     } else {
+      // No named nodes found — create a catch-all part
       const part = { id: partId, name, children: [], object3D: object };
       const ms = [];
       object.traverse(c => { if (c.isMesh) { ms.push(c); state.meshPartMap.set(c.uuid, partId); } });
@@ -13440,6 +14474,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
   onProgress(95);
   await yieldFrame();
 
+  _partsFlatDirty = true;
   renderPartsList();
 
   // Focus camera on imported model
@@ -13452,14 +14487,55 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
   orbitControls.update();
   onProgress(100);
 
-  // Batch imported model for performance
+  // --- Post-processing: batcher, LOD, HLOD, BVH ---
+  // Skip heavy optimization systems for huge models (>5000 meshes) to prevent crashes
   let _batchStats = null;
-  try { _batchStats = sceneBatcher.batchify(object); } catch(e) { console.warn('Scene batcher failed, falling back to individual meshes:', e); }
+  if (!_isHugeModel) {
+    // Batch imported model for performance
+    try {
+      _batchStats = sceneBatcher.batchify(object);
+      state.batcherAvailable = true;
+    } catch(e) {
+      console.warn('Scene batcher failed, falling back to individual meshes:', e);
+      state.batcherAvailable = false;
+      sceneBatcher.enabled = false;
+    }
 
-  // Register new performance systems for imported model
-  object.traverse(c => { if (c.isMesh) lodSystem.register(c); });
-  try { hlodSystem.build(); } catch(e) {}
-  { const bm = []; object.traverse(c => { if (c.isMesh) bm.push(c); }); try { bvhRaycast.build(bm); } catch(e) {} }
+    // Register LOD for imported model (batch with yields to avoid blocking)
+    const lodMeshes = [];
+    object.traverse(c => { if (c.isMesh) lodMeshes.push(c); });
+    for (let i = 0; i < lodMeshes.length; i += BATCH) {
+      for (let j = i; j < Math.min(i + BATCH, lodMeshes.length); j++) {
+        lodSystem.register(lodMeshes[j]);
+      }
+      if (i + BATCH < lodMeshes.length) await yieldFrame();
+    }
+
+    try {
+      hlodSystem.build();
+      state.hlodAvailable = true;
+    } catch(e) {
+      console.warn('HLOD build failed:', e);
+      state.hlodAvailable = false;
+      hlodSystem.enabled = false;
+    }
+  } else {
+    console.log('Skipping batcher/LOD/HLOD for huge model — direct rendering mode.');
+  }
+
+  // BVH rebuild is lightweight (just bounding boxes) — safe even for large models
+  { const bm = [];
+    if (fbxModel) fbxModel.traverse(c => { if (c.isMesh) bm.push(c); });
+    for (const m of state.importedModels) m.traverse(c => { if (c.isMesh) bm.push(c); });
+    try {
+      bvhRaycast.build(bm);
+      state.bvhAvailable = true;
+    } catch(e) {
+      console.warn('BVH build failed:', e);
+      state.bvhAvailable = false;
+      bvhRaycast._built = false;
+    }
+  }
 
   const _importTime = performance.now() - _importStart;
 
@@ -13470,8 +14546,7 @@ async function addImportedModelToScene(object, name, settings, onProgress) {
   if (_batchStats) {
     showImportReport({ ..._batchStats, loadTimeMs: _importTime, fileName: name });
   } else {
-    let mc = 0; object.traverse(c => { if (c.isMesh) mc++; });
-    showImportReport({ totalMeshes: mc, loadTimeMs: _importTime, fileName: name });
+    showImportReport({ totalMeshes: _meshCount, loadTimeMs: _importTime, fileName: name });
   }
 }
 
@@ -13522,6 +14597,7 @@ function mergeGeometries(geometries) {
 document.getElementById('btAddEmptyPart').addEventListener('click', () => {
   btAddMenu.classList.remove('visible');
   state.parts.push({ id:'empty_'+Date.now(), name:'New Part', children:[] });
+  _partsFlatDirty = true;
   renderPartsList();
 });
 
@@ -13598,6 +14674,7 @@ function renderToolGrid() {
 toolboxSearch.addEventListener('input', () => renderToolGrid());
 function importToolToScene(tool) {
   state.parts.push({ id:'tool_'+tool.id+'_'+Date.now(), name:tool.name, children:[] });
+  _partsFlatDirty = true;
   renderPartsList(); closeToolboxForce();
 }
 function closeToolboxForce() { toolboxData.dirty=false; toolboxOverlay.style.display='none'; toolboxData.selectedTool=null; }
@@ -13678,7 +14755,7 @@ document.getElementById('newCatNameInput').addEventListener('input', () => { doc
 document.getElementById('newCatNameInput').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('newCatCreate').click(); });
 
 </script>
-<script src="../shared/debug-menu.js">
+<script>
 
 // ===== SETTINGS MENU (Simple Mode + Duration Mode) =====
 (function() {
@@ -13914,5 +14991,6 @@ function aeUpdateSettingsUI() {
 })();
 
 </script>
+<script src="../shared/debug-menu.js"></script>
 </body>
 </html>

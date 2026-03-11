@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { RolesSelectionContextMenu } from './RolesSelectionContextMenu';
 import { SimpleRolesContextMenu, type RoleWithDescription } from './SimpleRolesContextMenu';
+import { useClickOutside } from '../../../../hooks/useClickOutside';
 
 interface RoleManagementModalProps {
   currentRole: string | any;
@@ -43,27 +44,16 @@ export function RoleManagementModal({
     setRoleSystem(prev => prev === 'new' ? 'today' : 'new');
   };
 
-  useEffect(() => {
-    if (!position) return; // If no position, it's a centered modal
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose, position]);
+  useClickOutside(menuRef, onClose, !!position);
 
   // Context menu mode (positioned)
   if (position) {
     return (
       <div
         ref={menuRef}
-        className="fixed z-50"
-        style={{ 
-          top: `${position.top}px`, 
+        className="fixed z-50 max-w-[calc(100vw-32px)]"
+        style={{
+          top: `${position.top}px`,
           left: position.left !== undefined ? `${position.left}px` : undefined,
           right: position.right !== undefined ? `${position.right}px` : undefined
         }}
@@ -95,7 +85,7 @@ export function RoleManagementModal({
   // Modal mode (centered with backdrop)
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()}>
+      <div className="max-w-[calc(100vw-32px)]" onClick={(e) => e.stopPropagation()}>
         {roleSystem === 'new' ? (
           <SimpleRolesContextMenu
             currentRole={typeof initialRoles === 'string' ? initialRoles : initialRoles.selectedRole}

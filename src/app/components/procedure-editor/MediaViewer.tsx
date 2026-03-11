@@ -393,7 +393,7 @@ export function MediaViewer({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, on
                         setCurrentIndex(currentIndex - 1);
                       }
                     }}
-                    className="absolute -top-1 -right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                    className="absolute -top-1 -right-1 p-1 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-20"
                     style={{
                       background: 'var(--destructive, #ef4444)'
                     }}

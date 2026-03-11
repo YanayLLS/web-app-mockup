@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, ChevronUp, Menu, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Video } from 'lucide-react';
+import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Video } from 'lucide-react';
 import { AppKnowledgeBasePage } from './pages/AppKnowledgeBasePage';
 import { AppProjectKBPage } from './pages/AppProjectKBPage';
 import { AppRemoteSupportPage } from './pages/AppRemoteSupportPage';
@@ -16,6 +16,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ProcedureEditor } from '../procedure-editor/ProcedureEditor';
 import { getUrlParam, setUrlParam } from '../../utils/urlParams';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
+import { MemberAvatar } from '../MemberAvatar';
 
 const navItems = [
   { id: 'knowledgebase', icon: BookOpen, label: 'Projects', path: '/app/knowledgebase' },
@@ -24,17 +26,30 @@ const navItems = [
   { id: 'ai-chat', icon: MessageSquare, label: 'AI Chat', path: '/app/ai-chat' },
 ];
 
-const recentlyViewed = [
-  { name: 'Cylinder pressure check', type: 'procedure', project: 'Workspace > Project > Folder' },
-  { name: 'Routine Maintenance Flow', type: 'procedure', project: 'Workspace > Project A' },
-  { name: 'Machine Assembly Guide', type: 'procedure', project: 'Workspace > Project B' },
-  { name: 'Digital Twin Model', type: 'digital-twin', project: 'Workspace > Project C' },
+// Real KB items from project data used by app pages
+const allKBItems: { id: string; name: string; type: string; projectId: string; projectName: string }[] = [
+  // 915 i Series
+  { id: 'p1', name: 'Routine Maintenance for High-Volume Printing Equipment', type: 'procedure', projectId: '915-i-series', projectName: '915 i Series' },
+  { id: 'p2', name: 'Engine Calibration Procedure', type: 'procedure', projectId: '915-i-series', projectName: '915 i Series' },
+  { id: 'p3', name: 'Belt Replacement Guide', type: 'procedure', projectId: '915-i-series', projectName: '915 i Series' },
+  { id: 'dt1', name: 'Main Engine Assembly', type: 'digital-twin', projectId: '915-i-series', projectName: '915 i Series' },
+  { id: 'dt2', name: 'Hydraulic System', type: 'digital-twin', projectId: '915-i-series', projectName: '915 i Series' },
+  { id: 'm1', name: 'Installation Tutorial Video', type: 'media', projectId: '915-i-series', projectName: '915 i Series' },
+  // Generator
+  { id: 'gen-p1', name: 'Preventive Maintenance Procedure', type: 'procedure', projectId: 'generator', projectName: 'Generator' },
+  { id: 'gen-p2', name: 'Air Filter Replacement', type: 'procedure', projectId: 'generator', projectName: 'Generator' },
+  { id: 'gen-p3', name: 'Coolant System Flush & Refill', type: 'procedure', projectId: 'generator', projectName: 'Generator' },
+  { id: 'gen-dt1', name: 'Generator Digital Twin', type: 'digital-twin', projectId: 'generator', projectName: 'Generator' },
+  // Manufacturing Alpha
+  { id: 'mfg-p1', name: 'CNC Machine X500 Setup', type: 'procedure', projectId: 'manufacturing-alpha', projectName: 'Manufacturing Facility Alpha' },
+  { id: 'mfg-dt1', name: 'Assembly Line Robot AR-2000', type: 'digital-twin', projectId: 'manufacturing-alpha', projectName: 'Manufacturing Facility Alpha' },
 ];
 
-const favorites = [
-  { name: 'Quick Start Guide', type: 'procedure', project: 'Workspace > Project A' },
-  { name: 'Safety Protocols', type: 'procedure', project: 'Workspace > Project B' },
-];
+// Favorites — curated set of items the user has starred
+const appFavorites = allKBItems.filter(i => ['p1', 'gen-p1', 'gen-dt1'].includes(i.id));
+
+// Recently viewed — last few items the user opened (most recent first)
+const appRecentlyViewed = allKBItems.filter(i => ['gen-p2', 'p2', 'dt1', 'mfg-p1'].includes(i.id));
 
 const sidebarContacts = [
   { id: '1', name: 'Luy Robin', role: 'Field Engineer', initials: 'LR', online: true, color: '#2F80ED' },
@@ -119,7 +134,6 @@ export function AppLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
@@ -160,6 +174,19 @@ export function AppLayout() {
   };
 
   const activeNav = getActiveNav();
+
+  // Role-based navigation filtering
+  const { currentRole } = useRole();
+  const visibleNavItems = navItems.filter((item) => {
+    switch (item.id) {
+      case 'knowledgebase': return true; // visible to all roles
+      case 'remote-support': return hasAccess(currentRole, 'remote-support');
+      case 'immersive': return currentRole !== 'guest';
+      case 'ai-chat': return hasAccess(currentRole, 'ai-chat');
+      default: return true;
+    }
+  });
+  const canStartCall = hasAccess(currentRole, 'start-call');
 
   // Close menus on outside click
   useEffect(() => {
@@ -221,16 +248,6 @@ export function AppLayout() {
     <div className="flex flex-col h-screen w-screen overflow-hidden" style={{ fontFamily: 'var(--font-family)' }}>
       {/* ===== TOP HEADER BAR ===== */}
       <header className="shrink-0 flex items-center px-4 lg:pl-0 lg:pr-0 gap-3" style={{ backgroundColor: '#FFFFFF', height: isPreviewMode ? '0px' : '55px', borderBottom: isPreviewMode ? 'none' : '1px solid #C2C9DB', overflow: isPreviewMode ? 'hidden' : undefined }}>
-        {/* Mobile menu toggle */}
-        <button
-          className="lg:hidden p-1.5 hover:bg-black/5 rounded-lg" style={{ color: '#36415D' }}
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={isMobileMenuOpen}
-        >
-          {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
-
         {/* Logo — aligned above sidebar on desktop */}
         <div
           className="hidden lg:flex items-center justify-center shrink-0 cursor-pointer"
@@ -396,15 +413,14 @@ export function AppLayout() {
 
           {/* User avatar */}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="rounded-full bg-primary flex items-center justify-center text-white hover:bg-primary/90"
-              style={{ width: '32px', height: '32px', fontWeight: 'var(--font-weight-bold)', fontSize: '14px', fontFamily: "'Titillium Web', sans-serif" }}
+            <MemberAvatar
+              name="Current Operator"
+              initials="CO"
+              size="lg"
+              showTooltip={false}
+              showProfileOnClick={false}
               onClick={() => setShowUserMenu(!showUserMenu)}
-              aria-label="User menu"
-              aria-expanded={showUserMenu}
-            >
-              CO
-            </button>
+            />
             {showUserMenu && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-card rounded-[10px] shadow-elevation-lg border border-border z-50 py-1">
                 <button className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2">
@@ -463,23 +479,14 @@ export function AppLayout() {
 
       {/* ===== MAIN BODY ===== */}
       <div className="flex flex-1 min-h-0">
-        {/* Mobile overlay */}
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />
-        )}
-
         {/* ===== LEFT SIDEBAR (icon nav) ===== */}
         {!isFullscreenEmbed && <nav
           role="navigation"
           aria-label="Main navigation"
-          className={`shrink-0 bg-card flex flex-col z-50
-            ${isMobileMenuOpen
-              ? 'fixed top-[55px] left-0 bottom-0 w-56 lg:w-[70px] lg:relative lg:top-0 lg:items-center'
-              : 'hidden lg:flex lg:items-center w-[70px]'
-            }`}
-          style={{ borderRight: '1px solid #C2C9DB', paddingTop: isMobileMenuOpen ? '16px' : '0px', paddingBottom: isMobileMenuOpen ? '16px' : '16px' }}
+          className="shrink-0 bg-card flex-col z-50 hidden lg:flex lg:items-center w-[70px]"
+          style={{ borderRight: '1px solid #C2C9DB', paddingBottom: '16px' }}
         >
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeNav === item.id;
             return (
@@ -487,7 +494,6 @@ export function AppLayout() {
                 key={item.id}
                 onClick={() => {
                   navigate(item.path);
-                  setIsMobileMenuOpen(false);
                 }}
                 className="relative flex items-center transition-colors"
                 style={{
@@ -570,7 +576,7 @@ export function AppLayout() {
             className="hidden xl:flex shrink-0 bg-card flex-col overflow-y-auto"
             style={{ width: '371px', borderRight: '1px solid #C2C9DB', paddingTop: '10px' }}
           >
-            {isRemoteSupport ? (
+            {isRemoteSupport && hasAccess(currentRole, 'remote-support') ? (
               /* ---- CONTACTS LIST for Remote Support ---- */
               <>
                 <div className="px-4 pb-2" style={{ borderBottom: '1px solid #C2C9DB' }}>
@@ -599,17 +605,15 @@ export function AppLayout() {
                       key={contact.id}
                       className="flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/50 transition-colors cursor-pointer"
                     >
-                      <div className="relative shrink-0">
-                        <div
-                          className="size-9 rounded-full flex items-center justify-center text-white"
-                          style={{ backgroundColor: contact.color, fontSize: '11px', fontWeight: 'bold' }}
-                        >
-                          {contact.initials}
-                        </div>
-                        {contact.online && (
-                          <div className="absolute bottom-0 right-0 size-2.5 bg-accent rounded-full border-2 border-card" />
-                        )}
-                      </div>
+                      <MemberAvatar
+                        name={contact.name}
+                        initials={contact.initials}
+                        color={contact.color}
+                        size="xl"
+                        showStatus={true}
+                        status={contact.online ? 'active' : 'offline'}
+                        role={contact.role}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="truncate" style={{ fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                           {contact.name}
@@ -618,6 +622,7 @@ export function AppLayout() {
                           {contact.role}
                         </div>
                       </div>
+                      {canStartCall && (
                       <div className="flex items-center gap-0.5 shrink-0">
                         <button className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors" aria-label={`Video call ${contact.name}`}>
                           <Video className="size-3.5" />
@@ -626,6 +631,7 @@ export function AppLayout() {
                           <Phone className="size-3.5" />
                         </button>
                       </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -651,17 +657,26 @@ export function AppLayout() {
                   </button>
                   {favoritesOpen && (
                     <div className="px-4 pb-2">
-                      {favorites.map((item, i) => (
+                      {appFavorites.map((item) => (
                         <div
-                          key={i}
+                          key={item.id}
                           className="hover:bg-secondary rounded-lg cursor-pointer transition-colors px-2"
                           style={{ paddingTop: '6px', paddingBottom: '6px' }}
+                          onClick={() => {
+                            if (item.type === 'procedure') {
+                              navigate(`/app/project/${item.projectId}/kb?open=${item.id}`);
+                            } else if (item.type === 'digital-twin') {
+                              navigate(`/app/3d-viewer`);
+                            } else {
+                              navigate(`/app/project/${item.projectId}/kb`);
+                            }
+                          }}
                         >
                           <div className="truncate" style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                             {item.name}
                           </div>
                           <div className="truncate" style={{ fontSize: '12px', fontWeight: 'var(--font-weight-normal)', color: '#7F7F7F' }}>
-                            {item.project}
+                            {item.projectName}
                           </div>
                         </div>
                       ))}
@@ -687,21 +702,30 @@ export function AppLayout() {
                   </button>
                   {recentlyViewedOpen && (
                     <div className="px-4 pb-2">
-                      {recentlyViewed.map((item, i) => (
+                      {appRecentlyViewed.map((item) => (
                         <div
-                          key={i}
+                          key={item.id}
                           className="hover:bg-secondary rounded-lg cursor-pointer transition-colors px-2"
                           style={{ paddingTop: '6px', paddingBottom: '6px' }}
+                          onClick={() => {
+                            if (item.type === 'procedure') {
+                              navigate(`/app/project/${item.projectId}/kb?open=${item.id}`);
+                            } else if (item.type === 'digital-twin') {
+                              navigate(`/app/3d-viewer`);
+                            } else {
+                              navigate(`/app/project/${item.projectId}/kb`);
+                            }
+                          }}
                         >
                           <div className="truncate" style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                             {item.name}
                           </div>
                           <div className="truncate" style={{ fontSize: '12px', fontWeight: 'var(--font-weight-normal)', color: '#7F7F7F' }}>
-                            {item.project}
+                            {item.projectName}
                           </div>
                         </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </>
@@ -731,8 +755,8 @@ export function AppLayout() {
       </div>
 
       {/* ===== MOBILE BOTTOM NAV ===== */}
-      {!isFullscreenEmbed && <nav role="navigation" aria-label="Mobile navigation" className="lg:hidden shrink-0 bg-card flex items-center justify-around" style={{ borderTop: '1px solid #C2C9DB', height: '56px', padding: '0 4px' }}>
-        {navItems.map((item) => {
+      {!isFullscreenEmbed && <nav role="navigation" aria-label="Mobile navigation" className="lg:hidden shrink-0 bg-card flex items-center justify-around" style={{ borderTop: '1px solid #C2C9DB', minHeight: '56px', padding: '0 4px', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeNav === item.id;
           // Short labels for bottom nav
@@ -749,6 +773,7 @@ export function AppLayout() {
               style={{
                 color: isActive ? '#2F80ED' : '#7F7F7F',
                 minWidth: '48px',
+                minHeight: '44px',
                 padding: '4px 6px',
               }}
             >
@@ -769,6 +794,7 @@ export function AppLayout() {
           style={{
             color: showNotifPanel ? '#2F80ED' : '#7F7F7F',
             minWidth: '48px',
+            minHeight: '44px',
             padding: '4px 6px',
           }}
         >

@@ -1,6 +1,7 @@
 import { Plus, Edit2, Trash2, AlertCircle, Check, X, GripVertical } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface StepAction {
   label: string;
@@ -74,9 +75,9 @@ const DraggableOptionItem = ({
   preview(drop(ref));
 
   return (
-    <div 
+    <div
       ref={ref}
-      className="px-3 py-2 hover:bg-secondary/50 transition-colors"
+      className="px-3 py-2 min-h-[44px] flex items-center hover:bg-secondary/50 transition-colors"
       style={{ 
         opacity: isDragging ? 0.5 : 1,
         background: isOver ? 'var(--accent)/10' : undefined
@@ -101,7 +102,7 @@ const DraggableOptionItem = ({
           />
           <button
             onClick={onSaveEdit}
-            className="p-1 rounded hover:bg-secondary transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded hover:bg-secondary transition-colors"
             style={{ color: 'var(--accent)' }}
             aria-label="Save"
           >
@@ -109,7 +110,7 @@ const DraggableOptionItem = ({
           </button>
           <button
             onClick={onCancelEdit}
-            className="p-1 rounded hover:bg-secondary transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded hover:bg-secondary transition-colors"
             style={{ color: 'var(--muted-foreground)' }}
             aria-label="Cancel"
           >
@@ -137,7 +138,7 @@ const DraggableOptionItem = ({
           </div>
           <button
             onClick={() => onStartEdit(index)}
-            className="p-1 rounded hover:bg-secondary transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded hover:bg-secondary transition-colors"
             style={{ color: 'var(--muted-foreground)' }}
             aria-label="Edit option"
           >
@@ -145,7 +146,7 @@ const DraggableOptionItem = ({
           </button>
           <button
             onClick={() => onRemove(index)}
-            className="p-1 rounded hover:bg-secondary transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded hover:bg-secondary transition-colors"
             style={{ color: 'var(--destructive)' }}
             aria-label="Delete option"
           >
@@ -176,19 +177,7 @@ function OptionsContextMenuContent({
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
+  useClickOutside(menuRef, onClose);
 
   useEffect(() => {
     // Focus input when opening
@@ -298,12 +287,12 @@ function OptionsContextMenuContent({
         className="fixed z-50 rounded-lg border overflow-hidden flex flex-col"
         style={{
           top: `${position.y}px`,
-          left: `${position.x}px`,
+          left: `${Math.max(8, Math.min(position.x, window.innerWidth - 328))}px`,
           background: 'var(--card)',
           borderColor: 'var(--border)',
           boxShadow: 'var(--shadow-elevation-lg)',
           minWidth: '280px',
-          maxWidth: '320px',
+          maxWidth: 'min(320px, calc(100vw - 16px))',
           maxHeight: '480px'
         }}
       >
@@ -362,7 +351,7 @@ function OptionsContextMenuContent({
             <button
               onClick={handleAddOption}
               disabled={!newOptionText.trim()}
-              className="px-3 py-2 rounded-lg flex items-center justify-center transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-3 py-2 min-h-[44px] min-w-[44px] rounded-lg flex items-center justify-center transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
                 background: 'var(--accent)',
                 color: 'var(--accent-foreground)'

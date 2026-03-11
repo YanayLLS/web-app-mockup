@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Globe, ChevronDown, Play, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
 
 interface ProcedureInfo {
   id: string;
@@ -20,12 +21,13 @@ interface ProcedureInfo {
 interface AppProcedureInfoModalProps {
   procedure: ProcedureInfo;
   onClose: () => void;
-  isContentCreator?: boolean;
 }
 
-export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = true }: AppProcedureInfoModalProps) {
+export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoModalProps) {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('English');
+  const { currentRole } = useRole();
+  const isContentCreator = hasAccess(currentRole, 'projects-edit');
 
   const handleRunIn3D = () => {
     onClose();
@@ -60,16 +62,15 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
         <div
-          className="pointer-events-auto flex flex-col items-center overflow-y-auto"
+          className="pointer-events-auto flex flex-col items-center overflow-y-auto w-full sm:w-[548px]"
           style={{
-            width: '548px',
             maxWidth: '100%',
             maxHeight: '90vh',
             backgroundColor: '#F5F5F5',
             border: '1px solid #C2C9DB',
             borderRadius: '10px',
             boxShadow: '0px 4px 14.2px 0px rgba(0,0,0,0.25)',
-            padding: '24px',
+            padding: '16px',
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -93,7 +94,8 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
             <button
               onClick={onClose}
               className="flex items-center justify-center hover:bg-white/50 transition-colors"
-              style={{ width: '40px', height: '40px', borderRadius: '10px' }}
+              style={{ width: '44px', height: '44px', borderRadius: '10px' }}
+              aria-label="Close"
             >
               <X style={{ width: '14px', height: '14px', color: '#36415D' }} />
             </button>
@@ -101,11 +103,11 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
 
           {/* Procedure thumbnail */}
           {procedure.thumbnail && (
-            <div style={{ marginBottom: '12px' }}>
+            <div style={{ marginBottom: '12px', width: '100%', maxWidth: '274px' }}>
               <img
                 src={procedure.thumbnail}
                 alt={procedure.name}
-                style={{ width: '274px', height: '154px', objectFit: 'cover', borderRadius: '8px' }}
+                style={{ width: '100%', maxWidth: '274px', height: 'auto', aspectRatio: '274/154', objectFit: 'cover', borderRadius: '8px' }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             </div>
@@ -119,7 +121,7 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
           </div>
 
           {/* Meta info */}
-          <div className="flex items-center w-full" style={{ marginBottom: '12px', gap: '10px', fontSize: '12px', color: '#36415D' }}>
+          <div className="flex flex-wrap items-center w-full" style={{ marginBottom: '12px', gap: '6px 10px', fontSize: '12px', color: '#36415D' }}>
             {procedure.steps && <span>{procedure.steps} steps estimated</span>}
             {procedure.steps && <span>|</span>}
             <span>Last updated {procedure.lastUpdated}</span>
@@ -139,45 +141,45 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
           {/* Digital twin / Configuration / Mode rows */}
           <div className="flex flex-col w-full" style={{ gap: '8px', marginBottom: '16px' }}>
             {/* Digital twin row */}
-            <div className="flex items-center" style={{ gap: '12px' }}>
-              <span style={{ width: '100px', fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', flexShrink: 0 }}>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <span className="shrink-0" style={{ width: '90px', fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                 Digital twin
               </span>
               <div
-                className="flex-1 flex items-center"
+                className="flex-1 flex items-center min-w-0"
                 style={{ padding: '8px 12px', borderRadius: '10px' }}
               >
-                <span style={{ fontSize: '14px', color: '#36415D' }}>
+                <span className="truncate" style={{ fontSize: '13px', color: '#36415D' }}>
                   {procedure.digitalTwinName || 'Digital Twin Name'}
                 </span>
               </div>
             </div>
 
             {/* Configuration row */}
-            <div className="flex items-center" style={{ gap: '12px' }}>
-              <span style={{ width: '100px', fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', flexShrink: 0 }}>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <span className="shrink-0" style={{ width: '90px', fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                 Configuration
               </span>
               <button
-                className="flex-1 flex items-center justify-between hover:bg-white/50 transition-colors"
+                className="flex-1 flex items-center justify-between hover:bg-white/50 transition-colors min-w-0"
                 style={{ padding: '8px 12px', borderRadius: '10px' }}
               >
-                <span style={{ fontSize: '14px', color: '#36415D' }}>
+                <span className="truncate" style={{ fontSize: '13px', color: '#36415D' }}>
                   {procedure.configurationName || 'Select a configuration'}
                 </span>
               </button>
             </div>
 
             {/* Mode row */}
-            <div className="flex items-center" style={{ gap: '12px' }}>
-              <span style={{ width: '100px', fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', flexShrink: 0 }}>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <span className="shrink-0" style={{ width: '90px', fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
                 Mode
               </span>
               <div
-                className="flex-1 flex items-center"
+                className="flex-1 flex items-center min-w-0"
                 style={{ padding: '8px 12px', borderRadius: '10px' }}
               >
-                <span style={{ fontSize: '14px', color: '#36415D' }}>
+                <span className="truncate" style={{ fontSize: '13px', color: '#36415D' }}>
                   {procedure.modeName || '3D mode name'}
                 </span>
               </div>
@@ -185,7 +187,7 @@ export function AppProcedureInfoModal({ procedure, onClose, isContentCreator = t
           </div>
 
           {/* Action buttons - Run vs Edit */}
-          <div className="w-full flex gap-3" style={{ marginBottom: '10px' }}>
+          <div className="w-full flex gap-3" style={{ marginBottom: '10px', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
             {/* Run in 3D - Primary action (green accent) */}
             <button
               onClick={handleRunIn3D}

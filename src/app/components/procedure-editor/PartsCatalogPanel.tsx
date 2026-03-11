@@ -90,8 +90,9 @@ function TreeNode({
         style={{
           paddingLeft: `${12 + depth * 16}px`,
           paddingRight: '8px',
-          paddingTop: '5px',
-          paddingBottom: '5px',
+          paddingTop: '8px',
+          paddingBottom: '8px',
+          minHeight: '44px',
           borderRadius: 'var(--radius-button)',
         }}
         onClick={() => {
@@ -154,7 +155,7 @@ function TreeNode({
 
         {/* Visibility Toggle */}
         <button
-          className="flex-shrink-0 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-foreground/10"
+          className="flex-shrink-0 p-0.5 rounded opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity hover:bg-foreground/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
           onClick={(e) => {
             e.stopPropagation();
             if (hasChildren) {
@@ -265,7 +266,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 h-full w-full max-w-[320px] z-[61] flex flex-col p-3"
+          className="fixed right-0 top-0 h-full w-full sm:max-w-[320px] z-[61] flex flex-col p-2 sm:p-3"
         >
           <div
             className="bg-card shadow-[0px_2px_9px_0px_rgba(0,0,0,0.55)] flex flex-col h-full"
@@ -294,7 +295,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
               </div>
               <button
                 onClick={onClose}
-                className="text-muted hover:text-foreground p-1 transition-colors rounded hover:bg-foreground/5"
+                className="text-muted hover:text-foreground p-1 transition-colors rounded hover:bg-foreground/5 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X className="size-4" />
               </button>
@@ -309,7 +310,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search parts..."
-                  className="w-full bg-background border border-border text-foreground outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                  className="w-full bg-background border border-border text-foreground outline-none focus:ring-2 focus:ring-ring transition-shadow min-h-[44px]"
                   style={{
                     borderRadius: 'var(--radius-button)',
                     padding: 'var(--spacing-sm) var(--spacing-lg)',

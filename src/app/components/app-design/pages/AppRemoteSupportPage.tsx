@@ -4,6 +4,8 @@ import { AppCallDeviceModal } from './AppCallDevicePage';
 import { AppMeetingJoinModal } from './AppMeetingJoinPage';
 import { AppScheduleMeetingModal } from './AppScheduleMeetingPage';
 import { getUrlParam, setUrlParam } from '../../../utils/urlParams';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { MemberAvatar } from '../../MemberAvatar';
 
 const contacts = [
   { id: '1', name: 'Luy Robin', role: 'Field Engineer', initials: 'LR', online: true, color: '#2F80ED' },
@@ -58,6 +60,10 @@ export function AppRemoteSupportPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+
+  const { currentRole } = useRole();
+  const canScheduleMeeting = hasAccess(currentRole, 'schedule-meeting');
+  const canStartCall = hasAccess(currentRole, 'start-call');
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -124,7 +130,13 @@ export function AppRemoteSupportPage() {
         {/* 4 action buttons grid */}
         <div className="flex-1 flex flex-col items-center justify-center p-6">
           <div className="grid grid-cols-2 gap-6 max-w-xs w-full mb-8">
-            {mobileActions.map((action) => {
+            {mobileActions
+              .filter((action) => {
+                if (action.id === 'start' || action.id === 'call') return canStartCall;
+                if (action.id === 'schedule') return canScheduleMeeting;
+                return true; // 'join' is always visible
+              })
+              .map((action) => {
               const Icon = action.icon;
               return (
                 <button
@@ -191,14 +203,16 @@ export function AppRemoteSupportPage() {
                 <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', letterSpacing: '1.5px' }}>902 950 988</span>
               </div>
               <div className="w-px h-6 bg-border" />
-              <button
-                onClick={() => openCallDevice(true)}
-                className="px-3 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
-                style={{ fontWeight: 'var(--font-weight-bold)' }}
-              >
-                <Phone className="size-3.5" />
-                Call Device
-              </button>
+              {canStartCall && (
+                <button
+                  onClick={() => openCallDevice(true)}
+                  className="px-3 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                >
+                  <Phone className="size-3.5" />
+                  Call Device
+                </button>
+              )}
               <button
                 onClick={() => openJoinMeeting(true)}
                 className="px-3 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
@@ -207,32 +221,36 @@ export function AppRemoteSupportPage() {
                 <Video className="size-3.5" />
                 Join Meeting
               </button>
-              <div className="relative">
-                <button
-                  onClick={() => setShowNewSessionMenu(!showNewSessionMenu)}
-                  className="px-3 py-2 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"
-                  style={{ fontWeight: 'var(--font-weight-bold)' }}
-                >
-                  <Plus className="size-3.5" />
-                  Create Meeting
-                </button>
-                {showNewSessionMenu && (
-                  <div className="absolute top-full mt-2 right-0 w-56 bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border z-10 py-1">
-                    <button
-                      onClick={handleStartMeeting}
-                      className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
-                    >
-                      <PhoneCall className="size-4" /> Start instant meeting
-                    </button>
-                    <button
-                      onClick={() => { openSchedule(true); setShowNewSessionMenu(false); }}
-                      className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
-                    >
-                      <Calendar className="size-4" /> Schedule for later
-                    </button>
-                  </div>
-                )}
-              </div>
+              {canStartCall && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowNewSessionMenu(!showNewSessionMenu)}
+                    className="px-3 py-2 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"
+                    style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  >
+                    <Plus className="size-3.5" />
+                    Create Meeting
+                  </button>
+                  {showNewSessionMenu && (
+                    <div className="absolute top-full mt-2 right-0 w-56 bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border z-10 py-1">
+                      <button
+                        onClick={handleStartMeeting}
+                        className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
+                      >
+                        <PhoneCall className="size-4" /> Start instant meeting
+                      </button>
+                      {canScheduleMeeting && (
+                        <button
+                          onClick={() => { openSchedule(true); setShowNewSessionMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
+                        >
+                          <Calendar className="size-4" /> Schedule for later
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -272,11 +290,11 @@ export function AppRemoteSupportPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleCopyMeetingId(meeting.id)}
-                            className="p-1.5 text-muted hover:text-foreground hover:bg-secondary rounded transition-colors"
+                            className="p-2 text-muted hover:text-foreground hover:bg-secondary rounded transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                             title="Copy meeting ID"
                             aria-label="Copy meeting ID"
                           >
-                            {copiedId === meeting.id ? <Check className="size-3.5 text-accent" /> : <Copy className="size-3.5" />}
+                            {copiedId === meeting.id ? <Check className="size-4 text-accent" /> : <Copy className="size-4" />}
                           </button>
                           <button
                             className="px-3 py-1.5 bg-primary text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity text-xs"
@@ -286,15 +304,18 @@ export function AppRemoteSupportPage() {
                           </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center">
                         {meeting.participants.map((p, i) => (
-                          <div
+                          <MemberAvatar
                             key={i}
-                            className="size-6 rounded-full flex items-center justify-center text-white"
-                            style={{ fontSize: '8px', fontWeight: 'bold', backgroundColor: contacts[i % contacts.length]?.color || '#2F80ED', marginLeft: i > 0 ? '-4px' : '0' }}
-                          >
-                            {p}
-                          </div>
+                            name={contacts[i % contacts.length]?.name || p}
+                            initials={p}
+                            color={contacts[i % contacts.length]?.color || '#2F80ED'}
+                            size="sm"
+                            border={i > 0}
+                            className={i > 0 ? '-ml-1' : ''}
+                            showTooltip={false}
+                          />
                         ))}
                         <span style={{ fontSize: '11px', color: '#7F7F7F', marginLeft: '6px' }}>
                           {meeting.participants.length} participant{meeting.participants.length !== 1 ? 's' : ''}
@@ -329,15 +350,18 @@ export function AppRemoteSupportPage() {
                             {call.date} at {call.time} · {call.duration}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center">
                           {call.participants.map((p, i) => (
-                            <div
+                            <MemberAvatar
                               key={i}
-                              className="size-6 rounded-full flex items-center justify-center text-white"
-                              style={{ fontSize: '8px', fontWeight: 'bold', backgroundColor: contacts[i % contacts.length]?.color || '#2F80ED', marginLeft: i > 0 ? '-4px' : '0' }}
-                            >
-                              {p}
-                            </div>
+                              name={contacts[i % contacts.length]?.name || p}
+                              initials={p}
+                              color={contacts[i % contacts.length]?.color || '#2F80ED'}
+                              size="sm"
+                              border={i > 0}
+                              className={i > 0 ? '-ml-1' : ''}
+                              showTooltip={false}
+                            />
                           ))}
                         </div>
                       </div>

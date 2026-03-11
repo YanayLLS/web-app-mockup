@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, Settings, Box, Palette, Volume2, Captions, Users, Globe, ChevronDown, MessageSquare, Plus, Minus, Check } from 'lucide-react';
+import { X, Settings, Box, Palette, Volume2, Captions, Users, Globe, ChevronDown, MessageSquare, Plus, Minus, Check, Shield } from 'lucide-react';
+import { useRole, ROLES, type UserRole } from '../../../contexts/RoleContext';
 
-type SettingsTab = 'general' | '3d-environment' | 'appearance' | 'audio-video' | 'captions' | 'account';
+type SettingsTab = 'general' | '3d-environment' | 'appearance' | 'audio-video' | 'captions' | 'account' | 'debug';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Settings }[] = [
   { id: 'general', label: 'General', icon: Settings },
@@ -10,6 +11,14 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Settings }[] = [
   { id: 'audio-video', label: 'Audio & Video', icon: Volume2 },
   { id: 'captions', label: 'Captions and transcripts', icon: Captions },
   { id: 'account', label: 'Account', icon: Users },
+  { id: 'debug', label: 'Debug', icon: Shield },
+];
+
+const appRoleGroups: { label: string; roles: UserRole[] }[] = [
+  { label: 'External', roles: ['guest'] },
+  { label: 'Operators', roles: ['operator', 'operator-mr'] },
+  { label: 'Support & Field', roles: ['field-service-engineer', 'service-support-expert', 'service-support-manager'] },
+  { label: 'Content & Admin', roles: ['instructor', 'content-creator', 'admin'] },
 ];
 
 const workspaces = [
@@ -27,6 +36,7 @@ interface AppSettingsModalProps {
 }
 
 export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
+  const { currentRole, setRole } = useRole();
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [language, setLanguage] = useState('English');
   const [runAtStartup, setRunAtStartup] = useState(false);
@@ -65,9 +75,8 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
         <div
-          className="pointer-events-auto flex flex-col overflow-hidden"
+          className="pointer-events-auto flex flex-col overflow-hidden w-full sm:w-[720px]"
           style={{
-            width: '720px',
             maxWidth: '100%',
             height: '520px',
             maxHeight: '85vh',
@@ -85,16 +94,16 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
                 <MessageSquare style={{ width: '14px', height: '14px' }} />
                 Send feedback
               </button>
-              <button onClick={onClose} className="hover:bg-secondary rounded-lg p-1 transition-colors">
+              <button onClick={onClose} className="hover:bg-secondary rounded-lg p-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Close settings">
                 <X style={{ width: '16px', height: '16px', color: '#36415D' }} />
               </button>
             </div>
           </div>
 
           {/* Body */}
-          <div className="flex flex-1 min-h-0">
-            {/* Sidebar */}
-            <div className="shrink-0 flex flex-col overflow-y-auto" style={{ width: '170px', borderRight: '1px solid #E9E9E9', padding: '8px' }}>
+          <div className="flex flex-col sm:flex-row flex-1 min-h-0">
+            {/* Tabs - horizontal scroll on mobile, vertical sidebar on sm+ */}
+            <div className="shrink-0 flex sm:flex-col overflow-x-auto sm:overflow-x-visible sm:overflow-y-auto border-b sm:border-b-0 sm:border-r border-[#E9E9E9] p-1 sm:p-2 sm:w-[170px]">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -102,13 +111,14 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className="flex items-center gap-2 w-full text-left rounded-lg transition-colors"
+                    className="flex items-center gap-2 text-left rounded-lg transition-colors whitespace-nowrap sm:whitespace-normal sm:w-full shrink-0"
                     style={{
                       padding: '8px 10px',
                       fontSize: '12px',
                       fontWeight: isActive ? 'var(--font-weight-bold)' : 'var(--font-weight-normal)',
                       color: isActive ? '#36415D' : '#7F7F7F',
                       backgroundColor: isActive ? '#D9E0F0' : 'transparent',
+                      minHeight: '40px',
                     }}
                   >
                     <Icon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
@@ -119,7 +129,7 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto" style={{ padding: '20px 24px' }}>
+            <div className="flex-1 overflow-y-auto" style={{ padding: '16px' }}>
               {/* ========== GENERAL ========== */}
               {activeTab === 'general' && (
                 <div>
@@ -403,6 +413,89 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* ========== DEBUG ========== */}
+              {activeTab === 'debug' && (
+                <div>
+                  {/* Current role badge */}
+                  <div className="flex items-center gap-3" style={{ marginBottom: '16px' }}>
+                    <span style={{ fontSize: '12px', color: '#7F7F7F' }}>Active role:</span>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 12px',
+                        backgroundColor: '#11E874',
+                        color: '#1a3a2a',
+                        borderRadius: '25px',
+                        fontSize: '12px',
+                        fontWeight: 'var(--font-weight-bold)',
+                      }}
+                    >
+                      <Shield style={{ width: '12px', height: '12px' }} />
+                      {ROLES[currentRole].label}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#7F7F7F', marginBottom: '16px' }}>
+                    {ROLES[currentRole].description}
+                  </p>
+
+                  {/* Role groups */}
+                  {appRoleGroups.map((group) => (
+                    <div key={group.label} style={{ marginBottom: '12px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                        {group.label}
+                      </div>
+                      <div className="flex flex-col" style={{ gap: '4px' }}>
+                        {group.roles.map((roleId) => {
+                          const role = ROLES[roleId];
+                          const isActive = currentRole === roleId;
+                          return (
+                            <button
+                              key={roleId}
+                              onClick={() => setRole(roleId)}
+                              className="flex items-center gap-3 w-full text-left transition-all"
+                              style={{
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                backgroundColor: isActive ? '#f0fdf4' : 'transparent',
+                                border: isActive ? '1.5px solid #11E874' : '1.5px solid transparent',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '14px',
+                                  height: '14px',
+                                  borderRadius: '50%',
+                                  border: isActive ? 'none' : '2px solid #C2C9DB',
+                                  backgroundColor: isActive ? '#11E874' : 'transparent',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {isActive && (
+                                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }} />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div style={{ fontSize: '12px', fontWeight: isActive ? 'var(--font-weight-bold)' : 'var(--font-weight-normal)', color: '#36415D' }}>
+                                  {role.label}
+                                </div>
+                                <div style={{ fontSize: '10px', color: '#7F7F7F', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {role.description}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

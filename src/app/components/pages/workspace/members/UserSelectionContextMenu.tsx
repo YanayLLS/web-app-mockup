@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Search, Users } from 'lucide-react';
+import { MemberAvatar } from '../../../MemberAvatar';
 
 interface UserSelectionContextMenuProps {
   onClose: () => void;
@@ -154,16 +155,14 @@ export function UserSelectionContextMenu({ onClose, onSelect, showGroups = true 
                   onClick={() => toggleUser(member.id)}
                   className="flex items-center gap-3 p-3 hover:bg-secondary transition-colors rounded-lg"
                 >
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0"
-                    style={{
-                      backgroundColor: member.color,
-                      fontFamily: 'var(--font-family)',
-                      fontWeight: 'var(--font-weight-bold)',
-                    }}
-                  >
-                    {member.initials}
-                  </div>
+                  <MemberAvatar
+                    name={member.name}
+                    size="xl"
+                    color={member.color}
+                    initials={member.initials}
+                    id={member.id}
+                    showTooltip={false}
+                  />
                   <div className="flex-1 text-left">
                     <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                       {member.name}

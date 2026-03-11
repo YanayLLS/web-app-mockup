@@ -4,6 +4,7 @@ import { RoleDeleteModal } from './RoleDeleteModal';
 import { RoleMembersContextMenu } from './RoleMembersContextMenu';
 import { PermissionsModal } from './PermissionsModal';
 import { ReassignRoleModal } from './ReassignRoleModal';
+import { useRole, hasAccess } from '@/app/contexts/RoleContext';
 
 export interface RolePermissions {
   training: string;
@@ -441,6 +442,10 @@ interface RolesManagementPageProps {
 }
 
 export function RolesManagementPage({ onNavigateToMembersWithRole, roles: externalRoles, onRolesChange }: RolesManagementPageProps) {
+  // Role-based access control (defense-in-depth — sidebar already gates this page to admin)
+  const { currentRole } = useRole();
+  const isAdmin = hasAccess(currentRole, 'workspace-management');
+
   const [internalRoles, setInternalRoles] = useState<Role[]>(defaultRoles);
   
   // Use external roles if provided, otherwise use internal state
@@ -680,8 +685,8 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
   return (
     <div className="flex-1 flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="border-b border-border px-6 py-5 bg-card">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 md:px-6 py-5 bg-card">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
               Roles
@@ -690,18 +695,20 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
               Define roles with specific permissions for training, content, and administration
             </p>
           </div>
-          <button
-            onClick={handleCreateRole}
-            className="px-4 py-2 rounded-lg transition-opacity hover:opacity-90 bg-primary text-primary-foreground flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Create Role
-          </button>
+          {isAdmin && (
+            <button
+              onClick={handleCreateRole}
+              className="px-4 py-2 rounded-lg transition-opacity hover:opacity-90 bg-primary text-primary-foreground flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create Role
+            </button>
+          )}
         </div>
       </div>
 
       {/* Roles List */}
-      <div className="flex-1 overflow-auto bg-background p-6">
+      <div className="flex-1 overflow-auto bg-background p-4 md:p-6">
         <div className="max-w-5xl mx-auto flex flex-col gap-3">
           {roles.map((role) => {
             const isSelected = selectedRoleId === role.id;
@@ -796,16 +803,18 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                           <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
                             {role.name}
                           </h3>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRenameRole(role.id);
-                            }}
-                            className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
-                            style={{ borderRadius: 'var(--radius)' }}
-                          >
-                            <Edit2 className="w-3.5 h-3.5" style={{ color: 'var(--muted)' }} />
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRenameRole(role.id);
+                              }}
+                              className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+                              style={{ borderRadius: 'var(--radius)' }}
+                            >
+                              <Edit2 className="w-3.5 h-3.5" style={{ color: 'var(--muted)' }} />
+                            </button>
+                          )}
                         </div>
                         {role.description && (
                           <p className="text-xs" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
@@ -825,19 +834,21 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                       </span>
                     </button>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteRole(role);
-                    }}
-                    className="p-2 hover:bg-destructive/10 rounded-lg transition-colors flex-shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" style={{ color: 'var(--destructive)' }} />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteRole(role);
+                      }}
+                      className="p-2 hover:bg-destructive/10 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" style={{ color: 'var(--destructive)' }} />
+                    </button>
+                  )}
                 </div>
 
                 {/* Permissions - Always Visible */}
-                <div className="grid grid-cols-3 gap-4 mt-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
                   {/* Training Permissions */}
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
@@ -918,7 +929,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                                           rolePermissions: perm.permissions
                                         });
                                       }}
-                                      className="absolute top-3 right-3 p-1.5 rounded hover:bg-secondary/50 transition-all opacity-0 group-hover:opacity-100"
+                                      className="absolute top-3 right-3 p-1.5 rounded hover:bg-secondary/50 transition-all md:opacity-0 md:group-hover:opacity-100"
                                       style={{
                                         color: 'var(--primary)',
                                       }}
@@ -1014,7 +1025,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                                           rolePermissions: perm.permissions
                                         });
                                       }}
-                                      className="absolute top-3 right-3 p-1.5 rounded hover:bg-secondary/50 transition-all opacity-0 group-hover:opacity-100"
+                                      className="absolute top-3 right-3 p-1.5 rounded hover:bg-secondary/50 transition-all md:opacity-0 md:group-hover:opacity-100"
                                       style={{
                                         color: 'var(--primary)',
                                       }}
@@ -1110,7 +1121,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                                           rolePermissions: perm.permissions
                                         });
                                       }}
-                                      className="absolute top-3 right-3 p-1.5 rounded hover:bg-secondary/50 transition-all opacity-0 group-hover:opacity-100"
+                                      className="absolute top-3 right-3 p-1.5 rounded hover:bg-secondary/50 transition-all md:opacity-0 md:group-hover:opacity-100"
                                       style={{
                                         color: 'var(--primary)',
                                       }}

@@ -174,7 +174,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
         {/* Modal */}
         <div 
           ref={modalRef}
-          className="relative bg-card rounded-lg w-full max-w-[900px] max-h-[90vh] overflow-hidden shadow-elevation-sm border border-border flex flex-col"
+          className="relative bg-card rounded-lg w-full max-w-[min(900px,calc(100vw-32px))] max-h-[90vh] overflow-hidden shadow-elevation-sm border border-border flex flex-col"
           role="dialog"
           aria-modal="true"
           aria-labelledby="settings-title"
@@ -200,9 +200,9 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
               </div>
               
               <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleClose} 
-                  className="hover:bg-secondary/50 rounded-lg p-1.5 transition-colors ml-auto"
+                <button
+                  onClick={handleClose}
+                  className="hover:bg-secondary/50 rounded-lg p-1.5 transition-colors ml-auto min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Close settings"
                 >
                   <X className="size-5 text-muted" />
@@ -277,7 +277,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                     </div>
                   )}
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     {/* Thumbnail Upload */}
                     <div className="relative">
                       <input
@@ -290,7 +290,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                       />
                       <button
                         onClick={handleThumbnailClick}
-                        className="aspect-[16/9] rounded-lg w-[180px] border-2 border-dashed border-border hover:border-primary bg-secondary/30 hover:bg-secondary/50 flex flex-col items-center justify-center gap-2 transition-all group overflow-hidden"
+                        className="aspect-[16/9] rounded-lg w-full sm:w-[180px] border-2 border-dashed border-border hover:border-primary bg-secondary/30 hover:bg-secondary/50 flex flex-col items-center justify-center gap-2 transition-all group overflow-hidden"
                         aria-label="Upload thumbnail image"
                       >
                         {thumbnailUrl ? (
@@ -344,7 +344,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                   <h4 className="text-card-foreground font-bold" style={{ fontFamily: 'var(--font-family)' }}>Flow Settings</h4>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Logics Column */}
                   <div className="space-y-1">
                     <h5 className="text-card-foreground font-bold mb-1.5 text-sm" style={{ fontFamily: 'var(--font-family)' }}>Logics</h5>
@@ -451,7 +451,7 @@ function SettingOption({ title, description, checked, onToggle }: SettingOptionP
   return (
     <button
       onClick={onToggle}
-      className="flex items-center gap-3 rounded-lg hover:bg-secondary/50 transition-colors w-full text-left group"
+      className="flex items-center gap-3 rounded-lg hover:bg-secondary/50 transition-colors w-full text-left group min-h-[44px]"
       style={{ padding: 'var(--spacing-xs, 6px)' }}
     >
       {/* Checkbox */}

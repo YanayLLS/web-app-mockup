@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import type { NodeProps } from 'reactflow';
 import { StickyNote, X } from 'lucide-react';
+import { useClickOutside } from '../../../hooks/useClickOutside';
 
 interface NoteNodeData {
   text: string;
   color: string;
+  editingEnabled?: boolean;
   onChange?: (newData: any) => void;
   onAction?: (action: 'delete') => void;
 }
@@ -33,18 +35,7 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
   }, [localText]);
 
   // Close color picker when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (colorMenuRef.current && !colorMenuRef.current.contains(event.target as Node)) {
-        setShowColorPicker(false);
-      }
-    };
-
-    if (showColorPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showColorPicker]);
+  useClickOutside(colorMenuRef, () => setShowColorPicker(false), showColorPicker);
 
   const noteColors = [
     { name: 'Yellow', value: '#fef08a' },
@@ -60,7 +51,7 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
       className="relative rounded-lg shadow-lg transition-all"
       style={{
         backgroundColor: data.color || '#fef08a',
-        width: '240px',
+        width: 'clamp(180px, 60vw, 240px)',
         minHeight: '160px',
         border: selected ? '2px solid var(--primary)' : '1px solid rgba(0,0,0,0.1)',
         boxShadow: selected ? 'var(--elevation-lg)' : 'var(--elevation-md)',
@@ -69,33 +60,41 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
     >
       {/* Header with icon and delete button */}
       <div className="flex items-center justify-between p-2 border-b border-black/10">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowColorPicker(!showColorPicker);
-          }}
-          className="p-1 hover:bg-black/5 rounded transition-colors"
-          title="Change color"
-        >
-          <StickyNote size={16} className="opacity-60" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            data.onAction?.('delete');
-          }}
-          className="p-1 hover:bg-black/5 rounded transition-colors"
-          title="Delete note"
-        >
-          <X size={14} className="opacity-60" />
-        </button>
+        {data.editingEnabled !== false ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowColorPicker(!showColorPicker);
+            }}
+            className="p-2 hover:bg-black/5 rounded transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            title="Change color"
+          >
+            <StickyNote size={16} className="opacity-60" />
+          </button>
+        ) : (
+          <div className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
+            <StickyNote size={16} className="opacity-60" />
+          </div>
+        )}
+        {data.editingEnabled !== false && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onAction?.('delete');
+            }}
+            className="p-2 hover:bg-black/5 rounded transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            title="Delete note"
+          >
+            <X size={14} className="opacity-60" />
+          </button>
+        )}
       </div>
 
       {/* Color picker */}
       {showColorPicker && (
-        <div 
+        <div
           ref={colorMenuRef}
-          className="absolute top-10 left-2 z-50 p-2 rounded-lg border shadow-lg animate-in fade-in zoom-in-95 duration-200"
+          className="absolute top-12 left-0 z-50 p-2 rounded-lg border shadow-lg animate-in fade-in zoom-in-95 duration-200 max-w-[calc(100vw-1rem)]"
           style={{
             backgroundColor: 'var(--card)',
             borderColor: 'var(--border)',
@@ -110,7 +109,7 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
                   updateData({ color: color.value });
                   setShowColorPicker(false);
                 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded transition-colors hover:bg-secondary text-sm"
+                className="flex items-center gap-2 px-3 py-2 rounded transition-colors hover:bg-secondary text-sm min-h-[44px]"
               >
                 <div 
                   className="w-4 h-4 rounded border"
@@ -132,15 +131,18 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
           ref={textareaRef}
           value={localText}
           onChange={(e) => {
+            if (data.editingEnabled === false) return;
             setLocalText(e.target.value);
             updateData({ text: e.target.value });
           }}
+          readOnly={data.editingEnabled === false}
           className="w-full bg-transparent border-none resize-none focus:outline-none text-sm leading-relaxed"
           placeholder="Add a note..."
           style={{
             color: '#000',
             minHeight: '100px',
             fontFamily: 'var(--font-family)',
+            cursor: data.editingEnabled === false ? 'default' : undefined,
           }}
         />
       </div>

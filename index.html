@@ -9,6 +9,13 @@
 
     <body>
       <div id="root"></div>
+      <script>
+        // GitHub Pages SPA redirect: restore route after 404.html redirect
+        (function() {
+          var redir = new URLSearchParams(window.location.search).get('spa-redirect');
+          if (redir) window.history.replaceState(null, '', decodeURIComponent(redir));
+        })();
+      </script>
       <script type="module" src="/src/main.tsx"></script>
     </body>
   </html>

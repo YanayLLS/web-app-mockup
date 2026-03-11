@@ -233,7 +233,7 @@ export function AppAIChatPage() {
         <div className="h-12 border-b border-border bg-card flex items-center px-4 gap-3 shrink-0">
           <button
             onClick={() => setShowSidebar(!showSidebar)}
-            className="p-1.5 hover:bg-secondary rounded-lg text-muted hover:text-foreground"
+            className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg text-muted hover:text-foreground min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <Menu className="size-5" />
           </button>
@@ -241,7 +241,7 @@ export function AppAIChatPage() {
             Iris
           </span>
           <div className="flex-1" />
-          <button className="p-1.5 hover:bg-secondary rounded-lg text-muted hover:text-foreground">
+          <button className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg text-muted hover:text-foreground min-h-[44px] min-w-[44px] flex items-center justify-center">
             <MoreVertical className="size-5" />
           </button>
         </div>
@@ -254,12 +254,12 @@ export function AppAIChatPage() {
               <p className="text-lg text-primary mb-4" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                 What can I help with?
               </p>
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="flex flex-wrap gap-2 justify-center px-4">
                 {suggestions.map((s) => (
                   <button
                     key={s}
                     onClick={() => handleSend(s)}
-                    className="px-4 py-2 border border-primary/30 text-primary rounded-full text-sm hover:bg-primary/5 transition-colors"
+                    className="px-4 py-2.5 min-h-[44px] border border-primary/30 text-primary rounded-full text-sm hover:bg-primary/5 transition-colors"
                   >
                     {s}
                   </button>
@@ -305,7 +305,7 @@ export function AppAIChatPage() {
 
           {/* Floating feedback card */}
           {showFeedback && messages.length > 0 && (
-            <div className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-72 sm:w-80">
+            <div className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-[calc(100vw-32px)] sm:w-80 max-w-80">
               <div className="bg-card border border-border rounded-[var(--radius)] shadow-elevation-lg overflow-hidden">
                 {/* Close button */}
                 <button
@@ -384,24 +384,25 @@ export function AppAIChatPage() {
         </div>
 
         {/* Input area */}
-        <div className="p-4 sm:p-6 pt-2 border-t border-border bg-card">
+        <div className="p-4 sm:p-6 pt-2 border-t border-border bg-card" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
           <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-2">
+            <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-2 min-h-[48px]">
               <input
                 type="text"
                 placeholder="Message Iris"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted min-h-[44px]"
+                style={{ fontSize: '16px' }}
               />
-              <button className="p-1.5 text-muted hover:text-foreground transition-colors">
+              <button className="p-2 sm:p-1.5 text-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <Mic className="size-5" />
               </button>
               {input.trim() && (
                 <button
                   onClick={() => handleSend()}
-                  className="p-1.5 text-primary hover:text-primary/80 transition-colors"
+                  className="p-2 sm:p-1.5 text-primary hover:text-primary/80 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
                   <Send className="size-5" />
                 </button>

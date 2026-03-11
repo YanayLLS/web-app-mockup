@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Users, ChevronDown } from 'lucide-react';
 import { Checkbox } from './Checkbox';
+import { MemberAvatar } from '../../../MemberAvatar';
 
 interface Member {
   id: string;
@@ -178,15 +179,14 @@ export function ReassignRoleModal({
                     checked={selectedMembers.includes(member.id)}
                     onChange={() => handleToggleMember(member.id)}
                   />
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                    style={{ 
-                      backgroundColor: member.color,
-                      fontFamily: 'var(--font-family)',
-                    }}
-                  >
-                    {member.initials}
-                  </div>
+                  <MemberAvatar
+                    name={member.name}
+                    size="lg"
+                    color={member.color}
+                    initials={member.initials}
+                    id={member.id}
+                    showTooltip={false}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
                       {member.name}

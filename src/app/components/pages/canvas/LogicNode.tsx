@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Handle, Position } from 'reactflow';
 import type { NodeProps } from 'reactflow';
-import { 
-  Plus, 
+import { useClickOutside } from '../../../hooks/useClickOutside';
+import {
+  Plus,
   X,
   GitBranch,
   ExternalLink,
@@ -31,6 +32,7 @@ export interface LogicNodeData {
   // Object Target
   targetObjectName?: string;
   targetObjectDescription?: string;
+  editingEnabled?: boolean;
   onChange?: (data: Partial<LogicNodeData>) => void;
   onAction?: (action: 'delete' | 'duplicate') => void;
   onAddConnectedStep?: (sourceHandle?: string) => void;
@@ -46,16 +48,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node) && 
-          containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setActiveMenu('none');
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside([menuRef, containerRef], () => setActiveMenu('none'));
 
   const updateData = (updates: Partial<LogicNodeData>) => {
     if (data.onChange) {
@@ -181,7 +174,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
   return (
     <div 
       ref={containerRef}
-      className="relative group transition-all duration-200 min-w-[240px] w-max max-w-[320px]"
+      className="relative group transition-all duration-200 min-w-[200px] sm:min-w-[240px] w-max max-w-[90vw] sm:max-w-[320px]"
     >
       <div
         className="relative border-2 rounded-lg transition-all"
@@ -194,11 +187,11 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
         }}
       >
         {/* Input Handle */}
-        <Handle 
-          type="target" 
-          position={Position.Top} 
-          className="!w-4 !h-4 !border-2 !left-1/2 !-translate-x-1/2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair"
-          style={{ 
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!w-4 !h-4 !border-2 !left-1/2 !-translate-x-1/2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
+          style={{
             backgroundColor: colors.bg,
             borderColor: 'var(--card)'
           }}
@@ -232,7 +225,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
           {/* Configuration Button */}
           {isPlatformSwitch && (
             <button
-              onClick={() => handleToggleMenu('platforms')}
+              onClick={() => data.editingEnabled !== false && handleToggleMenu('platforms')}
               className="w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
               style={{
                 borderColor: 'var(--border)',
@@ -254,7 +247,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
           {isProcedureLink && (
             <>
               <button
-                onClick={() => data.onSelectProcedure?.()}
+                onClick={() => data.editingEnabled !== false && data.onSelectProcedure?.()}
                 className="w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
                 style={{
                   borderColor: 'var(--border)',
@@ -275,7 +268,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
           {data.logicType === 'object-target' && (
             <>
               <button
-                onClick={() => handleToggleMenu('target')}
+                onClick={() => data.editingEnabled !== false && handleToggleMenu('target')}
                 className="w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
                 style={{
                   borderColor: 'var(--border)',
@@ -298,7 +291,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
         {activeMenu !== 'none' && (
           <div 
             ref={menuRef}
-            className="absolute top-0 left-full ml-3 rounded-lg border p-4 z-50 min-w-[260px] max-w-[300px] animate-in slide-in-from-left-2 duration-200"
+            className="absolute top-full mt-2 left-0 sm:top-0 sm:left-full sm:ml-3 rounded-lg border p-4 z-50 min-w-[220px] sm:min-w-[260px] max-w-[calc(100vw-2rem)] sm:max-w-[300px] animate-in slide-in-from-left-2 duration-200"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
@@ -339,9 +332,9 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                           <option value="hololens">HoloLens</option>
                         </select>
                       </div>
-                      <button 
-                        onClick={() => removePlatform(platform.id)} 
-                        className="p-1 transition-colors shrink-0" 
+                      <button
+                        onClick={() => removePlatform(platform.id)}
+                        className="p-2 transition-colors shrink-0"
                         style={{ color: 'var(--muted)' }}
                         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--destructive)'}
                         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
@@ -444,7 +437,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                     type="source"
                     position={Position.Bottom}
                     id={platform.id}
-                    className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair"
+                    className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
                     style={{
                       backgroundColor: colors.bg,
                       borderColor: 'var(--card)'
@@ -460,13 +453,13 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                     {getPlatformIcon(platform.platform)}
                     {platform.label}
                   </div>
-                  {!isConnected && (
+                  {!isConnected && data.editingEnabled !== false && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         data.onAddConnectedStep?.(platform.id);
                       }}
-                      className="absolute top-12 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-125 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
+                      className="absolute top-12 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
                       style={{
                         backgroundColor: 'var(--card)',
                         borderColor: 'var(--border)',
@@ -498,19 +491,19 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
               type="source"
               position={Position.Bottom}
               id="default"
-              className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair"
+              className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
               style={{
                 backgroundColor: colors.bg,
                 borderColor: 'var(--card)'
               }}
             />
-            {!data.connectedHandles?.has('default') && (
+            {!data.connectedHandles?.has('default') && data.editingEnabled !== false && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   data.onAddConnectedStep?.();
                 }}
-                className="absolute top-6 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-125 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
+                className="absolute top-6 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)',

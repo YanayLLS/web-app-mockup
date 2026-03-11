@@ -4,3 +4,4 @@ dist
 .claude/
 _bmad/
 _bmad-output/
+_mcp/browser-viewer/node_modules/

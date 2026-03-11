@@ -734,13 +734,13 @@ export function ValidationPanel({
           style={{
             backgroundColor: 'var(--card)', border: '1px solid var(--border)',
             boxShadow: 'var(--elevation-lg)', padding: 'var(--spacing-2xl)',
-            maxWidth: '500px', margin: 'var(--spacing-lg)'
+            maxWidth: 'min(500px, calc(100vw - 32px))', margin: 'var(--spacing-lg)'
           }}
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 rounded-lg transition-colors"
-            style={{ padding: 'var(--spacing-sm)', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--foreground)' }}
+            className="absolute top-4 right-4 rounded-lg transition-colors flex items-center justify-center"
+            style={{ padding: 'var(--spacing-sm)', minHeight: '44px', minWidth: '44px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--foreground)' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
@@ -765,6 +765,7 @@ export function ValidationPanel({
                 className="flex items-center rounded-lg transition-all"
                 style={{
                   gap: 'var(--spacing-sm)', padding: 'var(--spacing-md) var(--spacing-lg)',
+                  minHeight: '44px',
                   backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)',
                   border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
                   fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-medium)'
@@ -798,7 +799,7 @@ export function ValidationPanel({
         className="relative rounded-lg flex flex-col"
         style={{
           backgroundColor: 'var(--card)', border: '1px solid var(--border)',
-          boxShadow: 'var(--elevation-lg)', width: '90vw', maxWidth: '580px',
+          boxShadow: 'var(--elevation-lg)', width: '90vw', maxWidth: 'min(580px, calc(100vw - 32px))',
           height: '85vh', maxHeight: '780px', margin: 'var(--spacing-md)'
         }}
       >
@@ -819,8 +820,8 @@ export function ValidationPanel({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg transition-colors shrink-0"
-            style={{ padding: 'var(--spacing-sm)', backgroundColor: 'var(--secondary)', border: 'none', cursor: 'pointer', color: 'var(--foreground)' }}
+            className="rounded-lg transition-colors shrink-0 flex items-center justify-center"
+            style={{ padding: 'var(--spacing-sm)', minHeight: '44px', minWidth: '44px', backgroundColor: 'var(--secondary)', border: 'none', cursor: 'pointer', color: 'var(--foreground)' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--border)'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
           >
@@ -845,6 +846,7 @@ export function ValidationPanel({
                   className="flex items-center rounded-lg transition-all"
                   style={{
                     gap: 'var(--spacing-sm)', padding: 'var(--spacing-md) var(--spacing-lg)',
+                    minHeight: '44px',
                     backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)',
                     border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
                     fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-medium)'
@@ -993,6 +995,7 @@ export function ValidationPanel({
                   className="flex items-center justify-center rounded-lg transition-all w-full"
                   style={{
                     gap: 'var(--spacing-sm)', padding: 'var(--spacing-md)',
+                    minHeight: '44px',
                     backgroundColor: 'transparent', color: 'var(--primary)',
                     border: '2px dashed var(--border)', cursor: 'pointer',
                     fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)',
@@ -1011,8 +1014,8 @@ export function ValidationPanel({
 
         {/* Footer */}
         <div
-          className="shrink-0 flex items-center justify-between"
-          style={{ padding: 'var(--spacing-md) var(--spacing-xl)', borderTop: '1px solid var(--border)', backgroundColor: 'var(--secondary)' }}
+          className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
+          style={{ padding: 'var(--spacing-md) var(--spacing-lg)', borderTop: '1px solid var(--border)', backgroundColor: 'var(--secondary)' }}
         >
           {editingEnabled ? (
             <button
@@ -1020,6 +1023,7 @@ export function ValidationPanel({
               className="flex items-center rounded-lg transition-colors"
               style={{
                 gap: 'var(--spacing-xs)', padding: 'var(--spacing-sm) var(--spacing-md)',
+                minHeight: '44px',
                 backgroundColor: 'transparent', color: 'var(--muted-foreground)',
                 border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
                 fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-medium)'
@@ -1047,6 +1051,7 @@ export function ValidationPanel({
               className="flex items-center rounded-lg transition-all"
               style={{
                 gap: 'var(--spacing-xs)', padding: 'var(--spacing-sm) var(--spacing-lg)',
+                minHeight: '44px',
                 backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)',
                 border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
                 fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)'

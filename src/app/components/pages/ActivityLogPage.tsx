@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useProject, ActivityLog, ActivityAction, ActivityCategory } from '../../contexts/ProjectContext';
+import { MemberAvatar } from '../MemberAvatar';
 import {
   Search,
   Filter,
@@ -165,20 +166,6 @@ export function ActivityLogPage() {
     return time.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Helper to get user initials
-  const getUserInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
-
-  // Helper to get user color
-  const getUserColor = (name: string) => {
-    const colors = [
-      '#3b82f6', '#ef4444', '#10b981', '#f59e0b', 
-      '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
-    ];
-    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
-    return colors[index];
-  };
 
   // Toggle filter selections
   const toggleUser = (user: string) => {
@@ -218,8 +205,8 @@ export function ActivityLogPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-card px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h1 className="text-xl text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               Activity Log
@@ -311,10 +298,10 @@ export function ActivityLogPage() {
         )}
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-col sm:flex-row flex-1 min-h-0">
         {/* Filter Sidebar */}
         {showFilters && (
-          <div className="w-64 border-r border-border bg-card overflow-y-auto custom-scrollbar">
+          <div className="w-full sm:w-64 shrink-0 border-b sm:border-b-0 sm:border-r border-border bg-card overflow-y-auto custom-scrollbar max-h-[40vh] sm:max-h-none">
             <div className="p-4">
               {/* Users Filter */}
               <div className="mb-6">
@@ -336,15 +323,7 @@ export function ActivityLogPage() {
                         />
                       </div>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div 
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white shrink-0"
-                          style={{ 
-                            backgroundColor: getUserColor(user),
-                            fontWeight: 'var(--font-weight-bold)'
-                          }}
-                        >
-                          {getUserInitials(user)}
-                        </div>
+                        <MemberAvatar name={user} size="sm" showProfileOnClick={false} />
                         <span className="text-sm text-foreground truncate">{user}</span>
                       </div>
                     </label>
@@ -424,7 +403,7 @@ export function ActivityLogPage() {
               </div>
             </div>
           ) : (
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <div className="space-y-3">
                 {filteredLogs.map((log, index) => {
                   const isFirstOfDay = index === 0 || 
@@ -453,22 +432,14 @@ export function ActivityLogPage() {
                       )}
 
                       {/* Activity Item */}
-                      <div className="group flex gap-4 p-4 bg-card border border-border rounded-[var(--radius)] hover:border-primary/30 hover:shadow-sm transition-all">
+                      <div className="group flex gap-3 sm:gap-4 p-3 sm:p-4 bg-card border border-border rounded-[var(--radius)] hover:border-primary/30 hover:shadow-sm transition-all">
                         {/* User Avatar */}
-                        <div 
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm text-white shrink-0"
-                          style={{ 
-                            backgroundColor: getUserColor(log.user),
-                            fontWeight: 'var(--font-weight-bold)'
-                          }}
-                        >
-                          {getUserInitials(log.user)}
-                        </div>
+                        <MemberAvatar name={log.user} size="2xl" />
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           {/* Header */}
-                          <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1 sm:gap-3 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                                 {log.user}
@@ -508,7 +479,7 @@ export function ActivityLogPage() {
 
                           {/* Metadata */}
                           {log.metadata && (
-                            <div className="flex items-center gap-3 mt-2 text-xs">
+                            <div className="flex items-center gap-3 mt-2 text-xs flex-wrap">
                               {log.metadata.from && log.metadata.to && (
                                 <div className="flex items-center gap-2 text-muted">
                                   <span className="px-2 py-1 bg-secondary rounded border border-border">

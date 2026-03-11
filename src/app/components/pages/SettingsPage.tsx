@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Trash2, X, ChevronDown, UserPlus } from 'lucide-react';
 import svgPaths from '../../../imports/svg-mc05ue2l4h';
+import { MemberAvatar } from '../MemberAvatar';
 
 export function SettingsPage() {
   const [projectName, setProjectName] = useState('Elitebook 840 G9');
@@ -23,7 +24,7 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background overflow-auto">
-      <div className="max-w-[600px] mx-auto w-full p-6 space-y-4">
+      <div className="max-w-[600px] mx-auto w-full p-4 sm:p-6 space-y-4">
         {/* Header Section */}
         <div className="bg-card border border-border rounded-[var(--radius)] p-4">
           <div className="mb-4">
@@ -40,7 +41,7 @@ export function SettingsPage() {
           </div>
 
           {/* Project Name and Owner Row */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label 
                 className="block text-sm text-foreground mb-1.5" 
@@ -94,7 +95,7 @@ export function SettingsPage() {
           </div>
 
           {/* Description and Cover Image Row */}
-          <div className="grid grid-cols-[1fr_auto] gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
             <div>
               <label className="block text-sm text-foreground mb-1.5">
                 <span style={{ fontWeight: 'var(--font-weight-bold)' }}>Description</span>
@@ -124,10 +125,10 @@ export function SettingsPage() {
 
         {/* Privacy Section */}
         <div className="bg-card border border-border rounded-[var(--radius)]">
-          <div className="p-4 flex items-center justify-between">
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex-1">
-              <h3 
-                className="text-sm text-foreground mb-1" 
+              <h3
+                className="text-sm text-foreground mb-1"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
                 Privacy
@@ -138,7 +139,7 @@ export function SettingsPage() {
             <div className="relative">
               <button
                 onClick={() => setShowPrivacyMenu(!showPrivacyMenu)}
-                className="w-32 h-9 px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground hover:bg-secondary transition-colors flex items-center justify-between"
+                className="w-full sm:w-32 h-9 px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground hover:bg-secondary transition-colors flex items-center justify-between"
               >
                 <span>{privacy}</span>
                 <ChevronDown size={14} />
@@ -178,14 +179,18 @@ export function SettingsPage() {
               {sharedUsers.map((user, index) => (
                 <div
                   key={index}
-                  className="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white -mr-1"
-                  style={{ 
-                    backgroundColor: user.color,
-                    fontWeight: 'var(--font-weight-bold)',
-                    zIndex: sharedUsers.length - index
-                  }}
+                  className="-mr-1"
+                  style={{ zIndex: sharedUsers.length - index }}
                 >
-                  {user.initials}
+                  <MemberAvatar
+                    name={user.initials}
+                    initials={user.initials}
+                    color={user.color}
+                    size="xs"
+                    border
+                    showTooltip={false}
+                    showProfileOnClick={false}
+                  />
                 </div>
               ))}
               
@@ -208,10 +213,10 @@ export function SettingsPage() {
 
         {/* Default Digital Twin Section */}
         <div className="bg-card border border-border rounded-[var(--radius)] p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex-1">
-              <h3 
-                className="text-sm text-foreground mb-1" 
+              <h3
+                className="text-sm text-foreground mb-1"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
                 Default digital twin
@@ -222,7 +227,7 @@ export function SettingsPage() {
             <div className="relative">
               <button
                 onClick={() => setShowDigitalTwinMenu(!showDigitalTwinMenu)}
-                className="w-60 h-9 px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground hover:bg-secondary transition-colors flex items-center justify-between"
+                className="w-full sm:w-60 h-9 px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground hover:bg-secondary transition-colors flex items-center justify-between"
               >
                 <span>{defaultDigitalTwin}</span>
                 <ChevronDown size={14} />
@@ -256,7 +261,7 @@ export function SettingsPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 pt-2 border-t border-border">
+        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border">
           <button className="flex items-center gap-2 px-4 py-2 bg-destructive text-white rounded-[var(--radius)] text-xs hover:bg-destructive/90 transition-colors">
             <Trash2 size={14} />
             <span>Delete</span>

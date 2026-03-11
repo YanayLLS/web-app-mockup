@@ -30,11 +30,11 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#36415D', fontFamily: 'var(--font-family)' }}>
       {/* Main login card */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-sm bg-card rounded-[var(--radius)] p-6 sm:p-8" style={{ boxShadow: 'var(--elevation-lg)' }}>
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-sm bg-card rounded-[var(--radius)] p-5 sm:p-8" style={{ boxShadow: 'var(--elevation-lg)', maxWidth: 'min(384px, calc(100vw - 32px))' }}>
           {/* Back button + Title */}
           <div className="flex items-center gap-3 mb-6">
-            <button className="p-1 text-muted hover:text-foreground rounded transition-colors" aria-label="Go back">
+            <button className="p-2 text-muted hover:text-foreground rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Go back">
               <ArrowLeft className="size-5" />
             </button>
             <h2 className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-h2)' }}>
@@ -52,7 +52,8 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(''); }}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                className="w-full h-12 pl-10 pr-10 rounded-lg text-sm bg-card border-2 border-input outline-none text-foreground placeholder:text-muted focus:border-primary transition-colors"
+                className="w-full h-12 pl-10 pr-10 rounded-lg bg-card border-2 border-input outline-none text-foreground placeholder:text-muted focus:border-primary transition-colors"
+                style={{ fontSize: '16px' }}
                 aria-invalid={error ? 'true' : undefined}
                 aria-describedby={error ? 'password-error' : undefined}
               />
@@ -73,7 +74,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
 
           {/* Forgot password */}
           <div className="text-right mb-4">
-            <button className="text-sm text-muted hover:text-foreground transition-colors">
+            <button className="text-sm text-muted hover:text-foreground transition-colors min-h-[44px]">
               Forgot Password?
             </button>
           </div>
@@ -81,18 +82,18 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
           {/* Login button */}
           <button
             onClick={handleLogin}
-            className="w-full py-3 bg-primary text-white rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors"
+            className="w-full py-3 min-h-[48px] bg-primary text-white rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors"
             style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Login
           </button>
 
           {/* Bottom links */}
-          <div className="flex items-center justify-between mt-6">
-            <button className="text-sm text-foreground hover:text-primary transition-colors" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+          <div className="flex items-center justify-between mt-6 flex-wrap gap-2">
+            <button className="text-sm text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center" style={{ fontWeight: 'var(--font-weight-medium)' }}>
               Create account
             </button>
-            <button className="text-sm text-primary hover:text-primary/80 transition-colors" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+            <button className="text-sm text-primary hover:text-primary/80 transition-colors min-h-[44px] flex items-center" style={{ fontWeight: 'var(--font-weight-medium)' }}>
               or continue as guest
             </button>
           </div>
@@ -100,7 +101,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
       </div>
 
       {/* Error states preview (at bottom for demo) */}
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
         <p className="text-xs text-white/50 text-center mb-3">
           Error dialog previews (click to test):
         </p>
@@ -109,7 +110,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
             <button
               key={d.id}
               onClick={() => setShowErrorDialog(d.id)}
-              className="px-3 py-1.5 bg-white/10 text-white/70 rounded-full text-xs hover:bg-white/20 transition-colors"
+              className="px-3 py-2 min-h-[36px] bg-white/10 text-white/70 rounded-full text-xs hover:bg-white/20 transition-colors"
             >
               {d.title}
             </button>
@@ -119,10 +120,10 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
 
       {/* Error dialog overlay */}
       {showErrorDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={() => setShowErrorDialog(null)}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-6" onClick={() => setShowErrorDialog(null)}>
           <div
-            className="w-full max-w-xs bg-card rounded-[var(--radius)] p-6 text-center"
-            style={{ boxShadow: 'var(--elevation-lg)' }}
+            className="w-full bg-card rounded-[var(--radius)] p-6 text-center"
+            style={{ boxShadow: 'var(--elevation-lg)', maxWidth: 'min(320px, calc(100vw - 32px))' }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-h4)' }}>
@@ -133,7 +134,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
             </p>
             <button
               onClick={() => setShowErrorDialog(null)}
-              className="px-8 py-2 bg-primary text-white rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors text-sm"
+              className="px-8 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors text-sm"
               style={{ fontWeight: 'var(--font-weight-semibold)' }}
             >
               OK

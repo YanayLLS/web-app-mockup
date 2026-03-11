@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Link as LinkIcon, X, Check } from 'lucide-react';
 import { KnowledgeBaseItem } from '../../../types';
 import { useProject } from '../../contexts/ProjectContext';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
 
 interface ConnectionPickerProps {
   item: KnowledgeBaseItem;
@@ -11,20 +13,13 @@ interface ConnectionPickerProps {
 
 export function ConnectionPicker({ item, onClose, position }: ConnectionPickerProps) {
   const { digitalTwins, knowledgeBaseItems, updateKnowledgeBaseItem, getConnectedProcedures } = useProject();
+  const { currentRole } = useRole();
+  const canEdit = hasAccess(currentRole, 'projects-edit');
   const [searchQuery, setSearchQuery] = useState('');
   const pickerRef = useRef<HTMLDivElement>(null);
 
   // Close on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
+  useClickOutside(pickerRef, onClose);
 
   // Handle escape key
   useEffect(() => {
@@ -61,10 +56,10 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
     return (
       <div
         ref={pickerRef}
-        className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-80"
+        className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-80 max-w-[calc(100vw-32px)]"
         style={{
           top: `${position.top}px`,
-          left: `${position.left}px`,
+          left: `${Math.min(position.left, window.innerWidth - 336)}px`,
           boxShadow: 'var(--elevation-md)',
         }}
       >
@@ -109,8 +104,8 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
               return (
                 <div
                   key={twin.id}
-                  onClick={() => handleToggleTwin(twin.id)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                  onClick={() => canEdit && handleToggleTwin(twin.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-foreground transition-colors ${canEdit ? 'hover:bg-secondary cursor-pointer' : 'cursor-default opacity-50'}`}
                 >
                   <div className="w-4 h-4 flex items-center justify-center border border-border rounded transition-colors shrink-0 pointer-events-none"
                     style={{
@@ -175,10 +170,10 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
     return (
       <div
         ref={pickerRef}
-        className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-96"
+        className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-96 max-w-[calc(100vw-32px)]"
         style={{
           top: `${position.top}px`,
-          left: `${position.left}px`,
+          left: `${Math.min(position.left, window.innerWidth - 400)}px`,
           boxShadow: 'var(--elevation-md)',
         }}
       >
@@ -223,8 +218,8 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
               return (
                 <div
                   key={procedure.id}
-                  onClick={() => handleToggleProcedure(procedure.id)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                  onClick={() => canEdit && handleToggleProcedure(procedure.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-foreground transition-colors ${canEdit ? 'hover:bg-secondary cursor-pointer' : 'cursor-default opacity-50'}`}
                 >
                   <div className="w-4 h-4 flex items-center justify-center border border-border rounded transition-colors shrink-0 pointer-events-none"
                     style={{

@@ -443,7 +443,7 @@ export function SimpleRolesContextMenu({ selectedRoles, currentRole, onClose, on
                       e.stopPropagation();
                       setShowPermissionsModal({ roleName: role.name, permissions });
                     }}
-                    className="absolute top-2 right-2 p-1.5 rounded hover:bg-secondary/80 transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-2 right-2 p-1.5 rounded hover:bg-secondary/80 transition-all md:opacity-0 md:group-hover:opacity-100"
                     title={`View ${role.name} permissions`}
                   >
                     <Info 

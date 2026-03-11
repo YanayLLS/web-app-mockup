@@ -871,7 +871,7 @@ function SessionDetailsModal({
 
           {/* Content - Two Column Layout */}
           <div className="flex-1 overflow-auto">
-            <div className="grid grid-cols-[300px_1fr] h-full">
+            <div className="grid grid-cols-1 sm:grid-cols-[280px_1fr] h-full">
               {/* Left Sidebar - Steps List */}
               <div className="border-r border-border bg-secondary/20 overflow-auto">
                 <div className="p-4">
@@ -950,7 +950,7 @@ function SessionDetailsModal({
                   </div>
 
                   {/* Step Timing */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div className="bg-secondary/50 rounded-[var(--radius)] p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Clock size={14} className="text-muted" />
@@ -1001,7 +1001,7 @@ function SessionDetailsModal({
                               alt={`Step instruction ${index + 1}`}
                               className="w-full h-full object-cover"
                             />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Maximize2 size={24} className="text-white" />
                             </div>
                           </div>
@@ -1019,7 +1019,7 @@ function SessionDetailsModal({
                           User Uploaded Media
                         </h4>
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {currentStep.userMedia.map((media, index) => (
                           <div key={index} className="space-y-2">
                             <div 
@@ -1031,7 +1031,7 @@ function SessionDetailsModal({
                                 alt={`User media ${index + 1}`}
                                 className="w-full h-full object-cover"
                               />
-                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="absolute inset-0 bg-black/50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <Maximize2 size={20} className="text-white" />
                               </div>
                               {media.type === 'video' && (
@@ -1120,7 +1120,7 @@ function AnalyticsSkeleton() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-6 pb-6 space-y-5">
+      <div className="flex-1 overflow-auto px-4 sm:px-6 pb-6 space-y-5">
         {/* Chart skeleton */}
         <div className="bg-card border border-border rounded-[var(--radius)] p-5 animate-pulse">
           <div className="flex items-center justify-between mb-5">
@@ -1141,7 +1141,7 @@ function AnalyticsSkeleton() {
         </div>
 
         {/* Summary cards skeleton */}
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="bg-card border border-border rounded-[var(--radius)] p-4 animate-pulse">
               <div className="flex items-center gap-3">
@@ -1156,7 +1156,7 @@ function AnalyticsSkeleton() {
         </div>
 
         {/* Bottom grid skeleton */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-card border border-border rounded-[var(--radius)] p-5 animate-pulse">
               <div className="h-4 bg-muted/30 rounded w-32 mb-4" />
@@ -1463,7 +1463,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
   return (
     <div className="flex flex-col h-full bg-background overflow-auto">
       {/* Page Header with global time range */}
-      <div className="shrink-0 px-6 py-5 flex items-center justify-between">
+      <div className="shrink-0 px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-lg text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
           Analytics
         </h1>
@@ -1485,7 +1485,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto px-6 pb-6 space-y-5">
+      <div className="flex-1 overflow-auto px-4 sm:px-6 pb-6 space-y-5">
 
         {/* ===== HERO CHART CARD ===== */}
         <div className="bg-card border border-border rounded-[var(--radius)] p-5">
@@ -1636,7 +1636,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         </div>
 
         {/* ===== SUMMARY CARDS ROW ===== */}
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {[
             { label: 'Total Views', value: totalViews.toLocaleString(), icon: <Eye size={16} className="text-primary" />, bg: 'bg-primary/10', trend: viewsTrend },
             { label: 'Total Sessions', value: totalSessions.toString(), icon: <Activity size={16} className="text-accent" />, bg: 'bg-accent/10', trend: sessionsTrend },
@@ -1670,7 +1670,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         </div>
 
         {/* ===== THREE-COLUMN CARDS ROW ===== */}
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
           {/* Devices Card - donut chart */}
           <div className="bg-card border border-border rounded-[var(--radius)] p-5">
@@ -1871,7 +1871,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         </div>
 
         {/* ===== TEAM PERFORMANCE & CONTENT HEALTH ROW ===== */}
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
           {/* User Performance */}
           <div className="bg-card border border-border rounded-[var(--radius)]">
             <div className="flex items-center gap-2 p-5 pb-0 mb-3">
@@ -2010,13 +2010,13 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
                     placeholder="Search sessions..."
                     value={sessionSearchQuery}
                     onChange={(e) => setSessionSearchQuery(e.target.value)}
-                    className="w-64 h-9 pl-9 pr-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full sm:w-64 h-9 pl-9 pr-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <CustomDropdown
                 value={statusFilter}
                 options={statusOptions}

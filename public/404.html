@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Redirecting…</title></head>
+<body>
+<script>
+// GitHub Pages SPA redirect: convert the 404 path into a query-string redirect
+// so the SPA's index.html can restore the original route on load.
+var repo = '/Frontline-Apps-Designs';
+var path = window.location.pathname;
+if (path.indexOf(repo) === 0) path = path.slice(repo.length);
+var search = window.location.search;
+window.location.replace(
+  repo + '/?spa-redirect=' + encodeURIComponent(path + search + window.location.hash)
+);
+</script>
+</body>
+</html>

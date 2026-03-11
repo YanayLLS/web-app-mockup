@@ -65,7 +65,7 @@ export function PartsCatalogModal({ onClose }: PartsCatalogModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       
-      <div className="relative bg-white rounded-lg w-full max-w-[303px] shadow-2xl max-h-[90vh] flex flex-col">
+      <div className="relative bg-white rounded-lg w-full max-w-[min(303px,calc(100vw-32px))] shadow-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-[#c2c9db]">
           <div className="flex items-center gap-3">
@@ -80,7 +80,7 @@ export function PartsCatalogModal({ onClose }: PartsCatalogModalProps) {
               {activeTab === 'catalog' ? 'Tools' : 'Parts catalog'}
             </button>
           </div>
-          <button onClick={onClose} className="text-[#7f7f7f] hover:text-[#36415d]">
+          <button onClick={onClose} className="text-[#7f7f7f] hover:text-[#36415d] min-h-[44px] min-w-[44px] flex items-center justify-center">
             <X className="size-4" />
           </button>
         </div>
@@ -94,11 +94,11 @@ export function PartsCatalogModal({ onClose }: PartsCatalogModalProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for part..."
-                className="w-full bg-[#c2c9db] rounded-full px-3 py-2 pr-8 text-[12px] text-[#36415d] outline-none focus:ring-2 focus:ring-[#2f80ed]"
+                className="w-full bg-[#c2c9db] rounded-full px-3 py-2 pr-8 min-h-[44px] text-[12px] text-[#36415d] outline-none focus:ring-2 focus:ring-[#2f80ed]"
               />
               <Search className="absolute right-2 top-1/2 -translate-y-1/2 size-3 text-[#36415d]" />
             </div>
-            <button className="p-2 hover:bg-[#f5f5f5] rounded">
+            <button className="p-2 hover:bg-[#f5f5f5] rounded min-h-[44px] min-w-[44px] flex items-center justify-center">
               <Filter className="size-4 text-[#36415d]" />
             </button>
           </div>
@@ -110,7 +110,7 @@ export function PartsCatalogModal({ onClose }: PartsCatalogModalProps) {
             {filteredParts.map((part) => (
               <div
                 key={part.id}
-                className={`flex items-center gap-2 px-2 py-2 rounded-full cursor-pointer transition-colors ${
+                className={`flex items-center gap-2 px-2 py-2 min-h-[44px] rounded-full cursor-pointer transition-colors ${
                   selectedParts.has(part.id)
                     ? 'bg-[#e9e9e9]'
                     : 'hover:bg-[#f5f5f5]'

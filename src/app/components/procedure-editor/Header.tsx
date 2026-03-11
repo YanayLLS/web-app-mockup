@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Settings, X, RotateCw, Upload, Save, Zap, Bookmark, Package, AlertCircle, Undo, List, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { StepAction } from './ProcedureEditor';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface HeaderProps {
   hasAnimation: boolean;
@@ -71,23 +72,7 @@ export function Header({
   };
 
   // Click outside handler
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Close digital twin menu
-      if (
-        showDigitalTwinMenu &&
-        digitalTwinRef.current &&
-        !digitalTwinRef.current.contains(event.target as Node) &&
-        digitalTwinButtonRef.current &&
-        !digitalTwinButtonRef.current.contains(event.target as Node)
-      ) {
-        setShowDigitalTwinMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDigitalTwinMenu]);
+  useClickOutside([digitalTwinRef, digitalTwinButtonRef], () => setShowDigitalTwinMenu(false), showDigitalTwinMenu);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -103,16 +88,16 @@ export function Header({
 
   return (
     <>
-      <div 
+      <div
         data-tutorial="toolbar"
-        className="bg-card content-stretch flex gap-0.5 items-center p-2 relative rounded-button shrink-0 z-10 max-w-full overflow-x-auto"
+        className="bg-card content-stretch flex flex-wrap gap-0.5 items-center p-2 relative rounded-button shrink-0 z-10 max-w-[calc(100vw-32px)] overflow-x-auto"
       >
         <div aria-hidden="true" className="absolute border border-border inset-0 pointer-events-none rounded-button shadow-elevation-sm" />
         
         {/* Bookmarks Button - Icon only */}
         <button
           onClick={onOpenBookmarks}
-          className="content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 hover:bg-secondary/50 transition-colors"
+          className="content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center hover:bg-secondary/50 transition-colors"
           title="Bookmarks"
           aria-label="Open bookmarks"
         >
@@ -122,7 +107,7 @@ export function Header({
         {/* Parts Catalog Toggle - Icon only */}
         <button
           onClick={onTogglePartsCatalog}
-          className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 transition-colors ${
+          className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center transition-colors ${
             isPartsCatalogOpen ? 'bg-accent/20 hover:bg-accent/30' : 'hover:bg-secondary/50'
           }`}
           title={isPartsCatalogOpen ? 'Close parts catalog' : 'Open parts catalog'}
@@ -141,9 +126,9 @@ export function Header({
           <button 
             ref={digitalTwinButtonRef}
             onClick={handleToggleDigitalTwinState}
-            className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 transition-colors ${
-              digitalTwinStateActive 
-                ? 'bg-accent/20 hover:bg-accent/30' 
+            className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center transition-colors ${
+              digitalTwinStateActive
+                ? 'bg-accent/20 hover:bg-accent/30'
                 : 'hover:bg-secondary/50'
             }`}
             title="Save Twin Setup"
@@ -156,7 +141,7 @@ export function Header({
 
         {/* Animate Button - Icon only, highlighted if animation exists */}
         <button 
-          className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 transition-colors ${
+          className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center transition-colors ${
             hasAnimation ? 'bg-accent/20 hover:bg-accent/30' : 'hover:bg-secondary/50'
           }`}
           title="Animate"
@@ -169,7 +154,7 @@ export function Header({
         <div className="relative shrink-0">
           <button
             onClick={onOpenValidation}
-            className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 transition-colors ${
+            className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center transition-colors ${
               checkpointCount > 0 ? 'bg-accent/20 hover:bg-accent/30' : 'hover:bg-secondary/50'
             }`}
             title="Validation Point"
@@ -207,7 +192,7 @@ export function Header({
         {/* Settings Button */}
         <button 
           onClick={onOpenSettings}
-          className="content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 hover:bg-secondary/50 transition-colors"
+          className="content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center hover:bg-secondary/50 transition-colors"
           title="Flow settings"
           aria-label="Flow settings"
         >
@@ -217,7 +202,7 @@ export function Header({
         {/* Publish Button */}
         <button
           onClick={onOpenPublish}
-          className="relative px-4 py-2 rounded-button bg-accent text-accent-foreground hover:bg-accent/80 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shadow-sm hover:shadow-lg group"
+          className="relative px-4 py-2 min-h-[44px] rounded-button bg-accent text-accent-foreground hover:bg-accent/80 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shadow-sm hover:shadow-lg group"
           style={{
             fontFamily: 'var(--font-family)',
             fontWeight: 600,
@@ -242,8 +227,9 @@ export function Header({
             className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
             style={{
               top: `${digitalTwinButtonRef.current.getBoundingClientRect().bottom + 8}px`,
-              left: `${digitalTwinButtonRef.current.getBoundingClientRect().left}px`,
-              minWidth: '200px'
+              left: `${Math.min(digitalTwinButtonRef.current.getBoundingClientRect().left, window.innerWidth - 216)}px`,
+              minWidth: '200px',
+              maxWidth: 'calc(100vw - 16px)'
             }}
             role="menu"
             aria-label="Digital twin state menu"
@@ -251,7 +237,7 @@ export function Header({
             <div className="flex flex-col" style={{ padding: 'var(--spacing-md)' }}>
               <button
                 onClick={handleUpdateDigitalTwinState}
-                className="flex flex-col gap-1 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground text-left w-full transition-all group"
+                className="flex flex-col gap-1 px-3 py-3 min-h-[44px] rounded-md hover:bg-accent hover:text-accent-foreground text-left w-full transition-all group"
                 style={{ 
                   color: 'var(--foreground)',
                   fontFamily: 'var(--font-family)',
@@ -278,7 +264,7 @@ export function Header({
               </button>
               <button
                 onClick={handleClearDigitalTwinState}
-                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-destructive/10 hover:text-destructive text-left w-full transition-all group"
+                className="flex items-center gap-2 px-3 py-3 min-h-[44px] rounded-md hover:bg-destructive/10 hover:text-destructive text-left w-full transition-all group"
                 style={{ 
                   color: 'var(--foreground)',
                   fontFamily: 'var(--font-family)',
@@ -301,7 +287,7 @@ export function Header({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center gap-4 px-5 py-3 rounded-lg shadow-elevation-lg border-2 border-border bg-card text-card-foreground min-w-[320px]"
+            className="flex items-center gap-4 px-5 py-3 rounded-lg shadow-elevation-lg border-2 border-border bg-card text-card-foreground min-w-[280px] max-w-[calc(100vw-32px)]"
           >
             <AlertCircle className="size-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
             <p className="flex-1 leading-tight" style={{ 

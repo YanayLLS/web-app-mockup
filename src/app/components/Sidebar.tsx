@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import svgPaths from "../../imports/svg-albmkprcym";
-import { Users, Palette, Headphones, Grid3x3, TrendingUp, Cloud, QrCode, Puzzle, ChevronDown, ChevronLeft, Folder, Search, Settings as SettingsIcon, PanelLeft, PanelLeftClose } from 'lucide-react';
+import { Users, Palette, Headphones, Grid3x3, TrendingUp, Cloud, QrCode, Puzzle, ChevronDown, ChevronLeft, Folder, Search, Settings as SettingsIcon, PanelLeft, PanelLeftClose, Crown } from 'lucide-react';
 import { useRole, hasAccess } from '../contexts/RoleContext';
 import { ProjectSettingsModal } from './modals/ProjectSettingsModal';
 import { toast } from 'sonner';
@@ -33,6 +33,7 @@ const mainMenuItems = [
 const workspaceManagementItems = [
   { id: 'ws-members', label: 'Members', icon: 'members' },
   { id: 'ws-groups', label: 'Groups', icon: 'members' },
+  { id: 'ws-roles', label: 'Roles', icon: 'crown' },
   { id: 'ws-design', label: 'Workspace Design', icon: 'palette' },
   { id: 'ws-remote-support', label: 'Remote Support Settings', icon: 'headphones' },
   { id: 'ws-subworkspaces', label: 'Sub-Workspaces', icon: 'grid' },
@@ -155,6 +156,8 @@ function getIcon(iconName: string) {
       return <QrCode size={20} />;
     case 'puzzle':
       return <Puzzle size={20} />;
+    case 'crown':
+      return <Crown size={20} />;
     default:
       return null;
   }
@@ -200,10 +203,19 @@ export function Sidebar({
     : availableMainMenuItems;
 
   const filteredWorkspaceMenuItems = menuSearchQuery
-    ? workspaceManagementItems.filter(item => 
+    ? workspaceManagementItems.filter(item =>
         item.label.toLowerCase().includes(menuSearchQuery.toLowerCase())
       )
     : workspaceManagementItems;
+
+  // Filter workspace items by role: admin sees all, SSM only sees Members & Groups
+  const visibleWorkspaceItems = filteredWorkspaceMenuItems.filter(item => {
+    if (hasAccess(currentRole, 'workspace-management')) return true; // admin sees all
+    if (hasAccess(currentRole, 'workspace-members')) {
+      return item.id === 'ws-members' || item.id === 'ws-groups';
+    }
+    return false;
+  });
 
   // Filter projects based on search query
   const filteredProjects = menuSearchQuery
@@ -326,7 +338,7 @@ export function Sidebar({
       )}
 
       {/* Menu Items */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-3 py-2 custom-scrollbar overscroll-contain">
         {isWorkspaceManagement ? (
           <>
             {/* Back to Workspace Button */}
@@ -357,7 +369,7 @@ export function Sidebar({
                 </button>
               )}
               
-              {filteredWorkspaceMenuItems.map((item) => {
+              {visibleWorkspaceItems.map((item) => {
                 const isActive = selectedMenuItem === item.id && !selectedProject;
                 return (
                   <button

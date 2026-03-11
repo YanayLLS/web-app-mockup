@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Play, Settings, ChevronDown, Share2, Star, MoreVertical, Edit, Clock, User, Layers, Box, Globe, X } from 'lucide-react';
 import { useState } from 'react';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
 
 const procedures: Record<string, {
   name: string;
@@ -61,6 +62,9 @@ export function AppProcedureDetailPage() {
   const [showCreatorArea, setShowCreatorArea] = useState(true);
   const [showLanguageSelector, setShowLanguageSelector] = useState(true);
 
+  const { currentRole } = useRole();
+  const canEdit = hasAccess(currentRole, 'projects-edit');
+
   const procedure = procedures[procedureId || ''] || defaultProcedure;
 
   return (
@@ -69,24 +73,26 @@ export function AppProcedureDetailPage() {
       <div className="p-4 sm:p-6 border-b border-border bg-card flex items-center gap-3">
         <button
           onClick={() => navigate(`/app/project/${projectId}/kb`)}
-          className="p-1.5 hover:bg-secondary rounded-lg text-foreground transition-colors"
+          className="p-2 hover:bg-secondary rounded-lg text-foreground transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="Back to knowledge base"
         >
           <ArrowLeft className="size-5" />
         </button>
         <h3 className="text-foreground truncate flex-1" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-h4)' }}>
           Procedure Details
         </h3>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={() => setIsFavorited(!isFavorited)}
-            className={`p-2 rounded-lg transition-colors ${isFavorited ? 'text-yellow-500' : 'text-muted hover:text-foreground'}`}
+            className={`p-2 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center ${isFavorited ? 'text-yellow-500' : 'text-muted hover:text-foreground'}`}
+            aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Star className="size-5" fill={isFavorited ? 'currentColor' : 'none'} />
           </button>
-          <button className="p-2 text-muted hover:text-foreground rounded-lg transition-colors">
+          <button className="p-2 text-muted hover:text-foreground rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Share">
             <Share2 className="size-5" />
           </button>
-          <button className="p-2 text-muted hover:text-foreground rounded-lg transition-colors">
+          <button className="p-2 text-muted hover:text-foreground rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="More options">
             <MoreVertical className="size-5" />
           </button>
         </div>
@@ -168,7 +174,7 @@ export function AppProcedureDetailPage() {
                   <select
                     value={selectedConfig}
                     onChange={(e) => setSelectedConfig(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 bg-secondary rounded-lg text-sm text-foreground border-none outline-none appearance-none cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-secondary rounded-lg text-sm text-foreground border-none outline-none appearance-none cursor-pointer min-h-[44px]"
                   >
                     {procedure.configurations.map((config, i) => (
                       <option key={i} value={i}>{config}</option>
@@ -182,7 +188,7 @@ export function AppProcedureDetailPage() {
                   <select
                     value={selectedMode}
                     onChange={(e) => setSelectedMode(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 bg-secondary rounded-lg text-sm text-foreground border-none outline-none appearance-none cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-secondary rounded-lg text-sm text-foreground border-none outline-none appearance-none cursor-pointer min-h-[44px]"
                   >
                     {procedure.modes.map((mode, i) => (
                       <option key={i} value={i}>{mode}</option>
@@ -194,8 +200,8 @@ export function AppProcedureDetailPage() {
               {/* Run button */}
               <button
                 onClick={() => navigate(`/app/project/${projectId}/procedure/${procedureId}/launch`)}
-                className="w-full py-3 bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-                style={{ fontWeight: 'var(--font-weight-semibold)' }}
+                className="w-full bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '48px' }}
               >
                 <Play className="size-5" />
                 Run in 3D
@@ -204,14 +210,15 @@ export function AppProcedureDetailPage() {
               {/* 2D link */}
               <button
                 onClick={() => navigate(`/app/project/${projectId}/procedure/${procedureId}/launch`)}
-                className="w-full mt-3 text-sm text-primary hover:underline text-center"
+                className="w-full mt-2 text-sm text-primary hover:underline text-center"
+                style={{ minHeight: '44px' }}
               >
                 Don't need a digital twin? Run in 2D
               </button>
             </div>
 
-            {/* Right - Content creator area (desktop) */}
-            {showCreatorArea && (
+            {/* Right - Content creator area (desktop) — only for editors */}
+            {showCreatorArea && canEdit && (
               <div className="lg:w-[300px] shrink-0">
                 <div className="bg-secondary/50 rounded-[var(--radius)] p-4 border border-border">
                   <div className="flex items-center justify-between mb-3">

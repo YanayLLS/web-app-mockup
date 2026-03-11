@@ -9,6 +9,7 @@ import { getRandomGroupColor } from '@/app/utils/groupUtils';
 import { MemberAvatarsRow } from './MemberAvatarsRow';
 import { AddMembersContextMenu, MemberOption } from './AddMembersContextMenu';
 import { AccessSummary } from './AccessSummary';
+import { useRole, hasAccess } from '@/app/contexts/RoleContext';
 
 export interface Group {
   id: string;
@@ -27,6 +28,10 @@ interface GroupsManagementPageProps {
 }
 
 export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnabled = true, members = mockMembers, onMembersChange }: GroupsManagementPageProps) {
+  // Role-based access control
+  const { currentRole } = useRole();
+  const isAdmin = hasAccess(currentRole, 'workspace-management');
+
   const [showMemberMenu, setShowMemberMenu] = useState<string | null>(null);
   const [showProjectModal, setShowProjectModal] = useState<string | null>(null);
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
@@ -229,12 +234,12 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
   return (
     <div className="flex-1 flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-card" style={{ 
+      <div className="border-b border-border bg-card" style={{
         padding: 'calc(var(--radius) * 1.5)',
         borderColor: 'var(--border)',
         backgroundColor: 'var(--card)',
       }}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <h2 style={{ 
               color: 'var(--foreground)',
@@ -253,30 +258,34 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
               Manage groups to easily assign members and content access
             </p>
           </div>
-          <button
-            onClick={handleCreateGroup}
-            className="transition-opacity hover:opacity-90 flex items-center"
-            style={{
-              padding: 'calc(var(--radius) * 0.8) calc(var(--radius) * 1.2)',
-              borderRadius: 'var(--radius-button)',
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
-              fontSize: 'var(--text-base)',
-              gap: 'calc(var(--radius) * 0.5)',
-            }}
-          >
-            <Plus className="w-4 h-4" />
-            Create Group
-          </button>
+          {isAdmin && (
+            <button
+              onClick={handleCreateGroup}
+              className="transition-opacity hover:opacity-90 flex items-center"
+              style={{
+                padding: 'calc(var(--radius) * 0.8) calc(var(--radius) * 1.2)',
+                borderRadius: 'var(--radius-button)',
+                backgroundColor: 'var(--primary)',
+                color: 'var(--primary-foreground)',
+                fontFamily: 'var(--font-family)',
+                fontSize: 'var(--text-base)',
+                gap: 'calc(var(--radius) * 0.5)',
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              Create Group
+            </button>
+          )}
         </div>
       </div>
 
       {/* Table Header */}
+      <div className="overflow-x-auto">
       <div
         className="grid items-center border-b bg-card"
         style={{
           gridTemplateColumns: '40px 1fr 240px 280px 50px',
+          minWidth: '700px',
           padding: 'calc(var(--radius) * 0.8) calc(var(--radius) * 1.5)',
           borderColor: 'var(--border)',
           backgroundColor: 'var(--card)',
@@ -309,15 +318,18 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
         </span>
         <div></div>
       </div>
+      </div>
 
       {/* Groups List */}
       <div className="flex-1 overflow-auto bg-background">
+        <div className="overflow-x-auto">
         {groups.map((group) => (
           <div
             key={group.id}
             className="grid items-center border-b transition-colors"
             style={{
               gridTemplateColumns: '40px 1fr 240px 280px 50px',
+              minWidth: '700px',
               padding: 'calc(var(--radius) * 1.2) calc(var(--radius) * 1.5)',
               borderColor: 'var(--border)',
             }}
@@ -387,13 +399,15 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
                     <p className="text-base font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
                       {group.name}
                     </p>
-                    <button
-                      onClick={() => handleRenameGroup(group.id)}
-                      className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
-                      style={{ borderRadius: 'var(--radius)' }}
-                    >
-                      <Edit2 className="w-3.5 h-3.5" style={{ color: 'var(--muted)' }} />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleRenameGroup(group.id)}
+                        className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+                        style={{ borderRadius: 'var(--radius)' }}
+                      >
+                        <Edit2 className="w-3.5 h-3.5" style={{ color: 'var(--muted)' }} />
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
                     {group.members.length} member{group.members.length !== 1 ? 's' : ''}
@@ -405,10 +419,10 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
             {/* Members */}
             <MemberAvatarsRow
               members={group.members}
-              onAddClick={(e) => handleAddMembersClick(group.id, e)}
-              onRemoveMember={(memberId) => handleRemoveMember(group.id, memberId)}
+              onAddClick={isAdmin ? (e) => handleAddMembersClick(group.id, e) : undefined}
+              onRemoveMember={isAdmin ? (memberId) => handleRemoveMember(group.id, memberId) : undefined}
               maxVisible={4}
-              showRemoveButton={true}
+              showRemoveButton={isAdmin}
             />
 
             {/* Access */}
@@ -433,16 +447,18 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
               </button>
             </div>
 
-            {/* Delete */}
-            <button
-              onClick={() => handleDeleteGroup(group)}
-              className="w-8 h-8 flex items-center justify-center transition-colors"
-              style={{ borderRadius: 'var(--radius-md)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--destructive-background)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <Trash2 className="w-4 h-4" style={{ color: 'var(--destructive)' }} />
-            </button>
+            {/* Delete — admin only */}
+            {isAdmin && (
+              <button
+                onClick={() => handleDeleteGroup(group)}
+                className="w-8 h-8 flex items-center justify-center transition-colors"
+                style={{ borderRadius: 'var(--radius-md)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--destructive-background)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <Trash2 className="w-4 h-4" style={{ color: 'var(--destructive)' }} />
+              </button>
+            )}
           </div>
         ))}
 
@@ -452,12 +468,13 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
             icon={Users}
             title="No groups yet"
             description="Create groups to organize members and manage their access to projects collectively. Groups make it easy to assign permissions to multiple people at once."
-            action={{
+            action={isAdmin ? {
               label: "Create Group",
               onClick: handleCreateGroup
-            }}
+            } : undefined}
           />
         )}
+        </div>
       </div>
 
       {/* Add Members Context Menu */}

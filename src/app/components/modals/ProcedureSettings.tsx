@@ -55,7 +55,7 @@ export function ProcedureSettings({
       {/* Header */}
       <button
         onClick={onToggleExpand}
-        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-secondary/50 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2.5 min-h-[44px] hover:bg-secondary/50 transition-colors"
         aria-expanded={isExpanded}
       >
         {isExpanded ? (
@@ -83,7 +83,7 @@ export function ProcedureSettings({
               {/* Options */}
               <div className="space-y-1">
                 {group.options.map(option => (
-                  <div key={option.id} className="flex items-center gap-2">
+                  <div key={option.id} className="flex items-center gap-2 min-h-[44px]">
                     <button
                       onClick={() => handleToggle(group.id, option.id)}
                       className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center shrink-0 ${
@@ -109,7 +109,7 @@ export function ProcedureSettings({
                       {option.tooltip && (
                         <div className="group/tooltip relative">
                           <Info size={12} className="text-muted hover:text-foreground transition-colors cursor-help" />
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-foreground text-background text-[10px] rounded whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-foreground text-background text-[10px] rounded whitespace-nowrap hidden md:block md:opacity-0 md:group-hover/tooltip:opacity-100 pointer-events-none transition-opacity">
                             {option.tooltip}
                           </div>
                         </div>

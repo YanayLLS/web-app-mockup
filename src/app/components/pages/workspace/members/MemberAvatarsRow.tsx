@@ -1,4 +1,5 @@
 import { UserPlus, Users } from 'lucide-react';
+import { MemberAvatar } from '../../../MemberAvatar';
 
 export interface Member {
   id: string;
@@ -17,7 +18,7 @@ export interface GroupAvatar {
 interface MemberAvatarsRowProps {
   members: Member[];
   groups?: GroupAvatar[];
-  onAddClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onAddClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onRemoveMember?: (memberId: string) => void;
   onRemoveGroup?: (groupId: string) => void;
   maxVisible?: number;
@@ -72,7 +73,7 @@ export function MemberAvatarsRow({
                 <Users className={iconSize} style={{ color: groupColor }} />
                 {/* Tooltip */}
                 <div
-                  className="absolute bottom-full mb-2 px-2 py-1 rounded opacity-0 group-hover/member:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50"
+                  className="absolute bottom-full mb-2 px-2 py-1 rounded hidden md:block md:opacity-0 md:group-hover/member:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50"
                   style={{
                     backgroundColor: 'var(--popover)',
                     color: 'var(--popover-foreground)',
@@ -94,7 +95,7 @@ export function MemberAvatarsRow({
                       e.stopPropagation();
                       onRemoveGroup(group.id);
                     }}
-                    className={`absolute -top-1 -right-1 ${removeButtonSize} rounded-full opacity-0 group-hover/member:opacity-100 transition-opacity text-xs flex items-center justify-center shadow-sm hover:scale-110`}
+                    className={`absolute -top-1 -right-1 ${removeButtonSize} rounded-full md:opacity-0 md:group-hover/member:opacity-100 transition-opacity text-xs flex items-center justify-center shadow-sm hover:scale-110`}
                     style={{
                       backgroundColor: 'var(--destructive)',
                       color: 'var(--destructive-foreground)',
@@ -112,48 +113,17 @@ export function MemberAvatarsRow({
           // It's a member
           const member = item as Member;
           return (
-            <div
+            <MemberAvatar
               key={`member-${member.id}`}
-              className={`${avatarSize} rounded-full flex items-center justify-center text-white ${textSize} border-2 cursor-pointer hover:z-10 group/member relative`}
-              style={{
-                backgroundColor: member.color,
-                borderColor: 'var(--background)',
-                fontWeight: '600',
-                fontFamily: 'var(--font-family)',
-              }}
-            >
-              {member.initials}
-              {/* Tooltip */}
-              <div
-                className="absolute bottom-full mb-2 px-2 py-1 rounded opacity-0 group-hover/member:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50"
-                style={{
-                  backgroundColor: 'var(--popover)',
-                  color: 'var(--popover-foreground)',
-                  fontSize: 'var(--text-xs)',
-                  fontFamily: 'var(--font-family)',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                }}
-              >
-                {member.name}
-              </div>
-              {showRemoveButton && onRemoveMember && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveMember(member.id);
-                  }}
-                  className={`absolute -top-1 -right-1 ${removeButtonSize} rounded-full opacity-0 group-hover/member:opacity-100 transition-opacity text-xs flex items-center justify-center shadow-sm hover:scale-110`}
-                  style={{
-                    backgroundColor: 'var(--destructive)',
-                    color: 'var(--destructive-foreground)',
-                    fontFamily: 'var(--font-family)',
-                  }}
-                  title="Remove member"
-                >
-                  ×
-                </button>
-              )}
-            </div>
+              name={member.name}
+              id={member.id}
+              initials={member.initials}
+              color={member.color}
+              size={size === 'sm' ? 'md' : 'xl'}
+              border
+              onRemove={showRemoveButton && onRemoveMember ? (e) => { e.stopPropagation(); onRemoveMember(member.id); } : undefined}
+              className="hover:z-10"
+            />
           );
         })}
         {remainingCount > 0 && (
@@ -170,15 +140,17 @@ export function MemberAvatarsRow({
           </div>
         )}
       </div>
-      <button
-        ref={addButtonRef}
-        onClick={(e) => onAddClick(e)}
-        className={`${avatarSize} rounded-full flex items-center justify-center border-2 border-dashed hover:bg-secondary transition-colors`}
-        style={{ borderColor: 'var(--border)' }}
-        title="Add members"
-      >
-        <UserPlus className={iconSize} style={{ color: 'var(--muted)' }} />
-      </button>
+      {onAddClick && (
+        <button
+          ref={addButtonRef}
+          onClick={(e) => onAddClick(e)}
+          className={`${avatarSize} min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center border-2 border-dashed hover:bg-secondary transition-colors`}
+          style={{ borderColor: 'var(--border)' }}
+          title="Add members"
+        >
+          <UserPlus className={iconSize} style={{ color: 'var(--muted)' }} />
+        </button>
+      )}
     </div>
   );
 }

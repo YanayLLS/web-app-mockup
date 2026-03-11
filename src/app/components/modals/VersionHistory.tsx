@@ -1,5 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { ChevronDown, ChevronRight, MoreHorizontal, RotateCcw, Eye, FileText } from 'lucide-react';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
+import { MemberAvatar } from '../MemberAvatar';
 
 interface Version {
   version: string;
@@ -20,20 +23,13 @@ export function VersionHistory({
   onToggleExpand,
   versions,
 }: VersionHistoryProps) {
+  const { currentRole } = useRole();
+  const canRollback = hasAccess(currentRole, 'publish-content');
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setActiveMenu(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(menuRef, () => setActiveMenu(null));
 
   const handleRollback = (index: number) => {
     console.log('Rollback to version:', versions[index].version);
@@ -51,7 +47,7 @@ export function VersionHistory({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[var(--radius)]">
+    <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden">
       {/* Header */}
       <button
         onClick={onToggleExpand}
@@ -93,20 +89,17 @@ export function VersionHistory({
                   {version.publishDate}
                 </div>
                 <div className="w-12 shrink-0 flex items-center">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
-                    style={{ 
-                      backgroundColor: version.publishedByColor,
-                      fontWeight: 'var(--font-weight-bold)' 
-                    }}
-                  >
-                    {version.publishedByInitials}
-                  </div>
+                  <MemberAvatar
+                    name={version.publishedBy}
+                    initials={version.publishedByInitials}
+                    color={version.publishedByColor}
+                    size="sm"
+                  />
                 </div>
                 <div className="w-4 shrink-0 relative" ref={activeMenu === index ? menuRef : null}>
                   <button
                     onClick={() => setActiveMenu(activeMenu === index ? null : index)}
-                    className="opacity-0 group-hover:opacity-100 hover:bg-secondary p-0.5 rounded transition-all"
+                    className="md:opacity-0 md:group-hover:opacity-100 hover:bg-secondary p-0.5 rounded transition-all"
                     aria-label={`Version ${version.version} options`}
                     aria-haspopup="true"
                     aria-expanded={activeMenu === index}
@@ -117,16 +110,18 @@ export function VersionHistory({
                   {/* Context Menu */}
                   {activeMenu === index && (
                     <div
-                      className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 overflow-hidden"
+                      className="absolute right-0 top-full mt-1 w-48 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 overflow-hidden"
                       style={{ boxShadow: 'var(--elevation-sm)' }}
                     >
-                      <button
-                        onClick={() => handleRollback(index)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
-                      >
-                        <RotateCcw size={16} className="text-muted" />
-                        <span>Rollback to this version</span>
-                      </button>
+                      {canRollback && (
+                        <button
+                          onClick={() => handleRollback(index)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <RotateCcw size={16} className="text-muted" />
+                          <span>Rollback to this version</span>
+                        </button>
+                      )}
                       <button
                         onClick={() => handlePreview(index)}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"

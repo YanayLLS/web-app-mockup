@@ -1,4 +1,5 @@
 import { AlertCircle } from 'lucide-react';
+import { BaseModal } from './BaseModal';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -21,10 +22,8 @@ export function ConfirmDialog({
   onCancel,
   variant = 'default',
 }: ConfirmDialogProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60]" role="presentation">
+    <BaseModal isOpen={isOpen} onClose={onCancel} opacity={60} blur zIndex={60}>
       <div
         role="alertdialog"
         aria-modal="true"
@@ -60,7 +59,7 @@ export function ConfirmDialog({
         <div className="px-6 py-4 bg-secondary/30 flex items-center justify-end gap-3">
           <button
             onClick={onCancel}
-            className="h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
+            className="h-10 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
           >
             <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               {cancelText}
@@ -68,7 +67,7 @@ export function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            className={`h-9 px-4 rounded-[var(--radius)] transition-colors ${
+            className={`h-10 px-4 rounded-[var(--radius)] transition-colors ${
               variant === 'danger'
                 ? 'bg-red-500 text-white hover:bg-red-600'
                 : 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -80,6 +79,6 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }

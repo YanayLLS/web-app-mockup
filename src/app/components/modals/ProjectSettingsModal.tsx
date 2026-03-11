@@ -3,7 +3,9 @@ import { X, ChevronDown, Trash2 } from 'lucide-react';
 import { MemberAvatarsRow } from './MemberAvatarsRow';
 import { AddMembersContextMenu, MemberOption, GroupOption } from './AddMembersContextMenu';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import { useClickOutside } from '../../hooks/useClickOutside';
 import { useGroups } from '@/app/contexts/GroupsContext';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
 
 interface Owner {
   id: string;
@@ -64,6 +66,8 @@ export function ProjectSettingsModal({
   initialData,
   publicFeatureEnabled = false,
 }: ProjectSettingsModalProps) {
+  const { currentRole } = useRole();
+  const canDelete = hasAccess(currentRole, 'delete-content');
   const { groups } = useGroups();
   const dynamicGroups: GroupOption[] = groups.map(g => ({
     id: g.name,
@@ -157,21 +161,8 @@ export function ProjectSettingsModal({
   }, [isOpen, onClose, showDeleteModal]);
 
   // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (privacyDropdownRef.current && !privacyDropdownRef.current.contains(e.target as Node)) {
-        setShowPrivacyDropdown(false);
-      }
-      if (digitalTwinDropdownRef.current && !digitalTwinDropdownRef.current.contains(e.target as Node)) {
-        setShowDigitalTwinDropdown(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
+  useClickOutside(privacyDropdownRef, () => setShowPrivacyDropdown(false), isOpen);
+  useClickOutside(digitalTwinDropdownRef, () => setShowDigitalTwinDropdown(false), isOpen);
 
   if (!isOpen) return null;
 
@@ -327,7 +318,7 @@ export function ProjectSettingsModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-8"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4"
       onClick={onClose}
     >
       <div
@@ -428,7 +419,7 @@ export function ProjectSettingsModal({
                 Set an access level to this project
               </p>
             </div>
-            <div ref={privacyDropdownRef} className="relative w-[160px]">
+            <div ref={privacyDropdownRef} className="relative w-[160px] max-w-[calc(100vw-64px)]">
               <button
                 onClick={() => setShowPrivacyDropdown(!showPrivacyDropdown)}
                 className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card flex items-center justify-between hover:bg-secondary transition-colors"
@@ -442,7 +433,7 @@ export function ProjectSettingsModal({
 
               {showPrivacyDropdown && (
                 <div
-                  className="absolute z-20 mt-1 w-[280px] right-0 bg-card border-2 border-secondary rounded-[var(--radius-lg)] shadow-elevation-sm overflow-hidden p-4"
+                  className="absolute z-20 mt-1 w-[280px] max-w-[calc(100vw-64px)] right-0 bg-card border-2 border-secondary rounded-[var(--radius-lg)] shadow-elevation-sm overflow-hidden p-4"
                 >
                   {privacyOptions.map((option) => (
                     <button
@@ -498,7 +489,7 @@ export function ProjectSettingsModal({
                 Automatically connects to new procedures
               </p>
             </div>
-            <div ref={digitalTwinDropdownRef} className="w-[250px]">
+            <div ref={digitalTwinDropdownRef} className="w-[250px] max-w-[calc(100vw-64px)]">
               <div
                 role="button"
                 tabIndex={0}
@@ -513,7 +504,7 @@ export function ProjectSettingsModal({
               </div>
               {showDigitalTwinDropdown && (
                 <div
-                  className="absolute mt-1 w-[250px] bg-card border border-border rounded-[var(--radius)] z-20 overflow-hidden"
+                  className="absolute mt-1 w-[250px] max-w-[calc(100vw-64px)] bg-card border border-border rounded-[var(--radius)] z-20 overflow-hidden"
                   style={{ boxShadow: 'var(--shadow-elevation-md)' }}
                 >
                   {['Elitebook 840 G9', 'ProBook 450 G10', 'ZBook Studio G9'].map((twin) => (
@@ -539,7 +530,7 @@ export function ProjectSettingsModal({
 
         {/* Footer */}
         <div className="p-6 flex items-center justify-between border-t border-border">
-          {mode === 'edit' && onDelete ? (
+          {mode === 'edit' && onDelete && canDelete ? (
             <button
               onClick={() => setShowDeleteModal(true)}
               className="px-4 py-2 transition-opacity flex items-center gap-2"

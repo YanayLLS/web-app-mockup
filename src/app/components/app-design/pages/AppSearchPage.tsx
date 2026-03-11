@@ -181,10 +181,10 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
-      <div className="fixed inset-0 flex items-start justify-center z-50 pt-16 px-4 pointer-events-none">
+      <div className="fixed inset-0 flex items-start justify-center z-50 pt-4 sm:pt-16 px-2 sm:px-4 pointer-events-none">
         <div
-          className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border overflow-hidden flex flex-col"
-          style={{ width: '560px', maxWidth: '100%', maxHeight: 'calc(100vh - 120px)' }}
+          className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border overflow-hidden flex flex-col w-full sm:w-auto"
+          style={{ maxWidth: 'min(560px, calc(100vw - 16px))', maxHeight: 'calc(100vh - 32px)' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search input */}
@@ -200,7 +200,8 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSubmitSearch();
                 }}
-                className="w-full h-10 pl-10 pr-10 rounded-lg text-sm bg-secondary border-none outline-none text-foreground placeholder:text-muted focus:ring-2 focus:ring-primary"
+                className="w-full h-12 sm:h-10 pl-10 pr-10 rounded-lg text-sm bg-secondary border-none outline-none text-foreground placeholder:text-muted focus:ring-2 focus:ring-primary"
+                style={{ fontSize: '16px' }}
               />
               {query && (
                 <button
@@ -219,7 +220,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                   <button
                     key={f}
                     onClick={() => setActiveFilter(f)}
-                    className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors
+                    className={`px-3 py-1.5 min-h-[36px] rounded-full text-xs whitespace-nowrap transition-colors
                       ${activeFilter === f ? 'bg-primary text-white' : 'bg-secondary text-foreground hover:bg-secondary/80'}`}
                     style={{ fontWeight: 'var(--font-weight-medium)' }}
                   >
@@ -242,7 +243,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                     <button
                       key={s.id}
                       onClick={() => { setQuery(s.name); handleSubmitSearch(s.name); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-secondary rounded-lg transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] hover:bg-secondary rounded-lg transition-colors text-left"
                     >
                       <Icon className="size-4 shrink-0" style={{ color }} />
                       <span className="text-sm text-foreground truncate">{s.name}</span>
@@ -251,7 +252,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                 })}
                 <button
                   onClick={() => handleSubmitSearch()}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-secondary rounded-lg transition-colors text-left border-t border-border mt-1 pt-2"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] hover:bg-secondary rounded-lg transition-colors text-left border-t border-border mt-1 pt-2"
                 >
                   <Search className="size-4 text-primary shrink-0" />
                   <span className="text-sm text-primary">
@@ -281,7 +282,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                       <button
                         key={item.id}
                         onClick={() => handleHistoryClick(item.text)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-secondary rounded-lg transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] hover:bg-secondary rounded-lg transition-colors text-left"
                       >
                         <div
                           className="size-7 rounded-md flex items-center justify-center shrink-0"
@@ -341,7 +342,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                                 </div>
                                 <button
                                   onClick={(e) => handleContextMenuClick(e, result.id)}
-                                  className="p-1 text-muted hover:text-foreground hover:bg-secondary rounded opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                                  className="p-1 text-muted hover:text-foreground hover:bg-secondary rounded md:opacity-0 md:group-hover:opacity-100 transition-all shrink-0"
                                 >
                                   <MoreVertical className="size-3.5" />
                                 </button>
@@ -367,7 +368,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
           {contextMenu && (
             <div
               className="fixed z-[60] bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border py-1 w-48"
-              style={{ top: contextMenu.y, left: Math.min(contextMenu.x, window.innerWidth - 200) }}
+              style={{ top: Math.min(contextMenu.y, window.innerHeight - 120), left: Math.min(contextMenu.x, window.innerWidth - 200) }}
             >
               <button
                 onClick={() => { setContextMenu(null); onClose(); }}

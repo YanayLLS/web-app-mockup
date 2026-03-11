@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
 
 interface AppPublishModalProps {
   currentVersion?: string;
@@ -7,9 +8,14 @@ interface AppPublishModalProps {
 }
 
 export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPublishModalProps) {
+  const { currentRole } = useRole();
+  const canPublish = hasAccess(currentRole, 'publish-content');
   const [newVersion, setNewVersion] = useState(currentVersion ? '' : '1.0');
   const [changes, setChanges] = useState('');
   const [allowPayPerClick, setAllowPayPerClick] = useState(false);
+
+  // If user can't publish, don't render the modal at all
+  if (!canPublish) return null;
 
   // Default new version suggestion
   const suggestedVersion = (() => {
@@ -98,17 +104,17 @@ export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPubli
             </label>
 
             {/* Buttons */}
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 bg-destructive text-white rounded-[var(--radius-button)] text-sm hover:bg-destructive/90 transition-colors"
+                className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-[var(--radius-button)] text-sm hover:bg-destructive/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => onPublish(displayVersion, changes)}
-                className="px-5 py-2.5 bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
+                className="px-5 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 Publish

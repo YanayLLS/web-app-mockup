@@ -156,7 +156,7 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
 
       <div className="w-full max-w-[540px] relative z-10">
         {/* Logo and Title */}
-        <div className="flex flex-col items-center mb-12">
+        <div className="flex flex-col items-center mb-8 sm:mb-12">
           <div className="mb-6 p-4 bg-primary/10 rounded-[var(--radius-lg)] backdrop-blur-sm">
             <div className="text-primary">
               <IconLogo />
@@ -188,7 +188,7 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
           className="bg-card border border-border rounded-[var(--radius-lg)] overflow-hidden"
           style={{ boxShadow: 'var(--elevation-lg)' }}
         >
-          <div className="p-8">
+          <div className="px-4 py-6 sm:p-8">
             {workspaces.length === 0 ? (
               // No workspaces available
               <div className="py-12 text-center">
@@ -240,7 +240,7 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
                           type="button"
                           onClick={() => handleSelectWorkspace(workspace.id)}
                           disabled={isLoading}
-                          className="w-full p-4 border-2 border-border rounded-[var(--radius)] hover:border-primary/50 bg-background transition-all text-left disabled:opacity-50"
+                          className="w-full p-4 min-h-[44px] border-2 border-border rounded-[var(--radius)] hover:border-primary/50 bg-background transition-all text-left disabled:opacity-50"
                         >
                           <div className="flex items-center gap-3">
                             <div 
@@ -345,8 +345,8 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
                                     setTimeout(() => handleJoinWorkspace(), 100);
                                   }}
                                   disabled={isLoading}
-                                  className="px-3 py-1.5 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center gap-1.5 disabled:opacity-50"
-                                  style={{ 
+                                  className="px-3 py-1.5 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center gap-1.5 disabled:opacity-50"
+                                  style={{
                                     fontSize: 'var(--text-sm)',
                                     fontWeight: 'var(--font-weight-medium)',
                                     fontFamily: 'var(--font-family)'
@@ -367,8 +367,8 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
                                 <button
                                   onClick={() => handleDecline(workspace.id)}
                                   disabled={isLoading}
-                                  className="px-3 py-1.5 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-1.5 disabled:opacity-50"
-                                  style={{ 
+                                  className="px-3 py-1.5 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                                  style={{
                                     fontSize: 'var(--text-sm)',
                                     fontWeight: 'var(--font-weight-medium)',
                                     fontFamily: 'var(--font-family)'
@@ -391,10 +391,10 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
         </div>
 
         {/* Debug Panel */}
-        <div className="mt-6 p-4 bg-card/50 border border-border rounded-[var(--radius)] backdrop-blur-sm">
-          <p 
+        <div className="mt-6 px-4 py-4 sm:p-4 bg-card/50 border border-border rounded-[var(--radius)] backdrop-blur-sm">
+          <p
             className="text-muted mb-3"
-            style={{ 
+            style={{
               fontSize: 'var(--text-xs)',
               fontWeight: 'var(--font-weight-bold)',
               fontFamily: 'var(--font-family)',
@@ -407,8 +407,8 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={debugNoWorkspaces}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}
@@ -418,8 +418,8 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
             </button>
             <button
               onClick={debugOnlyJoined}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}
@@ -429,8 +429,8 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
             </button>
             <button
               onClick={debugOnlyInvited}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}
@@ -440,8 +440,8 @@ export function WorkspaceSelector({ userEmail, onSelectWorkspace, onDeclineInvit
             </button>
             <button
               onClick={debugMixed}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}

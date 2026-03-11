@@ -3,7 +3,7 @@ import { Cloud, Key, CheckCircle2 } from 'lucide-react';
 export function SSOPage() {
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
-      <div className="border-b border-border bg-card px-6 py-4">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-4">
         <h1 className="text-foreground mb-1" style={{
           fontSize: 'var(--text-h2)',
           fontWeight: 'var(--font-weight-bold)',
@@ -16,10 +16,10 @@ export function SSOPage() {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 custom-scrollbar">
         <div className="max-w-3xl space-y-6">
           {/* SSO Status */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
+          <div className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-[var(--radius)] bg-accent/10 flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 size={20} className="text-accent" />
@@ -40,7 +40,7 @@ export function SSOPage() {
           </div>
 
           {/* SAML Configuration */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
+          <div className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
             <h2 className="text-foreground mb-4" style={{
               fontSize: 'var(--text-h3)',
               fontWeight: 'var(--font-weight-bold)',
@@ -98,7 +98,7 @@ export function SSOPage() {
           </div>
 
           {/* Supported Providers */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
+          <div className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
             <h2 className="text-foreground mb-4" style={{
               fontSize: 'var(--text-h3)',
               fontWeight: 'var(--font-weight-bold)',
@@ -106,9 +106,9 @@ export function SSOPage() {
             }}>
               Supported Identity Providers
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {['Okta', 'Azure AD', 'Google Workspace', 'OneLogin', 'Auth0', 'PingIdentity'].map((provider) => (
-                <div key={provider} className="flex items-center gap-2 px-4 py-3 border border-border rounded-[var(--radius)] hover:border-primary/50 transition-colors">
+                <div key={provider} className="flex items-center gap-2 px-4 py-3 min-h-[44px] border border-border rounded-[var(--radius)] hover:border-primary/50 transition-colors">
                   <Cloud size={18} className="text-primary" />
                   <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
                     {provider}
@@ -120,7 +120,7 @@ export function SSOPage() {
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <button className="px-6 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors" style={{
+            <button className="px-6 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors" style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-bold)',
               fontFamily: 'var(--font-family)'

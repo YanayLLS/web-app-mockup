@@ -1,5 +1,7 @@
 import { Phone, Search, X } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { MemberAvatar } from '../../MemberAvatar';
 
 interface AppCallDeviceModalProps {
   isOpen: boolean;
@@ -10,6 +12,8 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '', '', '', '']);
   const [contactSearch, setContactSearch] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { currentRole } = useRole();
+  const canStartCall = hasAccess(currentRole, 'start-call');
 
   const handleDigitChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
@@ -50,7 +54,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
             <h3 style={{ fontSize: '16px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Call Device</h3>
-            <button onClick={onClose} className="p-1 hover:bg-secondary rounded transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-secondary rounded transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Close">
               <X className="size-4" style={{ color: '#36415D' }} />
             </button>
           </div>
@@ -71,19 +75,24 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
               </div>
               {/* Sample contact */}
               <div className="flex items-center gap-3 px-3 py-2.5 bg-card border border-border rounded-lg">
-                <div
-                  className="size-9 rounded-full flex items-center justify-center text-white text-xs shrink-0"
-                  style={{ backgroundColor: '#2F80ED', fontWeight: 'var(--font-weight-bold)' }}
-                >
-                  LR
-                </div>
+                <MemberAvatar
+                  name="Luy Robin"
+                  initials="LR"
+                  color="#2F80ED"
+                  size="xl"
+                  role="Field Engineer"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                     Luy Robin
                   </div>
                   <div className="text-xs text-muted">Field Engineer</div>
                 </div>
-                <button className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                <button
+                  className={`p-2 rounded-lg transition-colors ${canStartCall ? 'text-primary hover:bg-primary/10' : 'text-muted cursor-not-allowed opacity-50'}`}
+                  disabled={!canStartCall}
+                  title={!canStartCall ? 'You do not have permission to start calls' : undefined}
+                >
                   <Phone className="size-4" />
                 </button>
               </div>
@@ -108,7 +117,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
                     value={digits[i]}
                     onChange={(e) => handleDigitChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
-                    className="size-10 text-center text-lg rounded-lg border-2 border-dashed border-input bg-card outline-none focus:border-primary focus:border-solid transition-colors"
+                    className="w-10 h-11 text-center text-lg rounded-lg border-2 border-dashed border-input bg-card outline-none focus:border-primary focus:border-solid transition-colors"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   />
                 ))}
@@ -126,7 +135,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
                     value={digits[i]}
                     onChange={(e) => handleDigitChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
-                    className="size-10 text-center text-lg rounded-lg border-2 border-dashed border-input bg-card outline-none focus:border-primary focus:border-solid transition-colors"
+                    className="w-10 h-11 text-center text-lg rounded-lg border-2 border-dashed border-input bg-card outline-none focus:border-primary focus:border-solid transition-colors"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   />
                 ))}
@@ -144,7 +153,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
                     value={digits[i]}
                     onChange={(e) => handleDigitChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
-                    className="size-10 text-center text-lg rounded-lg border-2 border-dashed border-input bg-card outline-none focus:border-primary focus:border-solid transition-colors"
+                    className="w-10 h-11 text-center text-lg rounded-lg border-2 border-dashed border-input bg-card outline-none focus:border-primary focus:border-solid transition-colors"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   />
                 ))}
@@ -154,8 +163,10 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
             {/* Call button */}
             <button
               onClick={handleCall}
-              className="w-full py-2.5 bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-              style={{ fontWeight: 'var(--font-weight-semibold)' }}
+              disabled={!canStartCall}
+              className={`w-full rounded-[var(--radius-button)] flex items-center justify-center gap-2 transition-colors ${canStartCall ? 'bg-primary text-white hover:bg-primary/90' : 'bg-muted/30 text-muted cursor-not-allowed'}`}
+              style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '44px' }}
+              title={!canStartCall ? 'You do not have permission to start calls' : undefined}
             >
               <Phone className="size-5" />
               Call

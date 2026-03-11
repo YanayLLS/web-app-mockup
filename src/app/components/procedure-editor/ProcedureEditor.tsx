@@ -20,6 +20,7 @@ import { GraduationCap, Undo, AlertCircle, X, MoreVertical, Keyboard, Glasses, V
 import { motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProcedureSteps } from '../../contexts/ProcedureStepsContext';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
 
 // Extend window type for validation callback
 declare global {
@@ -622,6 +623,10 @@ export function ProcedureEditor() {
   const hasProcedureId = typeof window !== 'undefined' && window.location.pathname.includes('/procedure-editor/');
   const procedureIdFromUrl = getProcedureIdFromUrl();
 
+  // Role-based permission check — only content creators / admins can edit
+  const { currentRole } = useRole();
+  const canEdit = hasAccess(currentRole, 'projects-edit');
+
   // Shared procedure steps context — single source of truth
   const { getSteps, setSteps: setContextSteps, getTitle, setTitle: setContextTitle } = useProcedureSteps();
 
@@ -658,7 +663,7 @@ export function ProcedureEditor() {
   }, [procedureIdFromUrl, setContextTitle]);
   const [showSettings, setShowSettings] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
-  const [editingEnabled, setEditingEnabled] = useState(urlMode !== 'view');
+  const [editingEnabled, setEditingEnabled] = useState(urlMode !== 'view' && canEdit);
   const [showOptionsManager, setShowOptionsManager] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [showPartsCatalog, setShowPartsCatalog] = useState(false);
@@ -1912,7 +1917,7 @@ export function ProcedureEditor() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="absolute top-14 left-1/2 -translate-x-1/2 rounded-lg flex flex-col"
+              className="absolute top-14 left-1/2 -translate-x-1/2 rounded-lg flex flex-col w-[calc(100vw-32px)] sm:w-auto"
               style={{
                 backgroundColor: 'var(--primary)',
                 padding: 'var(--spacing-md) var(--spacing-lg)',
@@ -1920,19 +1925,19 @@ export function ProcedureEditor() {
                 boxShadow: 'var(--elevation-lg)',
                 zIndex: 1000,
                 border: '1px solid rgba(255, 255, 255, 0.2)',
-                minWidth: '400px',
                 maxWidth: '600px'
               }}
             >
-              <div className="flex items-center justify-between" style={{ gap: 'var(--spacing-lg)' }}>
+              <div className="flex items-center justify-between flex-wrap" style={{ gap: 'var(--spacing-lg)' }}>
                 <div className="flex items-center" style={{ gap: 'var(--spacing-sm)' }}>
-                  <svg 
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="white" 
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
                     strokeWidth="2"
+                    className="shrink-0"
                   >
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                   </svg>
@@ -2098,7 +2103,7 @@ export function ProcedureEditor() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="absolute top-14 left-1/2 -translate-x-1/2 rounded-lg flex flex-col"
+              className="absolute top-14 left-1/2 -translate-x-1/2 rounded-lg flex flex-col w-[calc(100vw-32px)] sm:w-auto"
               style={{
                 backgroundColor: 'var(--primary)',
                 padding: 'var(--spacing-md) var(--spacing-lg)',
@@ -2106,19 +2111,19 @@ export function ProcedureEditor() {
                 boxShadow: 'var(--elevation-lg)',
                 zIndex: 1000,
                 border: '1px solid rgba(255, 255, 255, 0.2)',
-                minWidth: '400px',
                 maxWidth: '600px'
               }}
             >
-              <div className="flex items-center justify-between" style={{ gap: 'var(--spacing-lg)' }}>
+              <div className="flex items-center justify-between flex-wrap" style={{ gap: 'var(--spacing-lg)' }}>
                 <div className="flex items-center" style={{ gap: 'var(--spacing-sm)' }}>
-                  <svg 
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="white" 
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
                     strokeWidth="2"
+                    className="shrink-0"
                   >
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -2671,7 +2676,7 @@ export function ProcedureEditor() {
       {/* Undo Delete Notification */}
       {showUndoNotification && deletedStep && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] pointer-events-auto">
-          <div className="flex items-center gap-4 px-5 py-3 rounded-lg shadow-elevation-lg border-2 border-border bg-card text-card-foreground min-w-[320px]">
+          <div className="flex items-center gap-4 px-4 sm:px-5 py-3 rounded-lg shadow-elevation-lg border-2 border-border bg-card text-card-foreground w-[calc(100vw-32px)] sm:w-auto sm:min-w-[320px]">
             <AlertCircle className="size-5 text-destructive flex-shrink-0" />
             <p className="flex-1 font-bold leading-tight">
               Step {deletedStep.index + 1} deleted
@@ -2700,7 +2705,7 @@ export function ProcedureEditor() {
       {/* Undo Popup Delete Notification */}
       {showUndoPopupNotification && deletedPopup && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] pointer-events-auto">
-          <div className="flex items-center gap-4 px-5 py-3 rounded-lg shadow-elevation-lg border-2 border-border bg-card text-card-foreground min-w-[320px]">
+          <div className="flex items-center gap-4 px-4 sm:px-5 py-3 rounded-lg shadow-elevation-lg border-2 border-border bg-card text-card-foreground w-[calc(100vw-32px)] sm:w-auto sm:min-w-[320px]">
             <AlertCircle className="size-5 text-destructive flex-shrink-0" />
             <p className="flex-1 font-bold leading-tight">
               Popup deleted

@@ -88,23 +88,23 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-[var(--radius)] w-full max-w-5xl max-h-[90vh] flex flex-col" style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}>
+      <div className="bg-background rounded-[var(--radius)] w-full max-w-[calc(100vw-32px)] sm:max-w-5xl max-h-[90vh] flex flex-col" style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border">
           <h2 className="text-foreground" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
             Account Settings
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-[var(--radius)] transition-colors"
           >
             <X size={20} className="text-muted" />
           </button>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Navigation */}
-          <div className="w-64 border-r border-border flex flex-col">
+          {/* Sidebar Navigation - hidden on mobile */}
+          <div className="hidden sm:flex w-64 border-r border-border flex-col">
             {/* Search */}
             <div className="p-4 border-b border-border">
               <div className="flex items-center gap-2 bg-secondary border border-border rounded-[var(--radius)] px-3 py-2">
@@ -114,8 +114,8 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   placeholder="SEARCH"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted"
-                  style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}
+                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted text-[16px] sm:text-[length:var(--text-xs)]"
+                  style={{ fontFamily: 'var(--font-family)' }}
                 />
               </div>
             </div>
@@ -126,7 +126,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.ref)}
-                  className="w-full text-left px-3 py-2.5 rounded-[var(--radius)] transition-colors text-foreground hover:bg-secondary"
+                  className="w-full text-left px-3 py-2.5 min-h-[44px] rounded-[var(--radius)] transition-colors text-foreground hover:bg-secondary"
                   style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
                 >
                   {section.label}
@@ -136,7 +136,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
           </div>
 
           {/* Content - Single scrollable page */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 sm:p-6">
             <div className="max-w-3xl">
               {/* Personal Info Section */}
               <div ref={personalInfoRef} className="scroll-mt-6 pb-8 border-b border-border">
@@ -167,7 +167,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
                         First Name
@@ -176,8 +176,8 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary transition-colors"
-                        style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                        className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary transition-colors text-[16px] sm:text-[length:var(--text-sm)]"
+                        style={{ fontFamily: 'var(--font-family)' }}
                       />
                     </div>
                     <div>
@@ -188,8 +188,8 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary transition-colors"
-                        style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                        className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary transition-colors text-[16px] sm:text-[length:var(--text-sm)]"
+                        style={{ fontFamily: 'var(--font-family)' }}
                       />
                     </div>
                   </div>
@@ -202,8 +202,8 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                       type="email"
                       value={email}
                       disabled
-                      className="w-full bg-secondary border border-border rounded-[var(--radius)] px-3 py-2 text-muted outline-none cursor-not-allowed"
-                      style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                      className="w-full bg-secondary border border-border rounded-[var(--radius)] px-3 py-2 text-muted outline-none cursor-not-allowed text-[16px] sm:text-[length:var(--text-sm)]"
+                      style={{ fontFamily: 'var(--font-family)' }}
                     />
                   </div>
 
@@ -228,7 +228,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                         <div className="flex gap-3">
                           <button
                             onClick={() => setSelectedHand('left')}
-                            className={`flex-1 px-4 py-2.5 rounded-[var(--radius)] border transition-colors ${
+                            className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-[var(--radius)] border transition-colors ${
                               selectedHand === 'left' ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border hover:border-primary'
                             }`}
                             style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
@@ -237,7 +237,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                           </button>
                           <button
                             onClick={() => setSelectedHand('right')}
-                            className={`flex-1 px-4 py-2.5 rounded-[var(--radius)] border transition-colors ${
+                            className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-[var(--radius)] border transition-colors ${
                               selectedHand === 'right' ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border hover:border-primary'
                             }`}
                             style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
@@ -264,7 +264,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                     </div>
                   </div>
 
-                  <button className="px-6 py-2.5 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}>
+                  <button className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}>
                     Save Changes
                   </button>
                 </div>
@@ -285,9 +285,9 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   </p>
                 </div>
 
-                <button 
+                <button
                   onClick={handlePasswordReset}
-                  className="px-6 py-2.5 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity" 
+                  className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
                   style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
                 >
                   Request Password Reset Link
@@ -305,8 +305,8 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 pr-10 text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
-                      style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                      className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 pr-10 text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer min-h-[44px] text-[16px] sm:text-[length:var(--text-sm)]"
+                      style={{ fontFamily: 'var(--font-family)' }}
                     >
                       <option value="EN-US">EN-US</option>
                       <option value="EN-GB">EN-GB</option>
@@ -445,9 +445,9 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   </p>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setShowCloseAccountConfirm(true)}
-                  className="px-6 py-2.5 bg-destructive text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity" 
+                  className="px-6 py-2.5 min-h-[44px] bg-destructive text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
                   style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
                 >
                   Close Account
@@ -468,11 +468,11 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
           />
           
           {/* Confirmation Dialog */}
-          <div className="relative bg-card border border-border rounded-[var(--radius)] max-w-[480px] w-full p-6" style={{ boxShadow: 'var(--elevation-lg)' }}>
+          <div className="relative bg-card border border-border rounded-[var(--radius)] w-full max-w-[calc(100vw-32px)] sm:max-w-[480px] px-4 py-6 sm:p-6" style={{ boxShadow: 'var(--elevation-lg)' }}>
             <h3 className="text-foreground mb-4" style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
               Close Account?
             </h3>
-            
+
             <p className="text-foreground mb-6" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
               Are you sure you want to close your account? This action cannot be undone. All your data, projects, and settings will be permanently deleted.
             </p>
@@ -480,7 +480,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowCloseAccountConfirm(false)}
-                className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                className="px-4 py-2 min-h-[44px] bg-secondary text-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
                 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
               >
                 Cancel
@@ -491,7 +491,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   onClose();
                   logout();
                 }}
-                className="px-4 py-2 bg-destructive text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                className="px-4 py-2 min-h-[44px] bg-destructive text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
                 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
               >
                 Close Account

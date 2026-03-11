@@ -100,7 +100,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
             <h3 style={{ fontSize: '16px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>Join Meeting</h3>
-            <button onClick={onClose} className="p-1 hover:bg-secondary rounded transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-secondary rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
               <X className="size-4" style={{ color: '#36415D' }} />
             </button>
           </div>
@@ -114,7 +114,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
               {/* Segmented input: 2 groups of 3 */}
               <div className="flex items-center justify-center gap-3 mb-5">
                 {/* Group 1 */}
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 sm:gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <input
                       key={i}
@@ -125,9 +125,9 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                       value={digits[i]}
                       onChange={(e) => handleDigitChange(i, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(i, e)}
-                      className={`size-11 text-center text-lg rounded-lg outline-none transition-colors
+                      className={`w-12 h-12 sm:size-11 text-center text-lg rounded-lg outline-none transition-colors
                         ${status === 'error' ? 'border-2 border-destructive bg-destructive/5' : 'border-2 border-dashed border-input bg-card focus:border-primary focus:border-solid'}`}
-                      style={{ fontWeight: 'var(--font-weight-bold)' }}
+                      style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '16px' }}
                     />
                   ))}
                 </div>
@@ -135,7 +135,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                 <span className="text-muted text-lg">-</span>
 
                 {/* Group 2 */}
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 sm:gap-1.5">
                   {[3, 4, 5].map((i) => (
                     <input
                       key={i}
@@ -146,9 +146,9 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                       value={digits[i]}
                       onChange={(e) => handleDigitChange(i, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(i, e)}
-                      className={`size-11 text-center text-lg rounded-lg outline-none transition-colors
+                      className={`w-12 h-12 sm:size-11 text-center text-lg rounded-lg outline-none transition-colors
                         ${status === 'error' ? 'border-2 border-destructive bg-destructive/5' : 'border-2 border-dashed border-input bg-card focus:border-primary focus:border-solid'}`}
-                      style={{ fontWeight: 'var(--font-weight-bold)' }}
+                      style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '16px' }}
                     />
                   ))}
                 </div>
@@ -173,7 +173,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                     <select
                       value={selectedAudio}
                       onChange={(e) => setSelectedAudio(e.target.value)}
-                      className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
+                      className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2.5 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer min-h-[44px]"
                     >
                       {audioDevices.map((d) => (
                         <option key={d.deviceId} value={d.deviceId}>{d.label}</option>
@@ -193,7 +193,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                     <select
                       value={selectedVideo}
                       onChange={(e) => setSelectedVideo(e.target.value)}
-                      className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
+                      className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2.5 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer min-h-[44px]"
                     >
                       {videoDevices.map((d) => (
                         <option key={d.deviceId} value={d.deviceId}>{d.label}</option>
@@ -208,7 +208,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
               <button
                 onClick={handleJoin}
                 disabled={code.length < 6 || status === 'loading'}
-                className="w-full py-2.5 bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 min-h-[48px] bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 {status === 'loading' ? (

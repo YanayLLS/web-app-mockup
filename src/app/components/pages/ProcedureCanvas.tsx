@@ -37,6 +37,8 @@ import { CustomEdge } from './canvas/CustomEdge';
 import { ContextMenu, ContextMenuType } from './canvas/ContextMenu';
 import { MediaLibraryModal } from '../modals/MediaLibraryModal';
 import { ProcedureModal } from '../modals/ProcedureModal';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
+import { MemberAvatar } from '../MemberAvatar';
 
 interface ProcedureCanvasProps {
   procedureId: string;
@@ -281,6 +283,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 };
 
 function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanvasProps) {
+  const { currentRole } = useRole();
+  const editingEnabled = hasAccess(currentRole, 'projects-edit');
   const { getSteps, setSteps: setContextSteps } = useProcedureSteps();
 
   // Build initial flow from shared context steps
@@ -566,6 +570,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         ...node,
         data: {
           ...node.data,
+          editingEnabled,
           onChange: (newData: any) => onNodeDataChange(node.id, newData),
           onAction: (action: any) => onNodeAction(node.id, action),
           onAddOption: node.type === 'dynamic' ? () => handleAddOption(node.id) : undefined,
@@ -587,7 +592,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         },
       };
     });
-  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes]);
+  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled]);
 
   // Delete edge handler
   const handleDeleteEdge = useCallback((edgeId: string) => {
@@ -943,7 +948,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     <div className="w-full h-full flex flex-col relative" style={{ fontFamily: 'var(--font-family)', backgroundColor: 'var(--background)' }}>
       {/* Top Bar */}
       <div 
-        className="h-[56px] border-b flex items-center px-4 gap-3 shrink-0 relative z-10"
+        className="h-auto min-h-[56px] border-b flex items-center flex-wrap px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 relative z-10 py-2"
         style={{ 
           backgroundColor: 'var(--card)',
           borderColor: 'var(--border)',
@@ -992,17 +997,15 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
           <Users className="w-4 h-4" style={{ color: 'var(--muted)' }} />
           <div className="flex items-center -space-x-2">
             {workspaceUsers.map((user) => (
-              <div
+              <MemberAvatar
                 key={user.id}
-                className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold text-white"
-                style={{ 
-                  backgroundColor: user.color,
-                  borderColor: 'var(--card)',
-                }}
-                title={user.name}
-              >
-                {user.initials}
-              </div>
+                name={user.name}
+                id={user.id}
+                initials={user.initials}
+                color={user.color}
+                size="lg"
+                border
+              />
             ))}
           </div>
         </div>
@@ -1035,7 +1038,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       </div>
 
       {/* Canvas */}
-      <div className="flex-1 relative">
+      <div className="flex-1 min-h-0 relative">
         {/* Inset shadows - only on canvas area below header */}
         <div className="absolute inset-0 pointer-events-none z-50" style={{
           boxShadow: 'inset 0 10px 20px -10px rgba(0,0,0,0.15), inset 0 -10px 20px -10px rgba(0,0,0,0.15), inset 10px 0 20px -10px rgba(0,0,0,0.15), inset -10px 0 20px -10px rgba(0,0,0,0.15)'

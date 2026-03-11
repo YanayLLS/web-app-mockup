@@ -3,6 +3,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 export interface FavoriteItem {
   id: string;
   name: string;
+  customName?: string; // User-defined shortcut name
   icon?: string;
   projectId: string;
   type: 'article' | 'video' | 'document' | 'procedure' | 'media';
@@ -26,6 +27,7 @@ interface FavoritesContextType {
   favorites: FavoriteItem[];
   addFavorite: (item: FavoriteItem) => void;
   removeFavorite: (id: string) => void;
+  renameFavorite: (id: string, customName: string) => void;
   isFavorite: (id: string) => boolean;
   getFavoritesByProject: (projectId: string) => FavoriteItem[];
 }
@@ -35,6 +37,7 @@ const defaultContextValue: FavoritesContextType = {
   favorites: [],
   addFavorite: () => console.warn('FavoritesProvider not found'),
   removeFavorite: () => console.warn('FavoritesProvider not found'),
+  renameFavorite: () => console.warn('FavoritesProvider not found'),
   isFavorite: () => false,
   getFavoritesByProject: () => [],
 };
@@ -67,6 +70,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     setFavorites((prev) => prev.filter((fav) => fav.id !== id));
   };
 
+  const renameFavorite = (id: string, customName: string) => {
+    setFavorites((prev) =>
+      prev.map((fav) => (fav.id === id ? { ...fav, customName: customName.trim() || undefined } : fav))
+    );
+  };
+
   const isFavorite = (id: string) => {
     return favorites.some((fav) => fav.id === id);
   };
@@ -81,6 +90,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         favorites,
         addFavorite,
         removeFavorite,
+        renameFavorite,
         isFavorite,
         getFavoritesByProject,
       }}

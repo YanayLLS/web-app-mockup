@@ -1,12 +1,12 @@
 export function ProjectOverviewPage() {
   return (
-    <div className="p-4">
+    <div className="p-3 sm:p-4">
       <div className="mb-4">
         <h3 className="text-foreground mb-1">Project Overview</h3>
         <p className="text-xs text-muted">View high-level information and status of your project</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <div className="p-4 bg-background border border-border rounded-[var(--radius)]">
           <p className="text-xs text-muted mb-1">Total Tasks</p>
           <p className="text-2xl text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>42</p>

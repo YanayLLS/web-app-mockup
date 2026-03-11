@@ -3,6 +3,7 @@ import { X, ChevronDown, ChevronLeft, ChevronRight, Plus, Palette, Pencil, Check
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import svgPaths from '../../../imports/svg-hd561eopnw';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface ProcedurePanelProps {
   step: Step;
@@ -171,33 +172,10 @@ export function ProcedurePanel({
   }, [step.title]);
 
   // Click outside to close color picker
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        showColorPicker &&
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node) &&
-        colorButtonRef.current &&
-        !colorButtonRef.current.contains(event.target as Node)
-      ) {
-        setShowColorPicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showColorPicker]);
+  useClickOutside([colorPickerRef, colorButtonRef], () => setShowColorPicker(false), showColorPicker);
 
   // Click outside to close more menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showMoreMenu && moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMoreMenu]);
+  useClickOutside(moreMenuRef, () => setShowMoreMenu(false), showMoreMenu);
 
   const colorOptions = [
     { name: 'Default', color: 'var(--foreground)' },
@@ -260,7 +238,7 @@ export function ProcedurePanel({
     <>
     <CardWrapper
       data-tutorial="step-card"
-      className={`content-stretch flex items-end justify-end relative shrink-0 transition-all duration-300 ${isCollapsed ? 'w-auto' : 'w-full sm:w-[700px]'} z-10`}
+      className={`content-stretch flex items-end justify-end relative shrink-0 transition-all duration-300 ${isCollapsed ? 'w-auto' : 'w-full sm:w-[700px] max-w-[calc(100vw-32px)]'} z-10`}
       style={{ 
         filter: `drop-shadow(0px 4px 48.9px ${currentShadowColor})`,
         transition: 'filter 0.3s ease-in-out',
@@ -422,7 +400,7 @@ Step {stepIndex + 1} of {totalSteps}
                         <button 
                           ref={colorButtonRef}
                           onClick={() => setShowColorPicker(!showColorPicker)}
-                          className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] cursor-pointer hover:bg-white/10 flex items-center justify-center"
+                          className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] min-h-[44px] min-w-[44px] cursor-pointer hover:bg-white/10 flex items-center justify-center"
                           title="Change step color"
                         >
                           <Palette className="size-3 sm:size-4 text-white/70 hover:text-white transition-colors" />
@@ -433,7 +411,7 @@ Step {stepIndex + 1} of {totalSteps}
                       {editingEnabled && totalSteps > 1 && (
                         <button 
                           onClick={onDeleteStep}
-                          className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] cursor-pointer hover:bg-destructive/20 flex items-center justify-center group"
+                          className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] min-h-[44px] min-w-[44px] cursor-pointer hover:bg-destructive/20 flex items-center justify-center group"
                           title="Delete step"
                         >
                           <X className="size-3 sm:size-4 text-white/70 group-hover:text-destructive transition-colors" />
@@ -686,7 +664,7 @@ Step {stepIndex + 1} of {totalSteps}
                                   e.stopPropagation();
                                   setIsEditingDescription(true);
                                 }}
-                                className="absolute top-2 right-2 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20"
+                                className="absolute top-2 right-2 p-1.5 rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20"
                                 style={{
                                   zIndex: 20
                                 }}
@@ -841,7 +819,7 @@ Step {stepIndex + 1} of {totalSteps}
                                         setEditingActionIndex(index);
                                         setEditingActionLabel(action.label);
                                       }}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                                      className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-1"
                                       title="Edit option name"
                                     >
                                       <Pencil className="size-2.5 sm:size-3 text-white/70 hover:text-white transition-colors" />
@@ -849,14 +827,14 @@ Step {stepIndex + 1} of {totalSteps}
                                   )}
                                 </>
                               )}
-                              
+
                               {editingEnabled && !isEditing && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     onRemoveAction(index);
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                                  className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-1"
                                   title="Remove option"
                                 >
                                   <X className="size-3 text-white" />
@@ -1090,7 +1068,7 @@ Step {stepIndex + 1} of {totalSteps}
                           onPrevious();
                         }}
                         disabled={isFirstVisibleStep}
-                        className="bg-[rgba(0,0,0,0.5)] h-full relative rounded-[25px] shrink-0 w-[40px] sm:w-[50px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[rgba(0,0,0,0.7)] transition-colors cursor-pointer"
+                        className="bg-[rgba(0,0,0,0.5)] h-full min-h-[44px] relative rounded-[25px] shrink-0 w-[40px] sm:w-[50px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[rgba(0,0,0,0.7)] transition-colors cursor-pointer"
                         style={{ pointerEvents: 'auto', zIndex: 1 }}
                       >
                         <div className="overflow-clip relative rounded-[inherit] size-full flex items-center justify-center">
@@ -1104,7 +1082,7 @@ Step {stepIndex + 1} of {totalSteps}
                     </div>
                     <button 
                       onClick={handleNextOrAddStep}
-                      className={`content-stretch flex h-[30px] sm:h-[35px] items-center justify-center relative rounded-[25px] shrink-0 min-w-[70px] sm:min-w-[80px] transition-all ${
+                      className={`content-stretch flex h-[30px] sm:h-[35px] min-h-[44px] items-center justify-center relative rounded-[25px] shrink-0 min-w-[70px] sm:min-w-[80px] transition-all ${
                         isLastStep 
                           ? editingEnabled 
                             ? 'bg-transparent border-2 border-dashed border-primary/60 hover:border-primary hover:bg-primary/10' 
@@ -1162,9 +1140,10 @@ Step {stepIndex + 1} of {totalSteps}
             className="fixed bg-card border border-border rounded-lg z-[9999]"
             style={{
               top: colorButtonRef.current ? colorButtonRef.current.getBoundingClientRect().bottom + 4 : '28px',
-              left: colorButtonRef.current ? colorButtonRef.current.getBoundingClientRect().right - 156 : 'auto',
+              left: colorButtonRef.current ? Math.max(8, Math.min(colorButtonRef.current.getBoundingClientRect().right - 156, window.innerWidth - 164)) : 'auto',
               padding: 'var(--spacing-sm)',
-              boxShadow: 'var(--elevation-sm)'
+              boxShadow: 'var(--elevation-sm)',
+              maxWidth: 'calc(100vw - 16px)'
             }}
             role="menu"
             aria-label="Color picker"

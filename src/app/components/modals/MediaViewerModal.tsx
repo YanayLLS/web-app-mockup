@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useEffect } from 'react';
+import { BaseModal } from './BaseModal';
 
 interface MediaViewerModalProps {
   isOpen: boolean;
@@ -14,25 +14,8 @@ interface MediaViewerModalProps {
 }
 
 export function MediaViewerModal({ isOpen, onClose, item }: MediaViewerModalProps) {
-  // Close on Escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={onClose}
-    >
+    <BaseModal isOpen={isOpen} onClose={onClose} opacity={70}>
       <div
         role="dialog"
         aria-modal="true"
@@ -42,10 +25,9 @@ export function MediaViewerModal({ isOpen, onClose, item }: MediaViewerModalProp
           boxShadow: 'var(--elevation-lg)',
           fontFamily: 'var(--font-family)'
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div 
+        <div
           className="flex items-center justify-between px-4 py-4 border-b border-border"
         >
           <h2
@@ -69,31 +51,31 @@ export function MediaViewerModal({ isOpen, onClose, item }: MediaViewerModalProp
         </div>
 
         {/* Content */}
-        <div 
+        <div
           className="flex items-center justify-center bg-secondary/30 p-6"
-          style={{ 
-            minHeight: '400px'
+          style={{
+            minHeight: 'min(400px, 60vh)'
           }}
         >
           {item.mediaType === 'video' && item.url ? (
-            <video 
-              src={item.url} 
-              controls 
+            <video
+              src={item.url}
+              controls
               className="max-w-full max-h-[70vh] rounded-[var(--radius)]"
               style={{ boxShadow: 'var(--elevation-md)' }}
             />
           ) : item.mediaType === 'image' && (item.url || item.thumbnail) ? (
-            <img 
-              src={item.url || item.thumbnail} 
+            <img
+              src={item.url || item.thumbnail}
               alt={item.name}
               className="max-w-full max-h-[70vh] rounded-[var(--radius)] object-contain"
               style={{ boxShadow: 'var(--elevation-md)' }}
             />
           ) : (
             <div className="text-center">
-              <p 
-                className="text-muted" 
-                style={{ 
+              <p
+                className="text-muted"
+                style={{
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'var(--font-family)'
                 }}
@@ -104,6 +86,6 @@ export function MediaViewerModal({ isOpen, onClose, item }: MediaViewerModalProp
           )}
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }

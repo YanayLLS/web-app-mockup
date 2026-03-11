@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Search, Users } from 'lucide-react';
 import { Checkbox } from './Checkbox';
 import { calculateMenuPosition } from '@/app/utils/positionUtils';
+import { useClickOutside } from '../../../../hooks/useClickOutside';
 
 interface GroupWithColor {
   name: string;
@@ -40,16 +41,20 @@ export function GroupContextMenu({
     onClose();
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        handleClose();
-      }
-    };
+  useClickOutside(menuRef, handleClose);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [selectedGroups, onSave, onClose]);
+  // Clamp menu position within viewport
+  useEffect(() => {
+    if (!menuRef.current) return;
+    const menu = menuRef.current;
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      menu.style.left = `${Math.max(16, window.innerWidth - rect.width - 16)}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      menu.style.top = `${Math.max(16, window.innerHeight - rect.height - 16)}px`;
+    }
+  }, []);
 
   // In filter mode, apply changes immediately
   useEffect(() => {
@@ -91,7 +96,7 @@ export function GroupContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed bg-card rounded-lg shadow-elevation-lg w-[360px] z-50"
+      className="fixed bg-card rounded-lg shadow-elevation-lg w-[360px] max-w-[calc(100vw-32px)] z-50"
       style={{ 
         top: `${position.top}px`, 
         left: position.left !== undefined ? `${position.left}px` : undefined,
@@ -125,7 +130,7 @@ export function GroupContextMenu({
                 Manage Groups
               </button>
             )}
-            <button onClick={handleClose} className="p-1 hover:bg-secondary rounded transition-colors">
+            <button onClick={handleClose} className="p-1 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded transition-colors">
               <X className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             </button>
           </div>
@@ -139,7 +144,7 @@ export function GroupContextMenu({
             placeholder="Search groups..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full pl-9 pr-3 py-2 min-h-[44px] text-sm rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-ring"
             style={{ color: 'var(--foreground)' }}
           />
         </div>
@@ -149,7 +154,7 @@ export function GroupContextMenu({
           {filteredGroups.map((group) => (
             <div
               key={group.name}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+              className="flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-secondary transition-colors cursor-pointer"
               onClick={() => toggleGroup(group.name)}
             >
               <Checkbox 

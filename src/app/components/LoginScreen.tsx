@@ -100,7 +100,7 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
 
       <div className="w-full max-w-[440px] relative z-10">
         {/* Logo and Title */}
-        <div className="flex flex-col items-center mb-12">
+        <div className="flex flex-col items-center mb-8 sm:mb-12">
           <div className="mb-6 p-4 bg-primary/10 rounded-[var(--radius-lg)] backdrop-blur-sm">
             <div className="text-primary">
               <IconLogo />
@@ -146,7 +146,7 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
             />
           </div>
 
-          <div className="p-8">
+          <div className="px-4 py-6 sm:p-8">
             {/* Email Step */}
             {step === 'email' && (
               <form onSubmit={handleEmailSubmit} className="space-y-6">
@@ -155,9 +155,9 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                     <div className="p-2 bg-primary/10 rounded-[var(--radius)] text-primary">
                       <Mail size={20} />
                     </div>
-                    <h2 
+                    <h2
                       className="text-foreground"
-                      style={{ 
+                      style={{
                         fontSize: 'var(--text-xl)',
                         fontWeight: 'var(--font-weight-bold)',
                         fontFamily: 'var(--font-family)'
@@ -166,11 +166,11 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                       Enter your email
                     </h2>
                   </div>
-                  
-                  <label 
-                    htmlFor="email" 
+
+                  <label
+                    htmlFor="email"
                     className="block text-foreground mb-2"
-                    style={{ 
+                    style={{
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-medium)',
                       fontFamily: 'var(--font-family)'
@@ -188,9 +188,8 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                     }}
                     placeholder="name@company.com"
                     autoFocus
-                    className="w-full px-4 py-3 bg-background border-2 border-border rounded-[var(--radius)] text-foreground outline-none focus:border-primary transition-colors"
-                    style={{ 
-                      fontSize: 'var(--text-base)',
+                    className="w-full px-4 py-3 bg-background border-2 border-border rounded-[var(--radius)] text-foreground outline-none focus:border-primary transition-colors text-[16px]"
+                    style={{
                       fontFamily: 'var(--font-family)'
                     }}
                   />
@@ -199,9 +198,9 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                 {error && (
                   <div className="flex items-start gap-3 p-4 bg-error/10 border border-error/20 rounded-[var(--radius)]">
                     <AlertCircle size={20} className="text-error shrink-0 mt-0.5" />
-                    <p 
+                    <p
                       className="text-error"
-                      style={{ 
+                      style={{
                         fontSize: 'var(--text-sm)',
                         fontFamily: 'var(--font-family)'
                       }}
@@ -213,8 +212,8 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
 
                 <button
                   type="submit"
-                  className="w-full px-4 py-3 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                  style={{ 
+                  className="w-full px-4 py-3 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  style={{
                     fontSize: 'var(--text-base)',
                     fontWeight: 'var(--font-weight-semibold)',
                     fontFamily: 'var(--font-family)'
@@ -234,10 +233,10 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                     <div className="p-2 bg-primary/10 rounded-[var(--radius)] text-primary">
                       <Lock size={20} />
                     </div>
-                    <div className="flex-1">
-                      <h2 
+                    <div className="flex-1 min-w-0">
+                      <h2
                         className="text-foreground"
-                        style={{ 
+                        style={{
                           fontSize: 'var(--text-xl)',
                           fontWeight: 'var(--font-weight-bold)',
                           fontFamily: 'var(--font-family)'
@@ -252,22 +251,22 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                           setPassword('');
                           setError('');
                         }}
-                        className="text-muted hover:text-primary transition-colors flex items-center gap-1 mt-1"
-                        style={{ 
+                        className="text-muted hover:text-primary transition-colors flex items-center gap-1 mt-1 max-w-full"
+                        style={{
                           fontSize: 'var(--text-sm)',
                           fontFamily: 'var(--font-family)'
                         }}
                       >
-                        <User size={14} />
-                        {email}
+                        <User size={14} className="shrink-0" />
+                        <span className="truncate">{email}</span>
                       </button>
                     </div>
                   </div>
-                  
-                  <label 
-                    htmlFor="password" 
+
+                  <label
+                    htmlFor="password"
                     className="block text-foreground mb-2"
-                    style={{ 
+                    style={{
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-medium)',
                       fontFamily: 'var(--font-family)'
@@ -285,17 +284,16 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                     }}
                     placeholder="Enter your password"
                     autoFocus
-                    className="w-full px-4 py-3 bg-background border-2 border-border rounded-[var(--radius)] text-foreground outline-none focus:border-primary transition-colors"
-                    style={{ 
-                      fontSize: 'var(--text-base)',
+                    className="w-full px-4 py-3 bg-background border-2 border-border rounded-[var(--radius)] text-foreground outline-none focus:border-primary transition-colors text-[16px]"
+                    style={{
                       fontFamily: 'var(--font-family)'
                     }}
                   />
-                  
+
                   <button
                     type="button"
-                    className="text-primary hover:underline mt-2"
-                    style={{ 
+                    className="text-primary hover:underline mt-2 min-h-[44px] sm:min-h-0"
+                    style={{
                       fontSize: 'var(--text-sm)',
                       fontFamily: 'var(--font-family)'
                     }}
@@ -307,9 +305,9 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                 {error && (
                   <div className="flex items-start gap-3 p-4 bg-error/10 border border-error/20 rounded-[var(--radius)]">
                     <AlertCircle size={20} className="text-error shrink-0 mt-0.5" />
-                    <p 
+                    <p
                       className="text-error"
-                      style={{ 
+                      style={{
                         fontSize: 'var(--text-sm)',
                         fontFamily: 'var(--font-family)'
                       }}
@@ -322,8 +320,8 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full px-4 py-3 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
-                  style={{ 
+                  className="w-full px-4 py-3 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                  style={{
                     fontSize: 'var(--text-base)',
                     fontWeight: 'var(--font-weight-semibold)',
                     fontFamily: 'var(--font-family)'
@@ -347,10 +345,10 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
         </div>
 
         {/* Debug Panel */}
-        <div className="mt-6 p-4 bg-card/50 border border-border rounded-[var(--radius)] backdrop-blur-sm">
-          <p 
+        <div className="mt-6 px-4 py-4 sm:p-4 bg-card/50 border border-border rounded-[var(--radius)] backdrop-blur-sm">
+          <p
             className="text-muted mb-3"
-            style={{ 
+            style={{
               fontSize: 'var(--text-xs)',
               fontWeight: 'var(--font-weight-bold)',
               fontFamily: 'var(--font-family)',
@@ -363,7 +361,7 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={debugFillValid}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
               style={{ 
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
@@ -374,8 +372,8 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
             </button>
             <button
               onClick={debugShowEmailError}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}
@@ -385,8 +383,8 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
             </button>
             <button
               onClick={debugShowPasswordError}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}
@@ -396,8 +394,8 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
             </button>
             <button
               onClick={debugShowLoginError}
-              className="px-3 py-2 bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
-              style={{ 
+              className="px-3 py-2 min-h-[44px] bg-background border border-border rounded-[var(--radius)] hover:bg-secondary transition-colors text-left"
+              style={{
                 fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-family)'
               }}
@@ -417,10 +415,10 @@ export function LoginScreen({ onLogin, onSwitchToSignUp }: LoginScreenProps) {
           }}
         >
           Don't have an account?{' '}
-          <button 
+          <button
             type="button"
             onClick={onSwitchToSignUp}
-            className="text-primary hover:underline"
+            className="text-primary hover:underline min-h-[44px]"
             style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Sign up

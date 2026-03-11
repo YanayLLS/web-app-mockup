@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
+import { BaseModal } from './BaseModal';
 
 interface DeleteConfirmationModalProps {
   onClose: () => void;
@@ -16,11 +17,7 @@ export function DeleteConfirmationModal({
   itemName,
 }: DeleteConfirmationModalProps) {
   return (
-    <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]"
-      onClick={onClose}
-      role="presentation"
-    >
+    <BaseModal isOpen={true} onClose={onClose} opacity={70} zIndex={200}>
       <div
         role="alertdialog"
         aria-modal="true"
@@ -28,7 +25,6 @@ export function DeleteConfirmationModal({
         aria-describedby="delete-confirm-message"
         className="bg-card rounded-[var(--radius-lg)] p-6 max-w-md mx-4"
         style={{ boxShadow: 'var(--shadow-elevation-lg)' }}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-2">
           <AlertTriangle size={20} className="text-destructive shrink-0" aria-hidden="true" />
@@ -63,14 +59,14 @@ export function DeleteConfirmationModal({
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-colors"
+            className="px-4 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-colors"
             style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 transition-colors"
+            className="px-4 py-2.5 transition-colors"
             style={{
               backgroundColor: 'var(--destructive)',
               color: 'var(--destructive-foreground)',
@@ -84,6 +80,6 @@ export function DeleteConfirmationModal({
           </button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }

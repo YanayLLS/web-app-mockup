@@ -77,14 +77,14 @@ export function AppKnowledgeBasePage() {
   );
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto" style={{ padding: '24px 28px' }}>
+    <div className="h-full flex flex-col overflow-y-auto p-4 sm:p-6" style={{ maxWidth: '100%' }}>
       {/* Page header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <h1 style={{ fontSize: '22px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', margin: 0, fontFamily: 'var(--font-family)' }}>
           Projects
         </h1>
         <div className="flex items-center gap-3">
-          <div className="relative" style={{ width: '240px' }}>
+          <div className="relative flex-1 sm:flex-none" style={{ width: '100%', maxWidth: '240px' }}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4" style={{ color: '#7F7F7F' }} />
             <input
               type="text"
@@ -92,13 +92,13 @@ export function AppKnowledgeBasePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 text-sm border-none outline-none"
-              style={{ backgroundColor: '#E9E9E9', borderRadius: '10px', height: '34px', color: '#36415D' }}
+              style={{ backgroundColor: '#E9E9E9', borderRadius: '10px', height: '44px', color: '#36415D' }}
             />
           </div>
           <div className="flex items-center bg-[#E9E9E9] rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('grid')}
-              className="p-1.5 rounded-md transition-colors"
+              className="p-2 sm:p-1.5 rounded-md transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
               style={{ backgroundColor: viewMode === 'grid' ? '#FFFFFF' : 'transparent', color: viewMode === 'grid' ? '#36415D' : '#7F7F7F' }}
               aria-label="Grid view"
               aria-pressed={viewMode === 'grid'}
@@ -107,7 +107,7 @@ export function AppKnowledgeBasePage() {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className="p-1.5 rounded-md transition-colors"
+              className="p-2 sm:p-1.5 rounded-md transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
               style={{ backgroundColor: viewMode === 'list' ? '#FFFFFF' : 'transparent', color: viewMode === 'list' ? '#36415D' : '#7F7F7F' }}
               aria-label="List view"
               aria-pressed={viewMode === 'list'}
@@ -115,7 +115,7 @@ export function AppKnowledgeBasePage() {
               <List className="size-4" />
             </button>
           </div>
-          <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors" style={{ color: '#7F7F7F' }} aria-label="Refresh projects">
+          <button className="p-2 sm:p-1.5 hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center" style={{ color: '#7F7F7F' }} aria-label="Refresh projects">
             <RefreshCw className="size-4" />
           </button>
         </div>
@@ -127,7 +127,7 @@ export function AppKnowledgeBasePage() {
         <div
           className="grid"
           style={{
-            gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(230px, 100%), 1fr))',
             gap: '16px',
           }}
           aria-busy="true"
@@ -155,7 +155,7 @@ export function AppKnowledgeBasePage() {
         <div
           className="grid"
           style={{
-            gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(230px, 100%), 1fr))',
             gap: '16px',
           }}
         >

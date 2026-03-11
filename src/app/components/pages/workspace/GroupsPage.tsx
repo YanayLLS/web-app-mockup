@@ -102,7 +102,7 @@ export function GroupsPage() {
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
       {/* Header */}
-      <div className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1
             className="text-foreground mb-1"
@@ -126,7 +126,7 @@ export function GroupsPage() {
         </div>
         <button
           onClick={handleCreateGroup}
-          className="flex items-center gap-2 px-4 py-2 text-white rounded-[var(--radius-button)] hover:opacity-90 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 min-h-[44px] text-white rounded-[var(--radius-button)] hover:opacity-90 transition-colors flex-shrink-0"
           style={{
             backgroundColor: '#2F80ED',
             fontSize: 'var(--text-sm)',
@@ -140,7 +140,7 @@ export function GroupsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 custom-scrollbar">
         {groups.length === 0 ? (
           <EmptyState
             icon={Users}
@@ -149,7 +149,8 @@ export function GroupsPage() {
             action={{ label: 'Create Group', onClick: handleCreateGroup }}
           />
         ) : (
-          <div>
+          <div className="overflow-x-auto">
+            <div className="min-w-[600px]">
             {/* Table Header */}
             <div
               className="grid items-center px-4 py-2 mb-1"
@@ -203,7 +204,7 @@ export function GroupsPage() {
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="grid items-center px-4 py-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                  className="group grid items-center px-4 py-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
                   style={{
                     gridTemplateColumns: '40px 1fr 240px 280px 50px',
                     gap: '12px',
@@ -256,7 +257,7 @@ export function GroupsPage() {
                         </span>
                         <button
                           onClick={() => handleStartRename(group)}
-                          className="p-1 rounded-[var(--radius)] hover:bg-secondary transition-colors opacity-0 group-hover:opacity-100"
+                          className="p-1 rounded-[var(--radius)] hover:bg-secondary transition-colors md:opacity-0 md:group-hover:opacity-100"
                           style={{ flexShrink: 0 }}
                           title="Rename group"
                         >
@@ -317,7 +318,7 @@ export function GroupsPage() {
                   <div className="flex items-center justify-center">
                     <button
                       onClick={() => setDeleteModalGroup(group)}
-                      className="p-1.5 rounded-[var(--radius)] hover:bg-destructive/10 transition-colors"
+                      className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-[var(--radius)] hover:bg-destructive/10 transition-colors"
                       title="Delete group"
                     >
                       <Trash2 size={16} style={{ color: '#FF1F1F' }} />
@@ -326,6 +327,7 @@ export function GroupsPage() {
                 </div>
               ))}
             </div>
+          </div>
           </div>
         )}
       </div>

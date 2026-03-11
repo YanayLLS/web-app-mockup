@@ -20,7 +20,7 @@ export function SubWorkspacesPage() {
 
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
-      <div className="border-b border-border bg-card px-6 py-4">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-4">
         <h1 className="text-foreground mb-1" style={{
           fontSize: 'var(--text-h2)',
           fontWeight: 'var(--font-weight-bold)',
@@ -33,8 +33,8 @@ export function SubWorkspacesPage() {
         </p>
       </div>
 
-      <div className="border-b border-border bg-card px-6 py-3">
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors" style={{
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-3">
+        <button className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors" style={{
           fontSize: 'var(--text-sm)',
           fontWeight: 'var(--font-weight-bold)',
           fontFamily: 'var(--font-family)'
@@ -44,15 +44,15 @@ export function SubWorkspacesPage() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 custom-scrollbar">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {subWorkspaces.map((workspace) => (
-            <div key={workspace.id} className="bg-card border border-border rounded-[var(--radius)] p-5 hover:border-primary/50 transition-colors" style={{ boxShadow: 'var(--elevation-sm)' }}>
+            <div key={workspace.id} className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-5 hover:border-primary/50 transition-colors" style={{ boxShadow: 'var(--elevation-sm)' }}>
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center">
                   <FolderOpen size={20} className="text-primary" />
                 </div>
-                <button className="p-1 hover:bg-secondary rounded-[var(--radius)] transition-colors">
+                <button className="p-1 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-[var(--radius)] transition-colors">
                   <MoreVertical size={18} className="text-muted" />
                 </button>
               </div>

@@ -91,7 +91,7 @@ function DraggableMediaItem({
       {/* Delete Button */}
       <button
         onClick={() => onRemove(media.id)}
-        className="absolute top-2 right-2 z-10 p-1.5 rounded transition-all hover:scale-110"
+        className="absolute top-2 right-2 z-10 p-1.5 rounded transition-all hover:scale-110 min-h-[44px] min-w-[44px] flex items-center justify-center"
         style={{
           backgroundColor: 'var(--destructive)',
           color: 'var(--destructive-foreground)'
@@ -350,7 +350,7 @@ export function MediaManagerModal({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative rounded-lg w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border"
+        className="relative rounded-lg w-full max-w-5xl max-w-[calc(100vw-32px)] max-h-[90vh] flex flex-col overflow-hidden border"
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--card)',
@@ -391,7 +391,7 @@ export function MediaManagerModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg transition-colors hover:bg-secondary"
+            className="p-2 rounded-lg transition-colors hover:bg-secondary min-h-[44px] min-w-[44px] flex items-center justify-center"
             style={{ color: 'var(--foreground)' }}
             aria-label="Close"
           >
@@ -497,11 +497,10 @@ export function MediaManagerModal({
 
         {/* Footer */}
         <div
-          className="flex items-center justify-between border-t"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-t gap-3 sm:gap-4"
           style={{
             padding: 'var(--spacing-lg)',
-            borderColor: 'var(--border)',
-            gap: 'var(--spacing-md)'
+            borderColor: 'var(--border)'
           }}
         >
           <label>
@@ -515,7 +514,7 @@ export function MediaManagerModal({
               disabled={localMediaFiles.length >= maxFiles}
             />
             <span
-              className="inline-flex items-center px-4 py-2 rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--accent)',
                 color: 'var(--accent-foreground)',
@@ -532,10 +531,10 @@ export function MediaManagerModal({
             </span>
           </label>
 
-          <div className="flex" style={{ gap: 'var(--spacing-sm)' }}>
+          <div className="flex justify-end" style={{ gap: 'var(--spacing-sm)' }}>
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg transition-opacity hover:opacity-80"
+              className="px-4 py-2 min-h-[44px] rounded-lg transition-opacity hover:opacity-80"
               style={{
                 backgroundColor: 'var(--secondary)',
                 color: 'var(--foreground)',
@@ -547,7 +546,7 @@ export function MediaManagerModal({
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 rounded-lg transition-opacity hover:opacity-80"
+              className="px-4 py-2 min-h-[44px] rounded-lg transition-opacity hover:opacity-80"
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',

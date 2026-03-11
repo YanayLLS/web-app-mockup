@@ -28,6 +28,7 @@ import { SSOPage } from './components/pages/workspace/SSOPage';
 import { StaticQRCodesPage } from './components/pages/workspace/StaticQRCodesPage';
 import { IntegrationsPage } from './components/pages/workspace/IntegrationsPage';
 import { GroupsPage } from './components/pages/workspace/GroupsPage';
+import { RolesManagementPage } from './components/pages/workspace/members/RolesManagementPage';
 import { GroupsProvider } from './contexts/GroupsContext';
 import { KnowledgeBasePage } from './components/pages/KnowledgeBasePage';
 import { AnalyticsPage } from './components/pages/AnalyticsPage';
@@ -41,6 +42,7 @@ import { RoleProvider, useRole, hasAccess } from './contexts/RoleContext';
 import { FavoritesProvider, useFavorites } from './contexts/FavoritesContext';
 import { ActiveCallProvider } from './contexts/ActiveCallContext';
 import { ProcedureStepsProvider } from './contexts/ProcedureStepsContext';
+import { UserProfileProvider } from './contexts/UserProfileContext';
 import { FloatingMinimizedCall } from './components/FloatingMinimizedCall';
 import { getUrlParam, setUrlParam } from './utils/urlParams';
 import { LoginScreen } from './components/LoginScreen';
@@ -143,7 +145,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [selectedProjectTab, setSelectedProjectTab] = useState('overview');
   const [sidebarWidth, setSidebarWidth] = useState(260);
-  const [chatWidth, setChatWidth] = useState(680);
+  const [chatWidth, setChatWidth] = useState(420);
   const [isResizing, setIsResizing] = useState(false);
   const [isResizingChat, setIsResizingChat] = useState(false);
   const [isSecondarySidebarOpen, setIsSecondarySidebarOpen] = useState(false);
@@ -249,6 +251,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
       'ws-sso': '/web/workspace/sso',
       'ws-qr-codes': '/web/workspace/qr-codes',
       'ws-groups': '/web/workspace/groups',
+      'ws-roles': '/web/workspace/roles',
       'ws-integrations': '/web/workspace/integrations',
     };
 
@@ -350,12 +353,82 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
       }
     }
 
+    // Route-level permission gating — prevent direct URL access to restricted pages
+    const menuItem = selectedMenuItem;
+    if (menuItem.startsWith('ws-')) {
+      const isWsMembersRoute = menuItem === 'ws-members' || menuItem === 'ws-groups';
+      const hasPermission = isWsMembersRoute
+        ? hasAccess(currentRole, 'workspace-members')
+        : hasAccess(currentRole, 'workspace-management');
+
+      if (!hasPermission) {
+        return {
+          icon: <IconHome />,
+          title: 'Access Denied',
+          content: (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>Access Restricted</div>
+                <p className="text-sm text-muted">You don't have permission to view this page.</p>
+              </div>
+            </div>
+          ),
+          hideHeader: true,
+        };
+      }
+    }
+    if (menuItem === 'ai-studio' && !hasAccess(currentRole, 'ai-studio')) {
+      return {
+        icon: <IconHome />,
+        title: 'Access Denied',
+        content: (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>Access Restricted</div>
+              <p className="text-sm text-muted">You don't have permission to view this page.</p>
+            </div>
+          </div>
+        ),
+        hideHeader: true,
+      };
+    }
+    if (menuItem === 'remote-support' && !hasAccess(currentRole, 'remote-support')) {
+      return {
+        icon: <IconHome />,
+        title: 'Access Denied',
+        content: (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>Access Restricted</div>
+              <p className="text-sm text-muted">You don't have permission to view this page.</p>
+            </div>
+          </div>
+        ),
+        hideHeader: true,
+      };
+    }
+    if (menuItem === 'archive' && !hasAccess(currentRole, 'archive')) {
+      return {
+        icon: <IconHome />,
+        title: 'Access Denied',
+        content: (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>Access Restricted</div>
+              <p className="text-sm text-muted">You don't have permission to view this page.</p>
+            </div>
+          </div>
+        ),
+        hideHeader: true,
+      };
+    }
+
     switch (selectedMenuItem) {
       case 'home':
         return {
           icon: <IconHome />,
           title: 'Home',
-          content: <HomePage 
+          content: <HomePage
             onNavigateToKnowledgeBase={() => {
               navigate('/web/project/915-i-series/knowledgebase');
             }}
@@ -452,6 +525,13 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
           content: <GroupsPage />,
           hideHeader: true,
         };
+      case 'ws-roles':
+        return {
+          icon: <IconHome />,
+          title: 'Roles',
+          content: <RolesManagementPage />,
+          hideHeader: true,
+        };
       case 'ws-integrations':
         return {
           icon: <IconHome />,
@@ -528,6 +608,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
 
   return (
     <div
+        id="app-root"
         className="flex flex-col h-screen w-screen bg-background overflow-hidden"
         style={{
           userSelect: (isResizing || isResizingChat || isResizingSecondarySidebar) ? 'none' : 'auto'
@@ -553,15 +634,13 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
         onToggleWorkspaceManagement={handleToggleWorkspaceManagement}
       />
 
-      {/* Favorites Bar - Full Width */}
-      {selectedProject && (
-        <FavoritesBar 
-          onFavoriteClick={(item) => {
-            // Open the modal for the favorited item
-            setOpenFavoriteItem(item.data);
-          }}
-        />
-      )}
+      {/* Shortcuts Bar - User-level, always visible */}
+      <FavoritesBar
+        onFavoriteClick={(item) => {
+          // Open the modal for the favorited item
+          setOpenFavoriteItem(item.data);
+        }}
+      />
 
       {/* Main Container - Sidebar and Content */}
       <div className="flex flex-1 min-h-0">
@@ -809,6 +888,7 @@ function AppRouter() {
   return (
     <ProcedureStepsProvider>
     <RoleProvider>
+    <UserProfileProvider>
       <Routes>
         <Route path="/" element={<ProductSelector />} />
         <Route path="/web/*" element={
@@ -841,6 +921,7 @@ function AppRouter() {
         } />
       </Routes>
       <DebugMenu />
+    </UserProfileProvider>
     </RoleProvider>
     </ProcedureStepsProvider>
   );

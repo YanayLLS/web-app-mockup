@@ -38,7 +38,7 @@ export function IntegrationsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
-      <div className="border-b border-border bg-card px-6 py-4">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-4">
         <h1 className="text-foreground mb-1" style={{
           fontSize: 'var(--text-h2)',
           fontWeight: 'var(--font-weight-bold)',
@@ -52,8 +52,8 @@ export function IntegrationsPage() {
       </div>
 
       {/* Search and Filter */}
-      <div className="border-b border-border bg-card px-6 py-3">
-        <div className="flex items-center gap-3">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex-1 relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
@@ -81,10 +81,10 @@ export function IntegrationsPage() {
       </div>
 
       {/* Integrations Grid */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 custom-scrollbar">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredIntegrations.map((integration) => (
-            <div key={integration.id} className="bg-card border border-border rounded-[var(--radius)] p-5 hover:border-primary/50 transition-colors" style={{ boxShadow: 'var(--elevation-sm)' }}>
+            <div key={integration.id} className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-5 hover:border-primary/50 transition-colors" style={{ boxShadow: 'var(--elevation-sm)' }}>
               <div className="flex items-start gap-4 mb-4">
                 <div className="w-12 h-12 rounded-[var(--radius)] bg-secondary flex items-center justify-center flex-shrink-0">
                   <Puzzle size={24} className="text-primary" />
@@ -121,7 +121,7 @@ export function IntegrationsPage() {
               </div>
               
               <div className="mt-4 pt-4 border-t border-border">
-                <button className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-[var(--radius)] transition-colors ${
+                <button className={`w-full flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] rounded-[var(--radius)] transition-colors ${
                   integration.isConnected
                     ? 'bg-secondary text-foreground hover:bg-secondary/80'
                     : 'bg-primary text-primary-foreground hover:bg-primary/90'

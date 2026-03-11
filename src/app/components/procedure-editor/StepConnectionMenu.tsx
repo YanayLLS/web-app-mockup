@@ -1,6 +1,7 @@
 import { Link, Unlink, Search, ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Step } from './ProcedureEditor';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface StepConnectionMenuProps {
   steps: Step[];
@@ -22,26 +23,17 @@ export function StepConnectionMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
+  useClickOutside(menuRef, onClose);
 
+  useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
   // Filter steps - exclude current step and filter by search
@@ -77,14 +69,14 @@ export function StepConnectionMenu({
         ref={menuRef}
         className="fixed z-50 rounded-lg border overflow-hidden flex flex-col"
         style={{
-          top: `${position.y}px`,
-          left: `${position.x}px`,
+          top: `${Math.min(position.y, window.innerHeight - 508)}px`,
+          left: `${Math.min(Math.max(8, position.x), window.innerWidth - 408)}px`,
           background: 'var(--card)',
           borderColor: 'var(--border)',
           boxShadow: 'var(--shadow-elevation-lg)',
-          minWidth: '300px',
-          maxWidth: '400px',
-          maxHeight: '500px'
+          minWidth: '280px',
+          maxWidth: 'min(400px, calc(100vw - 16px))',
+          maxHeight: 'min(500px, calc(100vh - 16px))'
         }}
       >
         {/* Header */}
@@ -149,7 +141,7 @@ export function StepConnectionMenu({
           >
             <button
               onClick={handleDisconnect}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors text-left"
+              className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] rounded-lg hover:bg-secondary/50 transition-colors text-left"
               style={{
                 fontFamily: 'var(--font-family)',
                 color: 'var(--foreground)'
@@ -188,7 +180,7 @@ export function StepConnectionMenu({
                   <button
                     key={step.id}
                     onClick={() => handleConnect(step.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] hover:bg-secondary/50 transition-colors text-left ${
                       isConnected ? 'bg-accent/10' : ''
                     }`}
                     style={{
@@ -229,7 +221,7 @@ export function StepConnectionMenu({
                       </div>
                     ) : (
                       <ArrowRight 
-                        className="size-4 opacity-0 group-hover:opacity-100 transition-opacity" 
+                        className="size-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity" 
                         style={{ color: 'var(--muted-foreground)' }} 
                       />
                     )}

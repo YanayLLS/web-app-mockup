@@ -262,7 +262,7 @@ export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAct
                       </span>
                       <button
                         onClick={() => handleStartEdit(index)}
-                        className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label={`Edit option ${index + 1}`}
                       >
                         <Edit2 className="size-4" />
@@ -274,7 +274,7 @@ export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAct
                             setError(null);
                           }
                         }}
-                        className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label={`Delete option ${index + 1}`}
                       >
                         <Trash2 className="size-4" />

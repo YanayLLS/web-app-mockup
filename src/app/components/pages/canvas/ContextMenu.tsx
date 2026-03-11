@@ -30,7 +30,7 @@ export function ContextMenu({ x, y, type, onClose, onAction, nodeData }: Context
 
     return (
       <div
-        className="fixed z-[100] rounded-lg border shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-w-[320px]"
+        className="fixed z-[100] rounded-lg border shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-w-[min(320px,calc(100vw-1rem))]"
         style={{
           left: `${Math.max(8, clampedX)}px`,
           top: `${Math.max(8, clampedY)}px`,
@@ -146,7 +146,7 @@ export function ContextMenu({ x, y, type, onClose, onAction, nodeData }: Context
 
   return (
     <div
-      className="fixed z-[100] rounded-lg border shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+      className="fixed z-[100] rounded-lg border shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-w-[calc(100vw-1rem)]"
       style={{
         left: `${Math.max(8, clampedX)}px`,
         top: `${Math.max(8, clampedY)}px`,

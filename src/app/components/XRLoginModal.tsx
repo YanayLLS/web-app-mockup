@@ -12,28 +12,28 @@ export function XRLoginModal({ isOpen, onClose }: XRLoginModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-[var(--radius)] w-full max-w-2xl" style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}>
+      <div className="bg-background rounded-[var(--radius)] w-full max-w-[calc(100vw-32px)] sm:max-w-2xl max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border sticky top-0 bg-background z-10">
           <h2 className="text-foreground" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
             Login with XR
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-[var(--radius)] transition-colors"
           >
             <X size={20} className="text-muted" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <div className="border border-border rounded-[var(--radius)] p-6">
+        <div className="px-4 py-6 sm:p-6">
+          <div className="border border-border rounded-[var(--radius)] px-4 py-6 sm:p-6">
             <h3 className="text-foreground mb-4" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
               Quick login for XR headsets
             </h3>
-            
-            <div className="grid grid-cols-2 gap-6 mb-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-muted mb-3" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
                   Personal QR code
@@ -48,7 +48,7 @@ export function XRLoginModal({ isOpen, onClose }: XRLoginModalProps) {
                 <p className="text-muted mb-3" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
                   Personal PIN code
                 </p>
-                <div className="bg-background border border-border rounded-[var(--radius)] p-6 flex items-center justify-center h-full">
+                <div className="bg-background border border-border rounded-[var(--radius)] p-6 flex items-center justify-center min-h-[120px] sm:h-full">
                   <span className="text-foreground" style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)', letterSpacing: '0.2em' }}>
                     {pinCode}
                   </span>

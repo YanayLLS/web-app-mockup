@@ -16,6 +16,9 @@ import { Paperclip, FileText, Folder, Phone, Video, Calendar, Clock, AlertTriang
 import { useProject } from '../../contexts/ProjectContext';
 import { useActiveCall } from '../../contexts/ActiveCallContext';
 import { getUrlParam, setUrlParam } from '../../utils/urlParams';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { useRole, hasAccess } from '../../contexts/RoleContext';
+import { MemberAvatar } from '../MemberAvatar';
 
 function IconPeopleList() {
   return (
@@ -300,24 +303,14 @@ interface CreateMeetingMenuProps {
   buttonRef: React.RefObject<HTMLButtonElement>;
   meetingTitle: string;
   onMeetingTitleChange: (title: string) => void;
+  canScheduleMeeting?: boolean;
+  canStartCall?: boolean;
 }
 
-function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, buttonRef, meetingTitle, onMeetingTitleChange }: CreateMeetingMenuProps) {
+function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, buttonRef, meetingTitle, onMeetingTitleChange, canScheduleMeeting = true, canStartCall = true }: CreateMeetingMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, onClose, buttonRef]);
+  useClickOutside([menuRef, buttonRef], onClose, isOpen);
 
   if (!isOpen) return null;
 
@@ -397,19 +390,20 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
         {/* Action Buttons */}
         <div className="space-y-3">
           {/* Schedule for Later Button */}
+          {canScheduleMeeting && (
           <button
             onClick={onScheduleForLater}
             className="w-full flex items-center gap-3 px-4 py-3.5 bg-secondary hover:bg-secondary/80 rounded-[var(--radius)] transition-colors group"
           >
-            <div 
+            <div
               className="w-10 h-10 flex items-center justify-center rounded-[var(--radius)] bg-card border border-border group-hover:border-primary/30 transition-colors"
             >
               <Calendar size={18} style={{ color: 'var(--foreground)' }} />
             </div>
             <div className="flex-1 text-left">
-              <div 
+              <div
                 className="text-foreground"
-                style={{ 
+                style={{
                   fontWeight: 'var(--font-weight-semibold)',
                   fontSize: 'var(--text-base)',
                   fontFamily: 'var(--font-family)',
@@ -417,9 +411,9 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
               >
                 Schedule for Later
               </div>
-              <div 
+              <div
                 className="text-muted"
-                style={{ 
+                style={{
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'var(--font-family)',
                 }}
@@ -428,22 +422,24 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
               </div>
             </div>
           </button>
+          )}
 
           {/* Start Now Button */}
+          {canStartCall && (
           <button
             onClick={onStartNow}
             className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[var(--radius)] hover:opacity-90 transition-opacity group"
             style={{ backgroundColor: 'var(--primary)' }}
           >
-            <div 
+            <div
               className="w-10 h-10 flex items-center justify-center rounded-[var(--radius)]"
               style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
             >
               <Video size={18} style={{ color: 'var(--primary-foreground)' }} />
             </div>
             <div className="flex-1 text-left">
-              <div 
-                style={{ 
+              <div
+                style={{
                   fontWeight: 'var(--font-weight-semibold)',
                   fontSize: 'var(--text-base)',
                   fontFamily: 'var(--font-family)',
@@ -452,8 +448,8 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
               >
                 Start Meeting Now
               </div>
-              <div 
-                style={{ 
+              <div
+                style={{
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'var(--font-family)',
                   color: 'var(--primary-foreground)',
@@ -464,6 +460,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
               </div>
             </div>
           </button>
+          )}
         </div>
       </div>
     </div>
@@ -628,7 +625,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel }: PreJoinMeetingProps) {
             <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-3">
               <button
                 onClick={handleToggleVideo}
-                className="p-2.5 md:p-3 rounded-full transition-all hover:bg-foreground/20 text-foreground backdrop-blur-sm"
+                className="p-3.5 md:p-3 rounded-full transition-all hover:bg-foreground/20 text-foreground backdrop-blur-sm"
                 title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
               >
                 {isVideoOff ? <IconVideoOff /> : <IconVideo />}
@@ -636,7 +633,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel }: PreJoinMeetingProps) {
 
               <button
                 onClick={handleToggleMute}
-                className="p-2.5 md:p-3 rounded-full transition-all hover:bg-foreground/20 text-foreground backdrop-blur-sm"
+                className="p-3.5 md:p-3 rounded-full transition-all hover:bg-foreground/20 text-foreground backdrop-blur-sm"
                 title={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
@@ -693,6 +690,9 @@ export function RemoteSupportPage({
 }) {
   const isMobile = useIsMobile();
   const [isLandscape, setIsLandscape] = useState(false);
+  const { currentRole } = useRole();
+  const canScheduleMeeting = hasAccess(currentRole, 'schedule-meeting');
+  const canStartCall = hasAccess(currentRole, 'start-call');
   const { projects, knowledgeBaseItems } = useProject();
   const { activeCall, setActiveCall, updateCallState, isCallMinimized, setIsCallMinimized } = useActiveCall();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -970,18 +970,7 @@ export function RemoteSupportPage({
     };
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    };
-
-    if (showMoreMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showMoreMenu]);
+  useClickOutside(moreMenuRef, () => setShowMoreMenu(false), showMoreMenu);
 
   // Chat panel resize handler — throttled via rAF
   useEffect(() => {
@@ -1012,47 +1001,10 @@ export function RemoteSupportPage({
     };
   }, [isResizingChat]);
 
-  // Close video device menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (videoDeviceMenuRef.current && !videoDeviceMenuRef.current.contains(event.target as Node)) {
-        setShowVideoDeviceMenu(false);
-      }
-    };
-
-    if (showVideoDeviceMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showVideoDeviceMenu]);
-
-  // Close audio device menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (audioDeviceMenuRef.current && !audioDeviceMenuRef.current.contains(event.target as Node)) {
-        setShowAudioDeviceMenu(false);
-      }
-    };
-
-    if (showAudioDeviceMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showAudioDeviceMenu]);
-
-  // Close captions menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (captionsMenuRef.current && !captionsMenuRef.current.contains(event.target as Node)) {
-        setShowCaptionsMenu(false);
-      }
-    };
-
-    if (showCaptionsMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showCaptionsMenu]);
+  // Close device/captions menus when clicking outside
+  useClickOutside(videoDeviceMenuRef, () => setShowVideoDeviceMenu(false), showVideoDeviceMenu);
+  useClickOutside(audioDeviceMenuRef, () => setShowAudioDeviceMenu(false), showAudioDeviceMenu);
+  useClickOutside(captionsMenuRef, () => setShowCaptionsMenu(false), showCaptionsMenu);
 
   // Handle initial schedule modal opening from external navigation (e.g., HomePage) or URL param
   useEffect(() => {
@@ -2578,7 +2530,7 @@ export function RemoteSupportPage({
                 {/* People button */}
                 <button
                   onClick={() => setShowPeoplePanel(!showPeoplePanel)}
-                  className={`p-2 rounded-[var(--radius)] transition-colors ${
+                  className={`p-2.5 rounded-[var(--radius)] transition-colors ${
                     showPeoplePanel ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
                   }`}
                   title="People"
@@ -2590,7 +2542,7 @@ export function RemoteSupportPage({
                 <div className="relative">
                   <button
                     onClick={() => setShowMoreMenu(!showMoreMenu)}
-                    className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-foreground"
+                    className="p-2.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-foreground"
                     title="More options"
                   >
                     <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2745,17 +2697,9 @@ export function RemoteSupportPage({
                           key={participant.id}
                           onMouseEnter={() => setHoveredParticipantId(participant.id)}
                           onMouseLeave={() => setHoveredParticipantId(null)}
-                          className="flex items-center gap-3 px-2 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors min-h-[40px] relative"
+                          className="group flex items-center gap-3 px-2 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors min-h-[40px] relative"
                         >
-                          <div 
-                            className="size-7 rounded-full flex items-center justify-center text-white text-xs shrink-0"
-                            style={{ 
-                              backgroundColor: participant.color,
-                              fontWeight: 'var(--font-weight-bold)'
-                            }}
-                          >
-                            {participant.initial}
-                          </div>
+                          <MemberAvatar name={participant.name} size="md" color={participant.color} initials={participant.initial} />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm text-foreground truncate">
                               {participant.name}
@@ -2764,7 +2708,7 @@ export function RemoteSupportPage({
                               <div className="text-xs text-muted">Host</div>
                             )}
                           </div>
-                          
+
                           {/* Muted indicator */}
                           {!participant.audioEnabled && (
                             <div className="shrink-0 mr-1" title={participant.mutedByHost ? 'Muted by host (override)' : 'Muted'}>
@@ -2775,9 +2719,8 @@ export function RemoteSupportPage({
                             </div>
                           )}
                           
-                          {/* Context menu button - show for all users on hover */}
-                          {hoveredParticipantId === participant.id && (
-                            <div className="relative shrink-0">
+                          {/* Context menu button - always visible on mobile, hover-visible on desktop */}
+                          <div className={`relative shrink-0 transition-opacity md:opacity-0 md:group-hover:opacity-100 ${hoveredParticipantId === participant.id || openMenuParticipantId === participant.id ? 'md:opacity-100' : ''}`}>
                               <button
                                 className="p-1 hover:bg-card rounded-[var(--radius)] transition-colors"
                                 onClick={(e) => {
@@ -2787,16 +2730,16 @@ export function RemoteSupportPage({
                               >
                                 <IconMoreHorizontal />
                               </button>
-                              
+
                               {/* Context menu */}
                               {openMenuParticipantId === participant.id && (
                                 <>
                                   {/* Backdrop to close menu */}
-                                  <div 
-                                    className="fixed inset-0 z-40" 
+                                  <div
+                                    className="fixed inset-0 z-40"
                                     onClick={() => setOpenMenuParticipantId(null)}
                                   />
-                                  
+
                                   {/* Menu */}
                                   <div
                                     className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 py-1"
@@ -2904,8 +2847,7 @@ export function RemoteSupportPage({
                                   </div>
                                 </>
                               )}
-                            </div>
-                          )}
+                          </div>
                         </div>
                       ))}
 
@@ -2914,14 +2856,8 @@ export function RemoteSupportPage({
                           key={participant.id}
                           className="flex items-center gap-3 px-2 py-2 min-h-[40px]"
                         >
-                          <div 
-                            className="size-7 rounded-full flex items-center justify-center text-white text-xs shrink-0 animate-pulse"
-                            style={{ 
-                              backgroundColor: participant.color,
-                              fontWeight: 'var(--font-weight-bold)'
-                            }}
-                          >
-                            {participant.initial}
+                          <div className="animate-pulse">
+                            <MemberAvatar name={participant.name} size="md" color={participant.color} initials={participant.initial} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm text-muted truncate">
@@ -2963,15 +2899,7 @@ export function RemoteSupportPage({
                             key={person.id}
                             className="flex items-center gap-3 px-2 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors group min-h-[40px]"
                           >
-                            <div 
-                              className="size-7 rounded-full flex items-center justify-center text-white text-xs shrink-0"
-                              style={{ 
-                                backgroundColor: person.color,
-                                fontWeight: 'var(--font-weight-bold)'
-                              }}
-                            >
-                              {person.initial}
-                            </div>
+                            <MemberAvatar name={person.name} size="md" color={person.color} initials={person.initial} />
                             <div className="flex-1 min-w-0">
                               <div className="text-sm text-foreground truncate">
                                 {person.name}
@@ -2979,7 +2907,7 @@ export function RemoteSupportPage({
                             </div>
                             <button
                               onClick={() => handleInviteParticipant(person)}
-                              className="text-xs text-primary hover:underline transition-opacity opacity-0 group-hover:opacity-100 shrink-0"
+                              className="text-xs text-primary hover:underline transition-opacity md:opacity-0 md:group-hover:opacity-100 shrink-0"
                             >
                               Add
                             </button>
@@ -3094,9 +3022,9 @@ export function RemoteSupportPage({
                                   handleUnfreezeFrame();
                                 }
                               }}
-                              className={`px-2 py-1.5 backdrop-blur-sm rounded-[var(--radius)] transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2 border ${
-                                isDrawingMode 
-                                  ? 'bg-primary text-white border-primary' 
+                              className={`px-2 py-1.5 backdrop-blur-sm rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border ${
+                                isDrawingMode
+                                  ? 'bg-primary text-white border-primary'
                                   : 'bg-white/90 hover:bg-white text-black border-white/20'
                               }`}
                               title="Toggle drawing mode"
@@ -3125,9 +3053,9 @@ export function RemoteSupportPage({
                                       );
                                     }
                                   }}
-                                  className={`px-2 py-1.5 backdrop-blur-sm rounded-[var(--radius)] transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2 border text-black ${
-                                    spotlightedParticipant?.spotlightedForEveryone 
-                                      ? 'bg-primary text-primary-foreground border-primary' 
+                                  className={`px-2 py-1.5 backdrop-blur-sm rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border text-black ${
+                                    spotlightedParticipant?.spotlightedForEveryone
+                                      ? 'bg-primary text-primary-foreground border-primary'
                                       : 'bg-white/90 hover:bg-white border-white/20'
                                   }`}
                                   title={spotlightedParticipant?.spotlightedForEveryone ? "Remove spotlight for everyone" : "Spotlight for everyone"}
@@ -3148,7 +3076,7 @@ export function RemoteSupportPage({
                                     );
                                     handleUnfreezeFrame();
                                   }}
-                                  className="px-2 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-[var(--radius)] transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2 border border-white/20 text-black"
+                                  className="px-2 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border border-white/20 text-black"
                                   title="Exit spotlight"
                                 >
                                   <IconUnspotlight />
@@ -3452,7 +3380,7 @@ export function RemoteSupportPage({
                                     e.stopPropagation();
                                     setSpotlightedParticipantId(otherParticipants[0].id);
                                   }}
-                                  className="absolute top-1.5 right-1.5 p-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all opacity-0 group-hover:opacity-100 flex items-center gap-1.5 border border-white/20 text-black"
+                                  className="absolute top-1.5 right-1.5 p-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-1.5 border border-white/20 text-black"
                                   title="Spotlight this video"
                                 >
                                   <IconSpotlight />
@@ -3477,7 +3405,7 @@ export function RemoteSupportPage({
                             {/* Resize Handle - Desktop only */}
                             {!isMobile && (
                               <div
-                                className="resize-handle absolute top-0 left-0 w-6 h-6 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="resize-handle absolute top-0 left-0 w-6 h-6 cursor-nwse-resize md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                 style={{ touchAction: 'none' }}
                                 onMouseDown={(e) => {
                                 e.preventDefault();
@@ -3621,7 +3549,7 @@ export function RemoteSupportPage({
                                 {!isMobile && (
                                   <button
                                     onClick={() => setSpotlightedParticipantId(participant.id)}
-                                    className="absolute top-1.5 right-1.5 p-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all flex items-center gap-1.5 border border-white/20 text-black opacity-0 group-hover:opacity-100"
+                                    className="absolute top-1.5 right-1.5 p-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all flex items-center gap-1.5 border border-white/20 text-black md:opacity-0 md:group-hover:opacity-100"
                                     title="Spotlight this video"
                                   >
                                     <IconSpotlight />
@@ -3756,7 +3684,7 @@ export function RemoteSupportPage({
                         {connectedParticipants.length > 1 && (
                           <button
                             onClick={() => setSpotlightedParticipantId(participant.id)}
-                            className="absolute top-2 right-2 px-2 py-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all opacity-0 group-hover:opacity-100 flex items-center gap-1.5 border border-white/20 text-black"
+                            className="absolute top-2 right-2 px-2 py-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-1.5 border border-white/20 text-black"
                             title="Spotlight this video"
                           >
                             <IconSpotlight />
@@ -3811,7 +3739,7 @@ export function RemoteSupportPage({
                             >
                               {captionSpeaker.charAt(0).toUpperCase()}
                               {/* Tooltip */}
-                              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 text-white text-xs rounded whitespace-nowrap md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none">
                                 {captionSpeaker}
                               </div>
                             </div>
@@ -3858,7 +3786,7 @@ export function RemoteSupportPage({
                 </h3>
                 <button
                   onClick={() => setShowChatPanel(false)}
-                  className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground"
+                  className="p-2.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <svg className="block size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -3882,14 +3810,8 @@ export function RemoteSupportPage({
                   <div className="space-y-4">
                     {chatMessages.map((message) => (
                       <div key={message.id} className="flex gap-3 group">
-                        <div 
-                          className="size-9 rounded-full flex items-center justify-center text-white text-xs shrink-0 mt-0.5 shadow-sm"
-                          style={{ 
-                            backgroundColor: message.senderColor,
-                            fontWeight: 'var(--font-weight-bold)'
-                          }}
-                        >
-                          {message.senderInitial}
+                        <div className="shrink-0 mt-0.5">
+                          <MemberAvatar name={message.sender} size="xl" color={message.senderColor} initials={message.senderInitial} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-baseline gap-2 mb-1.5">
@@ -4307,15 +4229,7 @@ export function RemoteSupportPage({
                           key={person.id}
                           className="flex items-center gap-3 px-3 py-2.5 hover:bg-secondary/50 rounded-lg transition-colors group"
                         >
-                          <div 
-                            className="size-9 rounded-full flex items-center justify-center text-white text-sm shrink-0"
-                            style={{ 
-                              backgroundColor: person.color,
-                              fontWeight: 'var(--font-weight-bold)'
-                            }}
-                          >
-                            {person.initial}
-                          </div>
+                          <MemberAvatar name={person.name} size="xl" color={person.color} initials={person.initial} />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm text-foreground truncate">
                               {person.name}
@@ -4615,49 +4529,39 @@ export function RemoteSupportPage({
                 key={person.id}
                 onMouseEnter={() => setHoveredPersonId(person.id)}
                 onMouseLeave={() => setHoveredPersonId(null)}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/50 transition-colors border-b border-border"
+                className="group flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/50 transition-colors border-b border-border"
               >
-                <div 
-                  className="size-8 rounded-full flex items-center justify-center text-white text-sm shrink-0"
-                  style={{ 
-                    backgroundColor: person.color,
-                    fontWeight: 'var(--font-weight-bold)'
-                  }}
-                >
-                  {person.initial}
-                </div>
+                <MemberAvatar name={person.name} size="lg" color={person.color} initials={person.initial} />
                 <div className="flex-1 text-sm text-foreground truncate">
                   {person.name}
                 </div>
-                <div className="ml-auto shrink-0">
-                  {showSubWorkspace && hoveredPersonId !== person.id && (
-                    <div className="px-2 py-0.5 bg-secondary border border-border rounded-[var(--radius)] text-xs text-muted">
+                <div className="ml-auto shrink-0 flex items-center gap-2">
+                  {showSubWorkspace && (
+                    <div className={`px-2 py-0.5 bg-secondary border border-border rounded-[var(--radius)] text-xs text-muted hidden md:block ${hoveredPersonId === person.id ? 'md:hidden' : ''}`}>
                       {person.subWorkspace}
                     </div>
                   )}
-                  {hoveredPersonId === person.id && (
-                    <button
-                      onClick={() => {
-                        const newMeeting: Meeting = {
-                          id: Date.now().toString(),
-                          title: `Call with ${person.name}`,
-                          participants: [person],
-                          scheduledTime: new Date(),
-                          duration: 30,
-                          hostId: '1'
-                        };
-                        setCurrentMeeting(newMeeting);
-                        setShowPreJoin(true);
-                      }}
-                      className="px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-colors flex items-center gap-1.5"
-                      title="Call"
-                    >
-                      <Phone className="size-4" />
-                      <span className="text-xs">
-                        Call
-                      </span>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      const newMeeting: Meeting = {
+                        id: Date.now().toString(),
+                        title: `Call with ${person.name}`,
+                        participants: [person],
+                        scheduledTime: new Date(),
+                        duration: 30,
+                        hostId: '1'
+                      };
+                      setCurrentMeeting(newMeeting);
+                      setShowPreJoin(true);
+                    }}
+                    className={`px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-all flex items-center gap-1.5 md:opacity-0 md:group-hover:opacity-100 ${hoveredPersonId === person.id ? 'md:opacity-100' : ''}`}
+                    title="Call"
+                  >
+                    <Phone className="size-4" />
+                    <span className="text-xs">
+                      Call
+                    </span>
+                  </button>
                 </div>
               </div>
             );
@@ -4749,6 +4653,8 @@ export function RemoteSupportPage({
                   buttonRef={createButtonRef}
                   meetingTitle={meetingTitle}
                   onMeetingTitleChange={setMeetingTitle}
+                  canScheduleMeeting={canScheduleMeeting}
+                  canStartCall={canStartCall}
                 />
               </div>
             </div>
@@ -5490,16 +5396,7 @@ export function RemoteSupportPage({
                           <div className="flex items-center gap-2">
                             <div className="flex -space-x-1.5">
                               {meeting.participants.slice(0, 3).map((participant) => (
-                                <div
-                                  key={participant.id}
-                                  className="size-5 rounded-full flex items-center justify-center text-white text-[10px] border-2 border-card"
-                                  style={{ 
-                                    backgroundColor: participant.color,
-                                    fontWeight: 'var(--font-weight-bold)'
-                                  }}
-                                >
-                                  {participant.initial}
-                                </div>
+                                <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
                               ))}
                             </div>
                             <span className="text-xs text-muted">
@@ -5561,6 +5458,7 @@ export function RemoteSupportPage({
                     Learn more
                   </button>
                 </p>
+                {canScheduleMeeting && (
                 <button
                   onClick={() => openScheduleModal(true)}
                   className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
@@ -5568,6 +5466,7 @@ export function RemoteSupportPage({
                 >
                   + Schedule Meeting
                 </button>
+                )}
               </div>
             )
           ) : (
@@ -5626,16 +5525,7 @@ export function RemoteSupportPage({
                                 <div className="flex items-center gap-2">
                                   <div className="flex -space-x-1.5">
                                     {call.participants.slice(0, 3).map((participant) => (
-                                      <div
-                                        key={participant.id}
-                                        className="size-5 rounded-full flex items-center justify-center text-white text-[10px] border-2 border-card"
-                                        style={{ 
-                                          backgroundColor: participant.color,
-                                          fontWeight: 'var(--font-weight-bold)'
-                                        }}
-                                      >
-                                        {participant.initial}
-                                      </div>
+                                      <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
                                     ))}
                                   </div>
                                   <span className="text-xs text-muted">

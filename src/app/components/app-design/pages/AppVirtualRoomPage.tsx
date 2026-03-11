@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Globe, Lock, Plus, X, ArrowRight } from 'lucide-react';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { MemberAvatar } from '../../MemberAvatar';
 
 interface Room {
   id: string;
@@ -87,11 +89,13 @@ function RoomCard({ room, onClick }: { room: Room; onClick: () => void }) {
 export function AppVirtualRoomPage() {
   const navigate = useNavigate();
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const { currentRole } = useRole();
+  const canCreate = hasAccess(currentRole, 'create-content');
 
   return (
     <div className="h-full flex relative">
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -102,12 +106,14 @@ export function AppVirtualRoomPage() {
               Join or create virtual training rooms
             </p>
           </div>
-          <button
-            className="flex items-center gap-2 px-4 text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#2F80ED', height: '36px', fontWeight: 'var(--font-weight-semibold)', fontSize: '13px' }}
-          >
-            <Plus className="size-4" /> Create Room
-          </button>
+          {canCreate && (
+            <button
+              className="flex items-center gap-2 px-4 text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: '#2F80ED', height: '36px', fontWeight: 'var(--font-weight-semibold)', fontSize: '13px' }}
+            >
+              <Plus className="size-4" /> Create Room
+            </button>
+          )}
         </div>
 
         {/* My Rooms */}
@@ -124,7 +130,7 @@ export function AppVirtualRoomPage() {
               {myRooms.length}
             </span>
           </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))' }}>
             {myRooms.map((room) => (
               <RoomCard key={room.id} room={room} onClick={() => setSelectedRoom(room)} />
             ))}
@@ -145,7 +151,7 @@ export function AppVirtualRoomPage() {
               {publicRooms.length}
             </span>
           </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))' }}>
             {publicRooms.map((room) => (
               <RoomCard key={room.id} room={room} onClick={() => setSelectedRoom(room)} />
             ))}
@@ -163,9 +169,8 @@ export function AppVirtualRoomPage() {
           />
           {/* Panel */}
           <div
-            className="fixed top-0 right-0 bottom-0 z-[51] bg-card flex flex-col shadow-elevation-lg"
+            className="fixed top-0 right-0 bottom-0 z-[51] bg-card flex flex-col shadow-elevation-lg w-full sm:w-[380px]"
             style={{
-              width: '380px',
               maxWidth: '100vw',
               borderLeft: '1px solid #C2C9DB',
               animation: 'roomPanelIn 0.25s ease-out',
@@ -174,8 +179,9 @@ export function AppVirtualRoomPage() {
             {/* Close button */}
             <button
               onClick={() => setSelectedRoom(null)}
-              className="absolute top-3 right-3 z-10 p-1.5 hover:bg-secondary rounded-lg transition-colors"
+              className="absolute top-3 right-3 z-10 p-2.5 hover:bg-secondary rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               style={{ color: '#7F7F7F' }}
+              aria-label="Close panel"
             >
               <X className="size-5" />
             </button>
@@ -249,21 +255,18 @@ export function AppVirtualRoomPage() {
                   <span style={{ fontSize: '12px', color: '#7F7F7F', fontWeight: 'var(--font-weight-semibold)' }}>
                     Currently in room
                   </span>
-                  <div className="flex items-center gap-1 mt-2">
+                  <div className="flex items-center mt-2">
                     {Array.from({ length: Math.min(selectedRoom.participants, 5) }).map((_, i) => (
-                      <div
+                      <MemberAvatar
                         key={i}
-                        className="size-8 rounded-full flex items-center justify-center text-white text-xs"
-                        style={{
-                          backgroundColor: ['#2F80ED', '#8404B3', '#E91E63', '#FF6B35', '#00BCD4'][i % 5],
-                          fontWeight: 'bold',
-                          fontSize: '10px',
-                          marginLeft: i > 0 ? '-4px' : '0',
-                          border: '2px solid white',
-                        }}
-                      >
-                        {['LR', 'DA', 'NJ', 'JS', 'SC'][i % 5]}
-                      </div>
+                        name={['Luy Robin', 'David Amrosa', 'Nika Jerrardo', 'Jared Sunn', 'Sarah Chen'][i % 5]}
+                        initials={['LR', 'DA', 'NJ', 'JS', 'SC'][i % 5]}
+                        color={['#2F80ED', '#8404B3', '#E91E63', '#FF6B35', '#00BCD4'][i % 5]}
+                        size="lg"
+                        border={true}
+                        className={i > 0 ? '-ml-1' : ''}
+                        showTooltip={false}
+                      />
                     ))}
                     {selectedRoom.participants > 5 && (
                       <span className="text-xs ml-1" style={{ color: '#7F7F7F' }}>
@@ -276,12 +279,12 @@ export function AppVirtualRoomPage() {
             </div>
 
             {/* Action buttons */}
-            <div className="p-5 flex gap-3 shrink-0" style={{ borderTop: '1px solid #C2C9DB' }}>
+            <div className="p-5 flex gap-3 shrink-0" style={{ borderTop: '1px solid #C2C9DB', paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))' }}>
               <button
                 onClick={() => setSelectedRoom(null)}
                 className="flex-1 flex items-center justify-center rounded-[var(--radius-button)] transition-colors hover:bg-secondary/80"
                 style={{
-                  height: '40px',
+                  height: '44px',
                   backgroundColor: '#E9E9E9',
                   color: '#36415D',
                   fontWeight: 'var(--font-weight-semibold)',
@@ -294,7 +297,7 @@ export function AppVirtualRoomPage() {
                 onClick={() => navigate('/app/3d-viewer?mode=immersive&room=' + selectedRoom.id)}
                 className="flex-1 flex items-center justify-center gap-2 text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
                 style={{
-                  height: '40px',
+                  height: '44px',
                   backgroundColor: '#2F80ED',
                   fontWeight: 'var(--font-weight-semibold)',
                   fontSize: '13px',

@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { X, FileText, ChevronDown, Upload, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { AppPublishModal } from '../components/AppPublishModal';
+import { useRole, hasAccess } from '../../../contexts/RoleContext';
 
 interface SettingsState {
   title: string;
@@ -21,6 +22,9 @@ export function AppProcedureSettingsPage() {
   const navigate = useNavigate();
   const { projectId, procedureId } = useParams();
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const { currentRole } = useRole();
+  const canPublish = hasAccess(currentRole, 'publish-content');
+  const canEdit = hasAccess(currentRole, 'projects-edit');
 
   const [settings, setSettings] = useState<SettingsState>({
     title: 'Elitebook 840 G9',
@@ -61,17 +65,19 @@ export function AppProcedureSettingsPage() {
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-destructive/10 text-destructive" style={{ fontWeight: 'var(--font-weight-medium)' }}>
               Unpublished changes
             </span>
-            <span className="text-xs text-muted">Published Version 1.5</span>
-            <button
-              onClick={() => setShowPublishModal(true)}
-              className="px-4 py-2 bg-accent text-foreground rounded-[var(--radius-button)] text-sm hover:bg-accent/90 transition-colors"
-              style={{ fontWeight: 'var(--font-weight-semibold)', color: '#fff', backgroundColor: '#11E874' }}
-            >
-              Publish
-            </button>
+            <span className="text-xs text-muted hidden sm:inline">Published Version 1.5</span>
+            {canPublish && (
+              <button
+                onClick={() => setShowPublishModal(true)}
+                className="px-4 py-2 min-h-[44px] bg-accent text-foreground rounded-[var(--radius-button)] text-sm hover:bg-accent/90 transition-colors"
+                style={{ fontWeight: 'var(--font-weight-semibold)', color: '#fff', backgroundColor: '#11E874' }}
+              >
+                Publish
+              </button>
+            )}
             <button
               onClick={() => navigate(`/app/project/${projectId}/procedure/${procedureId}`)}
-              className="p-2 text-muted hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+              className="p-2 text-muted hover:text-foreground hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <X className="size-5" />
             </button>
@@ -89,7 +95,9 @@ export function AppProcedureSettingsPage() {
               type="text"
               value={settings.title}
               onChange={(e) => update('title', e.target.value)}
-              className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              disabled={!canEdit}
+              className={`w-full px-3 py-2.5 min-h-[44px] bg-card rounded-[var(--radius)] text-foreground border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
+              style={{ fontSize: '16px' }}
             />
           </div>
 
@@ -98,7 +106,7 @@ export function AppProcedureSettingsPage() {
             {/* Image upload */}
             <div>
               <label className="text-xs text-muted mb-1.5 block" style={{ fontWeight: 'var(--font-weight-medium)' }}>Image</label>
-              <div className="aspect-video bg-card rounded-[var(--radius)] border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors">
+              <div className={`aspect-video bg-card rounded-[var(--radius)] border-2 border-dashed border-border flex flex-col items-center justify-center transition-colors ${canEdit ? 'cursor-pointer hover:border-primary/50' : 'opacity-60 cursor-not-allowed'}`}>
                 <Upload className="size-8 text-muted mb-2" />
                 <p className="text-xs text-muted">Click to upload an image</p>
               </div>
@@ -111,7 +119,8 @@ export function AppProcedureSettingsPage() {
                 value={settings.description}
                 onChange={(e) => update('description', e.target.value)}
                 rows={6}
-                className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                disabled={!canEdit}
+                className={`w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -122,10 +131,10 @@ export function AppProcedureSettingsPage() {
             <div className="bg-card rounded-[var(--radius)] p-4 border border-border">
               <h4 className="text-sm text-foreground mb-3" style={{ fontWeight: 'var(--font-weight-bold)' }}>Logics</h4>
               <div className="space-y-3">
-                <CheckboxField label="Enable 2D" checked={settings.enable2D} onChange={(v) => update('enable2D', v)} />
-                <CheckboxField label="Option selection auto proceeds" checked={settings.optionAutoProceeds} onChange={(v) => update('optionAutoProceeds', v)} />
-                <CheckboxField label="Auto skip steps" checked={settings.autoSkipSteps} onChange={(v) => update('autoSkipSteps', v)} />
-                <CheckboxField label="Show survey" checked={settings.showSurvey} onChange={(v) => update('showSurvey', v)} />
+                <CheckboxField label="Enable 2D" checked={settings.enable2D} onChange={(v) => update('enable2D', v)} disabled={!canEdit} />
+                <CheckboxField label="Option selection auto proceeds" checked={settings.optionAutoProceeds} onChange={(v) => update('optionAutoProceeds', v)} disabled={!canEdit} />
+                <CheckboxField label="Auto skip steps" checked={settings.autoSkipSteps} onChange={(v) => update('autoSkipSteps', v)} disabled={!canEdit} />
+                <CheckboxField label="Show survey" checked={settings.showSurvey} onChange={(v) => update('showSurvey', v)} disabled={!canEdit} />
               </div>
             </div>
 
@@ -133,9 +142,9 @@ export function AppProcedureSettingsPage() {
             <div className="bg-card rounded-[var(--radius)] p-4 border border-border">
               <h4 className="text-sm text-foreground mb-3" style={{ fontWeight: 'var(--font-weight-bold)' }}>Text to speech</h4>
               <div className="space-y-3">
-                <CheckboxField label="Read headers" checked={settings.readHeaders} onChange={(v) => update('readHeaders', v)} />
-                <CheckboxField label="Read descriptions" checked={settings.readDescriptions} onChange={(v) => update('readDescriptions', v)} />
-                <CheckboxField label="Wait for narration" checked={settings.waitForNarration} onChange={(v) => update('waitForNarration', v)} />
+                <CheckboxField label="Read headers" checked={settings.readHeaders} onChange={(v) => update('readHeaders', v)} disabled={!canEdit} />
+                <CheckboxField label="Read descriptions" checked={settings.readDescriptions} onChange={(v) => update('readDescriptions', v)} disabled={!canEdit} />
+                <CheckboxField label="Wait for narration" checked={settings.waitForNarration} onChange={(v) => update('waitForNarration', v)} disabled={!canEdit} />
               </div>
             </div>
           </div>
@@ -144,15 +153,18 @@ export function AppProcedureSettingsPage() {
           <div className="bg-card rounded-[var(--radius)] p-4 border border-border">
             <h4 className="text-sm text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>AI Instructions</h4>
             <p className="text-xs text-muted mb-2">Make it easier for AI chat to find this procedure</p>
-            <button className="text-xs text-primary hover:underline mb-3 flex items-center gap-1">
-              <Sparkles className="size-3" />
-              Summarize with AI
-            </button>
+            {canEdit && (
+              <button className="text-xs text-primary hover:underline mb-3 flex items-center gap-1">
+                <Sparkles className="size-3" />
+                Summarize with AI
+              </button>
+            )}
             <textarea
               value={settings.aiInstructions}
               onChange={(e) => update('aiInstructions', e.target.value)}
               rows={4}
-              className="w-full px-3 py-2.5 bg-background rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              disabled={!canEdit}
+              className={`w-full px-3 py-2.5 bg-background rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
             />
           </div>
 
@@ -163,7 +175,8 @@ export function AppProcedureSettingsPage() {
               <select
                 value={settings.connectedTwin}
                 onChange={(e) => update('connectedTwin', e.target.value)}
-                className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-primary focus:border-transparent pr-8"
+                disabled={!canEdit}
+                className={`w-full px-3 py-2.5 min-h-[44px] bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none appearance-none focus:ring-2 focus:ring-primary focus:border-transparent pr-8 ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
               >
                 <option value="">None</option>
                 <option value="Elitebook 840 G9 Assembly">Elitebook 840 G9 Assembly</option>
@@ -192,20 +205,22 @@ function CheckboxField({
   label,
   checked,
   onChange,
+  disabled = false,
 }: {
   label: string;
   checked: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
-    <label className="flex items-center gap-2.5 cursor-pointer group">
+    <label className={`flex items-center gap-2.5 group min-h-[44px] ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
       <div
         className={`size-5 rounded flex items-center justify-center border-2 transition-colors shrink-0 ${
           checked ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'
         }`}
         onClick={(e) => {
           e.preventDefault();
-          onChange(!checked);
+          if (!disabled) onChange(!checked);
         }}
       >
         {checked && (

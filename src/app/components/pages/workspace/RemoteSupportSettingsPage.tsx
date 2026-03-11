@@ -10,7 +10,7 @@ export function RemoteSupportSettingsPage() {
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
       {/* Header */}
-      <div className="border-b border-border bg-card px-6 py-4">
+      <div className="border-b border-border bg-card px-4 sm:px-6 py-4">
         <h1 className="text-foreground mb-1" style={{
           fontSize: 'var(--text-h2)',
           fontWeight: 'var(--font-weight-bold)',
@@ -27,10 +27,10 @@ export function RemoteSupportSettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 custom-scrollbar">
         <div className="max-w-3xl space-y-6">
           {/* Enable Remote Support */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
+          <div className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Headphones size={20} className="text-primary" />
@@ -49,7 +49,7 @@ export function RemoteSupportSettingsPage() {
                 }}>
                   Allow team members to request and provide remote assistance
                 </p>
-                <label className="flex items-center gap-3 cursor-pointer w-fit">
+                <label className="flex items-center gap-3 cursor-pointer w-fit min-h-[44px]">
                   <div className={`w-12 h-6 rounded-full transition-colors ${enableRemoteSupport ? 'bg-primary' : 'bg-muted'}`}>
                     <div className={`w-5 h-5 rounded-full bg-card transition-transform transform ${enableRemoteSupport ? 'translate-x-7' : 'translate-x-0.5'} mt-0.5`}></div>
                   </div>
@@ -71,7 +71,7 @@ export function RemoteSupportSettingsPage() {
           </div>
 
           {/* Session Settings */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
+          <div className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
             <div className="flex items-start gap-4 mb-6">
               <div className="w-10 h-10 rounded-[var(--radius)] bg-accent/10 flex items-center justify-center flex-shrink-0">
                 <Clock size={20} className="text-accent" />
@@ -115,7 +115,7 @@ export function RemoteSupportSettingsPage() {
           </div>
 
           {/* Security Settings */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
+          <div className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: 'var(--elevation-sm)' }}>
             <div className="flex items-start gap-4 mb-6">
               <div className="w-10 h-10 rounded-[var(--radius)] bg-destructive/10 flex items-center justify-center flex-shrink-0">
                 <Shield size={20} className="text-destructive" />
@@ -136,7 +136,7 @@ export function RemoteSupportSettingsPage() {
                 </p>
                 
                 <div className="space-y-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
+                  <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={requireApproval}
@@ -151,7 +151,7 @@ export function RemoteSupportSettingsPage() {
                     </span>
                   </label>
                   
-                  <label className="flex items-center gap-3 cursor-pointer">
+                  <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={allowFileTransfer}
@@ -172,7 +172,7 @@ export function RemoteSupportSettingsPage() {
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <button className="px-6 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors" style={{
+            <button className="px-6 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors" style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-bold)',
               fontFamily: 'var(--font-family)'

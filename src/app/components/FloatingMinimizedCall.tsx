@@ -61,11 +61,12 @@ export function FloatingMinimizedCall() {
     <>
       {/* Compact indicator when not expanded */}
       {!isExpanded && (
-        <div 
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-card border border-border rounded-[var(--radius)] cursor-pointer hover:border-primary/50 transition-all"
-          style={{ 
+        <div
+          className="fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-3 px-4 py-3 bg-card border border-border rounded-[var(--radius)] cursor-pointer hover:border-primary/50 transition-all"
+          style={{
             boxShadow: 'var(--elevation-lg)',
-            fontFamily: 'var(--font-family)'
+            fontFamily: 'var(--font-family)',
+            maxWidth: 'calc(100vw - 32px)'
           }}
           onClick={() => setIsExpanded(true)}
         >
@@ -106,12 +107,13 @@ export function FloatingMinimizedCall() {
       
       {/* Expanded floating video window */}
       {isExpanded && (
-        <div 
-          className="fixed bottom-6 right-6 z-50 bg-card border border-border rounded-[var(--radius)] overflow-hidden"
-          style={{ 
+        <div
+          className="fixed bottom-6 right-4 sm:right-6 z-50 bg-card border border-border rounded-[var(--radius)] overflow-hidden"
+          style={{
             boxShadow: 'var(--elevation-xl)',
             fontFamily: 'var(--font-family)',
-            width: '360px'
+            width: '360px',
+            maxWidth: 'calc(100vw - 32px)'
           }}
         >
           {/* Video preview area */}

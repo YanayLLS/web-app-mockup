@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
+import { useClickOutside } from '../hooks/useClickOutside';
 import frontlineLogo from 'figma:asset/2e4d44f46e0eb5c8e5ebd83749d089e9d5ec518c.png';
 
 interface AIModel {
@@ -107,19 +108,7 @@ export function ModelSelector({
 
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  useClickOutside(dropdownRef, () => setIsOpen(false), isOpen);
 
   const handleModelSelect = (modelId: string) => {
     onModelChange?.(modelId);
@@ -170,6 +159,7 @@ export function ModelSelector({
           className="absolute top-[calc(100%+4px)] left-0 z-[100] bg-card rounded-[var(--radius)] overflow-hidden custom-scrollbar"
           style={{
             width: '280px',
+            maxWidth: 'calc(100vw - 32px)',
             maxHeight: '400px',
             overflowY: 'auto',
             border: '1px solid var(--border)',

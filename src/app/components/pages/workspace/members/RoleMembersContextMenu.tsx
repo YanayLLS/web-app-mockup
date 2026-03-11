@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useClickOutside } from '../../../../hooks/useClickOutside';
+import { MemberAvatar } from '../../../MemberAvatar';
 
 interface Member {
   id: string;
@@ -24,21 +26,25 @@ export function RoleMembersContextMenu({
 }: RoleMembersContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
+  useClickOutside(menuRef, onClose);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
+  // Clamp menu position within viewport
+  useEffect(() => {
+    if (!menuRef.current) return;
+    const menu = menuRef.current;
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      menu.style.left = `${Math.max(16, window.innerWidth - rect.width - 16)}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      menu.style.top = `${Math.max(16, window.innerHeight - rect.height - 16)}px`;
+    }
+  }, []);
 
   return (
     <div
       ref={menuRef}
-      className="fixed bg-card rounded-lg shadow-elevation-lg w-[320px] z-50"
+      className="fixed bg-card rounded-lg shadow-elevation-lg w-[320px] max-w-[calc(100vw-32px)] z-50"
       style={{ 
         top: `${position.top}px`, 
         left: position.left !== undefined ? `${position.left}px` : undefined,
@@ -61,9 +67,9 @@ export function RoleMembersContextMenu({
           >
             {roleName} Members
           </h3>
-          <button 
+          <button
             onClick={onClose}
-            className="hover:bg-secondary rounded p-1 transition-colors"
+            className="hover:bg-secondary rounded p-1 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
           >
             <X className="w-4 h-4" style={{ color: 'var(--muted)' }} />
           </button>
@@ -81,22 +87,18 @@ export function RoleMembersContextMenu({
             members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center gap-3 p-2 rounded hover:bg-secondary transition-colors"
+                className="flex items-center gap-3 p-2 min-h-[44px] rounded hover:bg-secondary transition-colors"
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >
                 {/* Avatar */}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium"
-                  style={{
-                    backgroundColor: member.color,
-                    color: 'white',
-                    fontFamily: 'var(--font-family)',
-                    fontSize: 'var(--text-xs)',
-                    fontWeight: 'var(--font-weight-medium)',
-                  }}
-                >
-                  {member.initials}
-                </div>
+                <MemberAvatar
+                  name={member.name}
+                  size="lg"
+                  color={member.color}
+                  initials={member.initials}
+                  id={member.id}
+                  showTooltip={false}
+                />
 
                 {/* Member Info */}
                 <div className="flex-1 min-w-0">

@@ -7,6 +7,8 @@ import { ModelSelector } from './ModelSelector';
 import generatorImage from 'figma:asset/e07e13a2f3760fdde8be911bb7c14c56f85b7c2a.png';
 import { getSmartAIResponse, streamResponse, ProjectInfo } from '../utils/aiResponses';
 import { useProject } from '../contexts/ProjectContext';
+import { useClickOutside } from '../hooks/useClickOutside';
+import { useRole, hasAccess } from '../contexts/RoleContext';
 
 function IconClose() {
   return (
@@ -186,6 +188,8 @@ export function AIChatView({
   isAdmin = false,
   onNavigateToAiStudio
 }: AIChatViewProps) {
+  const { currentRole } = useRole();
+  const canAccessChat = hasAccess(currentRole, 'ai-chat');
   const isMobile = useIsMobile();
   const { projects: rawProjects } = useProject();
   const [chatMessage, setChatMessage] = useState('');
@@ -344,25 +348,10 @@ export function AIChatView({
   }, [chatMessage]);
 
   // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
-        setShowContextMenu(false);
-      }
-      if (fileMenuRef.current && !fileMenuRef.current.contains(event.target as Node)) {
-        setShowFileMenu(false);
-      }
-      if (debugMenuRef.current && !debugMenuRef.current.contains(event.target as Node)) {
-        setShowDebugMenu(false);
-      }
-      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target as Node)) {
-        setShowHeaderMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(contextMenuRef, () => setShowContextMenu(false));
+  useClickOutside(fileMenuRef, () => setShowFileMenu(false));
+  useClickOutside(debugMenuRef, () => setShowDebugMenu(false));
+  useClickOutside(headerMenuRef, () => setShowHeaderMenu(false));
 
   // Recording timer
   useEffect(() => {
@@ -945,6 +934,8 @@ export function AIChatView({
   const charCount = chatMessage.length;
   const showCharLimit = charCount > MAX_CHAR_LIMIT * 0.8;
 
+  if (!canAccessChat) return null;
+
   return (
     <div className="w-full h-full flex flex-col p-[8px]">
       <input
@@ -1196,13 +1187,17 @@ export function AIChatView({
         {/* Chat History Sidebar */}
         {showChatHistory && (
           <div
-            className="w-[250px] border-r border-border flex flex-col bg-card shrink-0"
+            className={`${
+              isMobile
+                ? 'fixed inset-0 z-50 w-full'
+                : 'w-[250px] border-r border-border shrink-0'
+            } flex flex-col bg-card`}
             style={{
               animation: 'slideInFromLeft 0.2s ease-out',
             }}
           >
             {/* Chat List Header */}
-            <div className="px-[12px] py-[12px] border-b border-border shrink-0">
+            <div className="px-[12px] py-[12px] border-b border-border shrink-0 flex items-center justify-between">
               <span
                 style={{
                   fontSize: 'var(--text-sm)',
@@ -1212,6 +1207,14 @@ export function AIChatView({
               >
                 Chat History
               </span>
+              {isMobile && (
+                <button
+                  onClick={() => setShowChatHistory(false)}
+                  className="p-2.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                >
+                  <X size={18} style={{ color: 'var(--foreground)' }} />
+                </button>
+              )}
             </div>
 
             {/* Chat List */}
@@ -1258,16 +1261,16 @@ export function AIChatView({
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header */}
           <div
-            className="flex items-center justify-between px-[16px] py-[12px] border-b border-border shrink-0"
+            className="flex items-center justify-between px-[16px] py-[12px] border-b border-border shrink-0 flex-wrap gap-y-1"
             style={{
               fontFamily: 'var(--font-family)',
             }}
           >
-            <div className="flex items-center gap-[8px]">
+            <div className="flex items-center gap-[8px] min-w-0">
               {/* Toggle Chat History Button */}
               <button
                 onClick={() => setShowChatHistory(!showChatHistory)}
-                className="p-[6px] hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                className={`${isMobile ? 'p-2.5' : 'p-[6px]'} hover:bg-secondary rounded-[var(--radius)] transition-colors`}
                 title={showChatHistory ? "Hide Chat History" : "Show Chat History"}
               >
                 <History size={20} style={{ color: 'var(--foreground)' }} />
@@ -1295,7 +1298,7 @@ export function AIChatView({
               <div className="relative" ref={headerMenuRef}>
                 <button
                   onClick={() => setShowHeaderMenu(!showHeaderMenu)}
-                  className="p-[6px] hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                  className={`${isMobile ? 'p-2.5' : 'p-[6px]'} hover:bg-secondary rounded-[var(--radius)] transition-colors`}
                   title="More Options"
                 >
                   <MoreVertical size={18} style={{ color: 'var(--muted)' }} />
@@ -1456,7 +1459,7 @@ export function AIChatView({
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="p-[6px] hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                className={`${isMobile ? 'p-3' : 'p-[6px]'} hover:bg-secondary rounded-[var(--radius)] transition-colors`}
               >
                 <IconClose />
               </button>
@@ -1508,7 +1511,7 @@ export function AIChatView({
                     onMouseEnter={() => setHoveredMessageId(msg.id)}
                     onMouseLeave={() => setHoveredMessageId(null)}
                   >
-                    <div className="flex flex-col max-w-[85%] relative" style={{ paddingBottom: !msg.error && editingMessageId !== msg.id ? '26px' : '0' }}>
+                    <div className="flex flex-col max-w-[85%] relative" style={{ paddingBottom: !msg.error && editingMessageId !== msg.id ? (isMobile ? '32px' : '26px') : '0' }}>
                       <div
                         className={`rounded-[var(--radius)] px-[14px] py-[12px] ${
                           msg.role === 'user'
@@ -1591,11 +1594,14 @@ export function AIChatView({
                           </div>
                         ) : (
                           <p
+                            className="break-words"
                             style={{
                               fontSize: 'var(--text-sm)',
                               color: msg.role === 'user' ? 'var(--primary-foreground)' : msg.error ? 'var(--error)' : 'var(--foreground)',
                               whiteSpace: 'pre-wrap',
                               lineHeight: '1.5',
+                              overflowWrap: 'break-word',
+                              wordBreak: 'break-word',
                             }}
                           >
                             {renderMessageContent(msg.content)}
@@ -1778,12 +1784,12 @@ export function AIChatView({
 
                       {/* Message Actions - Absolutely positioned */}
                       {!msg.error && editingMessageId !== msg.id && (
-                        <div 
+                        <div
                           className="flex items-center gap-[4px] px-[4px] absolute bottom-0"
                           style={{
-                            height: '26px',
-                            opacity: hoveredMessageId === msg.id || (msg.role === 'assistant' && (msg.action && !msg.reverted)) ? 1 : 0,
-                            pointerEvents: hoveredMessageId === msg.id || (msg.role === 'assistant' && (msg.action && !msg.reverted)) ? 'auto' : 'none',
+                            height: isMobile ? '32px' : '26px',
+                            opacity: isMobile || hoveredMessageId === msg.id || (msg.role === 'assistant' && (msg.action && !msg.reverted)) ? 1 : 0,
+                            pointerEvents: isMobile || hoveredMessageId === msg.id || (msg.role === 'assistant' && (msg.action && !msg.reverted)) ? 'auto' : 'none',
                             transition: 'opacity 0.15s ease-in-out',
                             right: msg.role === 'user' ? '0' : 'auto',
                             left: msg.role === 'assistant' ? '0' : 'auto',
@@ -1810,7 +1816,7 @@ export function AIChatView({
                             ) : (
                               <button
                                 onClick={() => handleCopyMessage(msg.id, msg.content)}
-                                className="p-[4px] hover:bg-secondary rounded transition-colors"
+                                className={`${isMobile ? 'p-2' : 'p-[4px]'} hover:bg-secondary rounded transition-colors`}
                                 title="Copy message"
                               >
                                 {copiedMessageId === msg.id ? (
@@ -1824,7 +1830,7 @@ export function AIChatView({
                             <>
                               <button
                                 onClick={() => handleCopyMessage(msg.id, msg.content)}
-                                className="p-[4px] hover:bg-secondary rounded transition-colors"
+                                className={`${isMobile ? 'p-2' : 'p-[4px]'} hover:bg-secondary rounded transition-colors`}
                                 title="Copy message"
                               >
                                 {copiedMessageId === msg.id ? (
@@ -1835,7 +1841,7 @@ export function AIChatView({
                               </button>
                               <button
                                 onClick={() => handleEditMessage(msg.id, msg.content)}
-                                className="p-[4px] hover:bg-secondary rounded transition-colors"
+                                className={`${isMobile ? 'p-2' : 'p-[4px]'} hover:bg-secondary rounded transition-colors`}
                                 title="Edit message"
                               >
                                 <Edit2 size={14} style={{ color: 'var(--muted)' }} />

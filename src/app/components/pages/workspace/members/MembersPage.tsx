@@ -18,6 +18,8 @@ import { AccessSummary } from './AccessSummary';
 import { RequestSeatsModal } from './RequestSeatsModal';
 import { type RoleWithDescription } from './SimpleRolesContextMenu';
 import { FilterBuilderModal, type FilterGroup } from './FilterBuilderModal';
+import { useRole, hasAccess } from '@/app/contexts/RoleContext';
+import { MemberAvatar } from '../../../MemberAvatar';
 
 // Helper function to format relative time
 function formatRelativeTime(dateString: string): string {
@@ -389,15 +391,19 @@ const defaultAvailableRoles = [
 ];
 
 export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new', onNavigateToRoles, onNavigateToGroups, invitedMembers = [], groups, publicFeatureEnabled = true, members: externalMembers, onMembersChange, initialRoleFilter, onClearInitialFilter, availableRoles: externalAvailableRoles, roleAccessRules = {}, roleAccessFeatureEnabled = true, complexFilteringEnabled = false }: MembersPageProps) {
+  // Role-based access control
+  const { currentRole } = useRole();
+  const isAdmin = hasAccess(currentRole, 'workspace-management');
+
   // Extract group names from groups data
   const availableGroups = groups.map(g => g.name);
-  
+
   // Helper function to get group color by name
   const getGroupColor = (groupName: string): string => {
     const group = groups.find(g => g.name === groupName);
     return group?.color || '#888888';
   };
-  
+
   // Use external roles if provided, otherwise use default roles
   const availableRoles = externalAvailableRoles || defaultAvailableRoles;
   const [internalMembers, setInternalMembers] = useState<Member[]>(mockMembers);
@@ -1133,8 +1139,8 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
         backgroundColor: 'var(--card)',
       }}>
         {/* Top Row: Search, Filter Buttons and Invite Section */}
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Search */}
             <div className="relative">
               <div 
@@ -1151,12 +1157,11 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search members..."
-                  className="bg-transparent outline-none"
-                  style={{ 
-                    color: 'var(--foreground)', 
+                  className="bg-transparent outline-none w-[200px] max-w-[40vw]"
+                  style={{
+                    color: 'var(--foreground)',
                     fontFamily: 'var(--font-family)',
                     fontSize: 'var(--text-sm)',
-                    width: '200px',
                   }}
                 />
               </div>
@@ -1367,7 +1372,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
           </div>
           
           {/* Invite Section */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
             {/* Free Slots Indicator */}
             <div 
               className="flex items-center gap-2.5 px-3 py-2 border"
@@ -1455,46 +1460,48 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
               </div>
             </div>
 
-            {/* Invite Button */}
-            <button
-              onClick={() => {
-                if (availableSeats <= 0) {
-                  setShowRequestSeatsModal(true);
-                } else {
-                  onInviteClick();
-                }
-              }}
-              className="flex items-center gap-2 px-4 py-2 transition-all"
-              style={{ 
-                backgroundColor: 'var(--primary)',
-                color: 'var(--primary-foreground)',
-                borderRadius: 'var(--radius)',
-                fontFamily: 'var(--font-family)',
-                fontSize: 'var(--text-base)',
-                fontWeight: 'var(--font-weight-bold)',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = 'var(--elevation-sm)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <svg 
-                width="16" 
-                height="16" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor" 
-                strokeWidth="2.5"
+            {/* Invite Button — admin only */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  if (availableSeats <= 0) {
+                    setShowRequestSeatsModal(true);
+                  } else {
+                    onInviteClick();
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 transition-all"
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)',
+                  borderRadius: 'var(--radius)',
+                  fontFamily: 'var(--font-family)',
+                  fontSize: 'var(--text-base)',
+                  fontWeight: 'var(--font-weight-bold)',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = 'var(--elevation-sm)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Invite Members
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Invite Members
+              </button>
+            )}
           </div>
         </div>
 
@@ -1598,11 +1605,11 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
         )}
       </div>
 
-      {/* Batch Actions Toolbar - Floating at Bottom Center */}
-      {selectedMembers.length > 0 && (
+      {/* Batch Actions Toolbar - Floating at Bottom Center (admin only) */}
+      {isAdmin && selectedMembers.length > 0 && (
         <div 
-          className="fixed bottom-8 left-1/2 border flex items-center z-40"
-          style={{ 
+          className="fixed bottom-8 left-1/2 border flex items-center z-40 max-w-[calc(100vw-32px)]"
+          style={{
             transform: 'translateX(-50%)',
             backgroundColor: 'var(--card)',
             borderColor: 'var(--border)',
@@ -1933,24 +1940,30 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   <div className="flex items-center gap-2">
                     {member.status === 'invited' ? (
                       <>
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs"
-                          style={{ backgroundColor: 'var(--secondary)', color: 'var(--muted)', fontFamily: 'var(--font-family)' }}
-                        >
-                          ?
-                        </div>
+                        <MemberAvatar
+                          name="?"
+                          initials="?"
+                          color="var(--secondary)"
+                          size="lg"
+                          showTooltip={false}
+                          showProfileOnClick={false}
+                          className="[&_div]:!text-[var(--muted)]"
+                        />
                         <span className="text-sm px-2 py-0.5 bg-secondary text-secondary-foreground rounded-lg" style={{ fontFamily: 'var(--font-family)' }}>
                           Invited
                         </span>
                       </>
                     ) : (
                       <>
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                          style={{ backgroundColor: getAvatarColor(index), fontFamily: 'var(--font-family)' }}
-                        >
-                          {getInitials(member.name)}
-                        </div>
+                        <MemberAvatar
+                          name={member.name}
+                          size="lg"
+                          email={member.email}
+                          role={member.role}
+                          status={member.status}
+                          groups={member.groups}
+                          lastActive={member.lastActive}
+                        />
                         <span className="text-sm" style={{ fontFamily: 'var(--font-family)' }}>{member.name}</span>
                       </>
                     )}
@@ -2041,29 +2054,13 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                     }
                     
                     return (
-                      <div className="relative group/inviter inline-block">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-default"
-                          style={{ backgroundColor: inviterDetails.color, fontFamily: 'var(--font-family)', fontSize: '11px' }}
-                        >
-                          {inviterDetails.initials}
-                        </div>
-                        {/* Tooltip */}
-                        <div 
-                          className="absolute invisible group-hover/inviter:visible opacity-0 group-hover/inviter:opacity-100 transition-opacity duration-200 z-50 px-2 py-1 rounded text-xs whitespace-nowrap pointer-events-none"
-                          style={{
-                            backgroundColor: 'var(--popover)',
-                            color: 'var(--popover-foreground)',
-                            fontFamily: 'var(--font-family)',
-                            bottom: 'calc(100% + 4px)',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                          }}
-                        >
-                          {inviterDetails.name}
-                        </div>
-                      </div>
+                      <MemberAvatar
+                        name={inviterDetails.name}
+                        initials={inviterDetails.initials}
+                        color={inviterDetails.color}
+                        size="lg"
+                        showProfileOnClick={false}
+                      />
                     );
                   })()}
                 </td>
@@ -2164,27 +2161,31 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
                 }}>
                   <div className="flex items-center gap-2 justify-end">
-                    <button 
-                      onClick={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const menuHeight = 120;
-                        const menuWidth = 200;
-                        const position = calculateMenuPosition(rect, menuWidth, menuHeight);
-                        setShowMemberActionsMenu({ 
-                          id: member.id, 
-                          position
-                        });
-                      }}
-                      className="p-1 hover:bg-secondary rounded transition-colors"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => setShowDeleteModal({ type: 'single', id: member.id })}
-                      className="w-6 h-6 flex items-center justify-center hover:bg-destructive/10 rounded transition-colors text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const menuHeight = 120;
+                          const menuWidth = 200;
+                          const position = calculateMenuPosition(rect, menuWidth, menuHeight);
+                          setShowMemberActionsMenu({
+                            id: member.id,
+                            position
+                          });
+                        }}
+                        className="p-1 hover:bg-secondary rounded transition-colors"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <button
+                        onClick={() => setShowDeleteModal({ type: 'single', id: member.id })}
+                        className="w-6 h-6 flex items-center justify-center hover:bg-destructive/10 rounded transition-colors text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -2198,10 +2199,10 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
             icon={Users}
             title="No members yet"
             description="Get started by inviting team members to your workspace. They'll be able to collaborate on projects and access resources based on their roles."
-            action={{
+            action={isAdmin ? {
               label: "Invite Members",
               onClick: onInviteClick
-            }}
+            } : undefined}
           />
         )}
 

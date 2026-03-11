@@ -143,7 +143,7 @@ export function AppNotificationsPage() {
                   setShowMenu(!showMenu);
                 }
               }}
-              className="p-2 text-muted hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+              className="p-2 text-muted hover:text-foreground hover:bg-secondary rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <MoreVertical className="size-5" />
             </button>
@@ -172,7 +172,7 @@ export function AppNotificationsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-md text-sm transition-colors capitalize
+              className={`px-4 py-1.5 min-h-[44px] rounded-md text-sm transition-colors capitalize
                 ${filter === f ? 'bg-card text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}
               style={{ fontWeight: filter === f ? 'var(--font-weight-semibold)' : 'var(--font-weight-normal)' }}
             >
@@ -316,7 +316,7 @@ export function AppNotificationsPage() {
               <div className="w-10 h-1 rounded-full bg-muted/40" />
             </div>
 
-            <div className="px-4 pb-6 space-y-1">
+            <div className="px-4 space-y-1" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
               <button
                 onClick={markAllRead}
                 className="w-full px-4 py-3.5 text-left text-sm text-foreground hover:bg-secondary rounded-[var(--radius)] flex items-center gap-3 transition-colors"

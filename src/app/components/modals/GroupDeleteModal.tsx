@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
+import { BaseModal } from './BaseModal';
 
 interface GroupDeleteModalProps {
   groupName: string;
@@ -14,18 +15,14 @@ export function GroupDeleteModal({
   onCancel,
 }: GroupDeleteModalProps) {
   return (
-    <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]"
-      onClick={onCancel}
-    >
+    <BaseModal isOpen={true} onClose={onCancel} opacity={70} zIndex={200}>
       <div
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="group-delete-title"
         aria-describedby="group-delete-description"
-        className="bg-card rounded-[var(--radius-lg)] p-6 max-w-md mx-4 w-full"
+        className="bg-card rounded-[var(--radius-lg)] p-6 max-w-md mx-4 w-full max-h-[calc(100vh-32px)] overflow-y-auto"
         style={{ boxShadow: 'var(--shadow-elevation-lg)' }}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Icon */}
         <div className="flex justify-center mb-4">
@@ -93,7 +90,7 @@ export function GroupDeleteModal({
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-colors"
+            className="px-4 py-2.5 min-h-[44px] bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-colors"
             style={{
               fontSize: 'var(--text-sm)',
               fontFamily: 'var(--font-family)',
@@ -104,7 +101,7 @@ export function GroupDeleteModal({
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 transition-colors hover:opacity-90"
+            className="px-4 py-2.5 min-h-[44px] transition-colors hover:opacity-90"
             style={{
               backgroundColor: 'var(--destructive)',
               color: 'var(--destructive-foreground)',
@@ -118,6 +115,6 @@ export function GroupDeleteModal({
           </button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }

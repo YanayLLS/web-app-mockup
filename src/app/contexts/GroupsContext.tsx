@@ -1,4 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { getRandomGroupColor } from '../constants/colors';
+
+export { getRandomGroupColor } from '../constants/colors';
 
 export interface Group {
   id: string;
@@ -6,15 +9,6 @@ export interface Group {
   color: string;
   members: Array<{ id: string; name: string; initials: string; color: string }>;
   projects: string[];
-}
-
-const GROUP_COLORS = [
-  '#2F80ED', '#8404B3', '#11E874', '#FF6B35',
-  '#E91E63', '#00BCD4', '#FF9800', '#9C27B0',
-];
-
-export function getRandomGroupColor(): string {
-  return GROUP_COLORS[Math.floor(Math.random() * GROUP_COLORS.length)];
 }
 
 const initialGroups: Group[] = [

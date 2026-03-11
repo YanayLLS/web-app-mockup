@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface ContextMenuProps {
   x: number;
@@ -19,29 +20,17 @@ export function ContextMenu({
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
+  useClickOutside(menuRef, onClose, true, true);
 
+  useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    // Add listeners after a small delay to prevent immediate closing
-    setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-    }, 0);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
   // Adjust position if menu would go off screen
@@ -57,9 +46,15 @@ export function ContextMenu({
       if (rect.right > viewportWidth) {
         adjustedX = viewportWidth - rect.width - 8;
       }
+      if (adjustedX < 8) {
+        adjustedX = 8;
+      }
 
       if (rect.bottom > viewportHeight) {
         adjustedY = viewportHeight - rect.height - 8;
+      }
+      if (adjustedY < 8) {
+        adjustedY = 8;
       }
 
       if (adjustedX !== x || adjustedY !== y) {
@@ -86,7 +81,8 @@ export function ContextMenu({
         borderRadius: 'var(--radius)',
         boxShadow: 'var(--elevation-lg)',
         padding: 'var(--spacing-xs)',
-        minWidth: '180px'
+        minWidth: '180px',
+        maxWidth: 'calc(100vw - 16px)'
       }}
     >
       <button
@@ -94,6 +90,9 @@ export function ContextMenu({
         className="w-full text-left transition-colors"
         style={{
           padding: 'var(--spacing-sm) var(--spacing-md)',
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center',
           borderRadius: 'var(--radius)',
           fontSize: 'var(--text-sm)',
           fontFamily: 'var(--font-family)',
@@ -118,6 +117,9 @@ export function ContextMenu({
         className="w-full text-left transition-colors"
         style={{
           padding: 'var(--spacing-sm) var(--spacing-md)',
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center',
           borderRadius: 'var(--radius)',
           fontSize: 'var(--text-sm)',
           fontFamily: 'var(--font-family)',
@@ -142,6 +144,9 @@ export function ContextMenu({
         className="w-full text-left transition-colors"
         style={{
           padding: 'var(--spacing-sm) var(--spacing-md)',
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center',
           borderRadius: 'var(--radius)',
           fontSize: 'var(--text-sm)',
           fontFamily: 'var(--font-family)',

@@ -32,9 +32,9 @@ export function ProductSelector() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8 sm:p-8">
       {/* Logo / Title */}
-      <div className="mb-12 text-center">
+      <div className="mb-8 sm:mb-12 text-center">
         <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
           <span className="text-primary-foreground text-2xl font-bold">F</span>
         </div>
@@ -43,14 +43,14 @@ export function ProductSelector() {
       </div>
 
       {/* Product Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full max-w-[calc(100vw-32px)] sm:max-w-3xl">
         {products.map((product) => {
           const Icon = product.icon;
           return (
             <button
               key={product.id}
               onClick={() => product.ready && navigate(product.path)}
-              className={`group relative bg-card rounded-xl p-8 flex flex-col items-center gap-4 transition-all
+              className={`group relative bg-card rounded-xl px-4 py-6 sm:p-8 flex flex-col items-center gap-4 transition-all min-h-[44px]
                 shadow-elevation-sm
                 ${product.ready
                   ? 'hover:shadow-elevation-md hover:-translate-y-1 cursor-pointer'

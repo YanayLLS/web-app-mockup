@@ -422,7 +422,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                                 </div>
                                 <button
                                   onClick={() => handleRemoveMedia(popup.id, media.id)}
-                                  className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                                   aria-label="Remove media"
                                 >
                                   <X className="size-3" />

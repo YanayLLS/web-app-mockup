@@ -1,6 +1,7 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { Upload, Trash2, Camera } from 'lucide-react';
 import { useAvatar } from '../contexts/AvatarContext';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 interface UserAvatarProps {
   size?: 'small' | 'medium' | 'large';
@@ -41,23 +42,7 @@ export function UserAvatar({
   };
 
   // Close context menu when clicking outside
-  useEffect(() => {
-    if (!showContextMenu) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        contextMenuRef.current &&
-        !contextMenuRef.current.contains(event.target as Node) &&
-        avatarRef.current &&
-        !avatarRef.current.contains(event.target as Node)
-      ) {
-        setShowContextMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showContextMenu]);
+  useClickOutside([contextMenuRef, avatarRef], () => setShowContextMenu(false), showContextMenu);
 
   const handleAvatarClick = (e: React.MouseEvent) => {
     if (!editable) return;
@@ -167,11 +152,12 @@ export function UserAvatar({
             left: `${contextMenuPosition.x}px`,
             top: `${contextMenuPosition.y}px`,
             minWidth: '160px',
+            maxWidth: 'calc(100vw - 32px)',
           }}
         >
           <button
             onClick={handleUploadClick}
-            className="w-full px-3 py-2 text-left hover:bg-secondary transition-colors flex items-center gap-2"
+            className="w-full px-3 py-2.5 min-h-[44px] text-left hover:bg-secondary transition-colors flex items-center gap-2"
           >
             <Upload size={16} style={{ color: 'var(--color-foreground)' }} />
             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-foreground)', fontFamily: 'var(--font-family)' }}>
@@ -182,7 +168,7 @@ export function UserAvatar({
           {avatarUrl && (
             <button
               onClick={handleRemoveAvatar}
-              className="w-full px-3 py-2 text-left hover:bg-destructive/10 transition-colors flex items-center gap-2"
+              className="w-full px-3 py-2.5 min-h-[44px] text-left hover:bg-destructive/10 transition-colors flex items-center gap-2"
             >
               <Trash2 size={16} style={{ color: 'var(--color-destructive)' }} />
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-destructive)', fontFamily: 'var(--font-family)' }}>

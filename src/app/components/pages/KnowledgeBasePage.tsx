@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useClickOutside } from '../../hooks/useClickOutside';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -44,6 +45,7 @@ import { getUrlParam, setUrlParam } from '../../utils/urlParams';
 import { useToast } from '../../contexts/ToastContext';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { MemberAvatar } from '../MemberAvatar';
 
 type SortDirection = 'asc' | 'desc' | null;
 
@@ -69,8 +71,8 @@ const ALL_AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: 'connectedDigitalTwin', label: 'Connection', visible: true, width: 150, sortable: true, removable: true },
   { id: 'createdBy', label: 'Created by', visible: true, width: 130, sortable: true, removable: true },
   { id: 'createdDate', label: 'Created', visible: true, width: 100, sortable: true, removable: true },
-  { id: 'lastEditedBy', label: 'Last edited by', visible: true, width: 130, sortable: true, removable: true },
-  { id: 'lastEdited', label: 'Last edited', visible: true, width: 110, sortable: true, removable: true },
+  { id: 'lastEditedBy', label: 'Edited by', visible: true, width: 110, sortable: true, removable: true },
+  { id: 'lastEdited', label: 'Edited', visible: true, width: 110, sortable: true, removable: true },
   { id: 'size', label: 'Size', visible: false, width: 90, sortable: true, removable: true },
   { id: 'version', label: 'Version', visible: false, width: 100, sortable: true, removable: true },
 ];
@@ -119,25 +121,27 @@ function KnowledgeBaseGridSkeleton() {
   );
 }
 
-function KnowledgeBaseEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
+function KnowledgeBaseEmptyState({ onCreateClick, canCreate }: { onCreateClick: () => void; canCreate?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center h-full py-16">
       <div className="p-6 bg-secondary/50 rounded-full mb-4">
         <Database size={40} className="text-muted" />
       </div>
       <h3 className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-        No items in knowledge base
+        {canCreate ? 'No items in knowledge base' : 'No items in knowledge base yet'}
       </h3>
       <p className="text-sm text-muted mb-6 text-center max-w-md">
-        Get started by creating your first digital twin, flow, or media file
+        {canCreate ? 'Get started by creating your first digital twin, flow, or media file' : 'Items will appear here once they are created'}
       </p>
-      <button
-        onClick={onCreateClick}
-        className="flex items-center gap-2 h-10 px-6 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-      >
-        <Plus size={16} />
-        <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Create Your First Item</span>
-      </button>
+      {canCreate && (
+        <button
+          onClick={onCreateClick}
+          className="flex items-center gap-2 h-10 px-6 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <Plus size={16} />
+          <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Create Your First Item</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -173,6 +177,10 @@ function KnowledgeBaseContent() {
 
   // Check if user has edit permissions
   const canEdit = hasAccess(currentRole, 'projects-edit');
+  const canCreate = hasAccess(currentRole, 'create-content');
+  const canDelete = hasAccess(currentRole, 'delete-content');
+  const canPublish = hasAccess(currentRole, 'publish-content');
+  const canViewUnpublished = hasAccess(currentRole, 'view-unpublished');
 
   // URL param helpers for shareable modal state
   const setCanvasParam = (id: string | null) => setUrlParam('canvas', id);
@@ -190,7 +198,7 @@ function KnowledgeBaseContent() {
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
-  const [nameColumnWidth, setNameColumnWidth] = useState(250);
+  const [nameColumnWidth, setNameColumnWidth] = useState(320);
   const [openProcedure, setOpenProcedure] = useState<KnowledgeBaseItem | null>(null);
   const [openDigitalTwin, setOpenDigitalTwin] = useState<KnowledgeBaseItem | null>(null);
   const [previewMedia, setPreviewMedia] = useState<KnowledgeBaseItem | null>(null);
@@ -219,7 +227,10 @@ function KnowledgeBaseContent() {
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const createMenuRef = useRef<HTMLDivElement>(null);
   const addColumnMenuRef = useRef<HTMLDivElement>(null);
+  const addColumnButtonRef = useRef<HTMLButtonElement>(null);
+  const [addColumnMenuPos, setAddColumnMenuPos] = useState<{ top: number; right: number } | null>(null);
   const itemMenuRef = useRef<HTMLDivElement>(null);
+  const [itemMenuPos, setItemMenuPos] = useState<{ top: number; right: number } | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const digitalTwinConnectionMenuRef = useRef<HTMLDivElement>(null);
@@ -322,6 +333,16 @@ function KnowledgeBaseContent() {
     }
   }, [editingItemId]);
 
+  // Dismiss media preview on Escape
+  useEffect(() => {
+    if (!previewMedia) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') openMediaPreview(null);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [previewMedia]);
+
   // Track shift key for range selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -346,29 +367,14 @@ function KnowledgeBaseContent() {
   }, []);
 
   // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
-        setShowFilterMenu(false);
-      }
-      if (createMenuRef.current && !createMenuRef.current.contains(event.target as Node)) {
-        setShowCreateMenu(false);
-      }
-      if (addColumnMenuRef.current && !addColumnMenuRef.current.contains(event.target as Node)) {
-        setShowAddColumnMenu(false);
-      }
-      if (itemMenuRef.current && !itemMenuRef.current.contains(event.target as Node)) {
-        setActiveItemMenu(null);
-      }
-      if (digitalTwinConnectionMenuRef.current && !digitalTwinConnectionMenuRef.current.contains(event.target as Node)) {
-        setDigitalTwinConnectionMenu(null);
-        setProcedureSearchQuery('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(filterMenuRef, () => setShowFilterMenu(false));
+  useClickOutside(createMenuRef, () => setShowCreateMenu(false));
+  useClickOutside(addColumnMenuRef, () => { setShowAddColumnMenu(false); setAddColumnMenuPos(null); });
+  useClickOutside(itemMenuRef, () => { setActiveItemMenu(null); setItemMenuPos(null); });
+  useClickOutside(digitalTwinConnectionMenuRef, () => {
+    setDigitalTwinConnectionMenu(null);
+    setProcedureSearchQuery('');
+  });
 
   // Handle column resizing
   useEffect(() => {
@@ -609,6 +615,60 @@ function KnowledgeBaseContent() {
     const newItems = insertItems(itemsWithoutDragged, targetId, draggedItems, position);
     setItems(newItems);
     updateKnowledgeBaseItems(newItems);
+    setSelectedItems(new Set());
+  };
+
+  // Move item(s) to root or into a specific folder (used by breadcrumb drop)
+  const moveItemToFolder = (dragId: string, targetFolderId: string | null) => {
+    const idsToMove = selectedItems.has(dragId) && selectedItems.size > 1
+      ? Array.from(selectedItems)
+      : [dragId];
+
+    // Remove dragged items from tree
+    const draggedItems: KnowledgeBaseItem[] = [];
+    const removeRecursive = (itemList: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
+      const result: KnowledgeBaseItem[] = [];
+      for (const item of itemList) {
+        if (idsToMove.includes(item.id)) {
+          draggedItems.push(item);
+        } else {
+          if (item.children && item.children.length > 0) {
+            result.push({ ...item, children: removeRecursive(item.children) });
+          } else {
+            result.push(item);
+          }
+        }
+      }
+      return result;
+    };
+    let newItems = removeRecursive(items);
+    if (draggedItems.length === 0) return;
+
+    // Clear parentId for root, or set to target folder
+    const movedItems = draggedItems.map(i => ({ ...i, parentId: targetFolderId || undefined }));
+
+    if (!targetFolderId) {
+      // Move to root
+      newItems = [...newItems, ...movedItems];
+    } else {
+      // Insert into target folder's children
+      const insertIntoFolder = (list: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
+        return list.map(item => {
+          if (item.id === targetFolderId && item.type === 'folder') {
+            return { ...item, children: [...(item.children || []), ...movedItems], isExpanded: true };
+          }
+          if (item.children) {
+            return { ...item, children: insertIntoFolder(item.children) };
+          }
+          return item;
+        });
+      };
+      newItems = insertIntoFolder(newItems);
+    }
+
+    setItems(newItems);
+    updateKnowledgeBaseItems(newItems);
+    setSelectedItems(new Set());
   };
 
   const deleteItem = (itemId: string) => {
@@ -618,6 +678,7 @@ function KnowledgeBaseContent() {
     
     deleteKnowledgeBaseItem(itemId);
     setActiveItemMenu(null);
+    setItemMenuPos(null);
     
     if (item) {
       showToast(
@@ -633,12 +694,15 @@ function KnowledgeBaseContent() {
   };
 
   const deleteSelectedItems = () => {
+    if (selectedItems.size > 3) {
+      if (!window.confirm(`Delete ${selectedItems.size} items? This can be undone.`)) return;
+    }
     const itemsCopy = [...items];
     const count = selectedItems.size;
-    
+
     selectedItems.forEach(id => deleteKnowledgeBaseItem(id));
     setSelectedItems(new Set());
-    
+
     showToast(
       `Deleted ${count} item${count > 1 ? 's' : ''}`,
       {
@@ -729,6 +793,7 @@ function KnowledgeBaseContent() {
     }
     
     setEditingItemId(newFolder.id);
+    setEditingItemName(newFolder.name);
     setShowCreateMenu(false);
   };
 
@@ -753,11 +818,12 @@ function KnowledgeBaseContent() {
   };
 
   const finishEditingItem = () => {
-    if (editingItemId && editingItemName.trim()) {
+    const name = editInputRef.current?.value?.trim() || editingItemName.trim();
+    if (editingItemId && name) {
       const updateItem = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
         return items.map(item => {
           if (item.id === editingItemId) {
-            return { ...item, name: editingItemName.trim() };
+            return { ...item, name };
           }
           if (item.children) {
             return { ...item, children: updateItem(item.children) };
@@ -818,6 +884,7 @@ function KnowledgeBaseContent() {
     setItems(newItems);
     updateKnowledgeBaseItems(newItems);
     setActiveItemMenu(null);
+    setItemMenuPos(null);
   };
 
   const duplicateSelectedItems = () => {
@@ -849,7 +916,7 @@ function KnowledgeBaseContent() {
       case 'digital-twin':
         return 'text-[#8404b3] bg-[#8404b3]/10';
       case 'procedure':
-        return 'text-accent bg-accent/10';
+        return 'text-[#2F80ED] bg-[#2F80ED]/10';
       case 'media':
         if (item.mediaType === 'video') return 'text-destructive bg-destructive/10';
         if (item.mediaType === 'image') return 'text-[#ff9500] bg-[#ff9500]/10';
@@ -924,33 +991,6 @@ function KnowledgeBaseContent() {
     }
   };
 
-  // Generate user initials from name
-  const getUserInitials = (name: string): string => {
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
-  // Generate consistent color for user based on name
-  const getUserColor = (name: string): string => {
-    const colors = [
-      '#aa74b5', // purple
-      '#4a9eff', // blue
-      '#ff6b6b', // red
-      '#51cf66', // green
-      '#ffa94d', // orange
-      '#7950f2', // violet
-      '#20c997', // teal
-      '#ff6b9d', // pink
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -1058,7 +1098,7 @@ function KnowledgeBaseContent() {
                   <ChevronDown size={12} className="text-primary shrink-0" />
                 )
               ) : (
-                <ChevronsUpDown size={12} className="opacity-0 group-hover/header:opacity-50 shrink-0" />
+                <ChevronsUpDown size={12} className="md:opacity-0 md:group-hover/header:opacity-50 shrink-0" />
               )}
             </button>
           ) : (
@@ -1071,7 +1111,7 @@ function KnowledgeBaseContent() {
           {column.removable && (
             <button
               onClick={() => removeColumn(column.id)}
-              className="ml-1 p-0.5 opacity-0 group-hover/header:opacity-100 hover:bg-destructive/10 rounded transition-all shrink-0"
+              className="ml-1 p-0.5 md:opacity-0 md:group-hover/header:opacity-100 hover:bg-destructive/10 rounded transition-all shrink-0"
             >
               <X size={12} className="text-destructive" />
             </button>
@@ -1080,7 +1120,7 @@ function KnowledgeBaseContent() {
 
         {/* Resize handle */}
         <div
-          className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary transition-colors ${
+          className={`absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary transition-colors ${
             isHovered ? 'bg-border' : ''
           } ${
             resizingColumn === column.id ? 'bg-primary' : ''
@@ -1098,6 +1138,7 @@ function KnowledgeBaseContent() {
     const [{ isDragging }, drag, preview] = useDrag({
       type: ITEM_TYPE,
       item: { id: item.id, type: ITEM_TYPE } as DragItem,
+      canDrag: () => canEdit,
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
@@ -1179,22 +1220,20 @@ function KnowledgeBaseContent() {
           <div className="h-0.5 bg-primary mx-2 rounded-full" />
         )}
 
-        <div 
+        <div
           onClick={handleRowClick}
-          className={`group flex items-center h-12 border-b border-border transition-colors ${
+          className={`group flex items-center h-12 border-b border-border transition-all ${
             shouldShowDragging ? 'opacity-50' : ''
           } ${
             isDropTarget && dropPosition === 'inside' ? 'bg-primary/20 border-primary' : ''
           } ${
-            isSelected ? 'bg-primary/5' : 'hover:bg-secondary/50'
-          } ${
-            item.type !== 'folder' ? 'cursor-pointer' : 'cursor-pointer'
-          }`}
+            isSelected ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-[#D9E0F0]/40 border-l-2 border-l-transparent hover:border-l-primary/50'
+          } cursor-pointer`}
         >
           {/* Drag Handle - DARK */}
           <div 
             ref={dragHandleRef}
-            className="w-6 flex items-center justify-center cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
+            className="w-6 flex items-center justify-center cursor-move md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           >
             <GripVertical size={16} className="text-foreground" />
           </div>
@@ -1254,8 +1293,7 @@ function KnowledgeBaseContent() {
                 <input
                   ref={editInputRef}
                   type="text"
-                  value={editingItemName}
-                  onChange={(e) => setEditingItemName(e.target.value)}
+                  defaultValue={editingItemName}
                   onBlur={finishEditingItem}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -1266,7 +1304,7 @@ function KnowledgeBaseContent() {
                     }
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full h-7 px-2 bg-card border-2 border-primary rounded-[var(--radius)] text-sm text-foreground focus:outline-none"
+                  className="w-full h-7 px-2 bg-card border-2 border-primary rounded-[var(--radius)] text-sm text-foreground outline-none"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 />
               ) : (
@@ -1334,7 +1372,7 @@ function KnowledgeBaseContent() {
                       connectedTwins.length > 0 ? (
                         <>
                           <LinkIcon size={10} className="text-accent shrink-0" />
-                          <span className="text-xs text-accent truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                          <span className="text-xs text-[#2F80ED] truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                             {connectedTwins.length === 1 
                               ? connectedTwins[0]!.name 
                               : `${connectedTwins.length} digital twins`}
@@ -1351,7 +1389,7 @@ function KnowledgeBaseContent() {
                         return (
                           <>
                             <LinkIcon size={10} className={`${count > 0 ? 'text-accent' : 'text-muted'} shrink-0`} />
-                            <span className={`text-xs truncate ${count > 0 ? 'text-accent' : 'text-muted'}`} style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                            <span className={`text-xs truncate ${count > 0 ? 'text-[#2F80ED]' : 'text-muted'}`} style={{ fontWeight: 'var(--font-weight-bold)' }}>
                               {count > 0 ? `${count} ${count === 1 ? 'procedure' : 'procedures'}` : 'No procedures'}
                             </span>
                           </>
@@ -1362,23 +1400,7 @@ function KnowledgeBaseContent() {
                     )}
                   </button>
                 ) : column.id === 'createdBy' || column.id === 'lastEditedBy' ? (
-                  (() => {
-                    const userName = getColumnValue(item, column.id);
-                    const initials = getUserInitials(userName);
-                    const color = getUserColor(userName);
-                    return (
-                      <div 
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs text-white cursor-default"
-                        style={{ 
-                          backgroundColor: color,
-                          fontWeight: 'var(--font-weight-bold)'
-                        }}
-                        title={userName}
-                      >
-                        {initials}
-                      </div>
-                    );
-                  })()
+                  <MemberAvatar name={getColumnValue(item, column.id)} size="sm" showTooltip />
                 ) : (
                   <span className="text-xs text-muted truncate block">
                     {column.id === 'createdDate' || column.id === 'lastEdited' 
@@ -1392,96 +1414,28 @@ function KnowledgeBaseContent() {
           })}
 
           {/* Actions */}
-          <div className="w-10 px-4 flex items-center justify-center shrink-0 relative">
+          <div className="w-10 px-4 flex items-center justify-center shrink-0">
             {canEdit && (
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveItemMenu(isMenuOpen ? null : item.id);
+                  if (isMenuOpen) {
+                    setActiveItemMenu(null);
+                    setItemMenuPos(null);
+                  } else {
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setItemMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                    setActiveItemMenu(item.id);
+                  }
                 }}
                 className={`p-1.5 rounded-[var(--radius)] transition-all ${
-                  isMenuOpen 
-                    ? 'opacity-100 bg-secondary' 
-                    : 'opacity-0 group-hover:opacity-100 hover:bg-secondary'
+                  isMenuOpen
+                    ? 'opacity-100 bg-secondary'
+                    : 'md:opacity-0 md:group-hover:opacity-100 hover:bg-secondary'
                 }`}
               >
                 <MoreHorizontal size={16} className="text-muted" />
               </button>
-            )}
-
-            {/* Actions Menu */}
-            {isMenuOpen && (
-              <div 
-                ref={itemMenuRef}
-                className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-20"
-                style={{ boxShadow: 'var(--elevation-sm)' }}
-              >
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (item.type === 'procedure') {
-                      openProcedureModal(item);
-                    } else if (item.type === 'digital-twin') {
-                      openDigitalTwinModal(item);
-                    } else if (item.type === 'media') {
-                      openMediaPreview(item);
-                    }
-                    setActiveItemMenu(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <ExternalLink size={16} className="text-muted" />
-                  <span>Open</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingItemId(item.id);
-                    setEditingItemName(item.name);
-                    setActiveItemMenu(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Edit size={16} className="text-muted" />
-                  <span>Rename</span>
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    duplicateItem(item.id);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Copy size={16} className="text-muted" />
-                  <span>Duplicate</span>
-                </button>
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
-                  <Download size={16} className="text-muted" />
-                  <span>Download</span>
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(item, e);
-                    setActiveItemMenu(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Star size={16} className={isFavorite(item.id) ? 'text-yellow-500 fill-yellow-500' : 'text-muted'} />
-                  <span>{isFavorite(item.id) ? 'Remove from Favorites' : 'Add to Favorites'}</span>
-                </button>
-                <div className="border-t border-border my-1" />
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteItem(item.id);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  <span>Delete</span>
-                </button>
-              </div>
             )}
           </div>
         </div>
@@ -1499,11 +1453,81 @@ function KnowledgeBaseContent() {
     );
   };
 
-  const renderGridItem = (item: KnowledgeBaseItem) => {
+  const DroppableBreadcrumb = ({ folderId, label, icon, onClick, onDrop, isCurrent }: {
+    folderId: string | null;
+    label: string;
+    icon?: React.ReactNode;
+    onClick: () => void;
+    onDrop: (dragId: string) => void;
+    isCurrent: boolean;
+  }) => {
+    const ref = useRef<HTMLButtonElement>(null);
+
+    const [{ isOver }, drop] = useDrop({
+      accept: ITEM_TYPE,
+      drop: (draggedItem: DragItem) => {
+        onDrop(draggedItem.id);
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
+    });
+
+    drop(ref);
+
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        className={`flex items-center gap-1 text-sm px-2 py-1 rounded-[var(--radius)] transition-colors ${
+          isOver
+            ? 'bg-primary/20 text-primary ring-2 ring-primary/30'
+            : isCurrent
+              ? 'text-foreground'
+              : 'text-muted hover:text-foreground'
+        }`}
+        style={isCurrent && !isOver ? { fontWeight: 'var(--font-weight-bold)' } : {}}
+      >
+        {icon}
+        <span>{label}</span>
+      </button>
+    );
+  };
+
+  const DraggableGridItem = ({ item }: { item: KnowledgeBaseItem }) => {
+    const ref = useRef<HTMLDivElement>(null);
     const isMenuOpen = activeItemMenu === item.id;
     const isSelected = selectedItems.has(item.id);
+    const isEditing = editingItemId === item.id;
+
+    const [{ isDragging }, drag] = useDrag({
+      type: ITEM_TYPE,
+      item: { id: item.id, type: ITEM_TYPE } as DragItem,
+      canDrag: () => canEdit,
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    const [{ isOver }, drop] = useDrop({
+      accept: ITEM_TYPE,
+      drop: (draggedItem: DragItem) => {
+        if (draggedItem.id === item.id) return;
+        if (item.type === 'folder') {
+          moveItem(draggedItem.id, item.id, 'inside');
+        } else {
+          moveItem(draggedItem.id, item.id, 'after');
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver({ shallow: true }),
+      }),
+    });
+
+    drag(drop(ref));
 
     const handleCardClick = () => {
+      if (isEditing) return;
       if (item.type === 'folder') {
         setCurrentFolderId(item.id);
       } else if (item.type === 'procedure') {
@@ -1516,28 +1540,33 @@ function KnowledgeBaseContent() {
     };
 
     return (
-      <div 
+      <div
+        ref={ref}
         key={item.id}
         onClick={handleCardClick}
-        className={`group bg-card border rounded-[var(--radius)] transition-all overflow-hidden cursor-pointer ${
-          isSelected 
-            ? 'border-primary ring-2 ring-primary/20' 
+        className={`group relative bg-card border rounded-[var(--radius)] transition-all cursor-pointer ${
+          isDragging ? 'opacity-50' : ''
+        } ${
+          isOver ? 'ring-2 ring-primary border-primary' : ''
+        } ${
+          isSelected
+            ? 'border-primary ring-2 ring-primary/20'
             : 'border-border hover:border-primary/50 hover:shadow-md'
         }`}
         style={{ boxShadow: 'var(--elevation-sm)' }}
       >
         {/* Thumbnail/Icon Area - 16:9 Aspect Ratio */}
-        <div className="relative w-full bg-secondary/30 overflow-hidden" style={{ paddingTop: '56.25%' }}>
+        <div className="relative w-full bg-secondary/30 overflow-hidden rounded-t-[var(--radius)]" style={{ paddingTop: '56.25%' }}>
           <div className="absolute inset-0">
             {item.thumbnail ? (
               <>
-                <img 
-                  src={item.thumbnail} 
+                <img
+                  src={item.thumbnail}
                   alt={item.name}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
                 {/* Play button overlay for video items */}
                 {item.type === 'media' && item.mediaType === 'video' && (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -1554,14 +1583,14 @@ function KnowledgeBaseContent() {
                 </div>
               </div>
             )}
-          
+
             {/* Checkbox - SQUARE */}
             <button
             onClick={(e) => toggleItemSelection(item.id, e)}
             className={`absolute top-3 left-3 w-5 h-5 rounded-sm border-2 transition-all flex items-center justify-center backdrop-blur-sm ${
-              isSelected 
-                ? 'bg-primary border-primary' 
-                : 'border-white/80 bg-black/20 hover:bg-black/40 hover:border-white opacity-0 group-hover:opacity-100'
+              isSelected
+                ? 'bg-primary border-primary'
+                : 'border-white/80 bg-black/20 hover:bg-black/40 hover:border-white md:opacity-0 md:group-hover:opacity-100'
             }`}
           >
             {isSelected && <Check size={14} className="text-primary-foreground" />}
@@ -1573,96 +1602,71 @@ function KnowledgeBaseContent() {
               {getItemTypeLabel(item)}
             </span>
           </div>
-
-          {/* Menu Button */}
-          <div className="absolute top-3 right-3" ref={isMenuOpen ? itemMenuRef : null}>
-            {canEdit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveItemMenu(isMenuOpen ? null : item.id);
-                }}
-                className={`p-1.5 rounded-[var(--radius)] transition-all backdrop-blur-sm ${
-                  isMenuOpen 
-                    ? 'opacity-100 bg-black/40' 
-                    : 'opacity-0 group-hover:opacity-100 bg-black/20 hover:bg-black/40'
-                }`}
-              >
-                <MoreHorizontal size={16} className="text-white" />
-              </button>
-            )}
-
-            {/* Actions Menu */}
-            {isMenuOpen && (
-              <div 
-                className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50"
-                style={{ boxShadow: 'var(--elevation-lg)' }}
-              >
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (item.type === 'folder') {
-                      setCurrentFolderId(item.id);
-                    } else if (item.type === 'procedure') {
-                      openProcedureModal(item);
-                    } else if (item.type === 'digital-twin') {
-                      openDigitalTwinModal(item);
-                    }
-                    setActiveItemMenu(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <ExternalLink size={16} className="text-muted" />
-                  <span>Open</span>
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    duplicateItem(item.id);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Copy size={16} className="text-muted" />
-                  <span>Duplicate</span>
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(item, e);
-                    setActiveItemMenu(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Star size={16} className={isFavorite(item.id) ? 'text-yellow-500 fill-yellow-500' : 'text-muted'} />
-                  <span>{isFavorite(item.id) ? 'Remove from Favorites' : 'Add to Favorites'}</span>
-                </button>
-                <div className="border-t border-border my-1" />
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteItem(item.id);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  <span>Delete</span>
-                </button>
-              </div>
-            )}
           </div>
-          </div>
+        </div>
+
+        {/* Menu Button - outside thumbnail to avoid clipping */}
+        <div className="absolute top-3 right-3 z-10">
+          {canEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isMenuOpen) {
+                  setActiveItemMenu(null);
+                  setItemMenuPos(null);
+                } else {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setItemMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                  setActiveItemMenu(item.id);
+                }
+              }}
+              className={`p-1.5 rounded-[var(--radius)] transition-all backdrop-blur-sm ${
+                isMenuOpen
+                  ? 'opacity-100 bg-black/40'
+                  : 'md:opacity-0 md:group-hover:opacity-100 bg-black/20 hover:bg-black/40'
+              }`}
+            >
+              <MoreHorizontal size={16} className="text-white" />
+            </button>
+          )}
         </div>
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-            {item.name}
-          </h3>
+          {isEditing ? (
+            <input
+              ref={editInputRef}
+              type="text"
+              defaultValue={editingItemName}
+              onBlur={finishEditingItem}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  finishEditingItem();
+                } else if (e.key === 'Escape') {
+                  setEditingItemId(null);
+                  setEditingItemName('');
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full h-7 px-2 bg-card border-2 border-primary rounded-[var(--radius)] text-sm text-foreground outline-none"
+              style={{ fontWeight: 'var(--font-weight-bold)' }}
+            />
+          ) : (
+            <h3 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              {item.name}
+            </h3>
+          )}
           {item.description && (
             <p className="text-xs text-muted mt-1 line-clamp-2">
               {item.description}
             </p>
           )}
+          <div className="flex items-center gap-2 mt-2">
+            <MemberAvatar name={item.lastEditedBy || item.createdBy || ""} size="xs" showTooltip />
+            <span className="text-xs text-muted truncate">
+              Edited {formatDate(item.lastEdited || item.createdDate || "")}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -1713,7 +1717,16 @@ function KnowledgeBaseContent() {
 
   const filteredItems = () => {
     let itemsToFilter: KnowledgeBaseItem[];
-    
+
+    // Filter out unpublished items for users without view-unpublished permission
+    const filterUnpublished = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
+      if (canViewUnpublished) return items;
+      return items.filter(item => item.isPublished !== false).map(item => ({
+        ...item,
+        children: item.children ? filterUnpublished(item.children) : undefined,
+      }));
+    };
+
     // In grid view with folder navigation
     if (viewMode === 'grid' && !searchQuery && selectedFilter === 'all') {
       // Show items in current folder
@@ -1751,7 +1764,10 @@ function KnowledgeBaseContent() {
       };
       itemsToFilter = sortRecursive(itemsToFilter);
     }
-    
+
+    // Hide unpublished items for users without permission
+    itemsToFilter = filterUnpublished(itemsToFilter);
+
     return itemsToFilter;
   };
 
@@ -1778,10 +1794,10 @@ function KnowledgeBaseContent() {
       {/* Header - Hidden when canvas is open */}
       {!canvasProcedure && (
         <div className="shrink-0 border-b border-border bg-card">
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between flex-wrap gap-3 px-4 sm:px-6 py-4">
           {/* Left side - Search & Active Filters */}
-          <div className="flex items-center gap-3 flex-1">
-            <div className="relative max-w-md flex-1">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[200px]">
+            <div className="relative max-w-xs flex-1">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
                 type="text"
@@ -1817,19 +1833,22 @@ function KnowledgeBaseContent() {
           </div>
 
           {/* Right side - Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Filter */}
             <div className="relative" ref={filterMenuRef}>
               <button
                 onClick={() => setShowFilterMenu(!showFilterMenu)}
-                className={`flex items-center gap-2 h-10 px-3 rounded-[var(--radius)] border transition-colors ${
-                  selectedFilter !== 'all' 
-                    ? 'bg-primary/10 border-primary text-primary' 
+                className={`relative flex items-center gap-2 h-10 px-3 rounded-[var(--radius)] border transition-colors ${
+                  selectedFilter !== 'all'
+                    ? 'bg-primary/10 border-primary text-primary'
                     : 'bg-card border-border text-foreground hover:bg-secondary'
                 }`}
               >
                 <Filter size={16} />
                 <span className="text-sm">Filter</span>
+                {selectedFilter !== 'all' && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-card" />
+                )}
               </button>
 
               {showFilterMenu && (
@@ -1899,7 +1918,7 @@ function KnowledgeBaseContent() {
               </button>
             </div>
 
-            {canEdit && (
+            {canCreate && (
               <>
                 <div className="w-px h-6 bg-border" />
 
@@ -1911,7 +1930,7 @@ function KnowledgeBaseContent() {
 
                 {/* Create Button with Dropdown */}
                 <div className="relative" ref={createMenuRef}>
-              <button 
+              <button
                 onClick={() => setShowCreateMenu(!showCreateMenu)}
                 className="flex items-center gap-2 h-10 px-4 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
@@ -1921,7 +1940,7 @@ function KnowledgeBaseContent() {
 
               {showCreateMenu && (
                 <div 
-                  className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 overflow-hidden"
                   style={{ boxShadow: 'var(--elevation-sm)' }}
                 >
                   <div className="p-2">
@@ -1941,7 +1960,7 @@ function KnowledgeBaseContent() {
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <p style={{ fontWeight: 'var(--font-weight-bold)' }}>Digital Twin</p>
-                      <p className="text-xs text-muted truncate">Create and edit digital twins</p>
+                      <p className="text-xs text-muted">Create and edit digital twins</p>
                     </div>
                   </button>
                   <button 
@@ -1952,8 +1971,8 @@ function KnowledgeBaseContent() {
                       <FileText size={16} className="text-accent" />
                     </div>
                     <div className="text-left flex-1 min-w-0">
-                      <p style={{ fontWeight: 'var(--font-weight-bold)' }}>Procedure</p>
-                      <p className="text-xs text-muted truncate">Connect a sequence of events to build a procedure</p>
+                      <p style={{ fontWeight: 'var(--font-weight-bold)' }}>Flow</p>
+                      <p className="text-xs text-muted">Connect a sequence of events to build a flow</p>
                     </div>
                   </button>
                   <button 
@@ -1965,7 +1984,7 @@ function KnowledgeBaseContent() {
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <p style={{ fontWeight: 'var(--font-weight-bold)' }}>Media</p>
-                      <p className="text-xs text-muted truncate">Upload images, videos, or documents</p>
+                      <p className="text-xs text-muted">Upload images, videos, or documents</p>
                     </div>
                   </button>
                   <div className="border-t border-border my-1" />
@@ -1978,7 +1997,7 @@ function KnowledgeBaseContent() {
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <p style={{ fontWeight: 'var(--font-weight-bold)' }}>Folder</p>
-                      <p className="text-xs text-muted truncate">Organize items in a folder</p>
+                      <p className="text-xs text-muted">Organize items in a folder</p>
                     </div>
                   </button>
                 </div>
@@ -1991,7 +2010,7 @@ function KnowledgeBaseContent() {
 
         {/* Column Headers (List View Only) */}
         {viewMode === 'list' && (
-          <div className="flex items-center h-10 px-4 border-t border-border bg-secondary/30">
+          <div className="flex items-center h-10 border-t border-border bg-secondary/30 overflow-x-auto">
             <div className="w-6" /> {/* Drag handle space */}
             <div className="w-8 flex items-center justify-center">
               <button
@@ -2006,10 +2025,10 @@ function KnowledgeBaseContent() {
               </button>
             </div>
             
-            {/* Name Column Header with Resize */}
-            <div 
-              className="px-2 shrink-0 relative group/name-header"
-              style={{ width: `${nameColumnWidth}px` }}
+            {/* Name Column Header with Resize — left padding matches row icon+expand offset */}
+            <div
+              className="shrink-0 relative group/name-header"
+              style={{ width: `${nameColumnWidth}px`, paddingLeft: '76px', paddingRight: '8px' }}
             >
               <button
                 onClick={() => handleSort('name')}
@@ -2024,14 +2043,14 @@ function KnowledgeBaseContent() {
                     <ChevronDown size={12} className="text-primary shrink-0" />
                   )
                 ) : (
-                  <ChevronsUpDown size={12} className="opacity-0 group-hover/name-header:opacity-50 shrink-0" />
+                  <ChevronsUpDown size={12} className="md:opacity-0 md:group-hover/name-header:opacity-50 shrink-0" />
                 )}
               </button>
               
               {/* Resize handle for name column */}
               <div
-                className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary transition-colors ${
-                  resizingColumn === 'name' ? 'bg-primary' : 'opacity-0 group-hover/name-header:opacity-100 group-hover/name-header:bg-border'
+                className={`absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary transition-colors ${
+                  resizingColumn === 'name' ? 'bg-primary' : 'md:opacity-0 md:group-hover/name-header:opacity-100 md:group-hover/name-header:bg-border'
                 }`}
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -2048,37 +2067,25 @@ function KnowledgeBaseContent() {
             <div className="w-10 flex items-center justify-center">
               {/* Add Column Button */}
               {canEdit && availableColumnsToAdd.length > 0 && (
-                <div className="relative" ref={addColumnMenuRef}>
-                  <button
-                    onClick={() => setShowAddColumnMenu(!showAddColumnMenu)}
-                    className="p-1 hover:bg-secondary rounded transition-colors"
-                    title="Add column"
-                  >
-                    <Plus size={14} className="text-muted" />
-                  </button>
-
-                  {showAddColumnMenu && (
-                    <div 
-                      className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 overflow-hidden"
-                      style={{ boxShadow: 'var(--elevation-sm)' }}
-                    >
-                      <div className="p-2 border-b border-border">
-                        <p className="text-xs text-muted px-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                          Add column
-                        </p>
-                      </div>
-                      {availableColumnsToAdd.map((column) => (
-                        <button
-                          key={column.id}
-                          onClick={() => addColumn(column.id)}
-                          className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                        >
-                          {column.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <button
+                  ref={addColumnButtonRef}
+                  onClick={() => {
+                    if (showAddColumnMenu) {
+                      setShowAddColumnMenu(false);
+                      setAddColumnMenuPos(null);
+                    } else {
+                      const rect = addColumnButtonRef.current?.getBoundingClientRect();
+                      if (rect) {
+                        setAddColumnMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                      }
+                      setShowAddColumnMenu(true);
+                    }
+                  }}
+                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors group/addcol"
+                  title="Customize columns"
+                >
+                  <Plus size={14} className="text-muted group-hover/addcol:text-foreground transition-colors" />
+                </button>
               )}
             </div>
           </div>
@@ -2089,44 +2096,42 @@ function KnowledgeBaseContent() {
       {/* Content */}
       <div ref={contentRef} className="flex-1 overflow-auto custom-scrollbar">
         {viewMode === 'list' ? (
-          <div className="bg-card">
+          <div className="bg-card overflow-x-auto">
             {filteredItems().map((item) => (
               <DraggableItem key={item.id} item={item} level={0} />
             ))}
+
           </div>
         ) : (
           <div className="p-6">
-            {/* Breadcrumbs for folder navigation */}
+            {/* Breadcrumbs for folder navigation — each segment is a drop target */}
             {currentFolderId && (
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border">
-                <button
+                <DroppableBreadcrumb
+                  folderId={null}
+                  label="All Items"
+                  icon={<Folder size={16} />}
                   onClick={() => setCurrentFolderId(null)}
-                  className="flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors"
-                >
-                  <Folder size={16} />
-                  <span>All Items</span>
-                </button>
+                  onDrop={(dragId) => moveItemToFolder(dragId, null)}
+                  isCurrent={false}
+                />
                 {getFolderPath(currentFolderId).map((folder, index, array) => (
                   <div key={folder.id} className="flex items-center gap-2">
                     <ChevronRight size={16} className="text-muted" />
-                    <button
+                    <DroppableBreadcrumb
+                      folderId={folder.id}
+                      label={folder.name}
                       onClick={() => setCurrentFolderId(folder.id)}
-                      className={`text-sm transition-colors ${
-                        index === array.length - 1
-                          ? 'text-foreground'
-                          : 'text-muted hover:text-foreground'
-                      }`}
-                      style={index === array.length - 1 ? { fontWeight: 'var(--font-weight-bold)' } : {}}
-                    >
-                      {folder.name}
-                    </button>
+                      onDrop={(dragId) => moveItemToFolder(dragId, folder.id)}
+                      isCurrent={index === array.length - 1}
+                    />
                   </div>
                 ))}
               </div>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredItems().map(item => renderGridItem(item))}
+              {filteredItems().map(item => <DraggableGridItem key={item.id} item={item} />)}
             </div>
           </div>
         )}
@@ -2145,16 +2150,170 @@ function KnowledgeBaseContent() {
                 Try adjusting your search or filter to find what you're looking for
               </p>
             </div>
+          ) : currentFolderId ? (
+            <div className="flex flex-col items-center justify-center h-full py-12">
+              <div className="p-6 bg-secondary/50 rounded-full mb-4">
+                <Folder size={40} className="text-muted" />
+              </div>
+              <h3 className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                This folder is empty
+              </h3>
+              <p className="text-sm text-muted mb-6 text-center max-w-md">
+                Drag items here or create new ones to organize your content
+              </p>
+            </div>
           ) : (
-            <KnowledgeBaseEmptyState onCreateClick={() => setShowCreateMenu(true)} />
+            <KnowledgeBaseEmptyState onCreateClick={() => setShowCreateMenu(true)} canCreate={canCreate} />
           )
         )}
       </div>
 
+      {/* Item Count Footer */}
+      {!canvasProcedure && filteredItems().length > 0 && (
+        <div className="shrink-0 border-t border-border bg-card px-6 py-2 flex items-center justify-between">
+          <span className="text-xs text-muted">
+            {searchQuery || selectedFilter !== 'all'
+              ? `Showing ${filteredItems().length} of ${stats.total} items`
+              : `${stats.total} item${stats.total !== 1 ? 's' : ''}`}
+            {stats.total > 0 && !searchQuery && selectedFilter === 'all' && (
+              <span className="ml-2 text-muted/60">
+                {[
+                  stats.digitalTwins > 0 && `${stats.digitalTwins} Digital Twin${stats.digitalTwins !== 1 ? 's' : ''}`,
+                  stats.procedures > 0 && `${stats.procedures} Flow${stats.procedures !== 1 ? 's' : ''}`,
+                  stats.media > 0 && `${stats.media} Media`,
+                  stats.folders > 0 && `${stats.folders} Folder${stats.folders !== 1 ? 's' : ''}`,
+                ].filter(Boolean).join(' \u00b7 ')}
+              </span>
+            )}
+          </span>
+          {sortColumn && sortDirection && (
+            <span className="text-xs text-muted/60">
+              Sorted by {columns.find(c => c.id === sortColumn)?.label || (sortColumn === 'name' ? 'Name' : sortColumn)} {sortDirection === 'asc' ? '\u2191' : '\u2193'}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Add Column Dropdown (rendered at root to avoid overflow clipping) */}
+      {showAddColumnMenu && addColumnMenuPos && (
+        <div
+          ref={addColumnMenuRef}
+          className="fixed w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 overflow-hidden"
+          style={{ top: `${addColumnMenuPos.top}px`, right: `${addColumnMenuPos.right}px`, boxShadow: 'var(--elevation-sm)' }}
+        >
+          <div className="p-2 border-b border-border">
+            <p className="text-xs text-muted px-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              Add column
+            </p>
+          </div>
+          {availableColumnsToAdd.map((column) => (
+            <button
+              key={column.id}
+              onClick={() => addColumn(column.id)}
+              className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+            >
+              {column.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Item Actions Menu (rendered at root to avoid overflow clipping) */}
+      {activeItemMenu && itemMenuPos && (() => {
+        const menuItem = findItemById(items, activeItemMenu);
+        if (!menuItem) return null;
+        return (
+          <div
+            ref={itemMenuRef}
+            className="fixed w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50"
+            style={{ top: `${itemMenuPos.top}px`, right: `${itemMenuPos.right}px`, boxShadow: 'var(--elevation-sm)' }}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (menuItem.type === 'folder') {
+                  setCurrentFolderId(menuItem.id);
+                } else if (menuItem.type === 'procedure') {
+                  openProcedureModal(menuItem);
+                } else if (menuItem.type === 'digital-twin') {
+                  openDigitalTwinModal(menuItem);
+                } else if (menuItem.type === 'media') {
+                  openMediaPreview(menuItem);
+                }
+                setActiveItemMenu(null);
+                setItemMenuPos(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+            >
+              <ExternalLink size={16} className="text-muted" />
+              <span>Open</span>
+            </button>
+            {canEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingItemId(menuItem.id);
+                  setEditingItemName(menuItem.name);
+                  setActiveItemMenu(null);
+                  setItemMenuPos(null);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+              >
+                <Edit size={16} className="text-muted" />
+                <span>Rename</span>
+              </button>
+            )}
+            {hasAccess(currentRole, 'duplicate-content') && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  duplicateItem(menuItem.id);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+              >
+                <Copy size={16} className="text-muted" />
+                <span>Duplicate</span>
+              </button>
+            )}
+            <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+              <Download size={16} className="text-muted" />
+              <span>Download</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(menuItem, e);
+                setActiveItemMenu(null);
+                setItemMenuPos(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+            >
+              <Star size={16} className={isFavorite(menuItem.id) ? 'text-yellow-500 fill-yellow-500' : 'text-muted'} />
+              <span>{isFavorite(menuItem.id) ? 'Remove from Favorites' : 'Add to Favorites'}</span>
+            </button>
+            {canDelete && (
+              <>
+                <div className="border-t border-border my-1" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteItem(menuItem.id);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              </>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Multi-Selection Bottom Overlay */}
       {selectedItems.size > 0 && !canvasProcedure && (
         <div 
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-[var(--radius)] px-6 py-4 flex items-center gap-6"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-[var(--radius)] px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-6 flex-wrap max-w-[calc(100vw-32px)]"
           style={{ boxShadow: 'var(--elevation-sm)' }}
         >
           <div className="flex items-center gap-4">
@@ -2172,6 +2331,7 @@ function KnowledgeBaseContent() {
             >
               Clear
             </button>
+            <span className="text-xs text-muted ml-1">Shift+click for range</span>
           </div>
 
           <div className="w-px h-8 bg-border" />
@@ -2181,20 +2341,24 @@ function KnowledgeBaseContent() {
               <Download size={16} />
               <span className="text-sm">Download</span>
             </button>
-            <button 
-              onClick={duplicateSelectedItems}
-              className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
-            >
-              <Copy size={16} />
-              <span className="text-sm">Duplicate</span>
-            </button>
-            <button 
-              onClick={deleteSelectedItems}
-              className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
-            >
-              <Trash2 size={16} />
-              <span className="text-sm">Delete</span>
-            </button>
+            {hasAccess(currentRole, 'duplicate-content') && (
+              <button
+                onClick={duplicateSelectedItems}
+                className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
+              >
+                <Copy size={16} />
+                <span className="text-sm">Duplicate</span>
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={deleteSelectedItems}
+                className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 size={16} />
+                <span className="text-sm">Delete</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -2356,7 +2520,7 @@ function KnowledgeBaseContent() {
         return (
           <div
             ref={digitalTwinConnectionMenuRef}
-            className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-80"
+            className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-80 max-w-[calc(100vw-32px)]"
             style={{
               top: `${digitalTwinConnectionMenu.position.top}px`,
               left: `${digitalTwinConnectionMenu.position.left}px`,
@@ -2434,6 +2598,8 @@ function KnowledgeBaseContent() {
         <div
           className="fixed inset-0 z-50 flex flex-col items-center justify-center"
           style={{ backgroundColor: '#FFFFFF' }}
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setShowDigitalTwinModal(false); setDtImportFiles([]); } }}
           onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
           onDrop={(e) => {
             e.preventDefault();
@@ -2442,6 +2608,8 @@ function KnowledgeBaseContent() {
             if (files.length > 0) setDtImportFiles(prev => [...prev, ...files]);
           }}
         >
+          {/* Close button */}
+          <button onClick={() => { setShowDigitalTwinModal(false); setDtImportFiles([]); }} className="absolute top-6 right-6 p-2 rounded-[var(--radius)] hover:bg-secondary transition-colors" aria-label="Close"><X size={20} className="text-muted" /></button>
           {/* Hidden file input */}
           <input
             ref={dtFileInputRef}
@@ -2461,7 +2629,7 @@ function KnowledgeBaseContent() {
             {dtImportFiles.length === 0 ? (
               <>
                 {/* File type icons - fading at edges */}
-                <div className="flex items-center gap-3 mb-8 relative">
+                <div className="flex items-center gap-3 mb-8 relative flex-wrap justify-center">
                   <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10" />
                   <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent z-10" />
                   {['.DWG', '.STP', '.FBX', '.OBJ', '.X_T', '.GLB', '.STL', '.IGES'].map((ext, i) => (
@@ -2472,12 +2640,12 @@ function KnowledgeBaseContent() {
                         width: 56,
                         height: 64,
                         borderRadius: 8,
-                        border: '1.5px solid #C2C9DB',
+                        border: '1.5px solid var(--input)',
                         opacity: i === 0 || i === 7 ? 0.3 : i === 1 || i === 6 ? 0.6 : 1,
                       }}
                     >
-                      <File size={20} style={{ color: '#868D9E' }} />
-                      <span style={{ fontSize: 9, fontWeight: 600, color: '#868D9E', marginTop: 2, fontFamily: 'var(--font-family)' }}>{ext}</span>
+                      <File size={20} style={{ color: 'var(--muted)' }} />
+                      <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted)', marginTop: 2, fontFamily: 'var(--font-family)' }}>{ext}</span>
                     </div>
                   ))}
                 </div>
@@ -2485,7 +2653,7 @@ function KnowledgeBaseContent() {
                 {/* Description text */}
                 <p style={{
                   fontSize: 'var(--text-sm)',
-                  color: '#868D9E',
+                  color: 'var(--muted-foreground)',
                   fontFamily: 'var(--font-family)',
                   textAlign: 'center',
                   marginBottom: 12,
@@ -2498,17 +2666,18 @@ function KnowledgeBaseContent() {
                 {/* Drop your file here */}
                 <p style={{
                   fontSize: 'var(--text-base)',
-                  color: '#36415D',
+                  color: 'var(--foreground)',
                   fontFamily: 'var(--font-family)',
                   textAlign: 'center',
                 }}>
                   Drop your file here or{' '}
-                  <span
+                  <button
                     onClick={() => dtFileInputRef.current?.click()}
-                    style={{ fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                    className="font-bold underline cursor-pointer"
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'inherit' }}
                   >
                     browse
-                  </span>
+                  </button>
                 </p>
               </>
             ) : (
@@ -2520,11 +2689,11 @@ function KnowledgeBaseContent() {
                       key={`${file.name}-${i}`}
                       className="flex items-center gap-2 px-3 py-1.5"
                       style={{
-                        backgroundColor: '#C2C9DB',
+                        backgroundColor: 'var(--input)',
                         borderRadius: 25,
                         fontSize: 'var(--text-sm)',
                         fontFamily: 'var(--font-family)',
-                        color: '#36415D',
+                        color: 'var(--foreground)',
                       }}
                     >
                       <span style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
@@ -2533,7 +2702,7 @@ function KnowledgeBaseContent() {
                         className="flex items-center justify-center hover:opacity-70"
                         style={{ width: 16, height: 16 }}
                       >
-                        <X size={12} style={{ color: '#36415D' }} />
+                        <X size={12} style={{ color: 'var(--foreground)' }} />
                       </button>
                     </div>
                   ))}
@@ -2542,17 +2711,18 @@ function KnowledgeBaseContent() {
                 {/* Add more files link */}
                 <p style={{
                   fontSize: 'var(--text-sm)',
-                  color: '#36415D',
+                  color: 'var(--foreground)',
                   fontFamily: 'var(--font-family)',
                   textAlign: 'center',
                 }}>
                   Drop more files or{' '}
-                  <span
+                  <button
                     onClick={() => dtFileInputRef.current?.click()}
-                    style={{ fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                    className="font-bold underline cursor-pointer"
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'inherit' }}
                   >
                     browse
-                  </span>
+                  </button>
                 </p>
               </>
             )}
@@ -2565,19 +2735,7 @@ function KnowledgeBaseContent() {
                 setShowDigitalTwinModal(false);
                 setDtImportFiles([]);
               }}
-              className="px-6 py-2.5 transition-colors"
-              style={{
-                fontSize: 'var(--text-sm)',
-                fontWeight: 700,
-                fontFamily: 'var(--font-family)',
-                color: '#FF1F1F',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: 'var(--radius)',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#FF7979')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#FF1F1F')}
+              className="px-6 py-2.5 text-sm font-bold text-destructive hover:text-destructive/70 transition-colors rounded-[var(--radius)]"
             >
               Cancel
             </button>
@@ -2605,19 +2763,7 @@ function KnowledgeBaseContent() {
                 openDigitalTwinModal(newItem);
                 showToast(`Digital twin "${fileName}" created successfully`, 'success');
               }}
-              className="px-6 py-2.5 transition-colors"
-              style={{
-                fontSize: 'var(--text-sm)',
-                fontWeight: 700,
-                fontFamily: 'var(--font-family)',
-                color: '#FFFFFF',
-                backgroundColor: dtImportFiles.length > 0 ? '#2F80ED' : '#7F7F7F',
-                border: 'none',
-                cursor: dtImportFiles.length > 0 ? 'pointer' : 'default',
-                borderRadius: 'var(--radius)',
-              }}
-              onMouseEnter={(e) => { if (dtImportFiles.length > 0) e.currentTarget.style.backgroundColor = '#82B3F4'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = dtImportFiles.length > 0 ? '#2F80ED' : '#7F7F7F'; }}
+              className={`px-6 py-2.5 text-sm font-bold text-primary-foreground transition-colors rounded-[var(--radius)] ${dtImportFiles.length > 0 ? 'bg-primary hover:bg-primary/80 cursor-pointer' : 'bg-muted cursor-default'}`}
             >
               Create
             </button>
@@ -2627,7 +2773,7 @@ function KnowledgeBaseContent() {
       {/* Media / Document Preview Modal */}
       {previewMedia && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-8"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 sm:p-8"
           onClick={() => openMediaPreview(null)}
         >
           <div

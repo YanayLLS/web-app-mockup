@@ -123,7 +123,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
       
       <div 
         ref={modalRef}
-        className="relative rounded-lg w-full max-w-[450px] border"
+        className="relative rounded-lg w-full max-w-[min(450px,calc(100vw-32px))] border"
         role="dialog"
         aria-modal="true"
         aria-labelledby="publish-title"
@@ -153,9 +153,9 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
           >
             Publish Procedure
           </h3>
-          <button 
-            onClick={onClose} 
-            className="transition-colors hover:opacity-80"
+          <button
+            onClick={onClose}
+            className="transition-colors hover:opacity-80 min-h-[44px] min-w-[44px] flex items-center justify-center"
             style={{ color: 'var(--muted-foreground)' }}
             aria-label="Close publish dialog"
           >
@@ -164,7 +164,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
         </div>
 
         {/* Body */}
-        <div className="p-6" style={{ fontFamily: 'var(--font-family)' }}>
+        <div className="px-4 sm:px-6 py-6" style={{ fontFamily: 'var(--font-family)' }}>
           <p 
             className="mb-4 leading-relaxed"
             style={{
@@ -207,7 +207,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
                     }
                   }}
                   placeholder="1.0"
-                  className="w-full rounded-lg px-4 py-2.5 outline-none border-2"
+                  className="w-full rounded-lg px-4 py-2.5 min-h-[44px] outline-none border-2"
                   style={{
                     backgroundColor: 'var(--input-background)',
                     borderColor: 'var(--ring)',
@@ -346,7 +346,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
         >
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-button transition-opacity hover:opacity-90"
+            className="px-4 py-2 min-h-[44px] rounded-button transition-opacity hover:opacity-90"
             style={{
               backgroundColor: 'var(--secondary)',
               color: 'var(--secondary-foreground)',
@@ -358,7 +358,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
           </button>
           <button
             onClick={handlePublish}
-            className="px-4 py-2 rounded-button transition-opacity hover:opacity-90"
+            className="px-4 py-2 min-h-[44px] rounded-button transition-opacity hover:opacity-90"
             style={{
               backgroundColor: 'var(--accent)',
               color: 'var(--accent-foreground)',
