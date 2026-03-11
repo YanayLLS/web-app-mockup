@@ -14994,10 +14994,10 @@ document.getElementById('newCatCreate').addEventListener('click', () => {
 document.getElementById('newCatNameInput').addEventListener('input', () => { document.getElementById('newCatError').classList.remove('visible'); });
 document.getElementById('newCatNameInput').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('newCatCreate').click(); });
 
-// ==================== AR MODE (mobile viewer only) ====================
+// ==================== AR MODE — WebXR with fallback ====================
 (function() {
   const AR_SCAN_DURATION = 3500;
-  const isMobile = () => true; // For now always show — will gate to mobile-only later
+  const isMobile = () => true;
 
   const arBtn       = document.getElementById('arBtn');
   const arSubBtns   = document.getElementById('arSubBtns');
@@ -15010,7 +15010,7 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   const arConfirmBtn = document.getElementById('arConfirmBtn');
   const viewportEl   = document.getElementById('viewport');
 
-  // Create camera feed div inside viewport so it layers behind the canvas
+  // Camera feed div (fallback mode only)
   const arCameraFeed = document.createElement('div');
   arCameraFeed.id = 'arCameraFeed';
   arCameraFeed.className = 'ar-camera-feed';
@@ -15021,20 +15021,239 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   let arPlacementMode = null;
   let cameraStream = null;
   let scanTimer = null;
-
-  // --- Manual placement state ---
-  let manualActive = false;
-  let placementClone = null;      // clone of model for placement
-  let surfaceIndicator = null;    // ring/disc on surface
-  let groundShadow = null;        // fake shadow under model
-  let groundPlane = null;         // invisible plane for raycasting
-  let isDragging = false;
   let _arSavedPixelRatio = null;
 
-  function updateARButtonVisibility() {
-    const isViewerMobile = isMobile() && state.mode === 'viewer';
-    arBtn.classList.toggle('visible', isViewerMobile || arActive);
-    if (arActive && state.mode !== 'viewer') exitAR();
+  // --- WebXR state ---
+  let xrSupported = false;
+  let xrSession = null;
+  let xrRefSpace = null;
+  let xrHitTestSource = null;
+  let xrReticle = null;          // ring mesh on detected surfaces
+  let xrShadowMesh = null;       // shadow blob under reticle
+  let xrModelPlaced = false;     // has user tapped to place?
+  let xrModelGroup = null;       // group holding placed model in AR world
+  let xrSavedModelPos = null;    // original fbxModel position before AR
+  let xrSavedModelParent = null;
+
+  // --- Fallback placement state ---
+  let manualActive = false;
+  let placementClone = null;
+  let surfaceIndicator = null;
+  let groundShadow = null;
+  let groundPlane = null;
+  let isDragging = false;
+
+  // ==================== DETECT WEBXR ====================
+  (async function checkXR() {
+    if (navigator.xr) {
+      try {
+        xrSupported = await navigator.xr.isSessionSupported('immersive-ar');
+      } catch(e) { xrSupported = false; }
+    }
+    console.log('[AR] WebXR immersive-ar supported:', xrSupported);
+  })();
+
+  // ==================== RETICLE (WebXR surface indicator) ====================
+  function createXRReticle() {
+    if (xrReticle) return;
+    const ringGeo = new THREE.RingGeometry(0.08, 0.10, 48);
+    ringGeo.rotateX(-Math.PI / 2);
+    const ringMat = new THREE.MeshBasicMaterial({ color:0x2F80ED, transparent:true, opacity:0.8, side:THREE.DoubleSide, depthWrite:false });
+    xrReticle = new THREE.Mesh(ringGeo, ringMat);
+    // Inner disc
+    const discGeo = new THREE.CircleGeometry(0.08, 48);
+    discGeo.rotateX(-Math.PI / 2);
+    const discMat = new THREE.MeshBasicMaterial({ color:0x2F80ED, transparent:true, opacity:0.15, side:THREE.DoubleSide, depthWrite:false });
+    const disc = new THREE.Mesh(discGeo, discMat);
+    disc.position.y = 0.001;
+    xrReticle.add(disc);
+    xrReticle.matrixAutoUpdate = false;
+    xrReticle.visible = false;
+    scene.add(xrReticle);
+
+    // Shadow blob
+    const sGeo = new THREE.CircleGeometry(0.12, 32);
+    sGeo.rotateX(-Math.PI / 2);
+    const sMat = new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:0.3, side:THREE.DoubleSide, depthWrite:false });
+    xrShadowMesh = new THREE.Mesh(sGeo, sMat);
+    xrShadowMesh.matrixAutoUpdate = false;
+    xrShadowMesh.visible = false;
+    scene.add(xrShadowMesh);
+  }
+
+  // ==================== WEBXR AR SESSION ====================
+  async function startWebXR() {
+    createXRReticle();
+
+    // Save model state
+    xrModelPlaced = false;
+    if (fbxModel) {
+      xrSavedModelPos = fbxModel.position.clone();
+      xrSavedModelParent = fbxModel.parent;
+      fbxModel.visible = false; // hide until placed
+    }
+
+    // Create group for AR-placed model
+    xrModelGroup = new THREE.Group();
+    scene.add(xrModelGroup);
+
+    // Request WebXR session
+    const domOverlayRoot = document.body;
+    const sessionInit = {
+      requiredFeatures: ['hit-test'],
+      optionalFeatures: ['dom-overlay'],
+      domOverlay: { root: domOverlayRoot }
+    };
+    try {
+      xrSession = await navigator.xr.requestSession('immersive-ar', sessionInit);
+    } catch(e) {
+      console.warn('[AR] WebXR session request failed, falling back:', e);
+      startFallbackAR();
+      return;
+    }
+
+    // Configure renderer for XR
+    renderer.xr.enabled = true;
+    renderer.xr.setReferenceSpaceType('local');
+    await renderer.xr.setSession(xrSession);
+
+    // Get reference space
+    xrRefSpace = await xrSession.requestReferenceSpace('local');
+
+    // Set up hit test source (from viewer's center)
+    const viewerSpace = await xrSession.requestReferenceSpace('viewer');
+    xrHitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
+
+    // Handle session end
+    xrSession.addEventListener('end', () => {
+      exitWebXR(false); // don't call session.end again
+    });
+
+    // Tap to place — use 'select' event (screen tap in AR)
+    xrSession.addEventListener('select', onXRSelect);
+
+    // Switch to XR render loop
+    renderer.setAnimationLoop(xrRenderLoop);
+
+    // Show toast
+    arPlacementToast.textContent = 'Point at a surface, tap to place';
+    arPlacementToast.classList.add('visible');
+  }
+
+  function xrRenderLoop(timestamp, frame) {
+    if (!xrSession || !frame) return;
+
+    // Hit test — show reticle on detected surfaces
+    if (xrHitTestSource && !xrModelPlaced) {
+      const results = frame.getHitTestResults(xrHitTestSource);
+      if (results.length > 0) {
+        const hit = results[0];
+        const pose = hit.getPose(xrRefSpace);
+        if (pose) {
+          xrReticle.visible = true;
+          xrReticle.matrix.fromArray(pose.transform.matrix);
+          xrShadowMesh.visible = true;
+          xrShadowMesh.matrix.fromArray(pose.transform.matrix);
+        }
+      } else {
+        xrReticle.visible = false;
+        xrShadowMesh.visible = false;
+      }
+    }
+
+    // Render (WebXR handles camera + compositing with camera feed automatically)
+    renderer.render(scene, camera);
+  }
+
+  function onXRSelect() {
+    if (!xrReticle || !xrReticle.visible || xrModelPlaced) return;
+
+    // Place the model at the reticle position
+    xrModelPlaced = true;
+    xrReticle.visible = false;
+
+    if (fbxModel) {
+      // Compute model bounding box for proper grounding
+      const box = new THREE.Box3().setFromObject(fbxModel);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+
+      // Scale model to reasonable AR size (about 0.3m tall)
+      const targetHeight = 0.3;
+      const scale = targetHeight / size.y;
+
+      // Position at reticle
+      const pos = new THREE.Vector3();
+      pos.setFromMatrixPosition(xrReticle.matrix);
+
+      xrModelGroup.position.copy(pos);
+      xrModelGroup.scale.setScalar(scale);
+
+      // Reparent model into AR group
+      xrModelGroup.add(fbxModel);
+      fbxModel.position.set(-center.x, -box.min.y, -center.z);
+      fbxModel.visible = true;
+
+      // Scale shadow to match model footprint
+      const shadowScale = Math.max(size.x, size.z) * scale * 0.7;
+      xrShadowMesh.visible = true;
+      xrShadowMesh.scale.setScalar(shadowScale / 0.12);
+
+      // Show confirm button
+      arPlacementToast.textContent = 'Model placed! Tap to reposition';
+      arConfirmBtn.classList.add('visible');
+    }
+  }
+
+  function exitWebXR(endSession = true) {
+    // Restore model to original state
+    if (fbxModel && xrSavedModelParent) {
+      xrSavedModelParent.add(fbxModel);
+      fbxModel.position.copy(xrSavedModelPos || new THREE.Vector3());
+      fbxModel.visible = true;
+    }
+    if (xrModelGroup) { scene.remove(xrModelGroup); xrModelGroup = null; }
+
+    // Clean up XR
+    if (xrHitTestSource) { xrHitTestSource.cancel(); xrHitTestSource = null; }
+    if (xrReticle) { xrReticle.visible = false; }
+    if (xrShadowMesh) { xrShadowMesh.visible = false; }
+
+    if (endSession && xrSession) {
+      xrSession.end().catch(() => {});
+    }
+    xrSession = null;
+    xrRefSpace = null;
+    xrModelPlaced = false;
+
+    // Restore normal rendering
+    renderer.xr.enabled = false;
+    renderer.setAnimationLoop(null);
+    // Restart normal RAF loop
+    animate();
+  }
+
+  // ==================== FALLBACK AR (camera + simulation) ====================
+  async function startFallbackAR() {
+    viewportEl.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+    renderer.setClearColor(0x000000, 0);
+    renderer.setClearAlpha(0);
+    await startCamera();
+    showScanEffect();
+  }
+
+  function stopFallbackAR() {
+    stopCamera();
+    arScanOverlay.classList.remove('visible');
+    if (scanTimer) { clearTimeout(scanTimer); scanTimer = null; }
+    clearSurfaceDots();
+    viewportEl.style.background = '';
+    document.body.style.background = '';
+    renderer.setClearColor(0x000000, 1);
+    renderer.setClearAlpha(1);
   }
 
   async function startCamera() {
@@ -15054,22 +15273,16 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
       video.srcObject = stream;
       video.play();
       arCameraFeed.classList.add('visible');
-      return true;
     } catch (e) {
-      console.warn('[AR] Camera access denied or unavailable:', e);
+      console.warn('[AR] Camera unavailable:', e);
       arCameraFeed.innerHTML = '<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:14px;">Camera feed (simulated)</div>';
       arCameraFeed.classList.add('visible');
-      return false;
     }
   }
-
   function stopCamera() {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
-      cameraStream = null;
-    }
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
     const video = arCameraFeed.querySelector('video');
-    if (video) { video.srcObject = null; }
+    if (video) video.srcObject = null;
     arCameraFeed.classList.remove('visible');
   }
 
@@ -15077,52 +15290,34 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     arScanOverlay.classList.add('visible');
     arSurfaceDots.innerHTML = '';
     arSurfaceDots.classList.add('visible');
-
-    // Spawn dots progressively during scan
-    const dotCount = 60;
-    const spawnInterval = AR_SCAN_DURATION / dotCount;
+    const dotCount = 60, spawnInterval = AR_SCAN_DURATION / dotCount;
     let dotIdx = 0;
     const dotSpawner = setInterval(() => {
       if (dotIdx >= dotCount || !arActive) { clearInterval(dotSpawner); return; }
       const dot = document.createElement('div');
       dot.className = 'ar-surface-dot';
-      // Distribute across screen with some randomness, biased toward center-lower area
-      const x = 10 + Math.random() * 80; // 10%-90% of screen width
-      const y = 15 + Math.random() * 70; // 15%-85% of screen height
-      dot.style.left = x + '%';
-      dot.style.top = y + '%';
+      dot.style.left = (10 + Math.random() * 80) + '%';
+      dot.style.top = (15 + Math.random() * 70) + '%';
       dot.style.animationDelay = (Math.random() * 0.3) + 's';
-      // Vary dot size slightly
-      const size = 4 + Math.random() * 4;
-      dot.style.width = size + 'px';
-      dot.style.height = size + 'px';
+      const sz = 4 + Math.random() * 4;
+      dot.style.width = sz + 'px'; dot.style.height = sz + 'px';
       arSurfaceDots.appendChild(dot);
-      // After appear animation, switch to gentle pulse
-      setTimeout(() => {
-        if (dot.parentNode) {
-          dot.style.animation = 'arDotPulse ' + (1.5 + Math.random() * 1.5) + 's ease-in-out infinite';
-          dot.style.animationDelay = (Math.random() * 1) + 's';
-        }
-      }, 700);
+      setTimeout(() => { if (dot.parentNode) { dot.style.animation = 'arDotPulse ' + (1.5 + Math.random()*1.5) + 's ease-in-out infinite'; dot.style.animationDelay = (Math.random()*1)+'s'; } }, 700);
       dotIdx++;
     }, spawnInterval);
-
     if (scanTimer) clearTimeout(scanTimer);
-    scanTimer = setTimeout(() => {
-      arScanOverlay.classList.remove('visible');
-      scanTimer = null;
-      // Dots stay visible — they pulse gently to show recognized surfaces
-    }, AR_SCAN_DURATION);
+    scanTimer = setTimeout(() => { arScanOverlay.classList.remove('visible'); scanTimer = null; }, AR_SCAN_DURATION);
+  }
+  function clearSurfaceDots() {
+    arSurfaceDots.querySelectorAll('.ar-surface-dot').forEach(d => d.classList.add('fading'));
+    setTimeout(() => { arSurfaceDots.innerHTML = ''; arSurfaceDots.classList.remove('visible'); }, 2000);
   }
 
-  function clearSurfaceDots() {
-    // Fade out all dots then remove
-    const dots = arSurfaceDots.querySelectorAll('.ar-surface-dot');
-    dots.forEach(d => d.classList.add('fading'));
-    setTimeout(() => {
-      arSurfaceDots.innerHTML = '';
-      arSurfaceDots.classList.remove('visible');
-    }, 2000);
+  // ==================== ENTER / EXIT AR ====================
+  function updateARButtonVisibility() {
+    const show = isMobile() && state.mode === 'viewer';
+    arBtn.classList.toggle('visible', show || arActive);
+    if (arActive && state.mode !== 'viewer') exitAR();
   }
 
   async function enterAR() {
@@ -15131,242 +15326,141 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     arMeshVisible = true;
     arPlacementMode = null;
 
-    // Lower pixel ratio for mobile perf
     _arSavedPixelRatio = renderer.getPixelRatio();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     arBtn.classList.add('ar-active');
     arBtn.title = 'Exit AR';
     arBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="#fff"/></svg>';
-
     arSubBtns.classList.add('visible');
-
-    // Make viewport + body transparent so camera feed shows through canvas
-    viewportEl.style.background = 'transparent';
-    document.body.style.background = 'transparent';
-    renderer.setClearColor(0x000000, 0);
-    renderer.setClearAlpha(0);
-
-    // Hide left toolbar in AR
     document.getElementById('leftToolbar').classList.add('hidden');
-
-    await startCamera();
-    showScanEffect();
-
     document.getElementById('viewerMoreBtn').classList.remove('visible');
-
     arMeshToggle.classList.remove('active');
     arPlacementBtn.classList.remove('active');
     arPlacementMenu.classList.remove('visible');
+
+    // Try WebXR first, fall back to camera simulation
+    if (xrSupported) {
+      await startWebXR();
+    } else {
+      await startFallbackAR();
+    }
   }
 
   function exitAR() {
-    // Exit manual placement if active
     if (manualActive) exitManualPlacement();
 
     arActive = false;
     state._arActive = false;
     arPlacementMode = null;
 
-    // Restore pixel ratio
-    if (_arSavedPixelRatio !== null) {
-      renderer.setPixelRatio(_arSavedPixelRatio);
-      _arSavedPixelRatio = null;
-    }
+    if (_arSavedPixelRatio !== null) { renderer.setPixelRatio(_arSavedPixelRatio); _arSavedPixelRatio = null; }
 
     arBtn.classList.remove('ar-active');
     arBtn.title = 'Enter AR';
     arBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14z"/><path d="M6 13h2.5l1.5-4 1.5 4H14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9h2c.55 0 1 .45 1 1v1c0 .55-.45 1-1 1h-1.5L17 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
     arSubBtns.classList.remove('visible');
     arPlacementMenu.classList.remove('visible');
+    arPlacementToast.classList.remove('visible');
+    arConfirmBtn.classList.remove('visible');
 
-    stopCamera();
+    // Exit WebXR or fallback
+    if (xrSession) exitWebXR();
+    else stopFallbackAR();
 
-    arScanOverlay.classList.remove('visible');
-    if (scanTimer) { clearTimeout(scanTimer); scanTimer = null; }
-    clearSurfaceDots();
-
-    viewportEl.style.background = '';
-    document.body.style.background = '';
-    renderer.setClearColor(0x000000, 1);
-    renderer.setClearAlpha(1);
-
-    if (!arMeshVisible && fbxModel) {
-      fbxModel.visible = true;
-      arMeshVisible = true;
-    }
-
-    // Restore left toolbar
+    if (!arMeshVisible && fbxModel) { fbxModel.visible = true; arMeshVisible = true; }
     document.getElementById('leftToolbar').classList.remove('hidden');
-
-    if (state.mode === 'viewer') {
-      document.getElementById('viewerMoreBtn').classList.add('visible');
-    }
+    if (state.mode === 'viewer') document.getElementById('viewerMoreBtn').classList.add('visible');
   }
 
-  // ==================== MANUAL PLACEMENT ====================
+  // ==================== MANUAL PLACEMENT (fallback mode) ====================
   function createSurfaceIndicator() {
-    // Glowing ring on the surface
+    if (surfaceIndicator) return;
     const ringGeo = new THREE.RingGeometry(0.8, 1.0, 64);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x2F80ED, transparent: true, opacity: 0.7, side: THREE.DoubleSide,
-      depthWrite: false
-    });
+    const ringMat = new THREE.MeshBasicMaterial({ color:0x2F80ED, transparent:true, opacity:0.7, side:THREE.DoubleSide, depthWrite:false });
     surfaceIndicator = new THREE.Mesh(ringGeo, ringMat);
     surfaceIndicator.rotation.x = -Math.PI / 2;
     surfaceIndicator.visible = false;
     scene.add(surfaceIndicator);
-
-    // Inner filled disc (subtle)
     const discGeo = new THREE.CircleGeometry(0.8, 64);
-    const discMat = new THREE.MeshBasicMaterial({
-      color: 0x2F80ED, transparent: true, opacity: 0.12, side: THREE.DoubleSide,
-      depthWrite: false
-    });
+    const discMat = new THREE.MeshBasicMaterial({ color:0x2F80ED, transparent:true, opacity:0.12, side:THREE.DoubleSide, depthWrite:false });
     const disc = new THREE.Mesh(discGeo, discMat);
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.y = 0.001;
+    disc.rotation.x = -Math.PI / 2; disc.position.y = 0.001;
     surfaceIndicator.add(disc);
-
-    // Pulsing animation via animate hook
-    surfaceIndicator._pulse = 0;
   }
-
   function createGroundShadow() {
-    // Soft circular shadow blob under the model
-    const shadowGeo = new THREE.CircleGeometry(1.2, 32);
-    const shadowMat = new THREE.MeshBasicMaterial({
-      color: 0x000000, transparent: true, opacity: 0.25, side: THREE.DoubleSide,
-      depthWrite: false
-    });
-    groundShadow = new THREE.Mesh(shadowGeo, shadowMat);
+    if (groundShadow) return;
+    const geo = new THREE.CircleGeometry(1.2, 32);
+    const mat = new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:0.25, side:THREE.DoubleSide, depthWrite:false });
+    groundShadow = new THREE.Mesh(geo, mat);
     groundShadow.rotation.x = -Math.PI / 2;
     groundShadow.visible = false;
     scene.add(groundShadow);
   }
-
   function createGroundPlane() {
-    // Large invisible plane at y=0 for raycasting
-    const planeGeo = new THREE.PlaneGeometry(500, 500);
-    const planeMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
-    groundPlane = new THREE.Mesh(planeGeo, planeMat);
+    if (groundPlane) return;
+    const geo = new THREE.PlaneGeometry(500, 500);
+    const mat = new THREE.MeshBasicMaterial({ visible:false, side:THREE.DoubleSide });
+    groundPlane = new THREE.Mesh(geo, mat);
     groundPlane.rotation.x = -Math.PI / 2;
-    groundPlane.position.y = 0;
     scene.add(groundPlane);
   }
 
   function enterManualPlacement() {
     manualActive = true;
-
-    // Create helpers
-    if (!surfaceIndicator) createSurfaceIndicator();
-    if (!groundShadow) createGroundShadow();
-    if (!groundPlane) createGroundPlane();
-
-    // Clone the model for placement preview
+    createSurfaceIndicator(); createGroundShadow(); createGroundPlane();
     if (fbxModel) {
       placementClone = fbxModel.clone();
-      // Make semi-transparent for placement preview
-      placementClone.traverse(child => {
-        if (child.isMesh) {
-          child.material = child.material.clone();
-          child.material.transparent = true;
-          child.material.opacity = 0.7;
-          child.material.depthWrite = true;
-        }
-      });
+      placementClone.traverse(c => { if (c.isMesh) { c.material = c.material.clone(); c.material.transparent = true; c.material.opacity = 0.7; } });
       scene.add(placementClone);
-
-      // Compute bounding box for sizing the indicator
       const box = new THREE.Box3().setFromObject(placementClone);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const maxExtent = Math.max(size.x, size.z) * 0.6;
-      surfaceIndicator.scale.setScalar(maxExtent);
-      groundShadow.scale.setScalar(maxExtent * 1.2);
-
-      // Place clone at center of camera view on ground
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-      placementClone.position.sub(center); // center the clone
-      placementClone.position.y = -box.min.y; // sit on ground
-
-      // Hide original model
+      const size = new THREE.Vector3(); box.getSize(size);
+      const ext = Math.max(size.x, size.z) * 0.6;
+      surfaceIndicator.scale.setScalar(ext);
+      groundShadow.scale.setScalar(ext * 1.2);
+      const center = new THREE.Vector3(); box.getCenter(center);
+      placementClone.position.sub(center);
+      placementClone.position.y = -box.min.y;
       fbxModel.visible = false;
     }
-
-    surfaceIndicator.visible = true;
-    groundShadow.visible = true;
-
-    // Disable orbit controls during placement
+    surfaceIndicator.visible = true; groundShadow.visible = true;
     orbitControls.enabled = false;
-
-    // Show UI
+    arPlacementToast.textContent = 'Drag to move model on surface';
     arPlacementToast.classList.add('visible');
     arConfirmBtn.classList.add('visible');
-
-    // Hide sub-buttons during placement
     arSubBtns.classList.remove('visible');
-
-    // Add touch/pointer listeners
     renderer.domElement.addEventListener('pointerdown', onPlacementPointerDown);
     renderer.domElement.addEventListener('pointermove', onPlacementPointerMove);
     renderer.domElement.addEventListener('pointerup', onPlacementPointerUp);
   }
-
   function exitManualPlacement() {
     manualActive = false;
-
-    // Remove clone
-    if (placementClone) {
-      scene.remove(placementClone);
-      placementClone.traverse(child => {
-        if (child.isMesh) { child.material.dispose(); }
-      });
-      placementClone = null;
-    }
-
-    // Hide helpers
+    if (placementClone) { scene.remove(placementClone); placementClone.traverse(c => { if(c.isMesh) c.material.dispose(); }); placementClone = null; }
     if (surfaceIndicator) surfaceIndicator.visible = false;
     if (groundShadow) groundShadow.visible = false;
-
-    // Restore orbit controls
     orbitControls.enabled = true;
-
-    // Hide UI
     arPlacementToast.classList.remove('visible');
     arConfirmBtn.classList.remove('visible');
-
-    // Restore sub-buttons
     if (arActive) arSubBtns.classList.add('visible');
-
-    // Remove listeners
     renderer.domElement.removeEventListener('pointerdown', onPlacementPointerDown);
     renderer.domElement.removeEventListener('pointermove', onPlacementPointerMove);
     renderer.domElement.removeEventListener('pointerup', onPlacementPointerUp);
   }
-
   function confirmPlacement() {
+    if (xrSession) {
+      // WebXR confirm: just hide UI, model stays placed
+      arPlacementToast.classList.remove('visible');
+      arConfirmBtn.classList.remove('visible');
+      return;
+    }
     if (!placementClone || !fbxModel) { exitManualPlacement(); return; }
-
-    // Move original model to clone position
     fbxModel.position.copy(placementClone.position);
     fbxModel.visible = true;
-    fbxModel.traverse(child => {
-      if (child.isMesh) {
-        child.material.transparent = false;
-        child.material.opacity = 1.0;
-      }
-    });
-
     exitManualPlacement();
   }
 
-  // Raycaster for placement
   const _arRaycaster = new THREE.Raycaster();
   const _arPointer = new THREE.Vector2();
-
   function getGroundHit(e) {
     if (!groundPlane) return null;
     const rect = renderer.domElement.getBoundingClientRect();
@@ -15376,62 +15470,32 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     const hits = _arRaycaster.intersectObject(groundPlane);
     return hits.length > 0 ? hits[0].point : null;
   }
-
-  function onPlacementPointerDown(e) {
-    if (!manualActive) return;
-    isDragging = true;
-    movePlacementTo(e);
-  }
-
-  function onPlacementPointerMove(e) {
-    if (!manualActive) return;
-    movePlacementTo(e);
-  }
-
-  function onPlacementPointerUp() {
-    isDragging = false;
-  }
-
+  function onPlacementPointerDown(e) { if (manualActive) { isDragging = true; movePlacementTo(e); } }
+  function onPlacementPointerMove(e) { if (manualActive) movePlacementTo(e); }
+  function onPlacementPointerUp() { isDragging = false; }
   function movePlacementTo(e) {
     const pt = getGroundHit(e);
     if (!pt) return;
-
     if (placementClone) {
-      // Compute the bounding box to keep model sitting on ground
-      const box = new THREE.Box3().setFromObject(fbxModel.clone ? fbxModel : placementClone);
+      const box = new THREE.Box3().setFromObject(placementClone);
       placementClone.position.set(pt.x, -box.min.y + pt.y, pt.z);
     }
-    if (surfaceIndicator) {
-      surfaceIndicator.position.set(pt.x, pt.y + 0.01, pt.z);
-      // Pulsing
-      surfaceIndicator._pulse = (surfaceIndicator._pulse || 0) + 0.05;
-      const pulse = 0.9 + 0.1 * Math.sin(surfaceIndicator._pulse);
-      surfaceIndicator.scale.setScalar(
-        surfaceIndicator.scale.x > 0 ? surfaceIndicator.scale.x : 1
-      );
-    }
-    if (groundShadow) {
-      groundShadow.position.set(pt.x, pt.y + 0.005, pt.z);
-    }
+    if (surfaceIndicator) surfaceIndicator.position.set(pt.x, pt.y + 0.01, pt.z);
+    if (groundShadow) groundShadow.position.set(pt.x, pt.y + 0.005, pt.z);
   }
 
   arConfirmBtn.addEventListener('click', confirmPlacement);
 
   // ==================== BUTTON HANDLERS ====================
-  arBtn.addEventListener('click', () => {
-    if (arActive) exitAR();
-    else enterAR();
-  });
+  arBtn.addEventListener('click', () => { if (arActive) exitAR(); else enterAR(); });
 
   arMeshToggle.addEventListener('click', () => {
     arMeshVisible = !arMeshVisible;
     arMeshToggle.classList.toggle('active', !arMeshVisible);
     if (fbxModel) fbxModel.visible = arMeshVisible;
-    if (arMeshVisible) {
-      arMeshToggle.querySelector('svg').innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
-    } else {
-      arMeshToggle.querySelector('svg').innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
-    }
+    arMeshToggle.querySelector('svg').innerHTML = arMeshVisible
+      ? '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>'
+      : '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
   });
 
   arPlacementBtn.addEventListener('click', () => {
@@ -15449,12 +15513,10 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   arPlacementMenu.querySelectorAll('.ar-placement-option').forEach(opt => {
     opt.addEventListener('click', () => {
       const mode = opt.dataset.placement;
-      // Toggle: if same mode clicked again, deselect
       if (arPlacementMode === mode) {
         arPlacementMode = null;
         if (mode === 'manual' && manualActive) exitManualPlacement();
       } else {
-        // Exit previous manual if switching
         if (manualActive) exitManualPlacement();
         arPlacementMode = mode;
         if (mode === 'manual') enterManualPlacement();
@@ -15474,13 +15536,8 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     }
   });
 
-  // Hook into updateUI to manage AR button visibility
   const _origUpdateUI = updateUI;
-  updateUI = function() {
-    _origUpdateUI.apply(this, arguments);
-    updateARButtonVisibility();
-  };
-
+  updateUI = function() { _origUpdateUI.apply(this, arguments); updateARButtonVisibility(); };
   window.addEventListener('resize', updateARButtonVisibility);
   updateARButtonVisibility();
 })();

@@ -116,7 +116,7 @@ function App3DViewer() {
           className="absolute inset-0 w-full h-full border-0"
           style={{ overflow: 'hidden' }}
           title="Digital Twin"
-          allow="autoplay; fullscreen; camera"
+          allow="autoplay; fullscreen; camera; xr-spatial-tracking"
         />
       </div>
       {proc && (
