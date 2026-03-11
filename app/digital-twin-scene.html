@@ -826,10 +826,11 @@ html.embedded .right-panel { top:12px !important; }
 
 /* AR camera feed background */
 .ar-camera-feed {
-  position:fixed; inset:0; z-index:-1;
+  position:absolute; inset:0; z-index:0;
   display:none; background:#000;
 }
-.ar-camera-feed.visible { display:block; z-index:0; }
+.ar-camera-feed.visible { display:block; }
+#viewport canvas { position:relative; z-index:1; }
 .ar-camera-feed video {
   width:100%; height:100%; object-fit:cover;
 }
@@ -3145,8 +3146,7 @@ html.embedded .right-panel { top:12px !important; }
   </button>
 </div>
 
-<!-- Camera feed layer -->
-<div class="ar-camera-feed" id="arCameraFeed"></div>
+<!-- Camera feed layer is inside #viewport (added dynamically) -->
 
 <!-- Scan overlay -->
 <div class="ar-scan-overlay" id="arScanOverlay">
@@ -11239,13 +11239,10 @@ function animate() {
   const _moving = (now - adaptiveRes._lastMoveTime) < adaptiveRes._idleMs;
   const _inAR = !!state._arActive;
   if (_inAR) {
-    // AR perf mode: skip expensive post-processing, render directly
-    ssaoPass.enabled = false;
-    outlinePass.enabled = false;
-    hoverOutlinePass.enabled = false;
+    // AR perf mode: bypass composer entirely — render direct for alpha transparency + speed
     renderer.shadowMap.enabled = false;
     const _renderT0 = performance.now();
-    composer.render();
+    renderer.render(scene, camera);
     const _renderTime = performance.now() - _renderT0;
     perfStats.tick(now, dt, _renderTime);
   } else {
@@ -14976,11 +14973,16 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
   const arMeshToggle = document.getElementById('arMeshToggle');
   const arPlacementBtn = document.getElementById('arPlacementBtn');
   const arPlacementMenu = document.getElementById('arPlacementMenu');
-  const arCameraFeed = document.getElementById('arCameraFeed');
   const arScanOverlay = document.getElementById('arScanOverlay');
   const arPlacementToast = document.getElementById('arPlacementToast');
   const arConfirmBtn = document.getElementById('arConfirmBtn');
   const viewportEl   = document.getElementById('viewport');
+
+  // Create camera feed div inside viewport so it layers behind the canvas
+  const arCameraFeed = document.createElement('div');
+  arCameraFeed.id = 'arCameraFeed';
+  arCameraFeed.className = 'ar-camera-feed';
+  viewportEl.insertBefore(arCameraFeed, viewportEl.firstChild);
 
   let arActive = false;
   let arMeshVisible = true;
@@ -15064,8 +15066,11 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
 
     arSubBtns.classList.add('visible');
 
+    // Make viewport + body transparent so camera feed shows through canvas
     viewportEl.style.background = 'transparent';
+    document.body.style.background = 'transparent';
     renderer.setClearColor(0x000000, 0);
+    renderer.setClearAlpha(0);
 
     // Hide left toolbar in AR
     document.getElementById('leftToolbar').classList.add('hidden');
@@ -15107,7 +15112,9 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     if (scanTimer) { clearTimeout(scanTimer); scanTimer = null; }
 
     viewportEl.style.background = '';
+    document.body.style.background = '';
     renderer.setClearColor(0x000000, 1);
+    renderer.setClearAlpha(1);
 
     if (!arMeshVisible && fbxModel) {
       fbxModel.visible = true;
