@@ -35,6 +35,20 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { width:100%; height:100%; overflow:hidden; font-family:'Open Sans',sans-serif; background:#1d4593; touch-action:none; position:fixed; inset:0; }
 
+/* Hide all UI until JS initialises — prevents flash of wrong-mode elements */
+html:not(.ui-ready) .left-toolbar,
+html:not(.ui-ready) .left-panel,
+html:not(.ui-ready) .right-panel,
+html:not(.ui-ready) .bottom-toolbar,
+html:not(.ui-ready) .viewer-more-btn,
+html:not(.ui-ready) .viewer-more-menu,
+html:not(.ui-ready) .gizmo-bar,
+html:not(.ui-ready) .selection-info,
+html:not(.ui-ready) .ar-btn,
+html:not(.ui-ready) .ar-sub-btns,
+html:not(.ui-ready) .ar-placement-menu,
+html:not(.ui-ready) .ar-toast { visibility:hidden; }
+
 /* Embedded mode: hide scene's own chrome, keep toolbar & panels */
 html.embedded .top-bar,
 html.embedded .bottom-bar,
@@ -8348,6 +8362,9 @@ function updateUI(){
   closeEditPanel(); closeViewerPopup();
   // Re-render manager to reflect mode (view/edit)
   if(state.managerOpen) renderHotspotManager();
+  // Mark UI as ready — lifts the initial visibility:hidden blanket
+  if(!document.documentElement.classList.contains('ui-ready'))
+    document.documentElement.classList.add('ui-ready');
 }
 
 // ==================== HOTSPOT SYSTEM ====================
@@ -11300,6 +11317,8 @@ if (ktx2Loader) _enhancedGLTFLoader.setKTX2Loader(ktx2Loader);
 // ==================== ANIMATE ====================
 function animate() {
   requestAnimationFrame(animate);
+  // Skip rendering when WebXR is presenting (XR has its own render loop)
+  if (renderer.xr.isPresenting) return;
   const now=performance.now(), dt=(now-lastTime)/1000; lastTime=now;
   if(cameraLerp.active){
     cameraLerp.t=Math.min(cameraLerp.t+dt/cameraLerp.duration,1);
@@ -15163,6 +15182,13 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     console.log('[AR] Starting WebXR session...');
     createXRReticle();
 
+    // Clear background for AR transparency (works for both WebXR and fallback)
+    viewportEl.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+    document.documentElement.style.background = 'transparent';
+    renderer.setClearColor(0x000000, 0);
+    renderer.setClearAlpha(0);
+
     // Hide grid
     if (infiniteGrid && infiniteGrid.mesh) infiniteGrid.mesh.visible = false;
 
@@ -15187,14 +15213,27 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     };
     try {
       xrSession = await navigator.xr.requestSession('immersive-ar', sessionInit);
-      console.log('[AR] WebXR session started');
+      console.log('[AR] WebXR session started successfully');
     } catch(e) {
       console.warn('[AR] WebXR session failed, falling back:', e);
       if (fbxModel) fbxModel.visible = true;
       if (infiniteGrid && infiniteGrid.mesh) infiniteGrid.mesh.visible = state.gridVisible;
       if (xrModelGroup) { scene.remove(xrModelGroup); xrModelGroup = null; }
       xrSavedModelPos = null; xrSavedModelParent = null; xrSavedModelScale = null;
-      startFallbackAR();
+      // Background already cleared above, startFallbackAR will start camera
+      await startCamera();
+      showScanEffect();
+      savedCameraState = {
+        pos: camera.position.clone(),
+        target: orbitControls.target.clone(),
+        fov: camera.fov
+      };
+      setTimeout(() => {
+        if (arActive) {
+          autoPlaceModelForFallback();
+          startDeviceOrientation();
+        }
+      }, AR_SCAN_DURATION + 300);
       return;
     }
 
@@ -15288,8 +15327,15 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     if (endSession && xrSession) xrSession.end().catch(() => {});
     xrSession = null; xrRefSpace = null; xrModelPlaced = false;
 
+    // Restore backgrounds
     renderer.xr.enabled = false;
     renderer.setAnimationLoop(null);
+    renderer.setClearColor(0x000000, 1);
+    renderer.setClearAlpha(1);
+    viewportEl.style.background = '';
+    document.body.style.background = '';
+    document.documentElement.style.background = '';
+    stopCamera(); // stop camera feed if running as backup
     if (infiniteGrid && infiniteGrid.mesh) infiniteGrid.mesh.visible = state.gridVisible;
     animate();
   }
@@ -15299,6 +15345,7 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     console.log('[AR] Starting fallback AR (camera + orientation)');
     viewportEl.style.background = 'transparent';
     document.body.style.background = 'transparent';
+    document.documentElement.style.background = 'transparent';
     renderer.setClearColor(0x000000, 0);
     renderer.setClearAlpha(0);
 
@@ -15419,6 +15466,7 @@ document.getElementById('newCatNameInput').addEventListener('keydown', e => { if
     clearSurfaceDots();
     viewportEl.style.background = '';
     document.body.style.background = '';
+    document.documentElement.style.background = '';
     renderer.setClearColor(0x000000, 1);
     renderer.setClearAlpha(1);
     if (infiniteGrid && infiniteGrid.mesh) infiniteGrid.mesh.visible = state.gridVisible;
