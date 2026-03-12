@@ -12092,9 +12092,10 @@ if (urlParams.get('startMode') === 'immersive') {
       officeBox.getCenter(officeCenter);
 
       // Position: move office down so the model sits on a table surface
-      // Estimate table height as ~40% of office height (desks are roughly waist-height in a room)
+      // Extra 100 units (~1 meter) down to raise model onto table
+      const extraDown = 100;
       const officeHeight = officeBox.max.y - officeBox.min.y;
-      const tableOffset = officeHeight * 0.4;
+      const tableOffset = officeHeight * 0.4 + extraDown;
       office.position.set(
         modelCenter.x - officeCenter.x,
         modelBox.min.y - officeBox.min.y - tableOffset,
