@@ -12084,7 +12084,7 @@ if (urlParams.get('startMode') === 'immersive') {
       // Scale office so it's a room environment around the DT model
       const modelMax = Math.max(modelSize.x, modelSize.y, modelSize.z);
       const officeMax = Math.max(officeSize.x, officeSize.y, officeSize.z);
-      const scale = (modelMax * 3) / officeMax;
+      const scale = (modelMax * 30) / officeMax;
       office.scale.setScalar(scale);
 
       // Recompute after scaling
