@@ -430,7 +430,61 @@ body {
 
 /* --- LOBBY --- */
 #lobby-screen .xr-window { width: 860px; }
-#lobby-screen .xr-topbar { width: 100%; }
+/* --- GLOBAL SEARCH DROPDOWN --- */
+.gs-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  margin-top: 8px;
+  background: linear-gradient(135deg, rgb(35,45,116) 5%, rgb(40,62,152) 47%, rgb(35,50,127) 95%);
+  border: var(--xr-border);
+  border-radius: var(--xr-radius-window);
+  padding: 12px;
+  max-height: 520px;
+  overflow-y: auto;
+  z-index: 20;
+  flex-direction: column;
+  gap: 4px;
+}
+.gs-dropdown.active { display: flex; }
+.gs-dropdown .gs-group-label {
+  font-size: 14px; font-weight: 700;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 16px 2px;
+}
+.gs-dropdown .gs-result {
+  padding: 14px 20px;
+  border-radius: var(--xr-radius-btn);
+  background: var(--xr-item-bg);
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex; align-items: center; gap: 12px;
+}
+.gs-dropdown .gs-result:hover { background: var(--xr-item-hover); }
+.gs-dropdown .gs-result svg {
+  width: 20px; height: 20px; fill: #fff; flex-shrink: 0; opacity: 0.6;
+}
+.gs-result-info { flex: 1; min-width: 0; }
+.gs-result-name { font-size: 20px; font-weight: 600; }
+.gs-result-project {
+  font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  margin-top: 1px;
+}
+.gs-no-results {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; opacity: 0.5;
+  font-size: 20px; font-weight: 600;
+  padding: 32px 0;
+}
+.gs-no-results svg { width: 40px; height: 40px; fill: #fff; opacity: 0.3; }
+
+#lobby-screen .xr-topbar { width: 100%; position: relative; }
 #lobby-screen .xr-body {
   width: 100%;
   padding: 40px 12px;
@@ -499,6 +553,95 @@ body {
   transition: opacity 0.15s;
 }
 .project-info .launch-btn:hover { opacity: 0.85; }
+
+/* --- KB SEARCH BAR --- */
+.kb-search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 3px solid rgba(99,131,216,0.3);
+  border-radius: var(--xr-radius-btn);
+  padding: 0 20px;
+  height: 89px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.kb-search-bar:focus-within {
+  border-color: var(--xr-selected);
+  background: rgba(255,255,255,0.12);
+}
+.kb-search-bar svg.search-icon {
+  width: 24px; height: 24px; fill: rgba(255,255,255,0.5); flex-shrink: 0;
+}
+.kb-search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+}
+.kb-search-bar input::placeholder { color: rgba(255,255,255,0.4); }
+.kb-search-bar .kb-search-clear {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.1);
+  border: none; border-radius: 50%;
+  color: #fff; font-size: 18px;
+  cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.kb-search-bar .kb-search-clear:hover { background: rgba(255,255,255,0.2); }
+.kb-search-bar.has-text .kb-search-clear { display: flex; }
+
+/* Mic button states */
+.xr-topbar .mic-btn.listening {
+  background: #3366cc;
+  border-color: var(--xr-selected);
+  animation: mic-pulse 1.5s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(133,165,245,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(133,165,245,0); }
+}
+.kb-voice-hint {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 8px 16px;
+  font-size: 18px; font-weight: 600;
+  color: var(--xr-selected);
+}
+.kb-voice-hint.active { display: flex; }
+.kb-voice-dots { display: flex; gap: 4px; align-items: center; }
+.kb-voice-dots span {
+  width: 4px; border-radius: 2px;
+  background: var(--xr-selected);
+  animation: voice-bar 0.6s ease-in-out infinite;
+}
+.kb-voice-dots span:nth-child(1) { height: 10px; animation-delay: 0s; }
+.kb-voice-dots span:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+.kb-voice-dots span:nth-child(3) { height: 12px; animation-delay: 0.3s; }
+.kb-voice-dots span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.3); }
+}
+
+/* No results state */
+.kb-no-results {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px;
+  opacity: 0.5;
+  font-size: 22px; font-weight: 600;
+}
+.kb-no-results svg { width: 48px; height: 48px; fill: #fff; opacity: 0.3; }
 
 /* --- KNOWLEDGE BASE --- */
 #kb-screen .xr-window { width: 1180px; }
@@ -1019,8 +1162,17 @@ body {
         <div class="back-btn" onclick="navigateTo('login')">
           <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
         </div>
-        <div class="title">Username</div>
-        <div class="mic-btn"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
+        <!-- Global search bar in lobby -->
+        <div class="kb-search-bar" id="global-search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="global-search-input" placeholder="Search all projects..." oninput="globalSearchFilter(this.value)" onfocus="globalSearchFocus()" />
+          <button class="kb-search-clear" id="global-search-clear" onclick="globalSearchClear()">&times;</button>
+        </div>
+        <div class="kb-voice-hint" id="global-voice-hint">
+          <div class="kb-voice-dots"><span></span><span></span><span></span><span></span></div>
+          Listening...
+        </div>
+        <div class="mic-btn" id="global-mic-btn" onclick="globalToggleVoice()"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
         <div class="top-info">
           <div class="info-col">
             <div class="battery"><span>98%</span><svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.34V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div>
@@ -1028,8 +1180,10 @@ body {
           </div>
         </div>
         <div class="user-btn"><div class="gem"></div></div>
+        <!-- Search dropdown attached to topbar -->
+        <div class="gs-dropdown" id="gs-dropdown"></div>
       </div>
-      <div class="xr-body">
+      <div class="xr-body" id="lobby-body">
         <div class="lobby-cards">
           <div class="lobby-card" onclick="navigateTo('projects')">
             <svg viewBox="0 0 24 24"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
@@ -1097,8 +1251,17 @@ body {
         <div class="pin-btn"><svg viewBox="0 0 24 24"><path d="M14 4v5c0 1.12.37 2.16 1 3H9c.65-.86 1-1.9 1-3V4h4m3-2H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3V4h1c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg></div>
         <div class="drag-handle"><svg viewBox="0 0 24 24"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></div>
         <div class="back-btn" onclick="navigateTo('projects')"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-        <div class="title">Knowledge Zone</div>
-        <div class="mic-btn"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
+        <!-- Search bar replaces the title -->
+        <div class="kb-search-bar" id="kb-search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="kb-search-input" placeholder="Search knowledge base..." oninput="kbSearchFilter(this.value)" />
+          <button class="kb-search-clear" id="kb-search-clear" onclick="kbSearchClear()">&times;</button>
+        </div>
+        <div class="kb-voice-hint" id="kb-voice-hint">
+          <div class="kb-voice-dots"><span></span><span></span><span></span><span></span></div>
+          Listening...
+        </div>
+        <div class="mic-btn" id="kb-mic-btn" onclick="kbToggleVoice()"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
         <div class="top-info"><div class="info-col"><div class="battery"><span>98%</span><svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.34V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div><div class="time">3:21 PM</div></div></div>
         <div class="user-btn"><div class="gem"></div></div>
       </div>
@@ -1499,6 +1662,315 @@ function kbGoBack() {
   }
   kbCurrentFolder = null;
   breadcrumb.classList.remove('active');
+  // Re-apply search filter if active
+  const input = document.getElementById('kb-search-input');
+  if (input && input.value.trim()) kbSearchFilter(input.value);
+}
+
+// ===== KB SEARCH =====
+// Capture root items on first load
+let _kbRootItemsCaptured = false;
+let _kbRootItems = [];
+
+function kbCaptureRootItems() {
+  if (_kbRootItemsCaptured) return;
+  const scroll = document.getElementById('kb-items-scroll');
+  if (!scroll) return;
+  _kbRootItems = Array.from(scroll.children).map(el => ({
+    el: el,
+    text: el.textContent.trim().toLowerCase()
+  }));
+  _kbRootItemsCaptured = true;
+}
+
+function kbSearchFilter(query) {
+  const bar = document.getElementById('kb-search-bar');
+  const scroll = document.getElementById('kb-items-scroll');
+  if (!scroll) return;
+
+  // Capture root items on first interaction
+  kbCaptureRootItems();
+
+  const q = query.trim().toLowerCase();
+  bar.classList.toggle('has-text', q.length > 0);
+
+  if (!q) {
+    // Restore all items visibility
+    _kbRootItems.forEach(item => { item.el.style.display = ''; });
+    // Also restore folder contents if in a folder
+    Array.from(scroll.children).forEach(el => {
+      if (el.classList.contains('kb-no-results')) { el.remove(); }
+      else { el.style.display = ''; }
+    });
+    return;
+  }
+
+  // Filter visible items (works both in root and in folder drill-in)
+  const items = Array.from(scroll.children);
+  let anyVisible = false;
+  items.forEach(el => {
+    const text = el.textContent.trim().toLowerCase();
+    const matches = text.includes(q);
+    el.style.display = matches ? '' : 'none';
+    if (matches) anyVisible = true;
+  });
+
+  // Show/hide no results message
+  let noResults = scroll.querySelector('.kb-no-results');
+  if (!anyVisible) {
+    if (!noResults) {
+      noResults = document.createElement('div');
+      noResults.className = 'kb-no-results';
+      noResults.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span>No results found</span>';
+      scroll.appendChild(noResults);
+    }
+    noResults.style.display = '';
+  } else if (noResults) {
+    noResults.style.display = 'none';
+  }
+}
+
+function kbSearchClear() {
+  const input = document.getElementById('kb-search-input');
+  input.value = '';
+  kbSearchFilter('');
+  input.focus();
+}
+
+// ===== KB VOICE SEARCH =====
+let kbRecognition = null;
+let kbIsListening = false;
+let kbSilenceTimer = null;
+
+function kbToggleVoice() {
+  if (kbIsListening) {
+    kbStopVoice();
+  } else {
+    kbStartVoice();
+  }
+}
+
+function kbStartVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showNotification('Voice search not supported in this browser');
+    return;
+  }
+  if (!kbRecognition) {
+    kbRecognition = new SR();
+    kbRecognition.continuous = true;
+    kbRecognition.interimResults = true;
+    kbRecognition.lang = 'en-US';
+
+    kbRecognition.onresult = function(event) {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      if (transcript) {
+        const input = document.getElementById('kb-search-input');
+        input.value = transcript;
+        kbSearchFilter(transcript);
+      }
+      // Reset 2-second silence timer
+      if (kbSilenceTimer) clearTimeout(kbSilenceTimer);
+      kbSilenceTimer = setTimeout(function() {
+        kbStopVoice();
+      }, 2000);
+    };
+
+    kbRecognition.onerror = function() { kbStopVoice(); };
+    kbRecognition.onend = function() { kbStopVoice(); };
+  }
+
+  try {
+    kbRecognition.start();
+    kbIsListening = true;
+    document.getElementById('kb-mic-btn').classList.add('listening');
+    document.getElementById('kb-voice-hint').classList.add('active');
+  } catch(e) {
+    // already started
+  }
+}
+
+function kbStopVoice() {
+  if (kbRecognition && kbIsListening) {
+    try { kbRecognition.stop(); } catch(e) {}
+  }
+  kbIsListening = false;
+  if (kbSilenceTimer) { clearTimeout(kbSilenceTimer); kbSilenceTimer = null; }
+  const micBtn = document.getElementById('kb-mic-btn');
+  const hint = document.getElementById('kb-voice-hint');
+  if (micBtn) micBtn.classList.remove('listening');
+  if (hint) hint.classList.remove('active');
+}
+
+// Reset search when switching categories
+const _origSelKb = selKb;
+selKb = function(el) {
+  _origSelKb(el);
+  const input = document.getElementById('kb-search-input');
+  if (input) { input.value = ''; kbSearchFilter(''); }
+};
+
+// ===== GLOBAL CROSS-PROJECT SEARCH =====
+const globalSearchData = [
+  // Indigo 12000
+  { name: 'Routine Maintenance Check', type: 'procedure', project: 'Indigo 12000', action: "navigateTo('item')" },
+  { name: 'Emergency Shutdown Procedure', type: 'procedure', project: 'Indigo 12000', action: "navigateTo('item')" },
+  { name: 'Calibration Sequence', type: 'procedure', project: 'Indigo 12000', action: "navigateTo('item')" },
+  { name: 'Maintenance Video Guide', type: 'media', project: 'Indigo 12000', action: "openSidePanel()" },
+  { name: 'Indigo 12000 Digital Twin', type: 'digital', project: 'Indigo 12000', action: "showNotification('Digital twin viewer')" },
+  { name: 'Maintenance Procedures', type: 'folder', project: 'Indigo 12000', action: "navigateTo('kb')" },
+  { name: 'Digital Assets', type: 'folder', project: 'Indigo 12000', action: "navigateTo('kb')" },
+  // Emerald 20000
+  { name: 'Emerald 20000 Digital Twin', type: 'digital', project: 'Emerald 20000', action: "showNotification('Digital twin viewer')" },
+  { name: 'Assembly Animation', type: 'media', project: 'Emerald 20000', action: "openSidePanel()" },
+  { name: 'Asset Inspection Procedure', type: 'procedure', project: 'Emerald 20000', action: "navigateTo('item')" },
+  { name: 'Quarterly Service Check', type: 'procedure', project: 'Emerald 20000', action: "navigateTo('item')" },
+  // Sapphire 18000
+  { name: 'Printhead Replacement', type: 'procedure', project: 'Sapphire 18000', action: "navigateTo('item')" },
+  { name: 'Color Calibration Guide', type: 'procedure', project: 'Sapphire 18000', action: "navigateTo('item')" },
+  { name: 'Sapphire 18000 Digital Twin', type: 'digital', project: 'Sapphire 18000', action: "showNotification('Digital twin viewer')" },
+  // Amber 25000
+  { name: 'Substrate Loading Procedure', type: 'procedure', project: 'Amber 25000', action: "navigateTo('item')" },
+  { name: 'Quality Inspection Checklist', type: 'procedure', project: 'Amber 25000', action: "navigateTo('item')" },
+  { name: 'Amber 25000 Digital Twin', type: 'digital', project: 'Amber 25000', action: "showNotification('Digital twin viewer')" },
+  // Obsidian 30000
+  { name: 'Safety Lockout Procedure', type: 'procedure', project: 'Obsidian 30000', action: "navigateTo('item')" },
+  { name: 'Firmware Update Guide', type: 'procedure', project: 'Obsidian 30000', action: "navigateTo('item')" },
+];
+
+const gsTypeIcons = {
+  procedure: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>',
+  digital: '<svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 15l4.5-6 3.5 4.51 2.5-3.01L21 15z"/></svg>',
+  media: '<svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>',
+  folder: '<svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>'
+};
+
+function globalSearchFocus() {
+  const input = document.getElementById('global-search-input');
+  if (input.value.trim()) {
+    document.getElementById('gs-dropdown').classList.add('active');
+  }
+}
+
+function globalSearchFilter(query) {
+  const bar = document.getElementById('global-search-bar');
+  const dropdown = document.getElementById('gs-dropdown');
+  const q = query.trim().toLowerCase();
+
+  bar.classList.toggle('has-text', q.length > 0);
+
+  if (!q) {
+    dropdown.classList.remove('active');
+    dropdown.innerHTML = '';
+    return;
+  }
+
+  dropdown.classList.add('active');
+
+  const matches = globalSearchData.filter(item =>
+    item.name.toLowerCase().includes(q) ||
+    item.project.toLowerCase().includes(q) ||
+    item.type.toLowerCase().includes(q)
+  );
+
+  if (matches.length === 0) {
+    dropdown.innerHTML = '<div class="gs-no-results"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span>No results found</span></div>';
+    return;
+  }
+
+  // Sort: exact name matches first
+  matches.sort(function(a, b) {
+    const aExact = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+    const bExact = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+    return aExact - bExact;
+  });
+
+  // Group by project
+  var grouped = {};
+  matches.forEach(function(m) {
+    if (!grouped[m.project]) grouped[m.project] = [];
+    grouped[m.project].push(m);
+  });
+
+  var html = '';
+  for (var proj in grouped) {
+    html += '<div class="gs-group-label">' + proj + '</div>';
+    grouped[proj].forEach(function(item) {
+      var icon = gsTypeIcons[item.type] || '';
+      html += '<div class="gs-result" onclick="globalSearchClick(\'' + item.action.replace(/'/g, "\\'") + '\')">'
+        + icon
+        + '<div class="gs-result-info"><div class="gs-result-name">' + item.name + '</div>'
+        + '<div class="gs-result-project">' + item.type.charAt(0).toUpperCase() + item.type.slice(1) + '</div></div></div>';
+    });
+  }
+  dropdown.innerHTML = html;
+}
+
+function globalSearchClick(action) {
+  document.getElementById('gs-dropdown').classList.remove('active');
+  document.getElementById('gs-dropdown').innerHTML = '';
+  document.getElementById('global-search-input').value = '';
+  document.getElementById('global-search-bar').classList.remove('has-text');
+  eval(action);
+}
+
+function globalSearchClear() {
+  var input = document.getElementById('global-search-input');
+  input.value = '';
+  globalSearchFilter('');
+  input.focus();
+}
+
+// ===== GLOBAL VOICE SEARCH =====
+var globalRecognition = null;
+var globalIsListening = false;
+var globalSilenceTimer = null;
+
+function globalToggleVoice() {
+  if (globalIsListening) globalStopVoice();
+  else globalStartVoice();
+}
+
+function globalStartVoice() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showNotification('Voice search not supported'); return; }
+  if (!globalRecognition) {
+    globalRecognition = new SR();
+    globalRecognition.continuous = true;
+    globalRecognition.interimResults = true;
+    globalRecognition.lang = 'en-US';
+    globalRecognition.onresult = function(event) {
+      var transcript = '';
+      for (var i = 0; i < event.results.length; i++) transcript += event.results[i][0].transcript;
+      if (transcript) {
+        document.getElementById('global-search-input').value = transcript;
+        globalSearchFilter(transcript);
+      }
+      if (globalSilenceTimer) clearTimeout(globalSilenceTimer);
+      globalSilenceTimer = setTimeout(function() { globalStopVoice(); }, 2000);
+    };
+    globalRecognition.onerror = function() { globalStopVoice(); };
+    globalRecognition.onend = function() { globalStopVoice(); };
+  }
+  try {
+    globalRecognition.start();
+    globalIsListening = true;
+    document.getElementById('global-mic-btn').classList.add('listening');
+    document.getElementById('global-voice-hint').classList.add('active');
+  } catch(e) {}
+}
+
+function globalStopVoice() {
+  if (globalRecognition && globalIsListening) try { globalRecognition.stop(); } catch(e) {}
+  globalIsListening = false;
+  if (globalSilenceTimer) { clearTimeout(globalSilenceTimer); globalSilenceTimer = null; }
+  var mic = document.getElementById('global-mic-btn');
+  var hint = document.getElementById('global-voice-hint');
+  if (mic) mic.classList.remove('listening');
+  if (hint) hint.classList.remove('active');
 }
 
 // Procedure steps

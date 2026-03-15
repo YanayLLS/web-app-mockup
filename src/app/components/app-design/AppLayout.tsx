@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Video } from 'lucide-react';
+import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Mic, MicOff, Users, PhoneOff, Crosshair, UserPlus, Send, Crown, Eye, EyeOff } from 'lucide-react';
 import { AppKnowledgeBasePage } from './pages/AppKnowledgeBasePage';
 import { AppProjectKBPage } from './pages/AppProjectKBPage';
 import { AppRemoteSupportPage } from './pages/AppRemoteSupportPage';
@@ -72,10 +72,356 @@ const sceneProcedures: Record<string, { id: string; projectId: string; name: str
   p6: { id: 'p6', projectId: '915-i-series', name: 'Starting Procedure', type: 'procedure', steps: 6, lastUpdated: '01/15/2025', version: '2.0', description: 'Safe engine starting sequence.', digitalTwinName: 'Generator Assembly', configurationName: 'Standard', modeName: 'Operation' },
 };
 
+const INITIAL_PARTICIPANTS = [
+  { id: 'self', name: 'You', initials: 'YN', color: '#2F80ED', isSelf: true, role: 'Host' },
+  { id: 'da', name: 'David Amrosa', initials: 'DA', color: '#8404B3', isSelf: false, role: 'Engineer' },
+  { id: 'nj', name: 'Nika Jerrardo', initials: 'NJ', color: '#E91E63', isSelf: false, role: 'Instructor' },
+];
+
+const INVITABLE_CONTACTS = [
+  { id: 'js', name: 'Jared Sunn', initials: 'JS', color: '#FF6B35', role: 'Operator' },
+  { id: 'sc', name: 'Sarah Chen', initials: 'SC', color: '#00BCD4', role: 'Admin' },
+  { id: 'mw', name: 'Marcus Williams', initials: 'MW', color: '#27ae60', role: 'Engineer' },
+  { id: 'er', name: 'Elena Rodriguez', initials: 'ER', color: '#FF9800', role: 'Support' },
+  { id: 'ta', name: 'Tom Anderson', initials: 'TA', color: '#9C27B0', role: 'Operator' },
+];
+
+const CHAT_MESSAGES = [
+  { id: 1, sender: 'David Amrosa', initials: 'DA', color: '#8404B3', text: 'Can everyone see the exhaust manifold? I\'m pointing at it now.', time: '2:34 PM' },
+  { id: 2, sender: 'Nika Jerrardo', initials: 'NJ', color: '#E91E63', text: 'Yes, I see your laser. The gasket looks worn on that side.', time: '2:35 PM' },
+  { id: 3, sender: 'You', initials: 'YN', color: '#2F80ED', text: 'Let me isolate that part so we can get a better look.', time: '2:36 PM', isSelf: true },
+  { id: 4, sender: 'David Amrosa', initials: 'DA', color: '#8404B3', text: 'Good idea. Can you also X-ray the housing around it?', time: '2:36 PM' },
+];
+
+function ImmersiveActionBar({ onLeave, iframeRef }: { onLeave: () => void; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
+  const [micOn, setMicOn] = useState(true);
+  const [laserOn, setLaserOn] = useState(false);
+  const [followMode, setFollowMode] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [participants, setParticipants] = useState(INITIAL_PARTICIPANTS);
+  const [chatMessages, setChatMessages] = useState(CHAT_MESSAGES);
+  const [chatInput, setChatInput] = useState('');
+  const [inviteSearch, setInviteSearch] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const sendToScene = (msg: Record<string, unknown>) => {
+    iframeRef.current?.contentWindow?.postMessage(msg, '*');
+  };
+
+  const invitePerson = (contact: typeof INVITABLE_CONTACTS[0]) => {
+    if (participants.find(p => p.id === contact.id)) return;
+    const newP = { ...contact, isSelf: false };
+    setParticipants(prev => [...prev, newP]);
+    setInviteSearch('');
+    // Spawn avatar in 3D scene
+    sendToScene({ type: 'spawn-avatar', id: contact.id, name: contact.name, initials: contact.initials, color: contact.color });
+    // Fake "joined" chat message
+    setChatMessages(prev => [...prev, {
+      id: Date.now(), sender: 'System', initials: '', color: '#7F7F7F',
+      text: `${contact.name} joined the room`, time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), isSystem: true
+    } as typeof CHAT_MESSAGES[0]]);
+  };
+
+  const removePerson = (id: string) => {
+    const person = participants.find(p => p.id === id);
+    setParticipants(prev => prev.filter(p => p.id !== id));
+    sendToScene({ type: 'remove-avatar', id });
+    if (person) {
+      setChatMessages(prev => [...prev, {
+        id: Date.now(), sender: 'System', initials: '', color: '#7F7F7F',
+        text: `${person.name} left the room`, time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), isSystem: true
+      } as typeof CHAT_MESSAGES[0]]);
+    }
+  };
+
+  const sendChat = () => {
+    if (!chatInput.trim()) return;
+    setChatMessages(prev => [...prev, {
+      id: Date.now(), sender: 'You', initials: 'YN', color: '#2F80ED',
+      text: chatInput.trim(), time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), isSelf: true
+    } as typeof CHAT_MESSAGES[0]]);
+    setChatInput('');
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  const availableInvites = INVITABLE_CONTACTS.filter(c =>
+    !participants.find(p => p.id === c.id) &&
+    (!inviteSearch || c.name.toLowerCase().includes(inviteSearch.toLowerCase()))
+  );
+
+  // Spawn initial non-self avatars on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      INITIAL_PARTICIPANTS.filter(p => !p.isSelf).forEach(p => {
+        sendToScene({ type: 'spawn-avatar', id: p.id, name: p.name, initials: p.initials, color: p.color });
+      });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <>
+      {/* Participants strip — top right */}
+      <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+        {participants.map((p) => (
+          <div
+            key={p.id}
+            className="size-9 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white/20"
+            style={{ backgroundColor: p.color }}
+            title={p.name}
+          >
+            {p.initials}
+          </div>
+        ))}
+      </div>
+
+      {/* Room name — top left */}
+      <div className="absolute top-3 left-3 z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}>
+        <div className="size-2 rounded-full bg-green-400 animate-pulse" />
+        <span className="text-white text-sm font-semibold">Engine Training Lab</span>
+        <span className="text-white/50 text-xs">{participants.length} in room</span>
+      </div>
+
+      {/* Chat panel — right side */}
+      {showChat && (
+        <div
+          className="absolute top-14 right-3 bottom-20 z-30 w-80 flex flex-col rounded-2xl overflow-hidden"
+          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            <span className="text-white text-sm font-semibold">Room Chat</span>
+            <button onClick={() => setShowChat(false)} className="text-white/50 hover:text-white transition-colors">
+              <X className="size-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
+            {chatMessages.map((msg) => (
+              'isSystem' in msg ? (
+                <div key={msg.id} className="text-center text-white/40 text-xs py-1">{msg.text}</div>
+              ) : (
+                <div key={msg.id} className={`flex gap-2 ${(msg as typeof CHAT_MESSAGES[0]).isSelf ? 'flex-row-reverse' : ''}`}>
+                  {!(msg as typeof CHAT_MESSAGES[0]).isSelf && (
+                    <div className="size-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ backgroundColor: msg.color }}>
+                      {msg.initials}
+                    </div>
+                  )}
+                  <div className={`max-w-[75%] ${(msg as typeof CHAT_MESSAGES[0]).isSelf ? 'ml-auto' : ''}`}>
+                    {!(msg as typeof CHAT_MESSAGES[0]).isSelf && (
+                      <div className="text-white/60 text-[10px] mb-0.5">{msg.sender}</div>
+                    )}
+                    <div
+                      className="px-3 py-2 rounded-xl text-white text-xs leading-relaxed"
+                      style={{ background: (msg as typeof CHAT_MESSAGES[0]).isSelf ? '#2F80ED' : 'rgba(255,255,255,0.1)' }}
+                    >
+                      {msg.text}
+                    </div>
+                    <div className={`text-white/30 text-[9px] mt-0.5 ${(msg as typeof CHAT_MESSAGES[0]).isSelf ? 'text-right' : ''}`}>{msg.time}</div>
+                  </div>
+                </div>
+              )
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+          <div className="p-3 flex gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <input
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendChat()}
+              placeholder="Type a message..."
+              className="flex-1 px-3 py-2 rounded-lg text-white text-xs outline-none placeholder-white/30"
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)' }}
+            />
+            <button onClick={sendChat} className="size-9 rounded-lg flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+              <Send className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Participants panel — right side */}
+      {showParticipants && (
+        <div
+          className="absolute top-14 right-3 z-30 w-80 flex flex-col rounded-2xl overflow-hidden"
+          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', maxHeight: 'calc(100% - 100px)' }}
+        >
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            <span className="text-white text-sm font-semibold">Participants ({participants.length})</span>
+            <button onClick={() => setShowParticipants(false)} className="text-white/50 hover:text-white transition-colors">
+              <X className="size-4" />
+            </button>
+          </div>
+
+          {/* Current participants */}
+          <div className="overflow-y-auto flex-1">
+            {participants.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors group">
+                <div className="relative">
+                  <div className="size-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: p.color }}>
+                    {p.initials}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-green-400 ring-2 ring-black/50" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-xs font-semibold truncate flex items-center gap-1.5">
+                    {p.name}
+                    {p.isSelf && <span className="text-white/30 text-[10px]">(you)</span>}
+                    {p.role === 'Host' && <Crown className="size-3 text-yellow-400" />}
+                  </div>
+                  <div className="text-white/40 text-[10px]">{p.role}</div>
+                </div>
+                {!p.isSelf && (
+                  <button
+                    onClick={() => removePerson(p.id)}
+                    className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-red-400 transition-all"
+                    title="Remove from room"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Invite section */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="px-4 pt-3 pb-2">
+              <div className="text-white/50 text-[10px] font-semibold uppercase tracking-wider mb-2">Invite to room</div>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-white/30" />
+                <input
+                  value={inviteSearch}
+                  onChange={e => setInviteSearch(e.target.value)}
+                  placeholder="Search contacts..."
+                  className="w-full pl-8 pr-3 py-2 rounded-lg text-white text-xs outline-none placeholder-white/30"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
+                />
+              </div>
+            </div>
+            <div className="max-h-40 overflow-y-auto pb-2">
+              {availableInvites.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => invitePerson(c)}
+                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors text-left"
+                >
+                  <div className="size-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: c.color }}>
+                    {c.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/80 text-xs truncate">{c.name}</div>
+                    <div className="text-white/30 text-[10px]">{c.role}</div>
+                  </div>
+                  <UserPlus className="size-4 text-white/30" />
+                </button>
+              ))}
+              {availableInvites.length === 0 && (
+                <div className="text-center text-white/30 text-xs py-3">
+                  {inviteSearch ? 'No matches' : 'All contacts invited'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Follow mode banner */}
+      {followMode && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: 'rgba(47,128,237,0.85)', backdropFilter: 'blur(8px)' }}>
+          <Eye className="size-4 text-white" />
+          <span className="text-white text-sm font-semibold">Everyone is following your view</span>
+          <button
+            onClick={() => setFollowMode(false)}
+            className="ml-2 px-3 py-1 rounded-lg text-white text-xs font-semibold hover:bg-white/20 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.15)' }}
+          >
+            Release
+          </button>
+        </div>
+      )}
+
+      {/* Bottom action bar */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-2 rounded-2xl" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        {/* Mic */}
+        <button
+          onClick={() => setMicOn(!micOn)}
+          className="size-11 rounded-xl flex items-center justify-center transition-all hover:brightness-110 active:scale-95"
+          style={{ background: micOn ? 'rgba(255,255,255,0.15)' : '#FF1F1F' }}
+          title={micOn ? 'Mute' : 'Unmute'}
+        >
+          {micOn ? <Mic className="size-5 text-white" /> : <MicOff className="size-5 text-white" />}
+        </button>
+
+        {/* Laser pointer */}
+        <button
+          onClick={() => setLaserOn(!laserOn)}
+          className="size-11 rounded-xl flex items-center justify-center transition-all hover:brightness-110 active:scale-95"
+          style={{ background: laserOn ? '#FF1F1F' : 'rgba(255,255,255,0.15)' }}
+          title={laserOn ? 'Disable laser' : 'Laser pointer'}
+        >
+          <Crosshair className="size-5 text-white" />
+        </button>
+
+        <div className="w-px h-7 bg-white/20 mx-1" />
+
+        {/* Follow me (host only) */}
+        <button
+          onClick={() => setFollowMode(!followMode)}
+          className="h-11 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-95"
+          style={{ background: followMode ? '#2F80ED' : 'rgba(255,255,255,0.15)' }}
+          title={followMode ? 'Release participants' : 'Make everyone follow your view'}
+        >
+          {followMode ? <EyeOff className="size-5 text-white" /> : <Eye className="size-5 text-white" />}
+          <span className="text-white text-xs font-semibold hidden sm:inline">{followMode ? 'Release' : 'Follow Me'}</span>
+        </button>
+
+        <div className="w-px h-7 bg-white/20 mx-1" />
+
+        {/* Chat */}
+        <button
+          onClick={() => { setShowChat(!showChat); if (showParticipants) setShowParticipants(false); }}
+          className="size-11 rounded-xl flex items-center justify-center transition-all hover:brightness-110 active:scale-95 relative"
+          style={{ background: showChat ? '#2F80ED' : 'rgba(255,255,255,0.15)' }}
+          title="Chat"
+        >
+          <MessageSquare className="size-5 text-white" />
+        </button>
+
+        {/* Participants */}
+        <button
+          onClick={() => { setShowParticipants(!showParticipants); if (showChat) setShowChat(false); }}
+          className="size-11 rounded-xl flex items-center justify-center transition-all hover:brightness-110 active:scale-95"
+          style={{ background: showParticipants ? '#2F80ED' : 'rgba(255,255,255,0.15)' }}
+          title="Participants"
+        >
+          <Users className="size-5 text-white" />
+        </button>
+
+        <div className="w-px h-7 bg-white/20 mx-1" />
+
+        {/* Leave */}
+        <button
+          onClick={onLeave}
+          className="h-11 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-95"
+          style={{ background: '#FF1F1F' }}
+          title="Leave room"
+        >
+          <PhoneOff className="size-5 text-white" />
+          <span className="text-white text-sm font-semibold hidden sm:inline">Leave</span>
+        </button>
+      </div>
+    </>
+  );
+}
+
 function App3DViewer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [procedureModal, setProcedureModal] = useState<string | null>(null);
+  const sceneIframeRef = useRef<HTMLIFrameElement>(null);
 
   const openProcInfo = (id: string | null) => {
     setProcedureModal(id);
@@ -84,7 +430,8 @@ function App3DViewer() {
 
   const params = new URLSearchParams(location.search);
   const urlMode = params.get('mode');
-  const startMode = urlMode === 'editor' ? '&startMode=editor' : urlMode === 'immersive' ? '&startMode=immersive' : '';
+  const isImmersiveMode = urlMode === 'immersive';
+  const startMode = urlMode === 'editor' ? '&startMode=editor' : isImmersiveMode ? '&startMode=immersive' : '';
 
   // Auto-open from URL param
   useEffect(() => {
@@ -101,6 +448,9 @@ function App3DViewer() {
         navigate(`/app/procedure-editor/${e.data.procedureId}`);
       } else if (e.data?.type === 'backToKB') {
         navigate('/app/knowledgebase');
+      } else if (e.data?.type === 'open-flow-settings') {
+        // Open settings in web context (iframe's editor settings button)
+        window.open('/web/project/generator/knowledgebase?settings=1', '_blank');
       }
     };
     window.addEventListener('message', handler);
@@ -113,12 +463,14 @@ function App3DViewer() {
     <>
       <div className="w-full h-full relative" style={{ overflow: 'hidden', touchAction: 'none' }}>
         <iframe
+          ref={sceneIframeRef}
           src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true${startMode}`}
           className="absolute inset-0 w-full h-full border-0"
           style={{ overflow: 'hidden' }}
           title="Digital Twin"
           allow="autoplay; fullscreen; camera; xr-spatial-tracking"
         />
+        {isImmersiveMode && <ImmersiveActionBar onLeave={() => navigate('/app/immersive')} iframeRef={sceneIframeRef} />}
       </div>
       {proc && (
         <AppProcedureInfoModal
@@ -275,18 +627,26 @@ export function AppLayout() {
 
         {/* Search bar - centered */}
         <div className="flex-1 flex justify-center px-4">
-          <div className="relative" style={{ maxWidth: '360px', width: '100%' }}>
+          <div className="relative flex items-center" style={{ maxWidth: '400px', width: '100%' }}>
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5" style={{ color: '#7F7F7F' }} />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search knowledge base..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => openSearchModal(true)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); openSearchModal(true); } }}
-              className="w-full pl-8 pr-3 text-xs border-none outline-none placeholder:text-[#7F7F7F]"
+              className="w-full pl-8 pr-9 text-xs border-none outline-none placeholder:text-[#7F7F7F]"
               style={{ backgroundColor: '#F5F5F5', borderRadius: '8px', height: '30px', color: '#36415D' }}
             />
+            <button
+              onClick={() => openSearchModal(true)}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-md hover:bg-white/60 transition-colors"
+              style={{ width: '22px', height: '22px', color: '#868D9E' }}
+              title="Voice search"
+            >
+              <Mic style={{ width: '13px', height: '13px' }} />
+            </button>
           </div>
         </div>
 

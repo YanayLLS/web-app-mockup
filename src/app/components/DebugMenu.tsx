@@ -1018,33 +1018,7 @@ export function DebugMenu() {
                     </div>
                   )}
 
-                  {/* Recent pages */}
-                  {recentPages.length > 1 && (
-                    <div style={{ marginBottom: '6px' }}>
-                      <div className="flex items-center gap-1.5" style={{ padding: '4px 8px' }}>
-                        <Clock style={{ width: '11px', height: '11px', color: '#868D9E' }} />
-                        <span style={{ fontSize: '10px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Recent</span>
-                      </div>
-                      {recentPages.slice(1, 6).map(path => {
-                        const idx = nextDi();
-                        const label = (() => {
-                          const find = (pages: PageLink[]): string | null => {
-                            for (const p of pages) { if (p.path === path) return p.label; if (p.children) { const r = find(p.children); if (r) return r; } }
-                            return null;
-                          };
-                          return find([...appPages, ...webPages]) || path;
-                        })();
-                        return (
-                          <div key={path} data-di={idx}
-                            className="flex items-center gap-1 cursor-pointer hover:bg-black/5 rounded transition-colors"
-                            style={{ padding: '3px 8px 3px 20px', ...diFocusStyle(idx) }}
-                            onClick={() => handleNavigate(path)}>
-                            <span className="truncate" style={{ fontSize: '12px', color: '#5E677D' }}>{label}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {/* Recent pages - removed */}
 
                   {/* Platform nav tabs */}
                   <div className="flex shrink-0" style={{ margin: '2px 4px 6px', borderBottom: '1px solid #E9E9E9' }}>
