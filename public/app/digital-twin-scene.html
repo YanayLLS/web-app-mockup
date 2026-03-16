@@ -8156,31 +8156,23 @@ function showConfigToast(msg) {
 }
 
 /* ── In-app modal system (replaces native alert/confirm/prompt) ── */
-function _escapeHTML(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
-function _appModalBase(title, bodyEl, buttons) {
+function _appModalBase(title, bodyHTML, buttons) {
   return new Promise(function(resolve) {
-    var resolved = false;
     var overlay = document.createElement('div');
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', title);
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10001;animation:fadeIn .15s;';
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border-radius:12px;padding:24px;min-width:340px;max-width:480px;max-height:80vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);font-family:inherit;';
     var h = document.createElement('div');
-    h.id = 'appModalTitle_' + Date.now();
     h.style.cssText = 'font-size:15px;font-weight:600;color:#36415D;margin-bottom:12px;';
     h.textContent = title;
     card.appendChild(h);
-    overlay.setAttribute('aria-labelledby', h.id);
     var body = document.createElement('div');
     body.style.cssText = 'font-size:13px;color:rgba(54,65,93,0.8);line-height:1.5;white-space:pre-wrap;margin-bottom:16px;';
-    if (typeof bodyEl === 'string') body.textContent = bodyEl;
-    else body.appendChild(bodyEl);
+    body.innerHTML = bodyHTML;
     card.appendChild(body);
     var footer = document.createElement('div');
     footer.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;';
-    function close(val) { if (resolved) return; resolved = true; document.removeEventListener('keydown', onKey); overlay.style.opacity='0'; setTimeout(function(){ overlay.remove(); },150); resolve(val); }
+    function close(val) { overlay.style.opacity='0'; setTimeout(function(){ overlay.remove(); },150); resolve(val); }
     overlay.addEventListener('click', function(e) { if (e.target === overlay) close(buttons.length > 1 ? null : undefined); });
     buttons.forEach(function(b) {
       var btn = document.createElement('button');
@@ -8197,9 +8189,11 @@ function _appModalBase(title, bodyEl, buttons) {
     card.appendChild(footer);
     overlay.appendChild(card);
     document.body.appendChild(overlay);
+    // Focus first button
     var firstBtn = footer.querySelector('button');
     if (firstBtn) firstBtn.focus();
-    function onKey(e) { if (e.key === 'Escape') close(buttons.length > 1 ? null : undefined); }
+    // Escape key
+    function onKey(e) { if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); close(buttons.length > 1 ? null : undefined); } }
     document.addEventListener('keydown', onKey);
   });
 }
@@ -8215,32 +8209,31 @@ function appConfirm(msg, title, opts) {
 }
 function appPrompt(msg, defaultVal, title) {
   return new Promise(function(resolve) {
-    var container = document.createElement('div');
-    var label = document.createElement('div');
-    label.style.cssText = 'margin-bottom:10px;';
-    label.textContent = msg;
-    container.appendChild(label);
-    var inp = document.createElement('input');
-    inp.type = 'text';
-    inp.value = defaultVal || '';
-    inp.style.cssText = 'width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #C2C9DB;border-radius:6px;font-size:13px;outline:none;font-family:inherit;';
-    inp.addEventListener('focus', function() { inp.style.borderColor = '#2E80ED'; });
-    inp.addEventListener('blur', function() { inp.style.borderColor = '#C2C9DB'; });
-    container.appendChild(inp);
-    _appModalBase(title || 'Input', container, [
+    var inputId = 'appPromptInput_' + Date.now();
+    var bodyHTML = '<div style="margin-bottom:10px">' + msg + '</div><input id="' + inputId + '" type="text" value="' + (defaultVal||'').replace(/"/g,'&quot;') + '" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #C2C9DB;border-radius:6px;font-size:13px;outline:none;font-family:inherit;" />';
+    _appModalBase(title || 'Input', bodyHTML, [
       { label: 'Cancel', value: null },
       { label: 'OK', variant: 'primary', value: '__SUBMIT__' }
     ]).then(function(val) {
-      resolve(val === '__SUBMIT__' ? (inp.value || null) : null);
+      if (val === '__SUBMIT__') {
+        var inp = document.getElementById(inputId);
+        resolve(inp ? inp.value || null : null);
+      } else { resolve(null); }
     });
+    // Focus and enter key on input
     setTimeout(function() {
-      inp.focus(); inp.select();
-      inp.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          var okBtn = inp.closest('div').parentNode.querySelector('div:last-child button:last-child');
-          if (okBtn) okBtn.click();
-        }
-      });
+      var inp = document.getElementById(inputId);
+      if (inp) {
+        inp.focus(); inp.select();
+        inp.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            var okBtn = inp.closest('div').parentNode.querySelector('div:last-child button:last-child');
+            if (okBtn) okBtn.click();
+          }
+        });
+        inp.addEventListener('focus', function() { inp.style.borderColor = '#2E80ED'; });
+        inp.addEventListener('blur', function() { inp.style.borderColor = '#C2C9DB'; });
+      }
     }, 50);
   });
 }

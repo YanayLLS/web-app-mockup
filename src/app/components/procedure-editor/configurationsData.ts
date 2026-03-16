@@ -1,5 +1,12 @@
 import type { UserRole } from '../../contexts/RoleContext';
 
+export interface ConfigFolder {
+  id: string;
+  name: string;
+  isExpanded: boolean;
+  sortOrder: number;
+}
+
 export interface Configuration {
   id: string;
   name: string;
@@ -13,7 +20,14 @@ export interface Configuration {
   permittedRoles: UserRole[];
   /** Map of partName -> visibility state. true = visible, false = hidden */
   partStates: Record<string, boolean>;
+  /** Folder this configuration belongs to (null/undefined = root level) */
+  folderId?: string;
 }
+
+export const MOCK_FOLDERS: ConfigFolder[] = [
+  { id: 'folder-regional', name: 'Regional Variants', isExpanded: true, sortOrder: 0 },
+  { id: 'folder-retrofit', name: 'Retrofit Kits', isExpanded: false, sortOrder: 1 },
+];
 
 export const MOCK_CONFIGURATIONS: Configuration[] = [
   {
@@ -86,6 +100,7 @@ export const MOCK_CONFIGURATIONS: Configuration[] = [
       'PowerModule50Hz': false,
       'PowerModule60Hz': true,
     },
+    folderId: 'folder-regional',
   },
   {
     id: 'config-no-coolant-retrofit',
@@ -105,5 +120,6 @@ export const MOCK_CONFIGURATIONS: Configuration[] = [
       'AirCoolingAdapter': true,
       'ModifiedExhaust': true,
     },
+    folderId: 'folder-retrofit',
   },
 ];

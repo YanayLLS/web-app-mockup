@@ -80,7 +80,7 @@ const featureGroups: FeatureGroup[] = [
     { id: 'grid-settings', name: 'Grid & Settings', icon: '\u2699\uFE0F', desc: 'Toggle the reference grid and configure scene settings.', demoSteps: 8, route: '/app/3d-viewer' },
     { id: 'animations', name: 'Animation Manager', icon: '\u{1F39E}\uFE0F', desc: 'Create, organize, and preview animations for your parts.', demoSteps: 8, route: '/app/3d-viewer' },
     { id: 'keyboard', name: 'Keyboard Shortcuts', icon: '\u2328\uFE0F', desc: 'Master the keyboard shortcuts to speed up your workflow.', demoSteps: 5, route: '/app/3d-viewer' },
-    { id: 'dt-configurations', name: 'Configurations', icon: '\u{1F39B}\uFE0F', desc: 'Create and manage digital twin configurations — define part visibility, tags, permissions, and import/export configs.', demoSteps: 18, route: '/app/3d-viewer?mode=editor' },
+    { id: 'dt-configurations', name: 'Configurations', icon: '\u{1F39B}\uFE0F', desc: 'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.', demoSteps: 19, route: '/app/3d-viewer?mode=editor' },
   ]},
   { label: 'XR App', features: [
     { id: 'xr-login', name: 'Login & Settings', icon: '\u{1F510}', desc: 'Log in to the XR app and configure connection settings.', demoSteps: 5, route: '/xr' },
@@ -677,8 +677,8 @@ export function DebugMenu() {
           {copiedDemoId === feat.id ? <Check style={{ width: '12px', height: '12px' }} /> : <Share2 style={{ width: '12px', height: '12px' }} />}
         </button>
         <div className="flex items-center gap-1 shrink-0 rounded"
-          style={{ padding: '2px 6px', backgroundColor: isOnPage ? '#F3E8FF' : '#F5F5F5', color: isOnPage ? '#8404B3' : '#868D9E', fontSize: '11px', fontWeight: 600 }}>
-          <Play style={{ width: '10px', height: '10px', fill: isOnPage ? '#8404B3' : '#868D9E' }} />
+          style={{ padding: '2px 6px', backgroundColor: isOnPage ? '#F3E8FF' : '#F5F5F5', color: isOnPage ? '#2F80ED' : '#868D9E', fontSize: '11px', fontWeight: 600 }}>
+          <Play style={{ width: '10px', height: '10px', fill: isOnPage ? '#2F80ED' : '#868D9E' }} />
           {feat.demoSteps}
         </div>
       </div>
@@ -748,8 +748,8 @@ export function DebugMenu() {
       {playlistRun && runningPlaylist && !isOpen && (
         <div className="fixed z-[9998] flex items-center gap-2" style={{
           bottom: '60px', right: '16px', padding: '6px 12px', borderRadius: '20px',
-          background: 'linear-gradient(135deg, #8404B3, #5B19B4)', color: 'white', fontSize: '12px', fontWeight: 600,
-          boxShadow: '0 2px 12px rgba(132,4,179,0.4)',
+          background: 'linear-gradient(135deg, #2F80ED, #2F80ED)', color: 'white', fontSize: '12px', fontWeight: 600,
+          boxShadow: '0 2px 12px rgba(47, 128, 237,0.4)',
         }}>
           <ListOrdered style={{ width: '12px', height: '12px' }} />
           <span>{runningPlaylist.name}</span>
@@ -769,13 +769,13 @@ export function DebugMenu() {
           {/* Header */}
           <div className="flex items-center justify-between shrink-0" style={{ padding: '10px 12px', borderBottom: '1px solid #E9E9E9' }}>
             <div className="flex items-center gap-2">
-              <Bug style={{ width: '14px', height: '14px', color: '#8404B3' }} />
+              <Bug style={{ width: '14px', height: '14px', color: '#2F80ED' }} />
               <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#36415D' }}>Debug Menu</span>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setShowSnapshots(!showSnapshots)}
                 className="flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition-colors"
-                style={{ fontSize: '12px', color: showSnapshots ? '#8404B3' : '#868D9E', border: `1px solid ${showSnapshots ? '#8404B333' : 'transparent'}`, borderRadius: '6px' }}
+                style={{ fontSize: '12px', color: showSnapshots ? '#2F80ED' : '#868D9E', border: `1px solid ${showSnapshots ? '#2F80ED33' : 'transparent'}`, borderRadius: '6px' }}
                 title="State Snapshots">
                 <Camera style={{ width: '12px', height: '12px' }} />
               </button>
@@ -799,7 +799,7 @@ export function DebugMenu() {
                   style={{ fontSize: '12px', color: '#36415D', padding: '4px 8px', border: '1px solid #C2C9DB' }} />
                 <button onClick={saveSnapshot}
                   className="shrink-0 rounded hover:bg-purple-50 transition-colors"
-                  style={{ padding: '4px 8px', fontSize: '12px', color: '#8404B3', border: '1px solid #8404B333', fontWeight: 600 }}>
+                  style={{ padding: '4px 8px', fontSize: '12px', color: '#2F80ED', border: '1px solid #2F80ED33', fontWeight: 600 }}>
                   <Save style={{ width: '12px', height: '12px' }} />
                 </button>
               </div>
@@ -836,14 +836,14 @@ export function DebugMenu() {
           {/* Playlist progress bar */}
           {playlistRun && runningPlaylist && (
             <div className="shrink-0 flex items-center gap-2" style={{ padding: '5px 12px', borderBottom: '1px solid #E9E9E9', background: 'linear-gradient(90deg, #F3E8FF, #EDE9FE)' }}>
-              <ListOrdered style={{ width: '12px', height: '12px', color: '#8404B3' }} />
-              <span style={{ fontSize: '11px', color: '#8404B3', fontWeight: 600, flex: 1 }}>{runningPlaylist.name}</span>
-              <span style={{ fontSize: '11px', color: '#8404B3' }}>{playlistRun.idx + 1}/{runningPlaylist.featureIds.length}</span>
-              <button onClick={skipPlaylistDemo} className="rounded hover:bg-purple-200 p-0.5" title="Next"><SkipForward style={{ width: '11px', height: '11px', color: '#8404B3' }} /></button>
+              <ListOrdered style={{ width: '12px', height: '12px', color: '#2F80ED' }} />
+              <span style={{ fontSize: '11px', color: '#2F80ED', fontWeight: 600, flex: 1 }}>{runningPlaylist.name}</span>
+              <span style={{ fontSize: '11px', color: '#2F80ED' }}>{playlistRun.idx + 1}/{runningPlaylist.featureIds.length}</span>
+              <button onClick={skipPlaylistDemo} className="rounded hover:bg-purple-200 p-0.5" title="Next"><SkipForward style={{ width: '11px', height: '11px', color: '#2F80ED' }} /></button>
               <button onClick={stopPlaylist} className="rounded hover:bg-red-100 p-0.5" title="Stop"><Square style={{ width: '9px', height: '9px', color: '#FF1F1F' }} /></button>
               {/* Progress bar */}
               <div style={{ width: '40px', height: '3px', borderRadius: '2px', backgroundColor: '#D9D9F0', overflow: 'hidden' }}>
-                <div style={{ width: `${((playlistRun.idx + 1) / runningPlaylist.featureIds.length) * 100}%`, height: '100%', backgroundColor: '#8404B3', borderRadius: '2px', transition: 'width 0.3s' }} />
+                <div style={{ width: `${((playlistRun.idx + 1) / runningPlaylist.featureIds.length) * 100}%`, height: '100%', backgroundColor: '#2F80ED', borderRadius: '2px', transition: 'width 0.3s' }} />
               </div>
             </div>
           )}
@@ -852,7 +852,7 @@ export function DebugMenu() {
           <div className="flex shrink-0" style={{ borderBottom: '1px solid #E9E9E9' }}>
             {([
               { id: 'pages' as TabId, label: 'Pages', Icon: FileText, color: '#2F80ED' },
-              { id: 'features' as TabId, label: 'Demos', Icon: Sparkles, color: '#8404B3' },
+              { id: 'features' as TabId, label: 'Demos', Icon: Sparkles, color: '#2F80ED' },
               { id: 'roles' as TabId, label: 'Roles', Icon: Shield, color: '#11E874' },
             ]).map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -871,11 +871,11 @@ export function DebugMenu() {
           <div className="shrink-0" style={{ padding: '6px 8px', borderBottom: '1px solid #E9E9E9' }}>
             <div className="flex items-center gap-1.5 rounded" style={{
               padding: '4px 6px',
-              border: isCommandMode ? '1px solid #8404B333' : '1px solid #C2C9DB',
+              border: isCommandMode ? '1px solid #2F80ED33' : '1px solid #C2C9DB',
               backgroundColor: isCommandMode ? '#FDFBFF' : '#F5F5F5',
             }}>
               {isCommandMode
-                ? <Zap style={{ width: '14px', height: '14px', color: '#8404B3', flexShrink: 0 }} />
+                ? <Zap style={{ width: '14px', height: '14px', color: '#2F80ED', flexShrink: 0 }} />
                 : <Search style={{ width: '14px', height: '14px', color: '#868D9E', flexShrink: 0 }} />
               }
               <input ref={searchInputRef} type="text" value={searchQuery}
@@ -905,7 +905,7 @@ export function DebugMenu() {
                   const cats = [...new Set(filteredCommands.map(c => c.category))];
                   return cats.map(cat => (
                     <div key={cat} style={{ marginBottom: '4px' }}>
-                      <div style={{ fontSize: '10px', color: '#8404B3', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', fontWeight: 700 }}>{cat}</div>
+                      <div style={{ fontSize: '10px', color: '#2F80ED', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', fontWeight: 700 }}>{cat}</div>
                       {filteredCommands.filter(c => c.category === cat).map(cmd => {
                         const idx = nextDi();
                         return (
@@ -913,7 +913,7 @@ export function DebugMenu() {
                             className="flex items-center gap-2 rounded cursor-pointer hover:bg-purple-50 transition-colors"
                             style={{ padding: '5px 8px 5px 16px', ...diFocusStyle(idx) }}
                             onClick={() => { cmd.action(); setSearchQuery(''); }}>
-                            <Zap style={{ width: '12px', height: '12px', color: '#8404B3', flexShrink: 0 }} />
+                            <Zap style={{ width: '12px', height: '12px', color: '#2F80ED', flexShrink: 0 }} />
                             <div className="flex-1 min-w-0">
                               <div style={{ fontSize: '13px', color: '#36415D', fontWeight: 500 }}>{cmd.label}</div>
                               <div style={{ fontSize: '11px', color: '#868D9E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cmd.desc}</div>
@@ -946,8 +946,8 @@ export function DebugMenu() {
                 {hasFeatureResults && (
                   <div style={{ marginBottom: '4px' }}>
                     <div className="flex items-center gap-1.5" style={{ padding: '4px 8px', marginBottom: '2px' }}>
-                      <Sparkles style={{ width: '12px', height: '12px', color: '#8404B3' }} />
-                      <span style={{ fontSize: '11px', color: '#8404B3', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Demos</span>
+                      <Sparkles style={{ width: '12px', height: '12px', color: '#2F80ED' }} />
+                      <span style={{ fontSize: '11px', color: '#2F80ED', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Demos</span>
                       <span style={{ fontSize: '11px', color: '#868D9E', marginLeft: 'auto' }}>{totalFeatureCount}</span>
                     </div>
                     {filteredGroups.map(g => <div key={g.label}>{g.features.map(f => renderDemoItem(f))}</div>)}
@@ -1053,9 +1053,9 @@ export function DebugMenu() {
                     <button onClick={() => toggleSection('playlists')}
                       className="flex items-center gap-1.5 w-full hover:bg-black/5 rounded transition-colors"
                       style={{ padding: '5px 8px' }}>
-                      {expandedSections.has('playlists') ? <ChevronDown style={{ width: '12px', height: '12px', color: '#5B19B4' }} /> : <ChevronRight style={{ width: '12px', height: '12px', color: '#5B19B4' }} />}
-                      <ListOrdered style={{ width: '12px', height: '12px', color: '#5B19B4' }} />
-                      <span style={{ fontSize: '12px', color: '#5B19B4', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Playlists</span>
+                      {expandedSections.has('playlists') ? <ChevronDown style={{ width: '12px', height: '12px', color: '#2F80ED' }} /> : <ChevronRight style={{ width: '12px', height: '12px', color: '#2F80ED' }} />}
+                      <ListOrdered style={{ width: '12px', height: '12px', color: '#2F80ED' }} />
+                      <span style={{ fontSize: '12px', color: '#2F80ED', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Playlists</span>
                       <span style={{ fontSize: '11px', color: '#868D9E', marginLeft: 'auto' }}>{builtInPlaylists.length}</span>
                     </button>
                     {expandedSections.has('playlists') && builtInPlaylists.map(pl => {
@@ -1067,14 +1067,14 @@ export function DebugMenu() {
                           className="flex items-center gap-2 rounded cursor-pointer hover:bg-purple-50 transition-colors"
                           style={{ padding: '5px 8px 5px 28px', ...diFocusStyle(idx) }}
                           onClick={() => !isRunning && startPlaylist(pl.id)}>
-                          <Play style={{ width: '12px', height: '12px', color: isRunning ? '#11E874' : '#8404B3', fill: isRunning ? '#11E874' : 'none' }} />
+                          <Play style={{ width: '12px', height: '12px', color: isRunning ? '#11E874' : '#2F80ED', fill: isRunning ? '#11E874' : 'none' }} />
                           <div className="flex-1 min-w-0">
                             <div style={{ fontSize: '13px', color: '#36415D', fontWeight: 500 }}>{pl.name}</div>
                             <div style={{ fontSize: '11px', color: '#868D9E' }}>{pl.featureIds.length} demos &middot; {doneCount} done</div>
                           </div>
                           {isRunning && (
                             <div className="flex items-center gap-1">
-                              <button onClick={e => { e.stopPropagation(); skipPlaylistDemo(); }} className="rounded hover:bg-purple-200 p-0.5"><SkipForward style={{ width: '11px', height: '11px', color: '#8404B3' }} /></button>
+                              <button onClick={e => { e.stopPropagation(); skipPlaylistDemo(); }} className="rounded hover:bg-purple-200 p-0.5"><SkipForward style={{ width: '11px', height: '11px', color: '#2F80ED' }} /></button>
                               <button onClick={e => { e.stopPropagation(); stopPlaylist(); }} className="rounded hover:bg-red-100 p-0.5"><Square style={{ width: '9px', height: '9px', color: '#FF1F1F' }} /></button>
                             </div>
                           )}
@@ -1103,14 +1103,14 @@ export function DebugMenu() {
                         <button onClick={() => toggleSection(group.label)}
                           className="flex items-center gap-1.5 w-full hover:bg-black/5 rounded transition-colors"
                           style={{ padding: '5px 8px' }}>
-                          {isExpanded ? <ChevronDown style={{ width: '12px', height: '12px', color: '#8404B3' }} /> : <ChevronRight style={{ width: '12px', height: '12px', color: '#8404B3' }} />}
-                          <span style={{ fontSize: '12px', color: '#8404B3', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>{group.label}</span>
+                          {isExpanded ? <ChevronDown style={{ width: '12px', height: '12px', color: '#2F80ED' }} /> : <ChevronRight style={{ width: '12px', height: '12px', color: '#2F80ED' }} />}
+                          <span style={{ fontSize: '12px', color: '#2F80ED', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>{group.label}</span>
                           <span style={{ fontSize: '11px', color: done === total && total > 0 ? '#11E874' : '#868D9E', marginLeft: 'auto' }}>
                             {done}/{total}
                           </span>
                           {/* Mini progress bar */}
                           <div style={{ width: '24px', height: '3px', borderRadius: '2px', backgroundColor: '#E9E9E9', overflow: 'hidden', marginLeft: '4px' }}>
-                            <div style={{ width: `${total ? (done / total) * 100 : 0}%`, height: '100%', backgroundColor: done === total && total > 0 ? '#11E874' : '#8404B3', borderRadius: '2px', transition: 'width 0.3s' }} />
+                            <div style={{ width: `${total ? (done / total) * 100 : 0}%`, height: '100%', backgroundColor: done === total && total > 0 ? '#11E874' : '#2F80ED', borderRadius: '2px', transition: 'width 0.3s' }} />
                           </div>
                         </button>
                         {isExpanded && group.features.map(f => renderDemoItem(f, 24))}

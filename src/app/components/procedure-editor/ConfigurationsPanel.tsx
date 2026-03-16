@@ -1,9 +1,10 @@
-import { X, Search, Plus, MoreVertical, Copy, Trash2, ChevronDown, ChevronRight, Upload, Download, Shield, Sliders, GripVertical, Pencil, PlusSquare, MinusSquare, Eye, Link2 } from 'lucide-react';
+import { X, Search, Plus, MoreVertical, Copy, Trash2, ChevronDown, ChevronRight, Upload, Download, Shield, Sliders, GripVertical, Pencil, PlusSquare, MinusSquare, Eye, Link2, FolderOpen, FolderPlus, FolderInput } from 'lucide-react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useClickOutside } from '../../hooks/useClickOutside';
-import { MOCK_CONFIGURATIONS, type Configuration } from './configurationsData';
+import { MOCK_CONFIGURATIONS, MOCK_FOLDERS, type Configuration, type ConfigFolder } from './configurationsData';
 import { ROLES, type UserRole } from '../../contexts/RoleContext';
+import { FrontlineWindow } from './FrontlineWindow';
 
 interface ConfigurationsPanelProps {
   isOpen: boolean;
@@ -111,12 +112,16 @@ interface ConfigItemProps {
   onDelete: () => void;
   onRename: (name: string) => void;
   onStartInlineRename: () => void;
-  onToggleChecked: () => void;
+  onToggleChecked: (shiftKey: boolean) => void;
   onCopyLink: () => void;
+  onMoveToFolder: (folderId: string | undefined) => void;
+  folders: ConfigFolder[];
 }
 
-function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, onDuplicate, onDelete, onRename, onStartInlineRename, onToggleChecked, onCopyLink }: ConfigItemProps) {
+function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, onDuplicate, onDelete, onRename, onStartInlineRename, onToggleChecked, onCopyLink, onMoveToFolder, folders }: ConfigItemProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(config.name);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -149,23 +154,14 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
       data-config-default={config.isDefault ? 'true' : undefined}
       data-config-readonly={config.isReadOnly ? 'true' : undefined}
       style={{
-        padding: '10px 12px',
+        padding: '4px 8px',
         borderRadius: 'var(--radius-button)',
         backgroundColor: isActive ? '#D9E0F0' : undefined,
-        borderLeft: isActive ? '3px solid #8404B3' : '3px solid transparent',
+        borderLeft: isActive ? '3px solid #2F80ED' : '3px solid transparent',
       }}
       onClick={onSelect}
     >
-      <div className="flex items-center" style={{ gap: '8px' }}>
-        {/* Drag handle (visual only) for non-default configs */}
-        {!config.isDefault && (
-          <GripVertical
-            className="flex-shrink-0 cursor-grab"
-            style={{ width: '14px', height: '14px', color: '#C2C9DB' }}
-            onClick={(e) => e.stopPropagation()}
-          />
-        )}
-
+      <div className="flex items-center" style={{ gap: '6px', minHeight: '28px' }}>
         {/* Multi-select checkbox for non-default configs */}
         {!config.isDefault && (
           <input
@@ -173,11 +169,11 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
             checked={isChecked}
             onChange={(e) => {
               e.stopPropagation();
-              onToggleChecked();
+              onToggleChecked(e.nativeEvent instanceof MouseEvent ? e.nativeEvent.shiftKey : false);
             }}
             onClick={(e) => e.stopPropagation()}
-            className="flex-shrink-0 accent-[#8404B3]"
-            style={{ width: '14px', height: '14px', cursor: 'pointer' }}
+            className="flex-shrink-0 accent-[#2F80ED]"
+            style={{ width: '13px', height: '13px', cursor: 'pointer' }}
           />
         )}
 
@@ -185,10 +181,9 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
         <div
           className="flex-shrink-0 rounded-full"
           style={{
-            width: '8px',
-            height: '8px',
-            backgroundColor: config.isEnabled ? (isActive ? '#8404B3' : '#11E874') : '#7F7F7F',
-            border: isActive ? '2px solid rgba(132,4,179,0.3)' : undefined,
+            width: '7px',
+            height: '7px',
+            backgroundColor: config.isEnabled ? (isActive ? '#2F80ED' : '#11E874') : '#7F7F7F',
           }}
         />
 
@@ -205,10 +200,10 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                 if (e.key === 'Escape') { setEditName(config.name); setIsEditing(false); }
               }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-white border outline-none px-2 py-0.5"
+              className="w-full bg-white border outline-none px-1.5 py-0"
               style={{
                 fontFamily: 'var(--font-family)',
-                fontSize: '13px',
+                fontSize: '12px',
                 color: '#36415D',
                 borderColor: '#2E80ED',
                 borderRadius: '4px',
@@ -219,7 +214,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
               className="truncate block"
               style={{
                 fontFamily: 'var(--font-family)',
-                fontSize: '13px',
+                fontSize: '12px',
                 fontWeight: isActive ? 600 : 500,
                 color: config.isEnabled ? '#36415D' : '#7F7F7F',
               }}
@@ -241,96 +236,69 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
             className="flex-shrink-0"
             style={{
               fontFamily: 'var(--font-family)',
-              fontSize: '10px',
+              fontSize: '9px',
               fontWeight: 600,
-              color: '#8404B3',
-              backgroundColor: 'rgba(132,4,179,0.1)',
-              padding: '2px 6px',
+              color: '#2F80ED',
+              backgroundColor: 'rgba(47, 128, 237,0.1)',
+              padding: '1px 5px',
               borderRadius: '99px',
-              lineHeight: '14px',
+              lineHeight: '13px',
             }}
           >
             DEFAULT
           </span>
         )}
 
-        {config.isReadOnly && (
-          <span
-            className="flex-shrink-0"
-            style={{
-              fontFamily: 'var(--font-family)',
-              fontSize: '10px',
-              fontWeight: 500,
-              color: '#868D9E',
-              backgroundColor: 'rgba(134,141,158,0.1)',
-              padding: '2px 6px',
-              borderRadius: '99px',
-              lineHeight: '14px',
-            }}
-          >
-            READ-ONLY
-          </span>
-        )}
-
-        {/* Enable/disable toggle */}
+        {/* Enable/disable checkbox */}
         {!config.isDefault && (
-          <button
-            className="flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center"
-            onClick={(e) => {
+          <input
+            type="checkbox"
+            checked={config.isEnabled}
+            onChange={(e) => {
               e.stopPropagation();
               onToggleEnabled();
             }}
+            onClick={(e) => e.stopPropagation()}
             title={config.isEnabled ? 'Disable configuration' : 'Enable configuration'}
-          >
-            <div
-              className="relative rounded-full transition-colors"
-              style={{
-                width: '32px',
-                height: '18px',
-                backgroundColor: config.isEnabled ? '#8404B3' : '#C2C9DB',
-              }}
-            >
-              <div
-                className="absolute top-[2px] rounded-full bg-white transition-all"
-                style={{
-                  width: '14px',
-                  height: '14px',
-                  left: config.isEnabled ? '16px' : '2px',
-                }}
-              />
-            </div>
-          </button>
+            className="flex-shrink-0 accent-[#2F80ED]"
+            style={{ width: '14px', height: '14px', cursor: 'pointer' }}
+          />
         )}
 
         {/* Three-dot menu */}
         {!config.isReadOnly && (
-          <div className="relative flex-shrink-0">
+          <div className="flex-shrink-0">
             <button
               ref={menuBtnRef}
               data-demo="config-menu-btn"
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-foreground/10 min-h-[36px] min-w-[36px] flex items-center justify-center"
+              className="opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-foreground/10 flex items-center justify-center"
+              style={{ width: '24px', height: '24px' }}
               onClick={(e) => {
                 e.stopPropagation();
+                if (!showMenu && menuBtnRef.current) {
+                  const rect = menuBtnRef.current.getBoundingClientRect();
+                  setMenuPos({ top: rect.bottom + 4, left: rect.right - 130 });
+                }
                 setShowMenu(!showMenu);
               }}
             >
-              <MoreVertical className="size-3.5" style={{ color: '#868D9E' }} />
+              <MoreVertical className="size-3" style={{ color: '#868D9E' }} />
             </button>
             <AnimatePresence>
-              {showMenu && (
+              {showMenu && menuPos && (
                 <motion.div
                   ref={menuRef}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.1 }}
-                  className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
-                  style={{ minWidth: '140px' }}
+                  className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
+                  style={{ minWidth: '130px', top: menuPos.top, left: menuPos.left }}
                 >
-                  <div style={{ padding: '4px' }}>
+                  <div style={{ padding: '3px' }}>
                     <button
-                      className="flex items-center gap-2 w-full px-3 py-2 rounded-md hover:bg-foreground/5 transition-colors text-left min-h-[36px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D' }}
+                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowMenu(false);
@@ -338,44 +306,106 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                         onStartInlineRename();
                       }}
                     >
-                      <Pencil className="size-3.5" style={{ color: '#868D9E' }} />
+                      <Pencil className="size-3" style={{ color: '#868D9E' }} />
                       Rename
                     </button>
                     <button
-                      className="flex items-center gap-2 w-full px-3 py-2 rounded-md hover:bg-foreground/5 transition-colors text-left min-h-[36px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D' }}
+                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onDuplicate();
                         setShowMenu(false);
                       }}
                     >
-                      <Copy className="size-3.5" style={{ color: '#868D9E' }} />
+                      <Copy className="size-3" style={{ color: '#868D9E' }} />
                       Duplicate
                     </button>
                     <button
-                      className="flex items-center gap-2 w-full px-3 py-2 rounded-md hover:bg-foreground/5 transition-colors text-left min-h-[36px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D' }}
+                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowMenu(false);
                         onCopyLink();
                       }}
                     >
-                      <Link2 className="size-3.5" style={{ color: '#868D9E' }} />
+                      <Link2 className="size-3" style={{ color: '#868D9E' }} />
                       Copy Link
                     </button>
-                    <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '2px 8px' }} />
+                    {/* Move to Folder */}
+                    <div className="relative">
+                      <button
+                        className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                        style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMoveSubmenu(!showMoveSubmenu);
+                        }}
+                      >
+                        <FolderInput className="size-3" style={{ color: '#868D9E' }} />
+                        Move to Folder
+                        <ChevronRight className="size-3 ml-auto" style={{ color: '#868D9E' }} />
+                      </button>
+                      {showMoveSubmenu && (
+                        <div
+                          className="absolute left-full top-0 ml-1 bg-card border border-border rounded-lg shadow-elevation-lg z-[101]"
+                          style={{ minWidth: '120px' }}
+                        >
+                          <div style={{ padding: '3px' }}>
+                            {config.folderId && (
+                              <button
+                                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onMoveToFolder(undefined);
+                                  setShowMenu(false);
+                                  setShowMoveSubmenu(false);
+                                }}
+                              >
+                                No folder (root)
+                              </button>
+                            )}
+                            {folders.filter((f) => f.id !== config.folderId).map((folder) => (
+                              <button
+                                key={folder.id}
+                                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onMoveToFolder(folder.id);
+                                  setShowMenu(false);
+                                  setShowMoveSubmenu(false);
+                                }}
+                              >
+                                <FolderOpen className="size-3" style={{ color: '#868D9E' }} />
+                                {folder.name}
+                              </button>
+                            ))}
+                            {folders.filter((f) => f.id !== config.folderId).length === 0 && !config.folderId && (
+                              <span
+                                className="block px-2.5 py-1.5"
+                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
+                              >
+                                No folders yet
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '2px 6px' }} />
                     <button
-                      className="flex items-center gap-2 w-full px-3 py-2 rounded-md hover:bg-[#FF1F1F]/10 transition-colors text-left min-h-[36px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#FF1F1F' }}
+                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-[#FF1F1F]/10 transition-colors text-left"
+                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#FF1F1F' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete();
                         setShowMenu(false);
                       }}
                     >
-                      <Trash2 className="size-3.5" />
+                      <Trash2 className="size-3" />
                       Delete
                     </button>
                   </div>
@@ -385,29 +415,176 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
           </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      {/* Tags */}
-      {config.tags.length > 0 && (
-        <div className="flex flex-wrap mt-1.5" style={{ gap: '4px', paddingLeft: '16px' }}>
-          {config.tags.map((tag) => (
-            <span
-              key={tag}
-              style={{
-                fontFamily: 'var(--font-family)',
-                fontSize: '10px',
-                fontWeight: 500,
-                color: '#868D9E',
-                backgroundColor: '#E9E9E9',
-                padding: '1px 6px',
-                borderRadius: '99px',
-                lineHeight: '16px',
-              }}
-            >
-              {tag}
-            </span>
-          ))}
+// ── Folder Item ─────────────────────────────────────────────────────
+
+interface FolderItemProps {
+  folder: ConfigFolder;
+  configCount: number;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onRename: (name: string) => void;
+  onDelete: () => void;
+}
+
+function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename, onDelete }: FolderItemProps) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(folder.name);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useClickOutside([menuRef, menuBtnRef], () => setShowMenu(false), showMenu);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const commitRename = () => {
+    const trimmed = editName.trim();
+    if (trimmed && trimmed !== folder.name) {
+      onRename(trimmed);
+    } else {
+      setEditName(folder.name);
+    }
+    setIsEditing(false);
+  };
+
+  return (
+    <div
+      className="group cursor-pointer transition-colors hover:bg-[#E9E9E9]/60"
+      style={{
+        padding: '4px 8px',
+        borderRadius: 'var(--radius-button)',
+        marginTop: '4px',
+      }}
+      onClick={onToggleExpand}
+    >
+      <div className="flex items-center" style={{ gap: '6px', minHeight: '28px' }}>
+        {isExpanded ? (
+          <ChevronDown className="size-3 flex-shrink-0" style={{ color: '#868D9E' }} />
+        ) : (
+          <ChevronRight className="size-3 flex-shrink-0" style={{ color: '#868D9E' }} />
+        )}
+        <FolderOpen className="size-3.5 flex-shrink-0" style={{ color: '#868D9E' }} />
+
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename();
+              if (e.key === 'Escape') { setEditName(folder.name); setIsEditing(false); }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 min-w-0 bg-white border outline-none px-1.5 py-0"
+            style={{
+              fontFamily: 'var(--font-family)',
+              fontSize: '12px',
+              color: '#36415D',
+              borderColor: '#2E80ED',
+              borderRadius: '4px',
+            }}
+          />
+        ) : (
+          <span
+            className="flex-1 min-w-0 truncate"
+            style={{
+              fontFamily: 'var(--font-family)',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#36415D',
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              setIsEditing(true);
+            }}
+          >
+            {folder.name}
+          </span>
+        )}
+
+        <span
+          className="flex-shrink-0"
+          style={{
+            fontFamily: 'var(--font-family)',
+            fontSize: '10px',
+            color: '#868D9E',
+          }}
+        >
+          {configCount}
+        </span>
+
+        {/* Folder menu */}
+        <div className="flex-shrink-0">
+          <button
+            ref={menuBtnRef}
+            className="opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-foreground/10 flex items-center justify-center"
+            style={{ width: '24px', height: '24px' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!showMenu && menuBtnRef.current) {
+                const rect = menuBtnRef.current.getBoundingClientRect();
+                setMenuPos({ top: rect.bottom + 4, left: rect.right - 130 });
+              }
+              setShowMenu(!showMenu);
+            }}
+          >
+            <MoreVertical className="size-3" style={{ color: '#868D9E' }} />
+          </button>
+          <AnimatePresence>
+            {showMenu && menuPos && (
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
+                style={{ minWidth: '120px', top: menuPos.top, left: menuPos.left }}
+              >
+                <div style={{ padding: '3px' }}>
+                  <button
+                    className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                    style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenu(false);
+                      setIsEditing(true);
+                    }}
+                  >
+                    <Pencil className="size-3" style={{ color: '#868D9E' }} />
+                    Rename
+                  </button>
+                  <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '2px 6px' }} />
+                  <button
+                    className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-[#FF1F1F]/10 transition-colors text-left"
+                    style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#FF1F1F' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete();
+                      setShowMenu(false);
+                    }}
+                  >
+                    <Trash2 className="size-3" />
+                    Delete Folder
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -453,19 +630,8 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
   const roleEntries = Object.values(ROLES);
 
   return (
-    <div data-demo="configurations-detail" style={{ padding: '0 16px 16px' }}>
-      <div
-        className="border-t"
-        style={{ borderColor: '#C2C9DB', paddingTop: '12px' }}
-      >
-        {/* Section Title */}
-        <div className="flex items-center mb-3" style={{ gap: '6px' }}>
-          <Sliders className="size-3.5" style={{ color: '#8404B3' }} />
-          <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', fontWeight: 600, color: '#8404B3', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Configuration Details
-          </span>
-        </div>
-
+    <div data-demo="configurations-detail" style={{ padding: '12px 16px 16px' }}>
+      <div>
         {/* Name */}
         <label
           style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px' }}
@@ -592,7 +758,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               fontSize: '13px',
               fontWeight: 600,
               color: 'white',
-              backgroundColor: '#8404B3',
+              backgroundColor: '#2F80ED',
               padding: '8px 16px',
             }}
             onClick={() => {
@@ -682,13 +848,13 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             className="mb-3 rounded-lg"
             style={{
               padding: '8px 10px',
-              backgroundColor: 'rgba(132, 4, 179, 0.06)',
-              border: '1px solid rgba(132, 4, 179, 0.15)',
+              backgroundColor: 'rgba(47, 128, 237, 0.06)',
+              border: '1px solid rgba(47, 128, 237, 0.15)',
             }}
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <Eye className="size-3" style={{ color: '#8404B3' }} />
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 700, color: '#8404B3' }}>
+              <Eye className="size-3" style={{ color: '#2F80ED' }} />
+              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 700, color: '#2F80ED' }}>
                 Scene State Captured
               </span>
             </div>
@@ -698,35 +864,20 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           </div>
         )}
 
-        {/* Enable/Disable toggle */}
+        {/* Enable/Disable checkbox */}
         {!config.isDefault && (
-          <div className="flex items-center justify-between mb-3">
+          <label className="flex items-center gap-2 mb-3 cursor-pointer min-h-[32px]">
+            <input
+              type="checkbox"
+              checked={config.isEnabled}
+              onChange={() => onUpdate({ isEnabled: !config.isEnabled })}
+              className="accent-[#2F80ED]"
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
             <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D' }}>
               Enabled
             </span>
-            <button
-              onClick={() => onUpdate({ isEnabled: !config.isEnabled })}
-              className="min-h-[36px] min-w-[36px] flex items-center justify-center"
-            >
-              <div
-                className="relative rounded-full transition-colors"
-                style={{
-                  width: '36px',
-                  height: '20px',
-                  backgroundColor: config.isEnabled ? '#8404B3' : '#C2C9DB',
-                }}
-              >
-                <div
-                  className="absolute top-[2px] rounded-full bg-white transition-all"
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    left: config.isEnabled ? '18px' : '2px',
-                  }}
-                />
-              </div>
-            </button>
-          </div>
+          </label>
         )}
 
         {/* Last Updated */}
@@ -746,7 +897,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             onClick={() => setShowPermissions(!showPermissions)}
           >
             <div className="flex items-center" style={{ gap: '6px' }}>
-              <Shield className="size-3.5" style={{ color: '#8404B3' }} />
+              <Shield className="size-3.5" style={{ color: '#2F80ED' }} />
               <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#36415D' }}>
                 Permissions
               </span>
@@ -783,7 +934,8 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
                         checked={config.permittedRoles.includes(role.id)}
                         onChange={() => handleToggleRole(role.id)}
                         disabled={config.isReadOnly}
-                        className="accent-[#8404B3] w-4 h-4"
+                        className="accent-[#2F80ED] flex-shrink-0"
+                        style={{ width: '14px', height: '14px' }}
                       />
                       <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: config.isReadOnly ? '#7F7F7F' : '#36415D' }}>
                         {role.label}
@@ -804,6 +956,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
 
 export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProps) {
   const [configurations, setConfigurations] = useState<Configuration[]>(MOCK_CONFIGURATIONS);
+  const [folders, setFolders] = useState<ConfigFolder[]>(MOCK_FOLDERS);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>('config-default');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -816,6 +969,13 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
   } | null>(null);
   const [importConfirmPending, setImportConfirmPending] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const lastCheckedIdRef = useRef<string | null>(null);
+  const [showMoveToFolderMenu, setShowMoveToFolderMenu] = useState(false);
+  const moveBtnRef = useRef<HTMLButtonElement>(null);
+  const moveMenuRef = useRef<HTMLDivElement>(null);
+  const [moveMenuPos, setMoveMenuPos] = useState<{ top: number; left: number } | null>(null);
+
+  useClickOutside([moveMenuRef, moveBtnRef], () => setShowMoveToFolderMenu(false), showMoveToFolderMenu);
 
   const selectedConfig = configurations.find((c) => c.id === selectedId) ?? null;
 
@@ -828,6 +988,42 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
       config.tags.some((tag) => tag.toLowerCase().includes(q))
     );
   });
+
+  // Group configs: root-level (no folder) and per-folder
+  const rootConfigs = filteredConfigs.filter((c) => !c.folderId);
+  const configsByFolder = folders.reduce<Record<string, Configuration[]>>((acc, folder) => {
+    acc[folder.id] = filteredConfigs.filter((c) => c.folderId === folder.id);
+    return acc;
+  }, {});
+
+  // Flat ordered list of selectable (non-default) config IDs, matching display order
+  const selectableOrderedIds = [
+    ...rootConfigs.filter((c) => !c.isDefault).map((c) => c.id),
+    ...folders.flatMap((folder) => (configsByFolder[folder.id] || []).filter((c) => !c.isDefault).map((c) => c.id)),
+  ];
+
+  const handleToggleCheckedWithShift = useCallback((configId: string, shiftKey: boolean) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (shiftKey && lastCheckedIdRef.current && lastCheckedIdRef.current !== configId) {
+        const lastIdx = selectableOrderedIds.indexOf(lastCheckedIdRef.current);
+        const curIdx = selectableOrderedIds.indexOf(configId);
+        if (lastIdx !== -1 && curIdx !== -1) {
+          const from = Math.min(lastIdx, curIdx);
+          const to = Math.max(lastIdx, curIdx);
+          for (let i = from; i <= to; i++) {
+            next.add(selectableOrderedIds[i]);
+          }
+          return next;
+        }
+      }
+      // Normal toggle
+      if (next.has(configId)) next.delete(configId);
+      else next.add(configId);
+      return next;
+    });
+    lastCheckedIdRef.current = configId;
+  }, [selectableOrderedIds]);
 
   const handleCreateConfiguration = useCallback(() => {
     // Find a unique name (auto-increment "Configuration N")
@@ -1011,6 +1207,84 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
     setCheckedIds(new Set());
   }, [checkedIds, configurations]);
 
+  // Move single config to folder
+  const handleMoveToFolder = useCallback((configId: string, folderId: string | undefined) => {
+    setConfigurations((prev) =>
+      prev.map((c) => (c.id === configId ? { ...c, folderId, lastUpdated: new Date().toISOString() } : c))
+    );
+    const folderName = folderId ? folders.find((f) => f.id === folderId)?.name : 'root';
+    setToastMessage(`Moved to ${folderName}`);
+  }, [folders]);
+
+  // Bulk move to folder
+  const handleBulkMoveToFolder = useCallback((folderId: string | undefined) => {
+    if (checkedIds.size === 0) return;
+    setConfigurations((prev) =>
+      prev.map((c) => (checkedIds.has(c.id) ? { ...c, folderId, lastUpdated: new Date().toISOString() } : c))
+    );
+    const folderName = folderId ? folders.find((f) => f.id === folderId)?.name : 'root';
+    setToastMessage(`Moved ${checkedIds.size} configurations to ${folderName}`);
+    setCheckedIds(new Set());
+    setShowMoveToFolderMenu(false);
+  }, [checkedIds, folders]);
+
+  // Folder CRUD
+  const handleCreateFolder = useCallback(() => {
+    let counter = 1;
+    while (folders.some((f) => f.name === `New Folder ${counter}`)) counter++;
+    const newFolder: ConfigFolder = {
+      id: `folder-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: `New Folder ${counter}`,
+      isExpanded: true,
+      sortOrder: folders.length,
+    };
+    setFolders((prev) => [...prev, newFolder]);
+    setToastMessage('Folder created');
+  }, [folders]);
+
+  const handleRenameFolder = useCallback((folderId: string, name: string) => {
+    setFolders((prev) => prev.map((f) => (f.id === folderId ? { ...f, name } : f)));
+  }, []);
+
+  const handleDeleteFolder = useCallback((folderId: string) => {
+    const folder = folders.find((f) => f.id === folderId);
+    if (!folder) return;
+    const configsInFolder = configurations.filter((c) => c.folderId === folderId);
+    setConfirmDialog({
+      title: 'Delete Folder',
+      message: configsInFolder.length > 0
+        ? `"${folder.name}" contains ${configsInFolder.length} configuration${configsInFolder.length > 1 ? 's' : ''}. They will be moved to the root level.`
+        : `Delete folder "${folder.name}"?`,
+      confirmLabel: 'Delete',
+      confirmColor: '#FF1F1F',
+      onConfirm: () => {
+        // Move contained configs to root
+        setConfigurations((prev) =>
+          prev.map((c) => (c.folderId === folderId ? { ...c, folderId: undefined } : c))
+        );
+        setFolders((prev) => prev.filter((f) => f.id !== folderId));
+        setConfirmDialog(null);
+        setToastMessage(`Deleted folder "${folder.name}"`);
+      },
+    });
+  }, [folders, configurations]);
+
+  const handleToggleFolderExpand = useCallback((folderId: string) => {
+    setFolders((prev) => prev.map((f) => (f.id === folderId ? { ...f, isExpanded: !f.isExpanded } : f)));
+  }, []);
+
+  // Select all / deselect all
+  const selectableConfigs = filteredConfigs.filter((c) => !c.isDefault);
+  const allSelected = selectableConfigs.length > 0 && selectableConfigs.every((c) => checkedIds.has(c.id));
+
+  const handleToggleSelectAll = useCallback(() => {
+    if (allSelected) {
+      setCheckedIds(new Set());
+    } else {
+      setCheckedIds(new Set(selectableConfigs.map((c) => c.id)));
+    }
+  }, [allSelected, selectableConfigs]);
+
   // Close handler with toast for active non-default config (Fix 14)
   const handleClose = useCallback(() => {
     if (selectedId && selectedId !== 'config-default') {
@@ -1024,283 +1298,406 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
 
   return (
     <>
-      {/* Backdrop (Fix 13) */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] sm:block"
-            style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
-            onClick={handleClose}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full sm:max-w-[360px] z-[61] flex flex-col p-2 sm:p-3"
-          >
-            <div
-              className="bg-card shadow-[0px_2px_9px_0px_rgba(0,0,0,0.55)] flex flex-col h-full"
-              style={{ borderRadius: 'var(--radius)' }}
-            >
-              {/* Header */}
-              <div
-                data-demo="configurations-header"
-                className="flex items-center justify-between border-b"
+      {/* Configurations List — FrontlineWindow */}
+      <FrontlineWindow
+        isOpen={isOpen}
+        onClose={handleClose}
+        title={`Configurations (${configurations.length})`}
+        icon={<Sliders className="size-4" style={{ color: '#2F80ED' }} />}
+        defaultPosition={{ x: window.innerWidth - 360 - 16, y: 60 }}
+        defaultSize={{ width: 350, height: 560 }}
+        minWidth={280}
+        minHeight={300}
+      >
+        <div className="flex flex-col h-full">
+          {/* Search */}
+          <div data-demo="configurations-search" style={{ padding: '8px 12px' }}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5" style={{ color: '#868D9E' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name or tag..."
+                data-demo="configurations-search-input"
+                className="w-full bg-white border outline-none min-h-[40px]"
                 style={{
-                  padding: '14px 16px',
+                  borderRadius: '8px',
+                  padding: '8px 12px 8px 32px',
+                  fontFamily: 'var(--font-family)',
+                  fontSize: '13px',
+                  color: '#36415D',
                   borderColor: '#C2C9DB',
-                  borderTopLeftRadius: 'var(--radius)',
-                  borderTopRightRadius: 'var(--radius)',
                 }}
+              />
+            </div>
+          </div>
+
+          {/* Action Toolbar */}
+          <div className="flex items-center" style={{ padding: '4px 12px 8px', gap: '6px' }}>
+            <button
+              onClick={handleCreateConfiguration}
+              data-demo="configurations-create"
+              className="flex-1 flex items-center justify-center gap-2 rounded-button hover:opacity-90 transition-opacity min-h-[36px]"
+              style={{
+                fontFamily: 'var(--font-family)',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'white',
+                backgroundColor: '#2F80ED',
+                padding: '6px 12px',
+              }}
+            >
+              <Plus className="size-3.5" />
+              New Config
+            </button>
+            <button
+              onClick={handleCreateFolder}
+              className="flex items-center justify-center gap-1.5 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+              style={{
+                fontFamily: 'var(--font-family)',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: '#36415D',
+                borderColor: '#C2C9DB',
+                padding: '6px 10px',
+              }}
+              title="Create folder"
+            >
+              <FolderPlus className="size-3.5" style={{ color: '#868D9E' }} />
+            </button>
+            {selectableConfigs.length > 0 && (
+              <button
+                onClick={handleToggleSelectAll}
+                className="flex items-center justify-center rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                style={{
+                  fontFamily: 'var(--font-family)',
+                  fontSize: '10px',
+                  fontWeight: 500,
+                  color: allSelected ? '#2F80ED' : '#868D9E',
+                  borderColor: allSelected ? '#2F80ED' : '#C2C9DB',
+                  padding: '6px 8px',
+                }}
+                title={allSelected ? 'Deselect all' : 'Select all'}
               >
-                <div className="flex items-center" style={{ gap: '8px' }}>
-                  <Sliders className="size-4" style={{ color: '#8404B3' }} />
-                  <p style={{ fontFamily: 'var(--font-family)', fontSize: '15px', fontWeight: 600, color: '#36415D' }}>
-                    Configurations
-                  </p>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-family)',
-                      fontSize: '11px',
-                      color: '#868D9E',
-                      backgroundColor: '#E9E9E9',
-                      padding: '1px 7px',
-                      borderRadius: '99px',
-                      lineHeight: '16px',
-                    }}
-                  >
-                    {configurations.length}
-                  </span>
-                </div>
-                <button
-                  onClick={handleClose}
-                  className="hover:bg-foreground/5 transition-colors rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  style={{ color: '#868D9E' }}
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
+                {allSelected ? 'Deselect' : 'Select all'}
+              </button>
+            )}
+          </div>
 
-              {/* Search */}
-              <div data-demo="configurations-search" style={{ padding: '8px 16px' }}>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5" style={{ color: '#868D9E' }} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by name or tag..."
-                    data-demo="configurations-search-input"
-                    className="w-full bg-white border outline-none min-h-[40px]"
-                    style={{
-                      borderRadius: '8px',
-                      padding: '8px 12px 8px 32px',
-                      fontFamily: 'var(--font-family)',
-                      fontSize: '13px',
-                      color: '#36415D',
-                      borderColor: '#C2C9DB',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Create Button */}
-              <div style={{ padding: '4px 16px 8px' }}>
-                <button
-                  onClick={handleCreateConfiguration}
-                  data-demo="configurations-create"
-                  className="w-full flex items-center justify-center gap-2 rounded-button hover:opacity-90 transition-opacity min-h-[40px]"
-                  style={{
-                    fontFamily: 'var(--font-family)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'white',
-                    backgroundColor: '#2F80ED',
-                    padding: '8px 16px',
-                  }}
-                >
-                  <Plus className="size-4" />
-                  Create Configuration
-                </button>
-              </div>
-
-              {/* Configuration List */}
-              <div
-                data-demo="configurations-list"
-                className="flex-1 overflow-y-auto"
-                style={{ padding: '0 8px' }}
-              >
-                {filteredConfigs.length > 0 ? (
-                  filteredConfigs.map((config) => (
-                    <ConfigItem
-                      key={config.id}
-                      config={config}
-                      isActive={selectedId === config.id}
-                      isChecked={checkedIds.has(config.id)}
-                      onSelect={() => {
-                        // GAP 1 (FR24): Auto-capture toast on config switch
-                        if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
-                          const prev = configurations.find((c) => c.id === selectedId);
-                          if (prev && !prev.isDefault && !prev.isReadOnly) {
-                            setToastMessage('Previous configuration state saved');
-                          }
+          {/* Configuration List with Folders */}
+          <div
+            data-demo="configurations-list"
+            className="flex-1 overflow-y-auto"
+            style={{ padding: '0 4px' }}
+          >
+            {filteredConfigs.length > 0 ? (
+              <>
+                {/* Root-level configs (no folder) */}
+                {rootConfigs.map((config) => (
+                  <ConfigItem
+                    key={config.id}
+                    config={config}
+                    isActive={selectedId === config.id}
+                    isChecked={checkedIds.has(config.id)}
+                    folders={folders}
+                    onSelect={() => {
+                      if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
+                        const prev = configurations.find((c) => c.id === selectedId);
+                        if (prev && !prev.isDefault && !prev.isReadOnly) {
+                          setToastMessage('Previous configuration state saved');
                         }
-                        setSelectedId(config.id);
-                      }}
-                      onToggleEnabled={() => handleToggleEnabled(config.id)}
-                      onDuplicate={() => handleDuplicate(config.id)}
-                      onDelete={() => handleDelete(config.id)}
-                      onRename={(name) => handleRename(config.id, name)}
-                      onStartInlineRename={() => setSelectedId(config.id)}
-                      onCopyLink={() => {
-                        navigator.clipboard?.writeText(`${window.location.origin}/app/3d-viewer?config=${encodeURIComponent(config.name)}`);
-                        setToastMessage('Link copied to clipboard');
-                      }}
-                      onToggleChecked={() => {
-                        setCheckedIds((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(config.id)) next.delete(config.id);
-                          else next.add(config.id);
-                          return next;
-                        });
-                      }}
-                    />
-                  ))
-                ) : (
-                  <div
-                    className="flex flex-col items-center justify-center"
-                    style={{ padding: '32px 16px', gap: '8px' }}
-                  >
-                    <Sliders className="size-8" style={{ color: '#C2C9DB' }} />
-                    <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#868D9E', textAlign: 'center' }}>
-                      {searchQuery ? 'No configurations match your search' : 'No configurations yet'}
-                    </p>
-                  </div>
-                )}
-              </div>
+                      }
+                      setSelectedId(config.id);
+                    }}
+                    onToggleEnabled={() => handleToggleEnabled(config.id)}
+                    onDuplicate={() => handleDuplicate(config.id)}
+                    onDelete={() => handleDelete(config.id)}
+                    onRename={(name) => handleRename(config.id, name)}
+                    onStartInlineRename={() => setSelectedId(config.id)}
+                    onCopyLink={() => {
+                      navigator.clipboard?.writeText(`${window.location.origin}/app/3d-viewer?config=${encodeURIComponent(config.name)}`);
+                      setToastMessage('Link copied to clipboard');
+                    }}
+                    onToggleChecked={(shiftKey) => handleToggleCheckedWithShift(config.id, shiftKey)}
+                    onMoveToFolder={(folderId) => handleMoveToFolder(config.id, folderId)}
+                  />
+                ))}
 
-              {/* Bulk Action Bar (Fix 4) */}
-              {checkedIds.size >= 2 && (
-                <div
-                  className="flex items-center justify-between border-t"
-                  style={{
-                    borderColor: '#C2C9DB',
-                    padding: '8px 16px',
-                    backgroundColor: '#F5F5F5',
-                  }}
-                >
-                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', fontWeight: 500, color: '#36415D' }}>
-                    {checkedIds.size} selected
-                  </span>
-                  <div className="flex" style={{ gap: '6px' }}>
+                {/* Folders */}
+                {folders.map((folder) => {
+                  const folderConfigs = configsByFolder[folder.id] || [];
+                  // Hide empty folders when searching
+                  if (searchQuery && folderConfigs.length === 0) return null;
+                  return (
+                    <div key={folder.id}>
+                      <FolderItem
+                        folder={folder}
+                        configCount={folderConfigs.length}
+                        isExpanded={folder.isExpanded}
+                        onToggleExpand={() => handleToggleFolderExpand(folder.id)}
+                        onRename={(name) => handleRenameFolder(folder.id, name)}
+                        onDelete={() => handleDeleteFolder(folder.id)}
+                      />
+                      <AnimatePresence initial={false}>
+                        {folder.isExpanded && folderConfigs.length > 0 && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            style={{ overflow: 'hidden', paddingLeft: '16px' }}
+                          >
+                            {folderConfigs.map((config) => (
+                              <ConfigItem
+                                key={config.id}
+                                config={config}
+                                isActive={selectedId === config.id}
+                                isChecked={checkedIds.has(config.id)}
+                                folders={folders}
+                                onSelect={() => {
+                                  if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
+                                    const prev = configurations.find((c) => c.id === selectedId);
+                                    if (prev && !prev.isDefault && !prev.isReadOnly) {
+                                      setToastMessage('Previous configuration state saved');
+                                    }
+                                  }
+                                  setSelectedId(config.id);
+                                }}
+                                onToggleEnabled={() => handleToggleEnabled(config.id)}
+                                onDuplicate={() => handleDuplicate(config.id)}
+                                onDelete={() => handleDelete(config.id)}
+                                onRename={(name) => handleRename(config.id, name)}
+                                onStartInlineRename={() => setSelectedId(config.id)}
+                                onCopyLink={() => {
+                                  navigator.clipboard?.writeText(`${window.location.origin}/app/3d-viewer?config=${encodeURIComponent(config.name)}`);
+                                  setToastMessage('Link copied to clipboard');
+                                }}
+                                onToggleChecked={() => {
+                                  setCheckedIds((prev) => {
+                                    const next = new Set(prev);
+                                    if (next.has(config.id)) next.delete(config.id);
+                                    else next.add(config.id);
+                                    return next;
+                                  });
+                                }}
+                                onMoveToFolder={(folderId) => handleMoveToFolder(config.id, folderId)}
+                              />
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <div
+                className="flex flex-col items-center justify-center"
+                style={{ padding: '32px 16px', gap: '8px' }}
+              >
+                <Sliders className="size-8" style={{ color: '#C2C9DB' }} />
+                <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#868D9E', textAlign: 'center' }}>
+                  {searchQuery ? 'No configurations match your search' : 'No configurations yet'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Bulk Action Bar */}
+          {checkedIds.size >= 1 && (
+            <div
+              className="border-t"
+              style={{
+                borderColor: '#C2C9DB',
+                padding: '8px 12px',
+                backgroundColor: '#F5F5F5',
+              }}
+            >
+              <div className="flex items-center" style={{ gap: '4px' }}>
+                <span className="flex-shrink-0" style={{ fontFamily: 'var(--font-family)', fontSize: '12px', fontWeight: 500, color: '#36415D' }}>
+                  {checkedIds.size} selected
+                </span>
+                  {/* Move to folder */}
+                  <div className="relative">
                     <button
-                      onClick={handleBulkToggleEnabled}
-                      className="flex items-center gap-1.5 rounded-button border hover:bg-white transition-colors min-h-[32px]"
+                      ref={moveBtnRef}
+                      onClick={() => {
+                        if (!showMoveToFolderMenu && moveBtnRef.current) {
+                          const rect = moveBtnRef.current.getBoundingClientRect();
+                          setMoveMenuPos({ top: rect.top - 4, left: rect.left });
+                        }
+                        setShowMoveToFolderMenu(!showMoveToFolderMenu);
+                      }}
+                      className="flex items-center gap-1 rounded-button border hover:bg-white transition-colors min-h-[30px]"
                       style={{
                         fontFamily: 'var(--font-family)',
                         fontSize: '11px',
                         fontWeight: 500,
                         color: '#36415D',
                         borderColor: '#C2C9DB',
-                        padding: '4px 10px',
+                        padding: '3px 8px',
                       }}
+                      title="Move to folder"
                     >
-                      Enable/Disable
+                      <FolderInput className="size-3" style={{ color: '#868D9E' }} />
+                      Move
                     </button>
-                    <button
-                      onClick={handleBulkDelete}
-                      className="flex items-center gap-1.5 rounded-button hover:opacity-90 transition-opacity min-h-[32px]"
-                      style={{
-                        fontFamily: 'var(--font-family)',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        color: 'white',
-                        backgroundColor: '#FF1F1F',
-                        padding: '4px 10px',
-                      }}
-                    >
-                      <Trash2 className="size-3" />
-                      Delete Selected
-                    </button>
+                    <AnimatePresence>
+                      {showMoveToFolderMenu && moveMenuPos && (
+                        <motion.div
+                          ref={moveMenuRef}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.1 }}
+                          className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
+                          style={{ minWidth: '140px', bottom: `calc(100vh - ${moveMenuPos.top}px)`, left: moveMenuPos.left }}
+                        >
+                          <div style={{ padding: '3px' }}>
+                            <button
+                              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                              style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
+                              onClick={() => handleBulkMoveToFolder(undefined)}
+                            >
+                              No folder (root)
+                            </button>
+                            {folders.map((folder) => (
+                              <button
+                                key={folder.id}
+                                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}
+                                onClick={() => handleBulkMoveToFolder(folder.id)}
+                              >
+                                <FolderOpen className="size-3" style={{ color: '#868D9E' }} />
+                                {folder.name}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                </div>
-              )}
-
-              {/* Detail Section (when a non-default config is selected) */}
-              {selectedConfig && (
-                <div className="overflow-y-auto" style={{ maxHeight: '45%' }}>
-                  <DetailSection
-                    config={selectedConfig}
-                    onUpdate={handleUpdateSelected}
-                    onShowToast={setToastMessage}
-                  />
-                </div>
-              )}
-
-              {/* Footer: Import / Export (GAP 8 — FR33: label as Excel) */}
-              <div
-                data-demo="configurations-footer"
-                className="border-t flex flex-col"
-                style={{
-                  borderColor: '#C2C9DB',
-                  padding: '10px 16px',
-                  gap: '6px',
-                  borderBottomLeftRadius: 'var(--radius)',
-                  borderBottomRightRadius: 'var(--radius)',
-                }}
-              >
-                <div className="flex" style={{ gap: '8px' }}>
                   <button
-                    onClick={handleImport}
-                    data-demo="configurations-import"
-                    className="flex-1 flex items-center justify-center gap-2 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                    onClick={handleBulkToggleEnabled}
+                    className="flex items-center gap-1 rounded-button border hover:bg-white transition-colors min-h-[30px]"
                     style={{
                       fontFamily: 'var(--font-family)',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 500,
                       color: '#36415D',
                       borderColor: '#C2C9DB',
-                      padding: '6px 12px',
+                      padding: '3px 8px',
                     }}
                   >
-                    <Upload className="size-3.5" style={{ color: '#868D9E' }} />
-                    Import Excel
+                    <Eye className="size-3" style={{ color: '#868D9E' }} />
+                    Toggle
                   </button>
+                  <div className="flex-1" />
                   <button
-                    onClick={handleExport}
-                    data-demo="configurations-export"
-                    className="flex-1 flex items-center justify-center gap-2 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                    onClick={() => setCheckedIds(new Set())}
+                    className="flex items-center gap-1 rounded-button border hover:bg-white transition-colors min-h-[30px]"
                     style={{
                       fontFamily: 'var(--font-family)',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 500,
                       color: '#36415D',
                       borderColor: '#C2C9DB',
-                      padding: '6px 12px',
+                      padding: '3px 8px',
                     }}
                   >
-                    <Download className="size-3.5" style={{ color: '#868D9E' }} />
-                    Export Excel
+                    <X className="size-3" style={{ color: '#868D9E' }} />
+                    Cancel
                   </button>
-                </div>
-                <p style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#868D9E', textAlign: 'center', margin: 0 }}>
-                  Export parts catalog with configuration visibility columns
-                </p>
+                  <button
+                    onClick={handleBulkDelete}
+                    className="flex items-center gap-1 rounded-button hover:opacity-90 transition-opacity min-h-[30px]"
+                    style={{
+                      fontFamily: 'var(--font-family)',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: 'white',
+                      backgroundColor: '#FF1F1F',
+                      padding: '3px 8px',
+                    }}
+                  >
+                    <Trash2 className="size-3" />
+                    Delete
+                  </button>
               </div>
             </div>
-          </motion.div>
+          )}
+
+          {/* Footer: Import / Export (GAP 8 — FR33: label as Excel) */}
+          <div
+            data-demo="configurations-footer"
+            className="border-t flex flex-col"
+            style={{
+              borderColor: '#e9e9e9',
+              padding: '8px 12px',
+              gap: '6px',
+            }}
+          >
+            <div className="flex" style={{ gap: '8px' }}>
+              <button
+                onClick={handleImport}
+                data-demo="configurations-import"
+                className="flex-1 flex items-center justify-center gap-2 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                style={{
+                  fontFamily: 'var(--font-family)',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#36415D',
+                  borderColor: '#C2C9DB',
+                  padding: '6px 12px',
+                }}
+              >
+                <Upload className="size-3.5" style={{ color: '#868D9E' }} />
+                Import Excel
+              </button>
+              <button
+                onClick={handleExport}
+                data-demo="configurations-export"
+                className="flex-1 flex items-center justify-center gap-2 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                style={{
+                  fontFamily: 'var(--font-family)',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#36415D',
+                  borderColor: '#C2C9DB',
+                  padding: '6px 12px',
+                }}
+              >
+                <Download className="size-3.5" style={{ color: '#868D9E' }} />
+                Export Excel
+              </button>
+            </div>
+            <p style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#868D9E', textAlign: 'center', margin: 0 }}>
+              Export parts catalog with configuration visibility columns
+            </p>
+          </div>
+        </div>
+      </FrontlineWindow>
+
+      {/* Configuration Details — FrontlineWindow */}
+      <FrontlineWindow
+        isOpen={isOpen && !!selectedConfig}
+        onClose={() => setSelectedId(null)}
+        title={selectedConfig ? `${selectedConfig.name} — Details` : 'Configuration Details'}
+        icon={<Sliders className="size-4" style={{ color: '#2F80ED' }} />}
+        defaultPosition={{ x: Math.max(16, window.innerWidth - 360 - 16 - 350 - 16), y: 60 }}
+        defaultSize={{ width: 340, height: 520 }}
+        minWidth={280}
+        minHeight={240}
+      >
+        {selectedConfig && (
+          <DetailSection
+            config={selectedConfig}
+            onUpdate={handleUpdateSelected}
+            onShowToast={setToastMessage}
+          />
         )}
-      </AnimatePresence>
+      </FrontlineWindow>
 
       {/* Toast */}
       <AnimatePresence>

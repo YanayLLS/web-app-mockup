@@ -184,6 +184,105 @@
           { target:'#btPreview', text:'Preview to see animations play as end users will experience them.', pos:'top', wait:'click' },
           { target:'#viewport', text:'Animations are now active in Viewer mode. Animation Manager demo complete!', pos:'top', wait:'observe', viewerMode:true },
         ]},
+      { id:'dt-configurations', name:'Configurations', icon:'🎛️',
+        desc:'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.',
+        flow:['Open the Configurations tab','Learn about configurations','Create a configuration','Name and describe it','Add tags','Set from view','Set permissions','Create a folder','Drag config into folder','Multi-select configs','Use context menu','Search configs','Save your work','Preview in viewer mode'],
+        demo:[
+          // Step 1: Open Configurations tab
+          { target:'[data-tab="configurations"]', text:'Click the <b>Configurations</b> tab to manage digital twin variants.', pos:'left', wait:'click',
+            setup:function(){
+              // Ensure right panel is visible by clicking settings or parts tab first if panel hidden
+              var tab=document.querySelector('[data-tab="configurations"]');
+              if(tab) tab.scrollIntoView({block:'nearest'});
+            }},
+          // Step 2: Orientation
+          { target:'.config-header', text:'This is the <b>Configurations</b> panel. Each configuration defines which parts are visible — perfect for machines with optional modules or regional variants.<br><br>The <b>Default Configuration</b> (read-only) always shows all parts and cannot be edited.', pos:'left', wait:'observe', requireTab:'configurations' },
+          // Step 3: Create a configuration — click Create, pick an option from the dropdown
+          { target:'#cfgCreateBtn', text:'Click <b>Create</b> to open the dropdown, then select <b>"From current view"</b> — this captures the current 3D scene\'s parts visibility as the starting state.', pos:'left', wait:'validate', requireTab:'configurations',
+            setup:function(){
+              demo._prevCount = configData ? configData.filter(function(c){return c.type==='config';}).length : 0;
+            },
+            validate:function(){ return configData && configData.filter(function(c){return c.type==='config';}).length > (demo._prevCount||0); }},
+          // Step 4: Edit name (detail panel targets)
+          { target:'#configDetailName', text:'The detail panel opened. Type a name for your configuration — try <b>"Standard Model"</b>.', pos:'top', wait:'validate',
+            setup:function(){
+              var dd = document.getElementById('cfgCreateDropdown'); if (dd) dd.classList.remove('show');
+              // Ensure config detail panel is visible and has valid position
+              var dp = document.getElementById('configDetailPanel');
+              if (dp && dp.classList.contains('hidden')) dp.classList.remove('hidden');
+              if (dp && (!dp.style.left || dp.style.left === 'NaNpx')) {
+                dp.style.left = (window.innerWidth - 680) + 'px'; dp.style.top = '80px';
+                dp.style.width = '320px'; dp.style.height = '420px';
+              }
+              var el = document.getElementById('configDetailName'); demo._initConfigName = el ? el.value : '';
+            },
+            validate:function(){ var el=document.getElementById('configDetailName'); return el && el.value.trim().length > 0 && el.value !== (demo._initConfigName||''); }},
+          // Step 5: Add description
+          { target:'#configDetailDesc', text:'Add a description explaining what this variant represents, e.g. <i>"Standard production model without coolant system."</i>', pos:'left', wait:'observe',
+            setup:function(){ var el=document.getElementById('configDetailDesc'); if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'}); }},
+          // Step 6: Add tag
+          { target:'#configTagAddRow', text:'Type a tag like <b>"standard"</b> and click <b>Add</b> (or press Enter). Tags help technicians find configurations by keyword.', pos:'left', wait:'validate',
+            setup:function(){
+              demo._tagCount = document.querySelectorAll('.config-detail-tag').length;
+              var el=document.getElementById('configTagInput'); if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+            },
+            validate:function(){ return document.querySelectorAll('.config-detail-tag').length > (demo._tagCount||0); }},
+          // Step 7: Set from view
+          { target:'#configSetViewBtn', text:'Click <b>"Set from View"</b> to capture the current 3D scene state into this configuration. Any parts you\'ve hidden or moved are now saved.', pos:'left', wait:'click',
+            setup:function(){ var el=document.getElementById('configSetViewBtn'); if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'}); }},
+          // Step 8: Permissions
+          { target:'.config-permissions-header', text:'Expand <b>Permissions</b> to control which user roles can see this configuration. Uncheck roles that shouldn\'t access this variant.', pos:'left', wait:'click',
+            setup:function(){ var el=document.querySelector('.config-permissions-header'); if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'}); }},
+          // Step 9: Create folder
+          { target:'#cfgNewFolderBtn', text:'Click the <b>folder icon</b> to create a folder. Folders help organize configurations by region, customer, or product line.', pos:'left', wait:'validate', requireTab:'configurations',
+            setup:function(){
+              demo._folderCount = configData ? configData.filter(function(c){return c.type==='folder';}).length : 0;
+              var dp = document.getElementById('configDetailPanel'); if (dp && !dp.classList.contains('hidden')) { var c = document.getElementById('configDetailClose'); if (c) c.click(); }
+            },
+            validate:function(){ return configData && configData.filter(function(c){return c.type==='folder';}).length > (demo._folderCount||0); }},
+          // Step 10: Drag to folder
+          { target:'#configList', text:'<b>Drag</b> a configuration into the folder. Drop it on the folder row — you\'ll see a blue highlight when it\'s ready to receive.<br><br>You can also use the three-dot menu → <b>Move to Folder</b>.', pos:'left', wait:'observe', requireTab:'configurations' },
+          // Step 11: Multi-select
+          { target:'#configSelectBar', text:'Hold <b>Ctrl</b> (⌘ on Mac) and click multiple configurations to select them. The select bar shows bulk action options: Delete and Cancel.', pos:'left', wait:'observe', requireTab:'configurations' },
+          // Step 12: Open context menu
+          { target:'#configList .config-item:not([data-config-type="folder"]):not([data-config-id="config-default"]) [data-cfg-more]', text:'Click the <b>three-dot menu</b> (⋮) on a configuration to open the context menu.', pos:'left', wait:'validate', requireTab:'configurations',
+            setup:function(){
+              var items=document.querySelectorAll('#configList .config-item:not([data-config-type="folder"]):not([data-config-id="config-default"])');
+              if(items.length>0){var btn=items[0].querySelector('[data-cfg-more]'); if(btn) btn.style.opacity='1';}
+            },
+            validate:function(){ var m=document.getElementById('configCtxMenu'); return m && m.classList.contains('show'); }},
+          // Step 13: Observe context menu
+          { target:'#configCtxMenu', text:'The context menu shows actions: <b>Rename</b>, <b>Duplicate</b>, <b>Copy Link</b>, <b>Move to Folder</b>, and <b>Delete</b>. Click anywhere to dismiss.', pos:'left', wait:'observe',
+            setup:function(){
+              var m = document.getElementById('configCtxMenu');
+              if (!m || !m.classList.contains('show')) {
+                var items=document.querySelectorAll('#configList .config-item:not([data-config-type="folder"]):not([data-config-id="config-default"])');
+                if(items.length>0){var btn=items[0].querySelector('[data-cfg-more]'); if(btn) btn.click();}
+              }
+            }},
+          // Step 14: Search
+          { target:'#configSearchInput', text:'Type in the <b>search bar</b> to filter configurations by name or tag. Try typing a tag you created earlier.', pos:'left', wait:'validate', requireTab:'configurations',
+            setup:function(){ var m=document.getElementById('configCtxMenu'); if(m) m.classList.remove('show'); },
+            validate:function(){ var el=document.getElementById('configSearchInput'); return el && el.value.trim().length > 0; }},
+          // Step 15: Clear search
+          { target:'#configSearchInput', text:'Clear the search to see all configurations again.', pos:'left', wait:'validate', requireTab:'configurations',
+            validate:function(){ var el=document.getElementById('configSearchInput'); return el && el.value.trim().length === 0; }},
+          // Step 16: Save
+          { target:'#btSave', text:'Click <b>Save</b> to persist all your configuration changes.', pos:'top', wait:'click',
+            setup:function(){
+              // Close detail panel if open to avoid it blocking save button
+              var dp=document.getElementById('configDetailPanel');
+              if(dp&&!dp.classList.contains('hidden')){ var c=document.getElementById('configDetailClose'); if(c)c.click(); }
+            }},
+          // Step 17: Publish prompt
+          { target:'#btSave', text:'A publish prompt will appear. Click <b>Publish</b> to make configurations live for technicians, or <b>Not now</b> to save without publishing.', pos:'top', wait:'validate',
+            setup:function(){ this._seen=false; },
+            validate:function(){ if(document.getElementById('publishNo')){this._seen=true;return false;} return this._seen; }},
+          // Step 18: Preview
+          { target:'#btPreview', text:'Click <b>Preview</b> to see the digital twin as a technician would. The active configuration\'s parts visibility applies.', pos:'top', wait:'click' },
+          // Step 19: Viewer verify
+          { target:'#viewport', text:'You\'re in <b>Viewer mode</b> — this is what technicians see. Only parts defined in the active configuration are visible. The Configurations tab is hidden in viewer mode.<br><br>🎉 <b>Configurations demo complete!</b>', pos:'top', wait:'observe', viewerMode:true },
+        ]},
       { id:'keyboard', name:'Keyboard Shortcuts', icon:'⌨️',
         desc:'Master the keyboard shortcuts to speed up your workflow.',
         flow:['Ctrl+Z — Undo','Ctrl+Y — Redo','F — Focus camera','Escape — Close panels','Ctrl+Click — Multi-select parts','Shift+F — Open debug menu'],
@@ -788,6 +887,31 @@
         }
       });
       return;
+    }
+
+    // Tab context gate — if step declares requireTab, ensure that tab is active
+    if (step.requireTab && isEditorPage()) {
+      var reqTabBtn = document.querySelector('.panel-tab[data-tab="' + step.requireTab + '"]');
+      if (reqTabBtn && !reqTabBtn.classList.contains('active')) {
+        requestAnimationFrame(function() {
+          if (!demo) return;
+          var dots = buildDots(total, idx);
+          highlightEl(reqTabBtn);
+          var tabLabel = reqTabBtn.getAttribute('title') || step.requireTab;
+          demo.tipEl.innerHTML = dots +
+            '<div class="gd-step"><span>Navigate to ' + tabLabel + '</span><span class="gd-step-skip">skip tour</span></div>' +
+            '<div class="gd-text">Click the <b>' + tabLabel + '</b> tab to continue the demo.</div>' +
+            '<div class="gd-wait">Click the tab to continue</div><div class="gd-btns"></div>';
+          positionTip(reqTabBtn, 'right');
+          demo.tipEl.querySelector('.gd-step-skip').onclick = endDemo;
+          var poll = setInterval(function() {
+            if (!demo) { clearInterval(poll); return; }
+            if (reqTabBtn.classList.contains('active')) { clearInterval(poll); showStep(); }
+          }, 200);
+          demo.cleanup.push(function() { clearInterval(poll); });
+        });
+        return;
+      }
     }
 
     if (step.setup) step.setup();
