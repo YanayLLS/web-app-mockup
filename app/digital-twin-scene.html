@@ -5550,6 +5550,20 @@ loader.load('./Generator.fbx', (object) => {
   orbitControls.target.copy(nc); orbitControls.update();
 
   buildPartsTree(object);
+
+  // Save original transforms for config reset
+  if (!state.originalTransforms) state.originalTransforms = new Map();
+  state.partMeshMap.forEach(function(meshes, partId) {
+    if (meshes.length > 0) {
+      var m = meshes[0];
+      state.originalTransforms.set(partId, {
+        pos: {x: m.position.x, y: m.position.y, z: m.position.z},
+        rot: {x: m.rotation.x, y: m.rotation.y, z: m.rotation.z},
+        scl: {x: m.scale.x, y: m.scale.y, z: m.scale.z}
+      });
+    }
+  });
+
   _partsFlatDirty = true;
   renderPartsList();
 
@@ -7002,15 +7016,23 @@ document.querySelectorAll('.panel-tab[data-tab]').forEach(tab=>{
 // (parent sends { type: 'set-procedure-running', running: true/false })
 var isProcedureRunning = false;
 
+// Helper: normalize partState entry (backward compat — handles both boolean and object formats)
+function normalizePartState(val) {
+  if (typeof val === 'boolean') return {visible: val};
+  if (typeof val === 'object' && val !== null) return val;
+  return {visible: true};
+}
+
 // --- Data model (single array with type:'config'|'folder', parentId, order) ---
+// partStates format: { partName: { visible: bool, position?: {x,y,z}, rotation?: {x,y,z}, scale?: {x,y,z}, hasTransform?: bool } }
 var configData = [
   { id:'config-default', type:'config', name:'Default Configuration', description:'The base configuration representing the default state of the digital twin. All parts are visible in their original positions.', tags:['default','base'], isEnabled:true, isDefault:true, isReadOnly:true, lastUpdated:'2026-03-10T14:30:00Z', createdBy:'System', permittedRoles:['Guest','Operator','Operator MR','Field Service Engineer','Service Support Expert','Instructor','Service Support Manager','Content Creator','Admin'], parentId:null, order:0, partStates:{} },
-  { id:'config-standard', type:'config', name:'Standard Model', description:'Standard production model without optional accessories.', tags:['standard','production'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-12T09:15:00Z', createdBy:'Sarah K.', permittedRoles:['Operator','Field Service Engineer','Service Support Expert','Instructor','Content Creator','Admin'], parentId:null, order:1, partStates:{'CoolantAssembly':false,'CoolantPump':false,'CoolantReservoir':false,'PremiumExhaust':false,'AuxPowerModule':false} },
-  { id:'config-premium-coolant', type:'config', name:'Premium with Coolant', description:'Full premium model including coolant system, premium exhaust, and all optional accessories.', tags:['premium','coolant'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-13T16:45:00Z', createdBy:'Sarah K.', permittedRoles:['Field Service Engineer','Service Support Expert','Instructor','Content Creator','Admin'], parentId:null, order:2, partStates:{'CoolantAssembly':true,'PremiumExhaust':true,'AuxPowerModule':true} },
+  { id:'config-standard', type:'config', name:'Standard Model', description:'Standard production model without optional accessories.', tags:['standard','production'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-12T09:15:00Z', createdBy:'Sarah K.', permittedRoles:['Operator','Field Service Engineer','Service Support Expert','Instructor','Content Creator','Admin'], parentId:null, order:1, partStates:{'CoolantAssembly':{visible:false},'CoolantPump':{visible:false},'CoolantReservoir':{visible:false},'PremiumExhaust':{visible:false},'AuxPowerModule':{visible:false}} },
+  { id:'config-premium-coolant', type:'config', name:'Premium with Coolant', description:'Full premium model including coolant system, premium exhaust, and all optional accessories.', tags:['premium','coolant'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-13T16:45:00Z', createdBy:'Sarah K.', permittedRoles:['Field Service Engineer','Service Support Expert','Instructor','Content Creator','Admin'], parentId:null, order:2, partStates:{'CoolantAssembly':{visible:true},'PremiumExhaust':{visible:true},'AuxPowerModule':{visible:true}} },
   { id:'folder-regional', type:'folder', name:'Regional Variants', parentId:null, order:3, isExpanded:true },
   { id:'folder-retrofit', type:'folder', name:'Retrofit Kits', parentId:null, order:4, isExpanded:true },
-  { id:'config-autocorp-usa-east', type:'config', name:'AutoCorp-USA-East', description:'Regional configuration for AutoCorp USA East Coast installations.', tags:['autocorp','usa-east','regional','60hz'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-14T11:20:00Z', createdBy:'Marcus R.', permittedRoles:['Field Service Engineer','Service Support Expert','Content Creator','Admin'], parentId:'folder-regional', order:0, partStates:{'CoolantAssembly':true,'ColdWeatherPackage':true,'PowerModule50Hz':false,'PowerModule60Hz':true} },
-  { id:'config-no-coolant-retrofit', type:'config', name:'No-Coolant Retrofit', description:'Retrofit configuration for sites removing the coolant system.', tags:['retrofit','no-coolant','air-cooled'], isEnabled:false, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-11T08:00:00Z', createdBy:'Sarah K.', permittedRoles:['Field Service Engineer','Content Creator','Admin'], parentId:'folder-retrofit', order:0, partStates:{'CoolantAssembly':false,'CoolantPump':false,'CoolantReservoir':false,'AirCoolingAdapter':true,'ModifiedExhaust':true} }
+  { id:'config-autocorp-usa-east', type:'config', name:'AutoCorp-USA-East', description:'Regional configuration for AutoCorp USA East Coast installations.', tags:['autocorp','usa-east','regional','60hz'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-14T11:20:00Z', createdBy:'Marcus R.', permittedRoles:['Field Service Engineer','Service Support Expert','Content Creator','Admin'], parentId:'folder-regional', order:0, partStates:{'CoolantAssembly':{visible:true},'ColdWeatherPackage':{visible:true},'PowerModule50Hz':{visible:false},'PowerModule60Hz':{visible:true, position:{x:0,y:0.5,z:0}, rotation:{x:0,y:0,z:0}, scale:{x:1,y:1,z:1}, hasTransform:true}} },
+  { id:'config-no-coolant-retrofit', type:'config', name:'No-Coolant Retrofit', description:'Retrofit configuration for sites removing the coolant system.', tags:['retrofit','no-coolant','air-cooled'], isEnabled:false, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-11T08:00:00Z', createdBy:'Sarah K.', permittedRoles:['Field Service Engineer','Content Creator','Admin'], parentId:'folder-retrofit', order:0, partStates:{'CoolantAssembly':{visible:false},'CoolantPump':{visible:false},'CoolantReservoir':{visible:false},'AirCoolingAdapter':{visible:true},'ModifiedExhaust':{visible:true}} }
 ];
 // configSelectedId — which config's detail panel is open (UI state)
 // configActiveId — which config is currently applied to the 3D scene (scene state)
@@ -7474,8 +7496,26 @@ function renderConfigDetail() {
   var statusBar = document.getElementById('configStatusBar');
   var statusPill = document.getElementById('configStatusPill');
   var statusSummary = document.getElementById('configStatusSummary');
-  var partCount = c.partStates ? Object.keys(c.partStates).length : 0;
-  var partText = partCount > 0 ? partCount + ' part override' + (partCount !== 1 ? 's' : '') + ' from default' : 'No part overrides — matches default';
+  var visCount = 0, xformCount = 0;
+  if (c.partStates) {
+    var psKeys = Object.keys(c.partStates);
+    for (var si = 0; si < psKeys.length; si++) {
+      var psEntry = normalizePartState(c.partStates[psKeys[si]]);
+      if (psEntry.hasTransform) xformCount++;
+      else visCount++;
+    }
+  }
+  var partCount = visCount + xformCount;
+  var partText;
+  if (partCount === 0) {
+    partText = 'No part overrides \u2014 matches default';
+  } else if (xformCount === 0) {
+    partText = visCount + ' visibility override' + (visCount !== 1 ? 's' : '') + ' from default';
+  } else if (visCount === 0) {
+    partText = xformCount + ' transform override' + (xformCount !== 1 ? 's' : '') + ' from default';
+  } else {
+    partText = visCount + ' visibility + ' + xformCount + ' transform override' + (xformCount !== 1 ? 's' : '') + ' from default';
+  }
   if (c.isDefault) {
     statusPill.textContent = 'DEFAULT';
     statusPill.className = 'config-status-pill readonly';
@@ -7718,7 +7758,12 @@ function configSetFromView() {
   c.partStates = captured;
   c.lastUpdated = new Date().toISOString();
   configActiveId = configSelectedId;
-  var partCount = Object.keys(captured).length;
+  var capKeys = Object.keys(captured);
+  var capVisCount = 0, capXformCount = 0;
+  for (var ci = 0; ci < capKeys.length; ci++) {
+    var capEntry = normalizePartState(captured[capKeys[ci]]);
+    if (capEntry.hasTransform) capXformCount++; else capVisCount++;
+  }
   renderConfigDetail();
   // Visual feedback on button
   var btn = document.getElementById('configSetViewBtn');
@@ -7726,7 +7771,7 @@ function configSetFromView() {
   btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Updated from View';
   btn.style.background = '#11e874';
   setTimeout(function(){ btn.innerHTML = orig; btn.style.background = '#2f80ed'; }, 1500);
-  showConfigToast('Configuration updated — ' + partCount + ' part' + (partCount !== 1 ? 's' : '') + ' captured');
+  showConfigToast('Configuration changed \u2014 ' + capVisCount + ' part' + (capVisCount !== 1 ? 's' : '') + ', ' + capXformCount + ' transform' + (capXformCount !== 1 ? 's' : '') + ' captured');
 }
 
 function configImport() {
@@ -7975,10 +8020,13 @@ function renderCfgPicker() {
   }
   var html = '';
   configs.forEach(function(c) {
-    var partCount = c.partStates ? Object.keys(c.partStates).length : 0;
+    var pkVisC = 0, pkXfC = 0;
+    if (c.partStates) { var pkK = Object.keys(c.partStates); for (var pki = 0; pki < pkK.length; pki++) { var pkE = normalizePartState(c.partStates[pkK[pki]]); if (pkE.hasTransform) pkXfC++; else pkVisC++; } }
+    var pkTotal = pkVisC + pkXfC;
+    var pkText = pkTotal === 0 ? 'No overrides' : (pkXfC === 0 ? pkVisC + ' visibility override' + (pkVisC !== 1 ? 's' : '') : (pkVisC === 0 ? pkXfC + ' transform override' + (pkXfC !== 1 ? 's' : '') : pkVisC + ' visibility + ' + pkXfC + ' transform'));
     html += '<div onclick="cfgPickerSelect(\'' + c.id + '\')" style="padding:8px 10px; border-radius:8px; cursor:pointer; transition:background 0.1s;" onmouseover="this.style.background=\'#f0f3f8\'" onmouseout="this.style.background=\'\'">'
       + '<div style="font-size:13px; font-weight:500; color:#36415d;">' + escHtml(c.name) + (c.isDefault ? ' <span style="font-size:10px;color:#2f80ed;font-weight:600;">DEFAULT</span>' : '') + '</div>'
-      + '<div style="font-size:11px; color:#868d9e; margin-top:1px;">' + partCount + ' part override' + (partCount !== 1 ? 's' : '') + '</div>'
+      + '<div style="font-size:11px; color:#868d9e; margin-top:1px;">' + pkText + '</div>'
       + '</div>';
   });
   list.innerHTML = html;
@@ -8047,22 +8095,35 @@ function applyConfiguration(configId) {
   // 2. Show all parts first (clean slate)
   showAllParts();
 
-  // 3. For default config (empty partStates) — just the reset above is enough
+  // 3. Reset all transforms to original before applying config
+  if (state.originalTransforms) {
+    state.originalTransforms.forEach(function(orig, partId) {
+      var meshes = state.partMeshMap.get(partId);
+      if (meshes) meshes.forEach(function(m) {
+        m.position.set(orig.pos.x, orig.pos.y, orig.pos.z);
+        m.rotation.set(orig.rot.x, orig.rot.y, orig.rot.z);
+        m.scale.set(orig.scl.x, orig.scl.y, orig.scl.z);
+        if (sceneBatcher.enabled) sceneBatcher.syncTransform(m);
+      });
+    });
+  }
+
+  // 4. For default config (empty partStates) — just the reset above is enough
   if (cfg.isDefault || !cfg.partStates || Object.keys(cfg.partStates).length === 0) {
     configActiveId = configId;
     if (typeof renderPartsList === 'function') renderPartsList();
     return;
   }
 
-  // 4. Apply partStates
+  // 5. Apply partStates (handles both boolean and object formats via normalizePartState)
   var keys = Object.keys(cfg.partStates);
   for (var i = 0; i < keys.length; i++) {
     var partName = keys[i];
-    var visible = cfg.partStates[partName];
+    var entry = normalizePartState(cfg.partStates[partName]);
     var part = getPartByName(partName);
     if (!part) { console.warn('[Config] Part not found in scene: ' + partName); continue; }
 
-    if (visible === false) {
+    if (entry.visible === false) {
       // Hide the part and all its descendants
       var allIds = collectPartIds(part);
       for (var j = 0; j < allIds.length; j++) {
@@ -8070,14 +8131,25 @@ function applyConfiguration(configId) {
         var meshes = state.partMeshMap.get(allIds[j]);
         if (meshes) meshes.forEach(function(m){ m.visible = false; });
       }
-    } else if (visible === true) {
-      // Explicitly ensure part + descendants are visible (may have been hidden by other systems)
+    } else {
+      // Explicitly ensure part + descendants are visible
       var allIds = collectPartIds(part);
       for (var j = 0; j < allIds.length; j++) {
         state.hiddenParts.delete(allIds[j]);
         var meshes = state.partMeshMap.get(allIds[j]);
         if (meshes) meshes.forEach(function(m){ m.visible = true; });
       }
+    }
+
+    // Apply transform overrides if present
+    if (entry.hasTransform && entry.position && entry.rotation && entry.scale) {
+      var meshes = state.partMeshMap.get(part.id);
+      if (meshes) meshes.forEach(function(m) {
+        m.position.set(entry.position.x, entry.position.y, entry.position.z);
+        m.rotation.set(entry.rotation.x, entry.rotation.y, entry.rotation.z);
+        m.scale.set(entry.scale.x, entry.scale.y, entry.scale.z);
+        if (sceneBatcher.enabled) sceneBatcher.syncTransform(m);
+      });
     }
   }
 
@@ -8090,10 +8162,38 @@ function captureCurrentSceneState() {
   if (!state.parts || !state.parts.length) return partStates;
   function walk(parts) {
     for (var i = 0; i < parts.length; i++) {
-      if (state.hiddenParts.has(parts[i].id)) {
-        partStates[parts[i].name] = false;
+      var p = parts[i];
+      var isHidden = state.hiddenParts.has(p.id);
+      if (isHidden) {
+        // Hidden part — store visibility only
+        partStates[p.name] = {visible: false};
+      } else {
+        // Visible part — check for transform overrides
+        var hasTransformChange = false;
+        var meshes = state.partMeshMap.get(p.id);
+        var orig = state.originalTransforms ? state.originalTransforms.get(p.id) : null;
+        if (meshes && meshes.length > 0 && orig) {
+          var m = meshes[0];
+          var eps = 0.0001;
+          if (Math.abs(m.position.x - orig.pos.x) > eps || Math.abs(m.position.y - orig.pos.y) > eps || Math.abs(m.position.z - orig.pos.z) > eps ||
+              Math.abs(m.rotation.x - orig.rot.x) > eps || Math.abs(m.rotation.y - orig.rot.y) > eps || Math.abs(m.rotation.z - orig.rot.z) > eps ||
+              Math.abs(m.scale.x - orig.scl.x) > eps || Math.abs(m.scale.y - orig.scl.y) > eps || Math.abs(m.scale.z - orig.scl.z) > eps) {
+            hasTransformChange = true;
+          }
+        }
+        if (hasTransformChange) {
+          var cm = meshes[0];
+          partStates[p.name] = {
+            visible: true,
+            position: {x: cm.position.x, y: cm.position.y, z: cm.position.z},
+            rotation: {x: cm.rotation.x, y: cm.rotation.y, z: cm.rotation.z},
+            scale: {x: cm.scale.x, y: cm.scale.y, z: cm.scale.z},
+            hasTransform: true
+          };
+        }
+        // If visible and no transform change — skip (matches default)
       }
-      if (parts[i].children) walk(parts[i].children);
+      if (p.children) walk(p.children);
     }
   }
   walk(state.parts);
@@ -8156,14 +8256,12 @@ function showConfigToast(msg) {
 }
 
 /* ── In-app modal system (replaces native alert/confirm/prompt) ── */
-function _escapeHTML(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 function _appModalBase(title, bodyEl, buttons) {
   return new Promise(function(resolve) {
     var resolved = false;
     var overlay = document.createElement('div');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', title);
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10001;animation:fadeIn .15s;';
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border-radius:12px;padding:24px;min-width:340px;max-width:480px;max-height:80vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);font-family:inherit;';
