@@ -5099,61 +5099,7 @@ export function RemoteSupportPage({
                 />
               </div>
 
-              {/* Device Selection */}
-              <div className="mb-6 space-y-3">
-                <div>
-                  <label
-                    className="flex items-center gap-2 mb-1.5 text-muted"
-                    style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}
-                  >
-                    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                    </svg>
-                    Microphone
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedAudioDevice}
-                      onChange={(e) => handleChangeAudioDevice(e.target.value)}
-                      className="w-full appearance-none bg-background border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
-                      style={{ fontSize: 'var(--text-sm)' }}
-                    >
-                      {audioDevices.map((d, i) => (
-                        <option key={d.deviceId} value={d.deviceId}>{d.label || `Microphone ${i + 1}`}</option>
-                      ))}
-                    </select>
-                    <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <label
-                    className="flex items-center gap-2 mb-1.5 text-muted"
-                    style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}
-                  >
-                    <Video className="size-3.5" />
-                    Camera
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedVideoDevice}
-                      onChange={(e) => handleChangeVideoDevice(e.target.value)}
-                      className="w-full appearance-none bg-background border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
-                      style={{ fontSize: 'var(--text-sm)' }}
-                    >
-                      {videoDevices.map((d, i) => (
-                        <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${i + 1}`}</option>
-                      ))}
-                    </select>
-                    <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-6">
                 <button
                   className="flex-1 px-4 py-2.5 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-foreground"
                   style={{
