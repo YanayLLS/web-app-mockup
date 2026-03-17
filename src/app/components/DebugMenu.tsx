@@ -80,7 +80,7 @@ const featureGroups: FeatureGroup[] = [
     { id: 'grid-settings', name: 'Grid & Settings', icon: '\u2699\uFE0F', desc: 'Toggle the reference grid and configure scene settings.', demoSteps: 8, route: '/app/3d-viewer' },
     { id: 'animations', name: 'Animation Manager', icon: '\u{1F39E}\uFE0F', desc: 'Create, organize, and preview animations for your parts.', demoSteps: 8, route: '/app/3d-viewer' },
     { id: 'keyboard', name: 'Keyboard Shortcuts', icon: '\u2328\uFE0F', desc: 'Master the keyboard shortcuts to speed up your workflow.', demoSteps: 5, route: '/app/3d-viewer' },
-    { id: 'dt-configurations', name: 'Configurations', icon: '\u{1F39B}\uFE0F', desc: 'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.', demoSteps: 19, route: '/app/3d-viewer?mode=editor' },
+    { id: 'dt-configurations', name: 'Configurations', icon: '\u{1F39B}\uFE0F', desc: 'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.', demoSteps: 20, route: '/app/3d-viewer' },
   ]},
   { label: 'XR App', features: [
     { id: 'xr-login', name: 'Login & Settings', icon: '\u{1F510}', desc: 'Log in to the XR app and configure connection settings.', demoSteps: 5, route: '/xr' },
@@ -216,7 +216,8 @@ export function DebugMenu() {
 
   const startDemo = useCallback((feat: FeatureItem, keepOpen = false) => {
     const isParentDemo = feat.id.startsWith('proc-');
-    const onPage = currentPathname === feat.route || currentPathname.startsWith(feat.route + '/')
+    const featPath = feat.route.split('?')[0]; // strip query params for comparison
+    const onPage = currentPathname === featPath || currentPathname.startsWith(featPath + '/')
       || (isParentDemo && currentPathname.startsWith('/app/procedure-editor/'));
     if (onPage) {
       if (isParentDemo) {
@@ -528,7 +529,8 @@ export function DebugMenu() {
         if (feat) {
           autoStartedRef.current = demoId;
           const isParent = feat.id.startsWith('proc-');
-          const onPage = currentPathname === feat.route || currentPathname.startsWith(feat.route + '/')
+          const fp = feat.route.split('?')[0];
+          const onPage = currentPathname === fp || currentPathname.startsWith(fp + '/')
             || (isParent && currentPathname.startsWith('/app/procedure-editor/'));
           if (onPage && isParent) {
             // Dispatch directly with delay to let components mount

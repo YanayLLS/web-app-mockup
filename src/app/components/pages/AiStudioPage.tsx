@@ -1525,7 +1525,7 @@ export function AiStudioPage() {
             className="bg-card rounded-[var(--radius)] overflow-hidden w-full max-w-[500px] max-h-[90vh]"
             style={{
               height: '700px',
-              border: '1px solid #5b19b4',
+              border: '1px solid #2F80ED',
               boxShadow: '0px 4px 99.8px 0px rgba(14,122,254,0.5)',
               display: 'flex',
               flexDirection: 'column',

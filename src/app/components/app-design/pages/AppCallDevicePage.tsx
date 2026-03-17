@@ -1,6 +1,7 @@
 import { Phone, Search, X } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { useAppPopup } from '../../../contexts/AppPopupContext';
 import { MemberAvatar } from '../../MemberAvatar';
 
 interface AppCallDeviceModalProps {
@@ -14,6 +15,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { currentRole } = useRole();
   const canStartCall = hasAccess(currentRole, 'start-call');
+  const { alert: appAlert } = useAppPopup();
 
   const handleDigitChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
@@ -32,10 +34,10 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
     }
   };
 
-  const handleCall = () => {
+  const handleCall = async () => {
     const code = digits.filter(d => d).join('');
     if (code.length > 0) {
-      alert(`Calling device: ${code}`);
+      await appAlert(`Calling device: ${code}`, { title: 'Calling Device', variant: 'info' });
       onClose();
     }
   };

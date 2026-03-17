@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { X, Search } from 'lucide-react';
-import { MOCK_CONFIGURATIONS } from '../../procedure-editor/configurationsData';
-import type { Configuration } from '../../procedure-editor/configurationsData';
+import { X, Search, Shield } from 'lucide-react';
+import { MOCK_CONFIGURATIONS } from '../../../data/configurationsData';
+import type { Configuration } from '../../../data/configurationsData';
 import { useRole } from '../../../contexts/RoleContext';
 
 interface AppConfigurationSelectorProps {
@@ -12,7 +12,6 @@ interface AppConfigurationSelectorProps {
 
 export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfigurationSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const { currentRole } = useRole();
 
   // Filter: only enabled configs permitted for current role
@@ -23,6 +22,10 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
       return true;
     });
   }, [currentRole]);
+
+  // Default config is always pre-selected — no "None" option
+  const defaultConfig = availableConfigs.find((c) => c.isDefault);
+  const [selectedId, setSelectedId] = useState<string | null>(defaultConfig?.id ?? availableConfigs[0]?.id ?? null);
 
   // Search filter by name, description, or tags
   const filteredConfigs = useMemo(() => {
@@ -48,7 +51,7 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 z-[60]" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/35 z-[60]" onClick={onClose} />
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-[60] p-4 pointer-events-none">
@@ -58,9 +61,9 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
             maxWidth: '100%',
             maxHeight: '80vh',
             backgroundColor: '#FFFFFF',
-            border: '1px solid #C2C9DB',
-            borderRadius: '10px',
-            boxShadow: '0px 4px 14.2px 0px rgba(0,0,0,0.25)',
+            border: '1px solid #E9E9E9',
+            borderRadius: '14px',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -68,43 +71,56 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
           <div
             className="flex items-center justify-between shrink-0"
             style={{
-              padding: '16px 16px 12px 16px',
+              padding: '18px 18px 14px 18px',
               borderBottom: '1px solid #E9E9E9',
             }}
           >
-            <h3
-              style={{
-                fontSize: '16px',
-                fontWeight: 'var(--font-weight-bold)',
-                color: '#36415D',
-                margin: 0,
-              }}
-            >
-              Select Configuration
-            </h3>
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(47, 128, 237, 0.08)',
+                }}
+              >
+                <Shield style={{ width: '14px', height: '14px', color: '#2F80ED' }} />
+              </div>
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 'var(--font-weight-bold)',
+                  color: '#36415D',
+                  margin: 0,
+                }}
+              >
+                Select Configuration
+              </h3>
+            </div>
             <button
               onClick={onClose}
-              className="flex items-center justify-center hover:bg-gray-100 transition-colors"
-              style={{ width: '36px', height: '36px', borderRadius: '8px' }}
+              className="flex items-center justify-center hover:bg-[#F5F5F5] transition-colors"
+              style={{ width: '32px', height: '32px', borderRadius: '8px' }}
               aria-label="Close"
             >
-              <X style={{ width: '14px', height: '14px', color: '#36415D' }} />
+              <X style={{ width: '14px', height: '14px', color: '#868D9E' }} />
             </button>
           </div>
 
           {/* Search */}
-          <div className="shrink-0" style={{ padding: '12px 16px 8px 16px' }}>
+          <div className="shrink-0" style={{ padding: '12px 18px 8px 18px' }}>
             <div
-              className="flex items-center"
+              className="flex items-center transition-all"
               style={{
                 backgroundColor: '#F5F5F5',
-                borderRadius: '8px',
-                border: '1px solid #C2C9DB',
-                padding: '0 10px',
-                height: '36px',
+                borderRadius: '10px',
+                border: '1px solid #E9E9E9',
+                padding: '0 12px',
+                height: '38px',
               }}
             >
-              <Search style={{ width: '14px', height: '14px', color: '#868D9E', flexShrink: 0 }} />
+              <Search style={{ width: '14px', height: '14px', color: '#C2C9DB', flexShrink: 0 }} />
               <input
                 type="text"
                 value={searchQuery}
@@ -121,9 +137,9 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="hover:opacity-70"
+                  className="hover:bg-white/60 rounded-md p-1 transition-colors"
                 >
-                  <X style={{ width: '14px', height: '14px', color: '#868D9E' }} />
+                  <X style={{ width: '12px', height: '12px', color: '#868D9E' }} />
                 </button>
               )}
             </div>
@@ -132,27 +148,41 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
           {/* Configuration list */}
           <div
             className="flex-1 overflow-y-auto"
-            style={{ padding: '4px 16px 8px 16px' }}
+            style={{ padding: '6px 18px 10px 18px' }}
           >
             {filteredConfigs.length === 0 ? (
               <div
-                className="flex items-center justify-center"
+                className="flex flex-col items-center justify-center"
                 style={{
-                  padding: '32px 16px',
-                  color: '#7F7F7F',
-                  fontSize: '13px',
+                  padding: '36px 16px',
+                  gap: '8px',
                 }}
               >
-                {searchQuery ? 'No configurations match your search' : 'No configurations available'}
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    backgroundColor: '#F5F5F5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Search style={{ width: '16px', height: '16px', color: '#C2C9DB' }} />
+                </div>
+                <span style={{ fontSize: '13px', color: '#868D9E' }}>
+                  {searchQuery ? 'No configurations match your search' : 'No configurations available'}
+                </span>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {filteredConfigs.map((config) => (
-                  <ConfigItem
+                  <SelectorConfigItem
                     key={config.id}
                     config={config}
                     isSelected={selectedId === config.id}
-                    onSelect={() => setSelectedId(selectedId === config.id ? null : config.id)}
+                    onSelect={() => setSelectedId(config.id)}
                   />
                 ))}
               </div>
@@ -163,17 +193,17 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
           <div
             className="flex items-center justify-end shrink-0"
             style={{
-              padding: '12px 16px',
+              padding: '14px 18px',
               borderTop: '1px solid #E9E9E9',
               gap: '10px',
             }}
           >
             <button
               onClick={onClose}
-              className="hover:bg-gray-100 transition-colors"
+              className="hover:bg-[#F5F5F5] active:scale-[0.97] transition-all"
               style={{
-                padding: '8px 20px',
-                borderRadius: '20px',
+                padding: '9px 22px',
+                borderRadius: '10px',
                 fontSize: '13px',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: '#36415D',
@@ -186,17 +216,17 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
             <button
               onClick={handleOpen}
               disabled={!selectedId}
-              className="transition-all"
+              className="active:scale-[0.97] transition-all"
               style={{
-                padding: '8px 24px',
-                borderRadius: '20px',
+                padding: '9px 28px',
+                borderRadius: '10px',
                 fontSize: '13px',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'white',
-                backgroundColor: selectedId ? '#2F80ED' : '#C2C9DB',
+                backgroundColor: '#2F80ED',
                 border: 'none',
-                cursor: selectedId ? 'pointer' : 'not-allowed',
-                opacity: selectedId ? 1 : 0.7,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(47,128,237,0.25)',
               }}
             >
               Open
@@ -208,7 +238,7 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
   );
 }
 
-function ConfigItem({
+function SelectorConfigItem({
   config,
   isSelected,
   onSelect,
@@ -220,30 +250,31 @@ function ConfigItem({
   return (
     <button
       onClick={onSelect}
-      className="w-full text-left transition-all"
+      className="w-full text-left transition-all hover:shadow-[0_1px_6px_rgba(0,0,0,0.06)]"
       style={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: '10px',
-        padding: '10px 12px',
-        borderRadius: '8px',
-        border: isSelected ? '2px solid #8404B3' : '1px solid #E9E9E9',
-        backgroundColor: isSelected ? '#F3E8FA' : '#FFFFFF',
+        gap: '12px',
+        padding: '12px 14px',
+        borderRadius: '10px',
+        border: isSelected ? '2px solid #2F80ED' : '1px solid #E9E9E9',
+        backgroundColor: isSelected ? 'rgba(47, 128, 237, 0.04)' : '#FFFFFF',
         cursor: 'pointer',
       }}
     >
       {/* Radio circle */}
       <div
-        className="shrink-0"
+        className="shrink-0 transition-all"
         style={{
           width: '18px',
           height: '18px',
           borderRadius: '50%',
-          border: isSelected ? '2px solid #8404B3' : '2px solid #C2C9DB',
+          border: isSelected ? '2px solid #2F80ED' : '2px solid #C2C9DB',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginTop: '2px',
+          boxShadow: isSelected ? '0 0 0 3px rgba(47,128,237,0.1)' : undefined,
         }}
       >
         {isSelected && (
@@ -252,7 +283,7 @@ function ConfigItem({
               width: '10px',
               height: '10px',
               borderRadius: '50%',
-              backgroundColor: '#8404B3',
+              backgroundColor: '#2F80ED',
             }}
           />
         )}
@@ -266,7 +297,7 @@ function ConfigItem({
             style={{
               fontSize: '14px',
               fontWeight: 'var(--font-weight-bold)',
-              color: '#36415D',
+              color: isSelected ? '#2F80ED' : '#36415D',
             }}
           >
             {config.name}
@@ -276,11 +307,12 @@ function ConfigItem({
               style={{
                 fontSize: '10px',
                 fontWeight: 'var(--font-weight-semibold)',
-                color: '#8404B3',
-                backgroundColor: 'rgba(132,4,179,0.1)',
-                padding: '1px 6px',
-                borderRadius: '4px',
+                color: '#2F80ED',
+                backgroundColor: 'rgba(47, 128, 237, 0.08)',
+                padding: '2px 7px',
+                borderRadius: '99px',
                 whiteSpace: 'nowrap',
+                letterSpacing: '0.2px',
               }}
             >
               Default
@@ -292,8 +324,8 @@ function ConfigItem({
           style={{
             fontSize: '12px',
             color: '#868D9E',
-            margin: '2px 0 6px 0',
-            lineHeight: '1.4',
+            margin: '3px 0 8px 0',
+            lineHeight: '1.5',
           }}
         >
           {config.description}
@@ -305,11 +337,12 @@ function ConfigItem({
               key={tag}
               style={{
                 fontSize: '10px',
-                color: '#868D9E',
-                backgroundColor: '#F5F5F5',
+                fontWeight: 500,
+                color: isSelected ? '#2F80ED' : '#868D9E',
+                backgroundColor: isSelected ? 'rgba(47,128,237,0.06)' : '#F5F5F5',
                 padding: '2px 8px',
-                borderRadius: '10px',
-                border: '1px solid #E9E9E9',
+                borderRadius: '99px',
+                border: `1px solid ${isSelected ? 'rgba(47,128,237,0.12)' : '#E9E9E9'}`,
               }}
             >
               {tag}

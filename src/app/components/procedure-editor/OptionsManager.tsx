@@ -1,5 +1,6 @@
 import { X, Plus, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useAppPopup } from '../../contexts/AppPopupContext';
 
 interface StepAction {
   label: string;
@@ -17,6 +18,7 @@ interface OptionsManagerProps {
 const MAX_OPTION_LENGTH = 100;
 
 export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAction, onClose }: OptionsManagerProps) {
+  const { confirm: appConfirm } = useAppPopup();
   const [newAction, setNewAction] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
@@ -268,11 +270,11 @@ export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAct
                         <Edit2 className="size-4" />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Delete option \"${action.label}\"?`)) {
-                            onRemoveAction(index);
-                            setError(null);
-                          }
+                        onClick={async () => {
+                          const ok = await appConfirm(`Delete option "${action.label}"?`, { title: 'Delete Option', variant: 'warning', destructive: true });
+                          if (!ok) return;
+                          onRemoveAction(index);
+                          setError(null);
                         }}
                         className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label={`Delete option ${index + 1}`}

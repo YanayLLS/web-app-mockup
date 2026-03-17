@@ -33,11 +33,11 @@ export const MOCK_CONFIGURATIONS: Configuration[] = [
   {
     id: 'config-default',
     name: 'Default Configuration',
-    description: 'The base configuration representing the default state of the digital twin. All parts are visible in their original positions.',
+    description: 'The base configuration, always pre-selected when opening a digital twin. Content creators can customize which parts are visible in the default state.',
     tags: ['default', 'base'],
     isEnabled: true,
     isDefault: true,
-    isReadOnly: true,
+    isReadOnly: false,
     lastUpdated: '2026-03-10T14:30:00Z',
     sortOrder: 0,
     permittedRoles: ['guest', 'operator', 'operator-mr', 'field-service-engineer', 'service-support-expert', 'instructor', 'service-support-manager', 'content-creator', 'admin'],

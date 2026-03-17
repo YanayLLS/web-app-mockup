@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X, Globe, ChevronDown, Play, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRole, hasAccess } from '../../../contexts/RoleContext';
 import { AppConfigurationSelector } from './AppConfigurationSelector';
+import { MOCK_CONFIGURATIONS } from '../../../data/configurationsData';
 
 interface ProcedureInfo {
   id: string;
@@ -30,9 +31,19 @@ export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoMo
   const { currentRole } = useRole();
   const isContentCreator = hasAccess(currentRole, 'projects-edit');
   const [showConfigSelector, setShowConfigSelector] = useState(false);
-  const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
+
+  // Auto-select default configuration — no "None" option
+  const defaultConfig = useMemo(() => {
+    const accessible = MOCK_CONFIGURATIONS.filter(
+      (c) => c.isEnabled && c.permittedRoles.includes(currentRole)
+    );
+    return accessible.find((c) => c.isDefault) ?? accessible[0] ?? null;
+  }, [currentRole]);
+  const [selectedConfigId, setSelectedConfigId] = useState<string | null>(
+    procedure.configurationName ? null : (defaultConfig?.id ?? null)
+  );
   const [selectedConfigName, setSelectedConfigName] = useState<string | null>(
-    procedure.configurationName || null
+    procedure.configurationName || defaultConfig?.name || null
   );
 
   const handleRunIn3D = () => {
@@ -147,52 +158,59 @@ export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoMo
           )}
 
           {/* Digital twin / Configuration / Mode rows */}
-          <div className="flex flex-col w-full" style={{ gap: '8px', marginBottom: '16px' }}>
+          <div
+            className="flex flex-col w-full"
+            style={{
+              gap: '6px',
+              marginBottom: '16px',
+              padding: '12px 14px',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              border: '1px solid #E9E9E9',
+            }}
+          >
             {/* Digital twin row */}
-            <div className="flex items-center" style={{ gap: '8px' }}>
-              <span className="shrink-0" style={{ width: '90px', fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
+            <div className="flex items-center" style={{ gap: '8px', minHeight: '32px' }}>
+              <span className="shrink-0" style={{ width: '94px', fontSize: '12px', fontWeight: 'var(--font-weight-semibold)', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                 Digital twin
               </span>
-              <div
-                className="flex-1 flex items-center min-w-0"
-                style={{ padding: '8px 12px', borderRadius: '10px' }}
-              >
-                <span className="truncate" style={{ fontSize: '13px', color: '#36415D' }}>
-                  {procedure.digitalTwinName || 'Digital Twin Name'}
-                </span>
-              </div>
+              <span className="truncate flex-1" style={{ fontSize: '13px', color: '#36415D', fontWeight: 'var(--font-weight-medium)' }}>
+                {procedure.digitalTwinName || 'Digital Twin Name'}
+              </span>
             </div>
 
+            <div style={{ height: '1px', backgroundColor: '#F5F5F5' }} />
+
             {/* Configuration row */}
-            <div className="flex items-center" style={{ gap: '8px' }}>
-              <span className="shrink-0" style={{ width: '90px', fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
+            <div className="flex items-center" style={{ gap: '8px', minHeight: '32px' }}>
+              <span className="shrink-0" style={{ width: '94px', fontSize: '12px', fontWeight: 'var(--font-weight-semibold)', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                 Configuration
               </span>
               <button
                 onClick={() => setShowConfigSelector(true)}
-                className="flex-1 flex items-center justify-between hover:bg-white/50 transition-colors min-w-0"
-                style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #C2C9DB' }}
+                className="flex-1 flex items-center justify-between hover:bg-[rgba(47,128,237,0.04)] active:scale-[0.99] transition-all min-w-0"
+                style={{ padding: '5px 10px', borderRadius: '8px', border: '1px solid rgba(47,128,237,0.2)' }}
               >
-                <span className="truncate" style={{ fontSize: '13px', color: selectedConfigName ? '#36415D' : '#868D9E' }}>
-                  {selectedConfigName || 'Select a configuration'}
-                </span>
-                <ChevronDown style={{ width: '14px', height: '14px', color: '#868D9E', flexShrink: 0 }} />
+                <div className="flex items-center gap-2 min-w-0">
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2F80ED', flexShrink: 0 }} />
+                  <span className="truncate" style={{ fontSize: '13px', color: '#2F80ED', fontWeight: 'var(--font-weight-semibold)' }}>
+                    {selectedConfigName}
+                  </span>
+                </div>
+                <ChevronDown style={{ width: '14px', height: '14px', color: '#2F80ED', flexShrink: 0, opacity: 0.5 }} />
               </button>
             </div>
 
+            <div style={{ height: '1px', backgroundColor: '#F5F5F5' }} />
+
             {/* Mode row */}
-            <div className="flex items-center" style={{ gap: '8px' }}>
-              <span className="shrink-0" style={{ width: '90px', fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>
+            <div className="flex items-center" style={{ gap: '8px', minHeight: '32px' }}>
+              <span className="shrink-0" style={{ width: '94px', fontSize: '12px', fontWeight: 'var(--font-weight-semibold)', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                 Mode
               </span>
-              <div
-                className="flex-1 flex items-center min-w-0"
-                style={{ padding: '8px 12px', borderRadius: '10px' }}
-              >
-                <span className="truncate" style={{ fontSize: '13px', color: '#36415D' }}>
-                  {procedure.modeName || '3D mode name'}
-                </span>
-              </div>
+              <span className="truncate flex-1" style={{ fontSize: '13px', color: '#36415D', fontWeight: 'var(--font-weight-medium)' }}>
+                {procedure.modeName || '3D mode name'}
+              </span>
             </div>
           </div>
 

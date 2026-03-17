@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, ChevronDown, Save, Plus, Search, ChevronLeft, RefreshCw, Settings, Info } from 'lucide-react';
 import { PermissionsModal } from './PermissionsModal';
+import { useAppPopup } from '../../../../contexts/AppPopupContext';
 
 interface RolesSelectionContextMenuProps {
   currentRoles: {
@@ -235,6 +236,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
   const [templates, setTemplates] = useState<RoleTemplate[]>(defaultTemplates);
   const [templateSearchQuery, setTemplateSearchQuery] = useState('');
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const { confirm: appConfirm } = useAppPopup();
 
   // Get combined permissions from all three role categories
   const getCombinedPermissions = () => {
@@ -283,8 +285,9 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
     }
   };
 
-  const handleDeleteTemplate = (templateId: string) => {
-    if (confirm('Are you sure you want to delete this template?')) {
+  const handleDeleteTemplate = async (templateId: string) => {
+    const ok = await appConfirm('Are you sure you want to delete this template?', { title: 'Delete Template', variant: 'warning', destructive: true });
+    if (ok) {
       setTemplates(templates.filter(t => t.id !== templateId));
     }
   };

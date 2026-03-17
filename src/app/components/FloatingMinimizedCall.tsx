@@ -1,10 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mic, MicOff, Video, VideoOff, Phone, Maximize2, Minimize2 } from 'lucide-react';
 import { useActiveCall } from '../contexts/ActiveCallContext';
+import { useAppPopup } from '../contexts/AppPopupContext';
 import { useState, useEffect, useRef } from 'react';
 
 export function FloatingMinimizedCall() {
   const { activeCall, updateCallState, isCallMinimized, setIsCallMinimized } = useActiveCall();
+  const { confirm } = useAppPopup();
   const navigate = useNavigate();
   const location = useLocation();
   const [callDuration, setCallDuration] = useState('0:00');
@@ -48,9 +50,10 @@ export function FloatingMinimizedCall() {
     navigate('/web/remote-support');
   };
   
-  const handleEndCall = () => {
+  const handleEndCall = async () => {
     // This would normally end the call - for demo, just clear the active call
-    if (window.confirm('Are you sure you want to end the call?')) {
+    const ok = await confirm('Are you sure you want to end the call?', { title: 'End Call', variant: 'warning', destructive: true });
+    if (ok) {
       updateCallState({ isAudioEnabled: false, isVideoEnabled: false });
       setIsCallMinimized(false);
       navigate('/web/remote-support');

@@ -5,7 +5,7 @@ import { MemberAvatar } from '../../MemberAvatar';
 
 const allParticipants = [
   { id: '1', name: 'Luy Robin', role: 'Field Engineer', avatar: 'LR', color: '#2F80ED', added: true },
-  { id: '2', name: 'David Amrosa', role: 'Service Support Expert', avatar: 'DA', color: '#8404B3', added: true },
+  { id: '2', name: 'David Amrosa', role: 'Service Support Expert', avatar: 'DA', color: '#2F80ED', added: true },
   { id: '3', name: 'Nika Jerrardo', role: 'Instructor', avatar: 'NJ', color: '#11E874', added: true },
   { id: '4', name: 'Jared Sunn', role: 'Operator', avatar: 'JS', color: '#FF6B35', added: false },
   { id: '5', name: 'Sarah Chen', role: 'Admin', avatar: 'SC', color: '#E91E63', added: false },

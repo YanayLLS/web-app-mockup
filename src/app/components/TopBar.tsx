@@ -8,6 +8,7 @@ import { useRole, ROLES, UserRole, hasAccess } from '../contexts/RoleContext';
 import { getUrlParam, setUrlParam } from '../utils/urlParams';
 import { ChevronDown, Search, Settings as SettingsIcon } from 'lucide-react';
 import { useClickOutside } from '../hooks/useClickOutside';
+import { toast } from 'sonner';
 
 interface TopBarProps {
   isChatOpen: boolean;
@@ -43,7 +44,7 @@ function IconAi() {
       </g>
       <defs>
         <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_ai" x1="8.91572" x2="8.91572" y1="1.89954" y2="16.3207">
-          <stop stopColor="#5B19B4" />
+          <stop stopColor="#2F80ED" />
           <stop offset="1" stopColor="#004FFF" />
         </linearGradient>
       </defs>
@@ -742,7 +743,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                 </button>
                 <button
                   onClick={() => {
-                    alert('Settings saved!');
+                    toast.success('Settings saved!');
                     setShowAccountSettings(false);
                   }}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] text-sm hover:opacity-90 transition-opacity"

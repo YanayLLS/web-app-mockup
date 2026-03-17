@@ -9,6 +9,7 @@ import { getSmartAIResponse, streamResponse, ProjectInfo } from '../utils/aiResp
 import { useProject } from '../contexts/ProjectContext';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { useRole, hasAccess } from '../contexts/RoleContext';
+import { useAppPopup } from '../contexts/AppPopupContext';
 
 function IconClose() {
   return (
@@ -190,6 +191,7 @@ export function AIChatView({
 }: AIChatViewProps) {
   const { currentRole } = useRole();
   const canAccessChat = hasAccess(currentRole, 'ai-chat');
+  const { alert: appAlert } = useAppPopup();
   const isMobile = useIsMobile();
   const { projects: rawProjects } = useProject();
   const [chatMessage, setChatMessage] = useState('');
@@ -802,7 +804,7 @@ export function AIChatView({
         stream.getTracks().forEach(track => track.stop());
       } catch (err) {
         console.error('Microphone access denied:', err);
-        alert('Microphone access is required for voice recording.');
+        appAlert('Microphone access is required for voice recording.', { title: 'Microphone Required', variant: 'error' });
       }
     }
   };

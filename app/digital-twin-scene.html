@@ -443,286 +443,629 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 }
 
 /* ===== CONFIGURATIONS TAB ===== */
-#tabConfigurations { gap:8px; }
-#tabConfigurations .config-header { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-#tabConfigurations .config-header svg { width:16px; height:16px; fill:#2f80ed; flex-shrink:0; }
-#tabConfigurations .config-header-title { font-size:15px; font-weight:600; color:#36415d; }
+#tabConfigurations { gap:10px; }
+#tabConfigurations .config-header {
+  display:flex; align-items:center; gap:8px; flex-shrink:0;
+  padding-bottom:8px; border-bottom:1px solid #e9e9e9; margin-bottom:-2px;
+}
+#tabConfigurations .config-header svg {
+  width:14px; height:14px; fill:#2f80ed; flex-shrink:0;
+  padding:5px; background:rgba(47,128,237,0.06); border-radius:8px;
+  box-sizing:content-box;
+}
+#tabConfigurations .config-header-title { font-size:14px; font-weight:700; color:#36415d; }
 #tabConfigurations .config-count-badge {
-  font-size:11px; color:#868d9e; background:#e9e9e9; padding:1px 7px; border-radius:99px; line-height:16px;
+  font-size:10px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08); padding:2px 8px; border-radius:99px; line-height:14px;
 }
 
 /* Config toolbar row (search + new folder + create) */
-.config-toolbar { display:flex; gap:6px; align-items:center; flex-shrink:0; }
+.config-toolbar { display:flex; gap:6px; align-items:center; flex-shrink:0; padding-bottom:2px; }
 .config-search { position:relative; flex:1; min-width:0; }
-.config-search svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; fill:#868d9e; }
+.config-search svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; fill:#c2c9db; transition:fill 0.15s; }
+.config-search:focus-within svg { fill:#2f80ed; }
 .config-search input {
-  width:100%; height:34px; background:#fff; border:1px solid #c2c9db; border-radius:8px;
-  padding:6px 10px 6px 30px; font-family:inherit; font-size:13px; color:#36415d; outline:none; box-sizing:border-box;
+  width:100%; height:36px; background:#f5f5f5; border:1px solid #e9e9e9; border-radius:10px;
+  padding:6px 10px 6px 32px; font-family:inherit; font-size:12px; color:#36415d; outline:none; box-sizing:border-box;
 }
+.config-search input::placeholder { color:#c2c9db; }
+.config-search input:focus { background:#fff; border-color:#2e80ed; }
+.config-search-clear {
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  width:20px; height:20px; border:none; background:none; cursor:pointer;
+  font-size:16px; line-height:1; color:#c2c9db; border-radius:50%;
+  display:none; align-items:center; justify-content:center;
+  transition:all 0.1s;
+}
+.config-search-clear:hover { color:#36415d; background:#e9e9e9; }
+.config-search.has-value .config-search-clear { display:flex; }
+.config-search.has-value input { padding-right:32px; }
 .config-search input:focus { border-color:#2e80ed; }
 .config-newfolder-btn {
   width:36px; min-width:36px; height:36px; background:#fff; border:1px solid #c2c9db; border-radius:8px;
   cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0;
+  transition:all 0.15s;
 }
-.config-newfolder-btn:hover { background:rgba(233,233,233,0.6); border-color:#2f80ed; }
+.config-newfolder-btn:hover { background:rgba(233,233,233,0.5); border-color:#2f80ed; }
+.config-newfolder-btn:active { transform:scale(0.95); }
 .config-newfolder-btn svg { width:16px; height:16px; fill:#868d9e; }
+.config-search input { transition:border-color 0.15s, box-shadow 0.15s; }
+.config-search input:focus { box-shadow:0 0 0 2px rgba(46,128,237,0.12); }
 .config-create-btn {
   width:36px; min-width:36px; height:36px; background:#2f80ed; color:#fff; border:none; border-radius:8px;
   font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:6px; flex-shrink:0;
+  transition:all 0.15s; box-shadow:0 1px 4px rgba(47,128,237,0.2);
 }
-.config-create-btn:hover { background:#5999f1; }
+.config-create-btn:hover { background:#5999f1; box-shadow:0 2px 8px rgba(47,128,237,0.3); }
+.config-create-btn:active { transform:scale(0.95); }
+.config-create-btn:focus-visible { outline:2px solid #2f80ed; outline-offset:2px; }
+.config-setview-btn:focus-visible { outline:2px solid #fff; outline-offset:-3px; }
+.config-hero-action:focus-visible { outline:2px solid #2f80ed; outline-offset:1px; }
 .config-create-btn svg { width:14px; height:14px; fill:#fff; }
 .config-create-wrapper { position:relative; flex-shrink:0; }
 .config-create-dropdown {
-  display:none; position:absolute; top:calc(100% + 4px); right:0; z-index:200;
-  background:#fff; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.13);
-  min-width:180px; padding:4px 0; border:1px solid #e9e9e9;
+  display:none; position:absolute; top:calc(100% + 6px); right:0; z-index:200;
+  background:#fff; border-radius:10px; box-shadow:0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  min-width:190px; padding:4px; border:1px solid #e9e9e9;
 }
 .config-create-dropdown.show { display:block; }
 .config-create-dropdown-item {
-  display:flex; align-items:center; gap:8px; width:100%; padding:8px 14px;
-  border:none; background:none; cursor:pointer; font-family:inherit; font-size:13px;
-  color:#36415d; text-align:left; transition:background .15s;
+  display:flex; align-items:center; gap:10px; width:100%; padding:8px 12px;
+  border:none; background:none; cursor:pointer; font-family:inherit; font-size:12px;
+  color:#36415d; text-align:left; transition:background .1s; border-radius:6px; min-height:32px;
 }
-.config-create-dropdown-item:hover { background:rgba(233,233,233,0.6); }
+.config-create-dropdown-item:hover { background:#f5f5f5; }
 .config-create-dropdown-item svg { width:14px; height:14px; fill:#868d9e; flex-shrink:0; }
 
 /* Config list */
-.config-list { display:flex; flex-direction:column; gap:2px; flex:1; overflow-y:auto; min-height:0; }
+.config-list { display:flex; flex-direction:column; gap:2px; flex:1; overflow-y:auto; min-height:0; padding:0 4px; }
+.config-list::-webkit-scrollbar { width:3px; }
+.config-list::-webkit-scrollbar-track { background:transparent; }
+.config-list::-webkit-scrollbar-thumb { background:#e9e9e9; border-radius:2px; }
+.config-list::-webkit-scrollbar-thumb:hover { background:#c2c9db; }
 
 /* Config & folder items — unified */
 .config-item {
-  display:flex; align-items:center; gap:8px; padding:0 10px; height:36px; border-radius:6px;
-  cursor:pointer; position:relative; user-select:none; transition:background .15s;
+  display:flex; align-items:flex-start; gap:8px; padding:6px 10px; min-height:34px; border-radius:8px;
+  cursor:pointer; position:relative; user-select:none; transition:all .15s;
   border-left:3px solid transparent;
 }
-.config-item:hover { background:rgba(233,233,233,0.6); }
-.config-item.active { background:#d9e0f0; border-left:3px solid #2f80ed; }
-.config-item.cfg-selected { background:#d9e0f0; outline:2px solid #2f80ed; outline-offset:-2px; }
+.config-item[data-config-type="folder"] { align-items:center; }
+.config-item:hover { background:rgba(233,233,233,0.35); }
+.config-item:focus-visible { outline:2px solid #2f80ed; outline-offset:-1px; border-radius:8px; }
+.config-item.active { background:rgba(47,128,237,0.08); border-left:3px solid #2f80ed; }
+.config-item.cfg-selected { background:rgba(47,128,237,0.06); outline:2px solid rgba(47,128,237,0.4); outline-offset:-2px; }
 .config-item.cfg-dragging { opacity:0.4; }
+.config-item.cfg-new {
+  animation:cfgItemNew 0.3s ease;
+}
+@keyframes cfgItemNew {
+  from { opacity:0; transform:translateX(-8px); background:rgba(47,128,237,0.1); }
+  to { opacity:1; transform:translateX(0); background:transparent; }
+}
 
 /* Drag-and-drop indicators */
+.config-item.cfg-dragging {
+  opacity:0.4; transform:scale(0.98); transition:opacity 0.15s, transform 0.15s;
+}
 .config-drop-before { position:relative; }
-.config-drop-before::before { content:''; position:absolute; top:-1px; left:0; right:0; height:2px; background:#2f80ed; border-radius:1px; z-index:10; pointer-events:none; }
+.config-drop-before::before {
+  content:''; position:absolute; top:-1px; left:8px; right:8px; height:2px;
+  background:linear-gradient(90deg, transparent, #2f80ed 20%, #2f80ed 80%, transparent);
+  border-radius:1px; z-index:10; pointer-events:none;
+  animation:cfgDropLine 0.3s ease;
+}
 .config-drop-after { position:relative; }
-.config-drop-after::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#2f80ed; border-radius:1px; z-index:10; pointer-events:none; }
-.config-drop-inside { outline:2px solid #2f80ed; outline-offset:-2px; border-radius:6px; }
+.config-drop-after::after {
+  content:''; position:absolute; bottom:-1px; left:8px; right:8px; height:2px;
+  background:linear-gradient(90deg, transparent, #2f80ed 20%, #2f80ed 80%, transparent);
+  border-radius:1px; z-index:10; pointer-events:none;
+  animation:cfgDropLine 0.3s ease;
+}
+.config-drop-inside {
+  outline:2px solid #2f80ed; outline-offset:-2px; border-radius:8px;
+  background:rgba(47,128,237,0.04) !important;
+}
+@keyframes cfgDropLine {
+  from { opacity:0; transform:scaleX(0.3); }
+  to { opacity:1; transform:scaleX(1); }
+}
 
 /* Folder chevron */
 .config-folder-chevron {
-  width:12px; height:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  width:16px; height:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
   cursor:pointer; border:none; background:none; padding:0; border-radius:4px;
+  transition:transform 0.15s;
 }
-.config-folder-chevron:hover { background:rgba(0,0,0,0.06); }
-.config-folder-chevron svg { width:12px; height:12px; fill:#36415d; }
+.config-folder-chevron:hover { background:rgba(0,0,0,0.05); }
+.config-folder-chevron svg { width:12px; height:12px; fill:#868d9e; transition:fill 0.15s; }
+.config-item.folder-expanded .config-folder-chevron svg { fill:#2f80ed; }
 /* Folder icon */
 .config-folder-icon { width:18px; height:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.config-folder-icon svg { width:18px; height:18px; fill:#868d9e; }
+.config-folder-icon svg { width:18px; height:18px; fill:#868d9e; transition:fill 0.15s; }
+.config-item.folder-expanded .config-folder-icon svg { fill:#2f80ed; }
+.config-item.folder-expanded { background:rgba(47,128,237,0.03); }
 .config-folder-name {
-  flex:1; font-size:13px; font-weight:600; color:#36415d; overflow:hidden;
+  flex:1; font-size:11px; font-weight:600; color:#36415d; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; min-width:0;
+  text-transform:uppercase; letter-spacing:0.3px;
 }
 .config-folder-count {
-  font-size:10px; color:#868d9e; background:#e9e9e9; padding:1px 6px; border-radius:99px;
-  line-height:16px; flex-shrink:0; font-weight:500;
+  font-size:10px; font-weight:600; color:#868d9e; background:#e9e9e9; padding:1px 6px; border-radius:99px;
+  line-height:14px; flex-shrink:0;
 }
 
 /* Config item inner */
-.config-item-row { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+.config-item-row { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
+.config-item-content { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.config-item-top { display:flex; align-items:center; gap:6px; min-width:0; }
+.config-item-meta { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.config-item-tag {
+  font-size:9px; font-weight:500; color:#868d9e; background:#f0f0f3;
+  padding:1px 6px; border-radius:99px; line-height:14px; white-space:nowrap;
+}
+.config-item-tag-more { color:#2f80ed; background:rgba(47,128,237,0.06); }
+.config-item-overrides {
+  font-size:9px; font-weight:600; white-space:nowrap;
+  padding:1px 6px; border-radius:99px; line-height:14px;
+  background:rgba(47,128,237,0.06); color:#2f80ed;
+}
+.config-list-separator {
+  height:1px; margin:4px 8px;
+  background:linear-gradient(90deg, transparent 0%, #e9e9e9 20%, #e9e9e9 80%, transparent 100%);
+}
+/* Indented items inside folders - subtle left line */
+.config-item[data-config-depth="1"] { border-left:2px solid #e9e9e9 !important; }
+.config-item[data-config-depth="1"].active { border-left:2px solid #2f80ed !important; }
+.config-item[data-config-depth="1"]:hover { border-left-color:#c2c9db !important; }
+/* Config item description tooltip on hover */
+.config-item[data-config-type="config"]:not(.active)::after {
+  content:attr(data-desc);
+  display:none; position:absolute; left:8px; right:8px; top:calc(100% + 4px);
+  max-width:none; padding:8px 10px;
+  font-size:11px; color:#fff; background:#36415d; border-radius:8px;
+  line-height:1.4; white-space:normal; z-index:100; pointer-events:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+.config-item[data-config-type="config"][data-desc]:not(.active):hover::after {
+  display:block; animation:cfgTooltipIn 0.15s ease;
+}
+@keyframes cfgTooltipIn {
+  from { opacity:0; transform:translateY(-2px); }
+  to { opacity:1; transform:translateY(0); }
+}
 .config-dot {
   width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  margin-top:5px;
 }
-.config-dot.enabled { background:#11e874; }
-.config-dot.disabled { background:#7f7f7f; }
-.config-dot.active-sel { background:#2f80ed; border:2px solid rgba(47,128,237,0.3); }
+.config-dot.enabled { background:#11e874; transition:box-shadow 0.15s; }
+.config-item:hover .config-dot.enabled { box-shadow:0 0 0 3px rgba(17,232,116,0.15); }
+.config-dot.disabled { background:#c2c9db; }
+.config-dot.active-sel { background:#2f80ed; box-shadow:0 0 0 3px rgba(47,128,237,0.15); animation:cfgDotPulse 2s ease-in-out infinite; }
+@keyframes cfgDotPulse {
+  0%, 100% { box-shadow:0 0 0 3px rgba(47,128,237,0.15); }
+  50% { box-shadow:0 0 0 5px rgba(47,128,237,0.08); }
+}
 .config-name {
-  flex:1; font-size:13px; font-weight:500; color:#36415d; overflow:hidden;
-  text-overflow:ellipsis; white-space:nowrap; min-width:0;
+  flex:1; font-size:12px; font-weight:500; color:#36415d; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; min-width:0; transition:color 0.1s;
 }
-.config-item.active .config-name { font-weight:600; }
-.config-name.cfg-disabled { color:#7f7f7f; }
+.config-item.active .config-name { font-weight:600; color:#2f80ed; }
+.config-name.cfg-disabled { color:#c2c9db; }
+.config-item[data-config-depth="0"] > .config-item-content > .config-item-top > .config-name { font-size:12px; }
+.config-item[data-config-depth="1"] > .config-item-content > .config-item-top > .config-name { font-size:11px; }
 .config-badge {
-  font-size:10px; font-weight:600; padding:2px 6px; border-radius:99px; line-height:14px; flex-shrink:0;
+  font-size:10px; font-weight:600; padding:2px 7px; border-radius:99px; line-height:14px; flex-shrink:0;
+  letter-spacing:0.2px;
 }
-.config-badge.default { color:#2f80ed; background:rgba(47,128,237,0.1); }
-.config-badge.readonly { color:#868d9e; font-weight:500; background:rgba(134,141,158,0.1); }
-.config-tags { display:flex; flex-wrap:wrap; gap:4px; padding-left:16px; margin-top:6px; }
+.config-badge.default { color:#2f80ed; background:rgba(47,128,237,0.08); }
+.config-badge.active-badge { color:#0a9e4a; background:rgba(17,232,116,0.1); }
+.config-badge.readonly { color:#868d9e; font-weight:500; background:rgba(134,141,158,0.08); }
+.config-tags { display:flex; flex-wrap:wrap; gap:4px; padding-left:18px; margin-top:4px; }
 .config-tag {
-  font-size:10px; font-weight:500; color:#868d9e; background:#e9e9e9;
-  padding:1px 6px; border-radius:99px; line-height:16px;
+  font-size:10px; font-weight:500; color:#868d9e; background:#f5f5f5;
+  padding:2px 8px; border-radius:99px; line-height:14px; border:1px solid #e9e9e9;
 }
-.config-toggle {
-  width:32px; height:18px; border-radius:99px; position:relative; cursor:pointer;
-  border:none; padding:0; flex-shrink:0; transition:background .2s;
-}
-.config-toggle.on { background:#2f80ed; }
-.config-toggle.off { background:#c2c9db; }
-.config-toggle-knob {
-  width:14px; height:14px; border-radius:50%; background:#fff;
-  position:absolute; top:2px; transition:left .2s;
-}
-.config-toggle.on .config-toggle-knob { left:16px; }
-.config-toggle.off .config-toggle-knob { left:2px; }
+/* (toggle CSS removed — enable/disable uses status pill click per feedback) */
 
 /* 3-dot context button on items */
 .config-ctx-btn {
-  width:22px; height:22px; border:none; background:transparent; cursor:pointer;
-  border-radius:4px; display:flex; align-items:center; justify-content:center;
+  width:24px; height:24px; border:none; background:transparent; cursor:pointer;
+  border-radius:6px; display:flex; align-items:center; justify-content:center;
   flex-shrink:0; opacity:0; transition:opacity .15s;
   color:#868d9e; font-size:16px; line-height:1; padding:0;
+  margin-top:1px; align-self:flex-start;
 }
 .config-item:hover .config-ctx-btn,
 .config-item .config-ctx-btn.open { opacity:1; }
-.config-ctx-btn:hover { background:rgba(47,128,237,0.08); color:#36415d; }
+.config-ctx-btn:hover { background:#e9e9e9; color:#36415d; border-radius:6px; }
 
 /* FIXED config context menu (like bookmarks) */
 .config-ctx-menu {
   position:fixed; z-index:1000; background:#fff; border-radius:10px;
-  box-shadow:1px 1px 10px rgba(0,0,0,0.15); min-width:180px;
-  padding:4px 0; display:none; flex-direction:column; font-family:inherit;
+  box-shadow:0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  border:1px solid #e9e9e9; min-width:180px;
+  padding:4px; display:none; flex-direction:column; font-family:inherit;
 }
 .config-ctx-menu.show { display:flex; }
 .config-ctx-menu-item {
-  display:flex; align-items:center; gap:8px; padding:7px 12px;
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
   font-size:12px; font-weight:500; color:#36415d; cursor:pointer;
   white-space:nowrap; border:none; background:none; width:100%;
-  font-family:inherit; text-align:left;
+  font-family:inherit; text-align:left; border-radius:6px;
+  transition:background 0.1s; min-height:32px;
 }
-.config-ctx-menu-item:hover { background:rgba(233,233,233,0.6); }
+.config-ctx-menu-item:hover { background:#f5f5f5; }
 .config-ctx-menu-item.danger { color:#ff1f1f; }
 .config-ctx-menu-item.danger:hover { background:rgba(255,31,31,0.06); }
 .config-ctx-menu-item svg { width:14px; height:14px; flex-shrink:0; }
-.config-ctx-sep { height:1px; background:#c2c9db; margin:4px 0; }
+.config-ctx-sep { height:1px; background:#e9e9e9; margin:3px 8px; }
 /* Submenu arrow + hover reveal */
 .config-ctx-submenu { position:relative; }
 .config-ctx-submenu > .config-ctx-menu-item::after { content:'\203A'; margin-left:auto; font-size:16px; line-height:1; }
 .config-ctx-submenu-list {
   position:absolute; left:100%; top:0; margin-left:-2px;
-  background:#fff; border-radius:10px; box-shadow:1px 1px 10px rgba(0,0,0,0.15);
-  min-width:160px; padding:4px 0; display:none; flex-direction:column;
+  background:#fff; border-radius:10px; box-shadow:0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  border:1px solid #e9e9e9; min-width:160px; padding:4px; display:none; flex-direction:column;
 }
 .config-ctx-submenu:hover > .config-ctx-submenu-list { display:flex; }
 
 /* Select bar at bottom */
 .config-select-bar {
-  padding:7px 12px; font-size:12px; color:#7f7f7f; text-align:center;
-  border-top:1px solid #c2c9db; flex-shrink:0; height:34px; box-sizing:border-box;
+  padding:8px 12px; font-size:12px; color:#c2c9db; text-align:center;
+  border-top:1px solid #e9e9e9; flex-shrink:0; min-height:36px; box-sizing:border-box;
 }
 .config-select-bar.active {
-  display:flex; align-items:center; justify-content:space-between; gap:8px; background:#f5f5f5;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  background:rgba(47,128,237,0.03); border-top-color:rgba(47,128,237,0.1);
+}
+.cfg-sel-count {
+  font-size:11px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08);
+  padding:2px 8px; border-radius:99px;
 }
 .cfg-sel-delete, .cfg-sel-cancel {
-  border:none; padding:4px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-family:inherit;
+  border:none; padding:5px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-family:inherit;
+  transition:all 0.15s; font-weight:500;
 }
-.cfg-sel-delete { background:#ff1f1f; color:#fff; }
+.cfg-sel-delete { background:#ff1f1f; color:#fff; box-shadow:0 1px 4px rgba(255,31,31,0.2); }
 .cfg-sel-delete:hover { background:#ff4c4c; }
-.cfg-sel-cancel { background:#e9e9e9; color:#36415d; }
-.cfg-sel-cancel:hover { background:#d9e0f0; }
+.cfg-sel-delete:active { transform:scale(0.97); }
+.cfg-sel-cancel { background:none; color:#868d9e; border:1px solid #c2c9db; }
+.cfg-sel-cancel:hover { background:#e9e9e9; }
 
 /* Folder name inline edit */
 .config-folder-name-input {
   flex:1; font-size:13px; font-weight:600; color:#36415d; background:#fff;
-  border:1px solid #2e80ed; border-radius:4px; padding:1px 4px; outline:none;
-  font-family:inherit; min-width:0;
+  border:1px solid #2e80ed; border-radius:6px; padding:2px 6px; outline:none;
+  font-family:inherit; min-width:0; box-shadow:0 0 0 2px rgba(46,128,237,0.12);
 }
 
 /* Config detail — fl-window overrides */
+#configDetailPanel .fl-header {
+  padding:10px 12px;
+  transition:border-color 0.2s;
+}
+#configDetailPanel .fl-header .fl-icon { fill:#2f80ed; opacity:1; }
+#configDetailPanel .fl-header .fl-title { font-weight:700; }
+/* Mode-specific header accents */
+#configDetailPanel.cfg-mode-default .fl-header { border-bottom:2px solid rgba(47,128,237,0.3); }
+#configDetailPanel.cfg-mode-enabled .fl-header { border-bottom:2px solid rgba(17,232,116,0.3); }
+#configDetailPanel.cfg-mode-disabled .fl-header { border-bottom:2px solid rgba(127,127,127,0.2); }
 #configDetailPanel .fl-body {
-  padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px;
+  padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px;
+  position:relative;
 }
-#configDetailPanel .fl-body label { font-size:11px; font-weight:600; color:#868d9e; display:block; margin-bottom:4px; }
-/* (section headers removed — compact layout) */
-.config-status-bar {
-  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
-  background:rgba(47,128,237,0.06); border:1px solid rgba(47,128,237,0.15);
+#configDetailPanel .fl-body::-webkit-scrollbar { width:3px; }
+#configDetailPanel .fl-body::-webkit-scrollbar-track { background:transparent; }
+#configDetailPanel .fl-body::-webkit-scrollbar-thumb { background:#e9e9e9; border-radius:2px; }
+#configDetailPanel .fl-body::-webkit-scrollbar-thumb:hover { background:#c2c9db; }
+#configDetailPanel .fl-body > * {
+  animation:cfgDetailFadeIn 0.2s ease;
 }
-.config-status-bar.disabled-bar { background:rgba(127,127,127,0.06); border-color:rgba(127,127,127,0.2); }
+@keyframes cfgDetailFadeIn {
+  from { opacity:0; transform:translateY(4px); }
+  to { opacity:1; transform:translateY(0); }
+}
+/* Scroll shadow at top of detail body */
+#configDetailPanel .fl-body.scrolled::before {
+  content:''; position:sticky; top:0; left:0; right:0; display:block;
+  height:0; margin:-14px -16px 0; padding:0;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  z-index:2; pointer-events:none;
+}
+/* Bottom fade when scrollable */
+#configDetailPanel .fl-body::after {
+  content:''; position:sticky; bottom:0; left:0; right:0; display:block;
+  height:16px; margin:0 -16px -16px; pointer-events:none;
+  background:linear-gradient(to top, #fff 0%, transparent 100%);
+  z-index:2; flex-shrink:0;
+}
+/* Hide bottom fade when fully scrolled to bottom */
+#configDetailPanel .fl-body.scrolled-bottom::after { opacity:0; transition:opacity 0.15s; }
+#configDetailPanel .fl-body label { font-size:11px; font-weight:600; color:#868d9e; display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.3px; }
+.config-hero {
+  display:flex; flex-direction:column; gap:6px; padding:12px 14px; border-radius:12px;
+  background:linear-gradient(135deg, rgba(47,128,237,0.05) 0%, rgba(47,128,237,0.02) 100%);
+  border:1px solid rgba(47,128,237,0.1);
+  border-left:3px solid #2f80ed;
+  transition:border-color 0.2s, background 0.2s;
+}
+.config-hero.disabled-bar {
+  background:linear-gradient(135deg, rgba(127,127,127,0.04) 0%, rgba(127,127,127,0.02) 100%);
+  border-color:rgba(127,127,127,0.12); border-left-color:#c2c9db;
+}
+.config-hero-dot {
+  width:10px; height:10px; border-radius:50%; flex-shrink:0;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.config-hero-top { display:flex; align-items:center; gap:8px; }
+.config-hero-name {
+  flex:1; font-size:15px; font-weight:700; color:#36415d;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;
+  transition:color 0.15s;
+}
+.config-hero-actions {
+  display:flex; gap:4px; margin-top:2px;
+}
+.config-hero-action {
+  display:flex; align-items:center; gap:4px; padding:3px 10px;
+  font-size:10px; font-weight:500; color:#868d9e;
+  background:none; border:1px solid rgba(134,141,158,0.2); border-radius:6px;
+  cursor:pointer; font-family:inherit; transition:all 0.15s;
+  white-space:nowrap;
+}
+.config-hero-action:hover { color:#2f80ed; border-color:rgba(47,128,237,0.3); background:rgba(47,128,237,0.04); }
+.config-hero-action:active { transform:scale(0.97); }
 .config-status-pill {
-  font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; line-height:14px;
-  border:none; font-family:inherit;
+  font-size:10px; font-weight:700; padding:3px 10px; border-radius:99px; line-height:14px;
+  border:none; font-family:inherit; letter-spacing:0.3px;
 }
-.config-status-pill.clickable { cursor:pointer; transition:opacity 0.15s; }
-.config-status-pill.clickable:hover { opacity:0.75; }
+.config-status-pill.clickable { cursor:pointer; transition:all 0.15s; }
+.config-status-pill.clickable:hover { opacity:0.75; transform:scale(0.97); }
 .config-status-pill.enabled { background:rgba(17,232,116,0.15); color:#0a9e4a; }
 .config-status-pill.disabled { background:rgba(127,127,127,0.12); color:#7f7f7f; }
-.config-status-pill.readonly { background:rgba(47,128,237,0.1); color:#2f80ed; }
-.config-status-summary { font-size:11px; color:#868d9e; line-height:1.3; }
+.config-status-pill.readonly { background:rgba(47,128,237,0.08); color:#2f80ed; }
+.config-status-summary { font-size:11px; color:#868d9e; line-height:1.4; }
 .config-perm-select-all {
   font-size:11px; color:#2f80ed; cursor:pointer; background:none; border:none;
-  font-family:inherit; padding:0; margin-bottom:4px;
+  font-family:inherit; padding:2px 6px; border-radius:4px; transition:all 0.15s;
+  font-weight:500;
 }
-.config-perm-select-all:hover { text-decoration:underline; }
+.config-perm-select-all:hover { background:rgba(47,128,237,0.06); }
 #configDetailPanel .fl-body input[type="text"], #configDetailPanel .fl-body textarea {
   width:100%; background:#fff; border:1px solid #c2c9db; border-radius:8px;
-  padding:8px 12px; font-family:inherit; font-size:13px; color:#36415d; outline:none; box-sizing:border-box;
+  padding:8px 12px; font-family:inherit; font-size:13px; font-weight:500; color:#36415d; outline:none; box-sizing:border-box;
+  transition:border-color 0.15s, box-shadow 0.15s;
 }
-#configDetailPanel .fl-body input[type="text"]:focus, #configDetailPanel .fl-body textarea:focus { border-color:#2e80ed; }
-#configDetailPanel .fl-body textarea { resize:none; height:68px; line-height:1.4; }
+#configDetailPanel .fl-body input[type="text"]:focus, #configDetailPanel .fl-body textarea:focus {
+  border-color:#2e80ed; box-shadow:0 0 0 2px rgba(46,128,237,0.12);
+}
+#configDetailPanel .fl-body input[type="text"]::placeholder, #configDetailPanel .fl-body textarea::placeholder { color:#c2c9db; }
+#configDetailPanel .fl-body textarea {
+  resize:vertical; min-height:52px; height:64px; max-height:160px; line-height:1.5;
+  font-size:12px !important; color:#555 !important;
+}
 #configDetailPanel .fl-body input[disabled], #configDetailPanel .fl-body textarea[disabled] { color:#7f7f7f; background:#f5f5f5; }
-.config-detail-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px; }
+.config-detail-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px; }
+.config-detail-tags:empty::after {
+  content:'No tags yet'; font-size:11px; color:#c2c9db; font-style:normal;
+}
 .config-detail-tag {
-  font-size:11px; font-weight:500; color:#36415d; background:#e9e9e9;
-  padding:2px 4px 2px 8px; border-radius:99px; line-height:18px; display:flex; align-items:center; gap:2px;
+  font-size:11px; font-weight:500; color:#36415d; background:#fff;
+  padding:3px 6px 3px 9px; border-radius:99px; line-height:16px; display:flex; align-items:center; gap:3px;
+  border:1px solid #e4e5ea; transition:all 0.15s;
 }
+.config-detail-tag::before {
+  content:''; width:6px; height:6px; border-radius:50%; background:#2f80ed; flex-shrink:0; opacity:0.4;
+}
+.config-detail-tag:hover { border-color:#2f80ed; background:rgba(47,128,237,0.04); }
 .config-detail-tag button {
-  background:none; border:none; cursor:pointer; padding:1px; color:#868d9e; display:flex;
-  align-items:center; justify-content:center;
+  background:none; border:none; cursor:pointer; padding:2px; color:#c2c9db; display:flex;
+  align-items:center; justify-content:center; border-radius:50%; transition:all 0.15s;
 }
-.config-detail-tag button:hover { color:#36415d; }
-.config-tag-add-row { display:flex; gap:4px; }
+.config-detail-tag button:hover { color:#ff1f1f; background:rgba(255,31,31,0.06); }
+.config-tag-add-row { display:flex; gap:6px; }
 .config-tag-add-row input {
-  flex:1; height:28px; background:#fff; border:1px solid #c2c9db; border-radius:6px;
-  padding:4px 8px; font-family:inherit; font-size:12px; color:#36415d; outline:none; box-sizing:border-box;
+  flex:1; height:30px; background:#fff; border:1px solid #c2c9db; border-radius:8px;
+  padding:4px 10px; font-family:inherit; font-size:12px; color:#36415d; outline:none; box-sizing:border-box;
+  transition:border-color 0.15s, box-shadow 0.15s;
 }
-.config-tag-add-row input:focus { border-color:#2e80ed; }
+.config-tag-add-row input:focus { border-color:#2e80ed; box-shadow:0 0 0 2px rgba(46,128,237,0.12); }
 .config-tag-add-row button {
-  height:28px; background:#2f80ed; color:#fff; border:none; border-radius:6px;
-  font-family:inherit; font-size:12px; font-weight:500; padding:0 10px; cursor:pointer;
+  height:30px; background:#2f80ed; color:#fff; border:none; border-radius:8px;
+  font-family:inherit; font-size:12px; font-weight:600; padding:0 12px; cursor:pointer;
+  transition:all 0.15s;
 }
 .config-tag-add-row button:hover { background:#5999f1; }
 .config-setview-btn {
-  width:100%; min-height:36px; height:36px; background:#2f80ed; color:#fff; border:none; border-radius:8px;
+  width:100%; min-height:40px; height:40px; background:linear-gradient(135deg, #2f80ed 0%, #004fff 100%); color:#fff; border:none; border-radius:10px;
   font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:6px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(47,128,237,0.2);
+  transition:all 0.15s;
 }
-.config-setview-btn:hover { background:#5999f1; }
-.config-setview-btn svg { width:14px; height:14px; fill:#fff; }
+.config-setview-btn:hover { box-shadow:0 4px 16px rgba(47,128,237,0.3); transform:translateY(-1px); }
+.config-setview-btn:hover svg { transform:scale(1.15); }
+.config-setview-btn:active { transform:translateY(0) scale(0.98); }
+.config-setview-btn svg { width:16px; height:16px; fill:#fff; transition:transform 0.15s; }
+.config-capture-area { display:flex; flex-direction:column; gap:4px; }
+.config-capture-hint {
+  font-size:10px; color:#c2c9db; text-align:center;
+  opacity:0; transition:opacity 0.15s;
+}
+.config-capture-area:hover .config-capture-hint { opacity:1; }
 .config-part-action-btn {
-  flex:1; height:32px; background:#fff; border:1px solid #c2c9db; border-radius:8px;
-  font-family:inherit; font-size:12px; font-weight:500; cursor:pointer;
+  flex:1; height:34px; background:#fff; border:1px solid #c2c9db; border-radius:8px;
+  font-family:inherit; font-size:12px; font-weight:600; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:6px; color:#36415d;
+  transition:all 0.15s;
 }
-.config-part-action-btn:hover { background:rgba(233,233,233,0.6); }
+.config-part-action-btn:first-child { color:#2f80ed; border-color:rgba(47,128,237,0.2); }
+.config-part-action-btn:first-child:hover { background:rgba(47,128,237,0.04); }
+.config-part-action-btn:last-child { color:#ff1f1f; border-color:rgba(255,31,31,0.2); }
+.config-part-action-btn:last-child:hover { background:rgba(255,31,31,0.04); }
+.config-part-action-btn:active { transform:scale(0.97); }
 /* (enabled-row removed — enable/disable is now via status pill click) */
-.config-last-updated { font-size:11px; color:#868d9e; }
+.config-last-updated { font-size:10px; color:#c2c9db; line-height:1.3; }
+.config-detail-footer {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:8px 0 0; margin-top:auto;
+}
+.config-detail-footer .config-delete-btn {
+  background:none; border:1px solid rgba(255,31,31,0.2); cursor:pointer;
+  color:#ff1f1f; font-family:inherit; font-size:11px; font-weight:600;
+  display:flex; align-items:center; gap:5px; padding:6px 14px;
+  flex-shrink:0; border-radius:8px; transition:all 0.15s;
+}
+.config-detail-footer .config-delete-btn:hover {
+  background:rgba(255,31,31,0.06); border-color:#ff1f1f;
+}
+.config-detail-footer .config-delete-btn:active { transform:scale(0.97); }
 .config-detail-section-label {
   font-size:11px; font-weight:600; color:#2f80ed; text-transform:uppercase; letter-spacing:0.05em;
   margin:4px 0 0 0;
 }
+.config-detail-divider {
+  height:1px; margin:2px -16px;
+  background:linear-gradient(90deg, transparent 0%, #e9e9e9 15%, #e9e9e9 85%, transparent 100%);
+}
+.config-detail-card {
+  display:flex; flex-direction:column; gap:10px;
+  padding:12px; border-radius:10px;
+  background:#f9f9fb; border:1px solid #eeeff2;
+  transition:border-color 0.15s;
+}
+.config-detail-card:hover { border-color:#dddee3; box-shadow:0 1px 6px rgba(0,0,0,0.04); }
+.config-detail-card:focus-within { border-color:#2e80ed; box-shadow:0 0 0 2px rgba(46,128,237,0.08); }
+.config-detail-card label { margin-bottom:0 !important; }
+.config-card-header {
+  display:flex; align-items:center; gap:6px;
+  font-size:11px; font-weight:600; color:#868d9e;
+  text-transform:uppercase; letter-spacing:0.3px;
+  margin-bottom:2px;
+}
+.config-card-header svg {
+  padding:3px; background:rgba(134,141,158,0.08); border-radius:5px;
+  box-sizing:content-box;
+}
+.config-char-count {
+  font-size:10px; color:#c2c9db; font-weight:400;
+  text-transform:none; letter-spacing:0;
+}
+/* Identity section — no card background, fields stand alone */
+.config-identity-section {
+  display:flex; flex-direction:column; gap:8px;
+}
+.config-identity-section label { margin-bottom:0 !important; }
+.config-identity-section > div:last-child { margin-top:-2px; }
+/* Tags: wrap pills and input on same flow */
+.config-tags-flow {
+  display:flex; flex-wrap:wrap; gap:5px; align-items:center;
+}
+.config-tags-flow .config-detail-tag { margin-bottom:0; }
+.config-tags-flow .config-tag-inline-input {
+  flex:1; min-width:60px; height:24px; border:1px solid transparent; border-radius:6px;
+  padding:2px 8px; font-family:inherit; font-size:11px; color:#36415d; outline:none;
+  background:transparent; transition:all 0.15s; box-sizing:border-box;
+}
+.config-tags-flow .config-tag-inline-input:focus {
+  border-color:#2e80ed; background:#fff; box-shadow:0 0 0 2px rgba(46,128,237,0.12);
+}
+.config-tags-flow .config-tag-inline-input::placeholder { color:#c2c9db; }
+/* Prominent name input */
+.config-name-input {
+  font-size:15px !important; font-weight:600 !important;
+  padding:10px 12px !important; border-radius:10px !important;
+  border-color:#e9e9e9 !important; background:#f9f9fb !important;
+}
+.config-name-input:focus {
+  background:#fff !important; border-color:#2e80ed !important;
+  box-shadow:0 0 0 2px rgba(46,128,237,0.12) !important;
+}
+/* Scene section — dark themed */
+.config-scene-section {
+  border-radius:10px; overflow:hidden;
+  border:1px solid #2a3040;
+}
+.config-scene-header {
+  display:flex; align-items:center; gap:6px; padding:8px 12px;
+  background:#36415d; color:rgba(255,255,255,0.9);
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px;
+}
+.config-scene-body {
+  display:flex; flex-direction:column; gap:8px;
+  padding:10px 12px; background:#f9f9fb;
+}
+.config-scene-summary-inline { font-size:10px; font-weight:400; color:rgba(255,255,255,0.5); text-transform:none; letter-spacing:0; }
+.config-scene-summary-inline:empty { display:none; }
+/* (old scene-summary bar styles removed — summary is now inline in header) */
+.config-detail-card input[type="text"],
+.config-detail-card textarea {
+  border-color:#e4e5ea !important;
+}
+.config-detail-card input[type="text"]:focus,
+.config-detail-card textarea:focus {
+  border-color:#2e80ed !important;
+  background:#fff;
+}
+/* Collapsible card sections */
+.config-collapsible { padding:0 !important; overflow:hidden; }
+.config-collapse-trigger {
+  display:flex; align-items:center; gap:5px; width:100%; padding:10px 12px;
+  background:none; border:none; cursor:pointer; font-family:inherit; text-align:left;
+  transition:background 0.1s;
+}
+.config-collapse-trigger:hover { background:rgba(0,0,0,0.02); }
+.config-collapse-chevron { transition:transform 0.2s; flex-shrink:0; }
+.config-collapsible.collapsed .config-collapse-chevron { transform:rotate(-90deg); }
+.config-collapse-body {
+  display:grid; grid-template-columns:1fr 1fr; gap:2px;
+  padding:0 10px 10px; transition:all 0.2s;
+}
+.config-collapsible.collapsed .config-collapse-body {
+  max-height:0; padding-top:0; padding-bottom:0; overflow:hidden; opacity:0;
+}
+/* Permission preview when collapsed */
+.config-perm-preview {
+  display:none; padding:0 12px 10px; font-size:10px; color:#868d9e; line-height:1.4;
+}
+.config-collapsible.collapsed .config-perm-preview { display:block; }
+.config-collapsible:not(.collapsed) .config-perm-preview { display:none; }
+/* Tag add row inside card */
+.config-detail-card .config-tag-add-row { gap:4px; }
+.config-detail-card .config-tag-add-row input { height:28px; min-height:28px; font-size:11px; padding:4px 8px; border-radius:6px; }
+.config-detail-card .config-tag-add-row button { height:28px; font-size:11px; padding:0 10px; border-radius:6px; }
 
 /* Permissions list */
 .config-perm-list {
-  display:grid; grid-template-columns:1fr 1fr; gap:0;
-  border:1px solid #e9e9e9; border-radius:8px; padding:4px 2px;
+  display:grid; grid-template-columns:1fr 1fr; gap:2px;
+  border:1px solid #e4e5ea; border-radius:8px; padding:3px;
   background:#fff;
 }
-.config-perm-row { display:flex; align-items:center; gap:6px; height:28px; padding:0 8px; cursor:pointer; margin:0; border-radius:4px; }
-.config-perm-row:hover { background:rgba(233,233,233,0.5); }
-.config-perm-row input { width:14px; height:14px; accent-color:#2f80ed; cursor:pointer; flex-shrink:0; margin:0; padding:0; }
-.config-perm-row span { font-size:11px; color:#36415d; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.config-perm-row {
+  display:flex; align-items:center; gap:5px; height:26px; padding:0 7px;
+  cursor:pointer; margin:0; border-radius:5px; transition:all 0.1s;
+}
+.config-perm-row:hover { background:#f5f5f5; }
+.config-perm-row:has(input:checked) { background:rgba(47,128,237,0.04); }
+.config-perm-row input { width:12px; height:12px; accent-color:#2f80ed; cursor:pointer; flex-shrink:0; margin:0; padding:0; }
+.config-perm-row span { font-size:10px; color:#868d9e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; transition:color 0.1s; }
+.config-perm-row:has(input:checked) span { color:#2f80ed; font-weight:600; }
 
 /* Config footer */
-.config-footer { border-top:1px solid #c2c9db; padding-top:10px; display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
-.config-footer-btns { display:flex; gap:8px; }
+.config-footer { border-top:1px solid #e9e9e9; padding-top:10px; display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+.config-footer-btns { display:flex; gap:6px; }
 .config-footer-btn {
-  flex:1; height:32px; background:#fff; color:#36415d; border:1px solid #c2c9db; border-radius:8px;
+  flex:1; height:34px; background:#fff; color:#36415d; border:1px solid #c2c9db; border-radius:8px;
   font-family:inherit; font-size:12px; font-weight:500; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:6px;
+  transition:all 0.15s;
 }
-.config-footer-btn:hover { background:rgba(233,233,233,0.6); }
+.config-footer-btn:hover { background:rgba(233,233,233,0.4); }
+.config-footer-btn:active { transform:scale(0.97); }
 .config-footer-btn svg { width:14px; height:14px; fill:#868d9e; }
-.config-footer-note { font-size:10px; color:#868d9e; text-align:center; }
+.config-footer-note { font-size:10px; color:#c2c9db; text-align:center; }
+.cfg-footer-stat { font-weight:500; white-space:nowrap; }
 
 /* Collapsible sections */
 .collapse-header {
@@ -2934,6 +3277,10 @@ html.embedded .ar-sub-btns { top:66px; }
 
 <!-- 3D VIEWPORT -->
 <div id="viewport">
+  <!-- FR85: Persistent config label in viewport -->
+  <div id="configViewportLabel" style="display:none; position:absolute; top:12px; left:60px; z-index:40; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:4px 12px; border-radius:6px; font-family:'Open Sans','Inter',sans-serif; font-size:12px; font-weight:600; color:#36415d; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.1); user-select:none;" title="Click to scroll to this configuration">
+    <span style="color:#868d9e; font-weight:400;">Editing:</span> <span id="configViewportLabelName"></span>
+  </div>
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <span id="loadingText">Loading 3D model...</span>
@@ -3361,6 +3708,7 @@ html.embedded .ar-sub-btns { top:66px; }
       <div class="config-search">
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         <input type="text" placeholder="Search by name or tag..." id="configSearchInput">
+        <button class="config-search-clear" id="cfgSearchClear" title="Clear search">&times;</button>
       </div>
       <button class="config-newfolder-btn" id="cfgNewFolderBtn" title="New Folder">
         <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
@@ -3393,8 +3741,13 @@ html.embedded .ar-sub-btns { top:66px; }
     <div class="config-select-bar" id="configSelectBar">Hold Ctrl to select multiple</div>
 
     <!-- Footer -->
-    <div class="config-footer" style="flex-direction:row;align-items:center;justify-content:flex-end;padding:6px 10px;">
-      <button class="config-ctx-btn" style="opacity:1;" id="cfgFooterMenuBtn" title="More options">&#8942;</button>
+    <div class="config-footer" style="flex-direction:row;align-items:center;padding:8px 12px;gap:8px;border-top:1px solid #e9e9e9;">
+      <div id="cfgFooterSummary" style="flex:1;display:flex;align-items:center;gap:6px;font-size:10px;min-width:0;">
+        <span class="cfg-footer-stat" id="cfgFooterEnabled" style="color:#0a9e4a;">0 enabled</span>
+        <span style="color:#e9e9e9;">|</span>
+        <span class="cfg-footer-stat" id="cfgFooterDisabled" style="color:#868d9e;">0 disabled</span>
+      </div>
+      <button class="config-ctx-btn" style="opacity:1;border-radius:6px;" id="cfgFooterMenuBtn" title="More options (Import, Export...)">&#8942;</button>
     </div>
   </div>
 
@@ -3402,18 +3755,18 @@ html.embedded .ar-sub-btns { top:66px; }
   <div class="config-ctx-menu" id="configCtxMenu"></div>
 
   <!-- Config Picker Overlay (used by "From existing") -->
-  <div id="cfgPickerOverlay" style="display:none; position:fixed; inset:0; z-index:250; background:rgba(0,0,0,0.3); align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); width:340px; max-height:420px; display:flex; flex-direction:column; overflow:hidden;">
-      <div style="padding:14px 16px 10px; border-bottom:1px solid #e9e9e9;">
-        <div style="font-size:14px; font-weight:700; color:#36415d; margin-bottom:10px;">Clone from existing configuration</div>
+  <div id="cfgPickerOverlay" style="display:none; position:fixed; inset:0; z-index:250; background:rgba(0,0,0,0.35); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:14px; box-shadow:0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06); border:1px solid #e9e9e9; width:340px; max-height:420px; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="padding:16px 18px 12px; border-bottom:1px solid #e9e9e9;">
+        <div style="font-size:15px; font-weight:700; color:#36415d; margin-bottom:12px;">Clone from existing</div>
         <div style="position:relative;">
-          <svg viewBox="0 0 24 24" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; fill:#868d9e;"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input type="text" id="cfgPickerSearch" placeholder="Search by name or tag..." style="width:100%; height:36px; border:1px solid #c2c9db; border-radius:8px; padding:0 12px 0 32px; font-family:inherit; font-size:13px; color:#36415d; outline:none; box-sizing:border-box;" oninput="renderCfgPicker()">
+          <svg viewBox="0 0 24 24" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; fill:#c2c9db;"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="cfgPickerSearch" placeholder="Search by name or tag..." style="width:100%; height:38px; border:1px solid #e9e9e9; border-radius:10px; padding:0 12px 0 32px; font-family:inherit; font-size:13px; color:#36415d; outline:none; box-sizing:border-box; background:#f5f5f5; transition:border-color 0.15s, box-shadow 0.15s;" onfocus="this.style.borderColor='#2e80ed';this.style.boxShadow='0 0 0 2px rgba(46,128,237,0.12)'" onblur="this.style.borderColor='#e9e9e9';this.style.boxShadow='none'" oninput="renderCfgPicker()">
         </div>
       </div>
-      <div id="cfgPickerList" style="flex:1; overflow-y:auto; padding:6px;"></div>
-      <div style="padding:10px 16px; border-top:1px solid #e9e9e9; text-align:right;">
-        <button onclick="closeCfgPicker()" style="height:32px; padding:0 16px; background:#e9e9e9; color:#36415d; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer;">Cancel</button>
+      <div id="cfgPickerList" style="flex:1; overflow-y:auto; padding:8px;"></div>
+      <div style="padding:12px 18px; border-top:1px solid #e9e9e9; text-align:right;">
+        <button onclick="closeCfgPicker()" style="height:34px; padding:0 18px; background:none; color:#868d9e; border:1px solid #c2c9db; border-radius:8px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s;" onmouseenter="this.style.background='#f5f5f5'" onmouseleave="this.style.background='none'">Cancel</button>
       </div>
     </div>
   </div>
@@ -3444,68 +3797,101 @@ html.embedded .ar-sub-btns { top:66px; }
     <button class="fl-close" id="configDetailClose"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
   </div>
   <div class="fl-body">
-    <!-- Status Bar -->
-    <div class="config-status-bar" id="configStatusBar">
-      <button class="config-status-pill enabled" id="configStatusPill" onclick="toggleStatusPill()" title="Click to toggle enabled/disabled">ENABLED</button>
+    <!-- Config Hero -->
+    <div class="config-hero" id="configHero">
+      <div class="config-hero-top">
+        <div class="config-hero-dot" id="configHeroDot"></div>
+        <span class="config-hero-name" id="configHeroName"></span>
+        <button class="config-status-pill enabled" id="configStatusPill" onclick="toggleStatusPill()" title="Click to toggle enabled/disabled">ENABLED</button>
+      </div>
       <span class="config-status-summary" id="configStatusSummary">3 parts hidden from default</span>
-    </div>
-
-    <!-- Name -->
-    <div>
-      <label>Name</label>
-      <input type="text" id="configDetailName">
-    </div>
-
-    <!-- Description -->
-    <div>
-      <label>Description</label>
-      <textarea id="configDetailDesc" style="height:48px;"></textarea>
-    </div>
-
-    <!-- Tags -->
-    <div>
-      <label>Tags</label>
-      <div class="config-detail-tags" id="configDetailTags"></div>
-      <div class="config-tag-add-row" id="configTagAddRow">
-        <input type="text" placeholder="Type tag and press Enter..." id="configTagInput">
-        <button onclick="addConfigTag()">Add</button>
+      <div class="config-hero-actions" id="configHeroActions">
+        <button class="config-hero-action" onclick="duplicateConfig(configSelectedId)" title="Duplicate this configuration">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
+          Duplicate
+        </button>
+        <button class="config-hero-action" id="configHeroCopyLink" onclick="copyConfigLink(configSelectedId)" title="Copy deep link to this configuration">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          Copy Link
+        </button>
       </div>
     </div>
 
-    <!-- Set from View -->
-    <button class="config-setview-btn" id="configSetViewBtn" onclick="configSetFromView()">
-      <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-      Set from View
-    </button>
-
-    <!-- Add/Remove selected parts (hidden by default — prototype placeholder) -->
-    <div id="configPartActions" style="display:none; gap:6px;">
-      <button class="config-part-action-btn" onclick="showConfigToast('Add selected parts to configuration (mock)')">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="#2f80ed"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        Add Selected Parts
-      </button>
-      <button class="config-part-action-btn" onclick="showConfigToast('Remove selected parts from configuration (mock)')">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="#ff1f1f"><path d="M19 13H5v-2h14v2z"/></svg>
-        Remove Selected Parts
-      </button>
+    <!-- Identity Section (no card wrapper — direct fields) -->
+    <div class="config-identity-section">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <label>Name</label>
+          <span class="config-char-count" id="configNameCount">0/100</span>
+        </div>
+        <input type="text" id="configDetailName" maxlength="100" placeholder="Configuration name..." class="config-name-input" oninput="document.getElementById('configNameCount').textContent=this.value.length+'/100';document.getElementById('configHeroName').textContent=this.value||'Untitled';document.getElementById('configDetailPanelTitle').textContent=this.value||'Configuration'">
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <label>Description</label>
+          <span class="config-char-count" id="configDescCount">0/500</span>
+        </div>
+        <textarea id="configDetailDesc" style="height:48px;" maxlength="500" placeholder="Describe this configuration..." oninput="document.getElementById('configDescCount').textContent=this.value.length+'/500'"></textarea>
+      </div>
+      <div>
+        <label>Tags</label>
+        <div class="config-tags-flow" id="configTagsFlow">
+          <span id="configDetailTags" style="display:contents;"></span>
+          <input type="text" class="config-tag-inline-input" placeholder="Add tag..." id="configTagInput" onkeydown="if(event.key==='Enter')addConfigTag()">
+        </div>
+      </div>
     </div>
 
-    <!-- Permitted Roles -->
-    <div id="configPermissions">
-      <label style="font-size:11px; font-weight:600; color:#868d9e; display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-        <span style="display:flex; align-items:center; gap:4px;">
-          Permitted Roles <span class="perm-count" id="configPermCount" style="font-weight:400;">(9 roles)</span>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="#868d9e" style="cursor:help;" title="Only users with a checked role will see this configuration. Unchecked roles won't find it in search or selection lists."><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        </span>
-        <button class="config-perm-select-all" id="configPermSelectAll">Select all</button>
-      </label>
-      <div class="config-perm-list" id="configPermBody"></div>
+    <!-- Section Divider -->
+    <div class="config-detail-divider"></div>
+
+    <!-- Scene State Section -->
+    <div class="config-scene-section">
+      <div class="config-scene-header">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        <span>Scene State</span>
+        <span style="flex:1;"></span>
+        <div class="config-scene-summary-inline" id="configSceneSummary"></div>
+      </div>
+      <div class="config-scene-body">
+        <button class="config-setview-btn" id="configSetViewBtn" onclick="configSetFromView()">
+          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          Capture Current View
+        </button>
+        <div id="configPartActions" style="display:none; gap:6px;">
+          <button class="config-part-action-btn" onclick="showConfigToast('Add selected parts to configuration (mock)')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="#2f80ed"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Add Parts
+          </button>
+          <button class="config-part-action-btn" onclick="showConfigToast('Remove selected parts from configuration (mock)')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="#ff1f1f"><path d="M19 13H5v-2h14v2z"/></svg>
+            Remove Parts
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Permitted Roles (collapsible) -->
+    <div id="configPermissions" class="config-detail-card config-collapsible collapsed">
+      <button class="config-collapse-trigger" onclick="this.parentElement.classList.toggle('collapsed')">
+        <svg class="config-collapse-chevron" viewBox="0 0 24 24" width="12" height="12" fill="#868d9e"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="#868d9e" style="padding:3px;background:rgba(134,141,158,0.08);border-radius:5px;box-sizing:content-box;"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span style="font-size:11px;font-weight:600;color:#868d9e;text-transform:uppercase;letter-spacing:0.3px;">Roles</span>
+        <span id="configPermCount" style="font-size:10px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08); padding:1px 6px; border-radius:99px;">(9)</span>
+        <span style="flex:1;"></span>
+        <span class="config-perm-select-all" id="configPermSelectAll" onclick="event.stopPropagation()">Select all</span>
+      </button>
+      <div class="config-perm-preview" id="configPermPreview"></div>
+      <div class="config-collapse-body" id="configPermBody"></div>
+    </div>
+
+    <!-- Section Divider -->
+    <div class="config-detail-divider"></div>
 
     <!-- Footer row: Last Updated + Delete -->
-    <div id="configDetailFooter" style="display:flex; align-items:center; justify-content:space-between; padding-top:6px; border-top:1px solid #e9e9e9;">
+    <div id="configDetailFooter" class="config-detail-footer">
       <div class="config-last-updated" id="configLastUpdated" style="flex:1; min-width:0;"></div>
-      <button id="configDeleteBtn" onclick="deleteSelectedConfig()" title="Delete this configuration" style="background:none; border:none; cursor:pointer; color:#ff1f1f; font-family:inherit; font-size:11px; font-weight:600; display:flex; align-items:center; gap:4px; padding:4px 0; flex-shrink:0;">
+      <button id="configDeleteBtn" class="config-delete-btn" onclick="deleteSelectedConfig()" title="Delete this configuration">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="#ff1f1f"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
         Delete
       </button>
@@ -7006,8 +7392,13 @@ document.querySelectorAll('.panel-tab[data-tab]').forEach(tab=>{
   tab.onclick=()=>{
     switchPanelTab(tab.dataset.tab);
     if (tab.dataset.tab === 'materials') renderMaterialsPanel();
-    if (tab.dataset.tab === 'configurations') { renderConfigList(document.getElementById('configSearchInput').value); }
-    if (tab.dataset.tab !== 'configurations') { autoSaveActiveConfig(); closeConfigDetail(); }
+    if (tab.dataset.tab === 'configurations') {
+      renderConfigList(document.getElementById('configSearchInput').value);
+      // FR25: Restore last-active config when returning to Configurations tab
+      if (configActiveId) applyConfiguration(configActiveId);
+      updateConfigViewportLabel();
+    }
+    if (tab.dataset.tab !== 'configurations') { autoSaveActiveConfig(); closeConfigDetail(); updateConfigViewportLabel(); }
   };
 });
 
@@ -7026,7 +7417,7 @@ function normalizePartState(val) {
 // --- Data model (single array with type:'config'|'folder', parentId, order) ---
 // partStates format: { partName: { visible: bool, position?: {x,y,z}, rotation?: {x,y,z}, scale?: {x,y,z}, hasTransform?: bool } }
 var configData = [
-  { id:'config-default', type:'config', name:'Default Configuration', description:'The base configuration representing the default state of the digital twin. All parts are visible in their original positions.', tags:['default','base'], isEnabled:true, isDefault:true, isReadOnly:true, lastUpdated:'2026-03-10T14:30:00Z', createdBy:'System', permittedRoles:['Guest','Operator','Operator MR','Field Service Engineer','Service Support Expert','Instructor','Service Support Manager','Content Creator','Admin'], parentId:null, order:0, partStates:{} },
+  { id:'config-default', type:'config', name:'Default Configuration', description:'The base configuration representing the default state of the digital twin. All parts are visible in their original positions.', tags:['default','base'], isEnabled:true, isDefault:true, isReadOnly:false, lastUpdated:'2026-03-10T14:30:00Z', createdBy:'System', permittedRoles:['Guest','Operator','Operator MR','Field Service Engineer','Service Support Expert','Instructor','Service Support Manager','Content Creator','Admin'], parentId:null, order:0, partStates:{} },
   { id:'config-standard', type:'config', name:'Standard Model', description:'Standard production model without optional accessories.', tags:['standard','production'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-12T09:15:00Z', createdBy:'Sarah K.', permittedRoles:['Operator','Field Service Engineer','Service Support Expert','Instructor','Content Creator','Admin'], parentId:null, order:1, partStates:{'CoolantAssembly':{visible:false},'CoolantPump':{visible:false},'CoolantReservoir':{visible:false},'PremiumExhaust':{visible:false},'AuxPowerModule':{visible:false}} },
   { id:'config-premium-coolant', type:'config', name:'Premium with Coolant', description:'Full premium model including coolant system, premium exhaust, and all optional accessories.', tags:['premium','coolant'], isEnabled:true, isDefault:false, isReadOnly:false, lastUpdated:'2026-03-13T16:45:00Z', createdBy:'Sarah K.', permittedRoles:['Field Service Engineer','Service Support Expert','Instructor','Content Creator','Admin'], parentId:null, order:2, partStates:{'CoolantAssembly':{visible:true},'PremiumExhaust':{visible:true},'AuxPowerModule':{visible:true}} },
   { id:'folder-regional', type:'folder', name:'Regional Variants', parentId:null, order:3, isExpanded:true },
@@ -7100,7 +7491,13 @@ function renderConfigList(filter) {
 
   list.innerHTML = '';
   if (items.length === 0) {
-    list.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;color:#7f7f7f;">No configurations found</div>';
+    list.innerHTML = '<div style="padding:32px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;">' +
+      '<div style="width:40px;height:40px;border-radius:10px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="#c2c9db"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>' +
+      '</div>' +
+      '<div style="font-size:12px;color:#868d9e;font-weight:500;">No configurations found</div>' +
+      '<div style="font-size:11px;color:#c2c9db;">Try a different search term</div>' +
+      '</div>';
     configUpdateSelectBar();
     document.getElementById('configCountBadge').textContent = configData.filter(function(c){ return c.type === 'config'; }).length;
     return;
@@ -7127,7 +7524,15 @@ function renderConfigList(filter) {
   list.innerHTML = appendChildren(null, 0);
   configAttachListHandlers(list);
   configUpdateSelectBar();
-  document.getElementById('configCountBadge').textContent = configData.filter(function(c){ return c.type === 'config'; }).length;
+  var allConfigs = configData.filter(function(c){ return c.type === 'config'; });
+  document.getElementById('configCountBadge').textContent = allConfigs.length;
+  // Footer summary
+  var enabledCount = allConfigs.filter(function(c){ return c.isEnabled; }).length;
+  var disabledCount = allConfigs.filter(function(c){ return !c.isEnabled; }).length;
+  var feEl = document.getElementById('cfgFooterEnabled');
+  var fdEl = document.getElementById('cfgFooterDisabled');
+  if (feEl) feEl.textContent = enabledCount + ' enabled';
+  if (fdEl) fdEl.textContent = disabledCount > 0 ? disabledCount + ' disabled' : 'none disabled';
 }
 
 function cfgRenderItem(item, depth) {
@@ -7139,8 +7544,10 @@ function cfgRenderItem(item, depth) {
   var cls = 'config-item';
   if (isActive) cls += ' active';
   if (isSelected) cls += ' cfg-selected';
+  if (isFolder && configExpandedFolders.has(item.id)) cls += ' folder-expanded';
 
-  var html = '<div class="' + cls + '" data-config-id="' + item.id + '" data-config-type="' + item.type + '" data-config-depth="' + depth + '" draggable="true" style="padding-left:' + indent + 'px;">';
+  var descAttr = (!isFolder && item.description) ? ' data-desc="' + escHtml(item.description).substring(0, 120) + (item.description.length > 120 ? '...' : '') + '"' : '';
+  var html = '<div class="' + cls + '" data-config-id="' + item.id + '" data-config-type="' + item.type + '" data-config-depth="' + depth + '"' + descAttr + ' draggable="true" style="padding-left:' + indent + 'px;">';
 
   if (isFolder) {
     var isExpanded = configExpandedFolders.has(item.id);
@@ -7155,22 +7562,47 @@ function cfgRenderItem(item, depth) {
   } else {
     var dotClass = isActive ? 'active-sel' : (item.isEnabled ? 'enabled' : 'disabled');
     html += '<div class="config-dot ' + dotClass + '"></div>';
+    html += '<div class="config-item-content">';
+    html += '<div class="config-item-top">';
     html += '<div class="config-name' + (!item.isEnabled ? ' cfg-disabled' : '') + '" data-cfg-activate="' + item.id + '">' + escHtml(item.name) + '</div>';
+    if (item.id === configActiveId && !item.isDefault) html += '<span class="config-badge active-badge">ACTIVE</span>';
     if (item.isDefault) html += '<span class="config-badge default">DEFAULT</span>';
-    if (item.isReadOnly) html += '<span class="config-badge readonly">READ-ONLY</span>';
+    if (item.isReadOnly && !item.isDefault) html += '<span class="config-badge readonly">READ-ONLY</span>';
+    html += '</div>';
+    // Inline meta row: tags + override count
+    var partOverrides = item.partStates ? Object.keys(item.partStates).length : 0;
+    var hasMeta = (item.tags && item.tags.length > 0) || partOverrides > 0;
+    if (hasMeta) {
+      html += '<div class="config-item-meta">';
+      if (item.tags && item.tags.length > 0) {
+        var showTags = item.tags.slice(0, 2);
+        showTags.forEach(function(t) { html += '<span class="config-item-tag">' + escHtml(t) + '</span>'; });
+        if (item.tags.length > 2) html += '<span class="config-item-tag config-item-tag-more">+' + (item.tags.length - 2) + '</span>';
+      }
+      if (partOverrides > 0) {
+        html += '<span class="config-item-overrides">' + partOverrides + ' override' + (partOverrides !== 1 ? 's' : '') + '</span>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
     html += '<button class="config-ctx-btn" data-cfg-more="' + item.id + '" title="Options">&#8942;</button>';
   }
 
   html += '</div>';
+  // Add separator after default config
+  if (!isFolder && item.isDefault) {
+    html += '<div class="config-list-separator"></div>';
+  }
   return html;
 }
 
 // --- Attach event handlers (like bkAttachListHandlers) ---
 function configAttachListHandlers(container) {
-  // Click on name / folder name
-  container.querySelectorAll('[data-cfg-activate]').forEach(function(el) {
+  // Click on entire row (except 3-dot button)
+  container.querySelectorAll('[data-config-id]').forEach(function(el) {
     el.onclick = function(e) {
-      var id = el.dataset.cfgActivate;
+      if (e.target.closest('[data-cfg-more]')) return; // let 3-dot button handle itself
+      var id = el.dataset.configId;
       var item = configData.find(function(c){ return c.id === id; });
       if (!item) return;
       // Ctrl/Cmd: toggle multi-selection
@@ -7344,9 +7776,7 @@ function showConfigContextMenu(itemId, event) {
     html += '<button class="config-ctx-menu-item danger" data-cfg-action="delete"><svg viewBox="0 0 24 24" width="14" height="14" fill="#ff1f1f"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Delete folder</button>';
   } else {
     html += '<button class="config-ctx-menu-item" data-cfg-action="rename"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>Rename</button>';
-    if (!item.isReadOnly) {
-      html += '<button class="config-ctx-menu-item" data-cfg-action="duplicate"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>Duplicate</button>';
-    }
+    html += '<button class="config-ctx-menu-item" data-cfg-action="duplicate"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>Duplicate</button>';
     html += '<button class="config-ctx-menu-item" data-cfg-action="copyLink"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 000 10h4v-1.9H7A3.1 3.1 0 013.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 010 6.2h-4V17h4a5 5 0 000-10z"/></svg>Copy Link</button>';
     // Move to Folder submenu
     var folders = configData.filter(function(c){ return c.type === 'folder'; });
@@ -7360,7 +7790,7 @@ function showConfigContextMenu(itemId, event) {
       });
       html += '</div></div>';
     }
-    if (!item.isDefault && !item.isReadOnly) {
+    if (!item.isDefault) {
       html += '<div class="config-ctx-sep"></div>';
       html += '<button class="config-ctx-menu-item danger" data-cfg-action="delete"><svg viewBox="0 0 24 24" width="14" height="14" fill="#ff1f1f"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Delete</button>';
     }
@@ -7444,18 +7874,27 @@ function configUpdateSelectBar() {
     var deleteIds = new Set();
     ids.forEach(function(id) {
       var it = configData.find(function(c){ return c.id === id; });
-      if (it && !it.isDefault && !it.isReadOnly) deleteIds.add(id);
+      if (it && !it.isDefault) deleteIds.add(id);
     });
     if (deleteIds.size === 0) { showConfigToast('No deletable items selected'); return; }
-    configData = configData.filter(function(c){ return !deleteIds.has(c.id); });
-    if (deleteIds.has(configSelectedId)) { configSelectedId = null; flHide('configDetailPanel'); }
-    if (configActiveId && deleteIds.has(configActiveId)) {
-      configActiveId = null;
-      if (typeof showAllParts === 'function') showAllParts();
+    // FR4: Inline confirmation before bulk delete (no browser popups)
+    var bar = document.getElementById('configSelectBar');
+    if (bar && !bar.querySelector('.cfg-bulk-confirm')) {
+      bar.innerHTML = '<span style="font-size:12px;color:#36415d;">Delete ' + deleteIds.size + ' item(s)?</span>'
+        + '<button id="cfgBulkYes" style="height:26px;padding:0 10px;background:#ff1f1f;color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;">Delete</button>'
+        + '<button id="cfgBulkNo" style="height:26px;padding:0 10px;background:#e9e9e9;color:#36415d;border:none;border-radius:6px;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;">Cancel</button>';
+      bar.classList.add('cfg-bulk-confirm');
+      document.getElementById('cfgBulkNo').onclick = function() { configUpdateSelectBar(); };
+      document.getElementById('cfgBulkYes').onclick = function() {
+        configData = configData.filter(function(c){ return !deleteIds.has(c.id); }); window.configData = configData;
+        if (deleteIds.has(configSelectedId)) { configSelectedId = null; flHide('configDetailPanel'); }
+        if (configActiveId && deleteIds.has(configActiveId)) { var def = configData.find(function(x){ return x.isDefault; }); if (def) applyConfiguration(def.id); else { configActiveId = null; if (typeof showAllParts === 'function') showAllParts(); } updateConfigViewportLabel(); }
+        configSelectedIds.clear();
+        renderConfigList(document.getElementById('configSearchInput').value);
+        showConfigToast(deleteIds.size + ' item(s) deleted');
+      };
+      return;
     }
-    configSelectedIds.clear();
-    renderConfigList(document.getElementById('configSearchInput').value);
-    showConfigToast(deleteIds.size + ' item(s) deleted');
   };
 }
 
@@ -7464,6 +7903,8 @@ function selectConfig(id) {
   if (isProcedureRunning) { showConfigToast('Cannot change configuration while a procedure is running. Please complete or stop the procedure first.'); return; }
   var item = configData.find(function(c){ return c.id === id; });
   if (!item || item.type === 'folder') return;
+  // FR26c: Disabled configs cannot be activated
+  if (!item.isEnabled && !item.isDefault) { showConfigToast('"' + item.name + '" is disabled — enable it first to activate'); return; }
   if (id === configSelectedId && !document.getElementById('configDetailPanel').classList.contains('hidden')) {
     closeConfigDetail();
     return;
@@ -7489,11 +7930,15 @@ function renderConfigDetail() {
   var c = configData.find(function(x){ return x.id === configSelectedId && x.type === 'config'; });
   if (!c) { flHide('configDetailPanel'); return; }
   flShow('configDetailPanel');
+  // Set panel mode class for CSS targeting
+  panel.classList.remove('cfg-mode-default', 'cfg-mode-enabled', 'cfg-mode-disabled');
+  panel.classList.add(c.isDefault ? 'cfg-mode-default' : (c.isEnabled ? 'cfg-mode-enabled' : 'cfg-mode-disabled'));
 
   document.getElementById('configDetailPanelTitle').textContent = c.name;
 
-  // Status bar
-  var statusBar = document.getElementById('configStatusBar');
+  // Hero section
+  document.getElementById('configHeroName').textContent = c.name;
+  var statusBar = document.getElementById('configHero');
   var statusPill = document.getElementById('configStatusPill');
   var statusSummary = document.getElementById('configStatusSummary');
   var visCount = 0, xformCount = 0;
@@ -7516,37 +7961,70 @@ function renderConfigDetail() {
   } else {
     partText = visCount + ' visibility + ' + xformCount + ' transform override' + (xformCount !== 1 ? 's' : '') + ' from default';
   }
+  var heroDot = document.getElementById('configHeroDot');
   if (c.isDefault) {
     statusPill.textContent = 'DEFAULT';
     statusPill.className = 'config-status-pill readonly';
-    statusPill.title = '';
+    statusPill.title = 'Default configuration — always enabled, cannot be disabled';
     statusPill.style.cursor = 'default';
-    statusSummary.textContent = 'Read-only — represents full parts catalog';
-    statusBar.className = 'config-status-bar';
+    statusBar.className = 'config-hero';
+    statusBar.style.borderLeftColor = '#2f80ed';
+    if (heroDot) { heroDot.style.background = '#2f80ed'; heroDot.style.boxShadow = '0 0 0 3px rgba(47,128,237,0.15)'; }
   } else if (c.isEnabled) {
     statusPill.textContent = 'ENABLED';
     statusPill.className = 'config-status-pill enabled clickable';
     statusPill.title = 'Click to disable — hides this configuration from all users';
-    statusSummary.textContent = partText;
-    statusBar.className = 'config-status-bar';
+    statusBar.className = 'config-hero';
+    statusBar.style.borderLeftColor = '#11e874';
+    if (heroDot) { heroDot.style.background = '#11e874'; heroDot.style.boxShadow = '0 0 0 3px rgba(17,232,116,0.15)'; }
   } else {
     statusPill.textContent = 'DISABLED';
     statusPill.className = 'config-status-pill disabled clickable';
     statusPill.title = 'Click to enable — makes this configuration visible to users';
-    statusSummary.textContent = 'Hidden from all users' + (partCount > 0 ? ' · ' + partText : '');
-    statusBar.className = 'config-status-bar disabled-bar';
+    statusBar.className = 'config-hero disabled-bar';
+    statusBar.style.borderLeftColor = '#c2c9db';
+    if (heroDot) { heroDot.style.background = '#c2c9db'; heroDot.style.boxShadow = 'none'; }
+  }
+  // Parts summary line
+  if (partCount > 0) {
+    statusSummary.innerHTML = '<span style="display:flex;align-items:center;gap:6px;">' +
+      '<span style="font-weight:600;color:' + (c.isEnabled || c.isDefault ? '#36415d' : '#7f7f7f') + '">' + partCount + '</span> ' +
+      'override' + (partCount !== 1 ? 's' : '') +
+      '<span style="display:inline-flex;gap:3px;">' +
+      (visCount > 0 ? '<span style="font-size:10px;background:rgba(47,128,237,0.08);color:#2f80ed;padding:1px 6px;border-radius:99px;font-weight:600;">' + visCount + ' vis</span>' : '') +
+      (xformCount > 0 ? '<span style="font-size:10px;background:rgba(139,92,246,0.08);color:#8b5cf6;padding:1px 6px;border-radius:99px;font-weight:600;">' + xformCount + ' xform</span>' : '') +
+      '</span></span>';
+  } else if (c.isDefault) {
+    statusSummary.textContent = 'Base state — all parts visible';
+  } else if (!c.isEnabled) {
+    statusSummary.textContent = 'Hidden from all users';
+  } else {
+    statusSummary.textContent = 'No overrides — matches default';
+  }
+  // Append roles count as a subtle indicator
+  var rolesCount = c.permittedRoles ? c.permittedRoles.length : 0;
+  if (rolesCount > 0 && statusSummary.innerHTML) {
+    statusSummary.innerHTML += ' <span style="color:#c2c9db;">·</span> <span style="font-size:10px;color:#868d9e;">' + rolesCount + ' role' + (rolesCount !== 1 ? 's' : '') + '</span>';
   }
 
-  // Section visibility for read-only/default
-  document.getElementById('configPermissions').style.display = c.isDefault ? 'none' : '';
-  document.getElementById('configDeleteBtn').style.display = (c.isDefault || c.isReadOnly) ? 'none' : '';
+  // Section visibility for default
+  document.getElementById('configPermissions').style.display = '';
+  document.getElementById('configDeleteBtn').style.display = c.isDefault ? 'none' : '';
+  document.getElementById('configHeroActions').style.display = c.isDefault ? 'none' : 'flex';
 
   var nameInput = document.getElementById('configDetailName');
   var descInput = document.getElementById('configDetailDesc');
   nameInput.value = c.name;
-  nameInput.disabled = c.isReadOnly;
+  nameInput.disabled = false;
+  nameInput.placeholder = 'Configuration name...';
   descInput.value = c.description;
-  descInput.disabled = c.isReadOnly;
+  descInput.disabled = false;
+  descInput.placeholder = 'Describe this configuration...';
+  // Char counts
+  var ncEl = document.getElementById('configNameCount');
+  var dcEl = document.getElementById('configDescCount');
+  if (ncEl) ncEl.textContent = c.name.length + '/100';
+  if (dcEl) dcEl.textContent = c.description.length + '/500';
 
   // Tags
   var tagsEl = document.getElementById('configDetailTags');
@@ -7555,16 +8033,26 @@ function renderConfigDetail() {
     var span = document.createElement('span');
     span.className = 'config-detail-tag';
     span.innerHTML = escHtml(t);
-    if (!c.isReadOnly) {
-      var btn = document.createElement('button');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
-      btn.onclick = function(){ removeConfigTag(t); };
-      span.appendChild(btn);
-    }
+    var btn = document.createElement('button');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+    btn.onclick = function(){ removeConfigTag(t); };
+    span.appendChild(btn);
     tagsEl.appendChild(span);
   });
-  document.getElementById('configTagAddRow').style.display = c.isReadOnly ? 'none' : 'flex';
-  document.getElementById('configSetViewBtn').style.display = c.isReadOnly ? 'none' : 'flex';
+  // configTagAddRow removed — input is inline in flow
+  document.getElementById('configSetViewBtn').style.display = 'flex';
+
+  // Scene summary bar
+  var sceneSummary = document.getElementById('configSceneSummary');
+  if (sceneSummary) {
+    if (partCount > 0) {
+      var totalParts = 42;
+      var visibleParts = totalParts - visCount;
+      sceneSummary.textContent = visibleParts + '/' + totalParts + ' parts · ' + partCount + ' overrides';
+    } else {
+      sceneSummary.textContent = 'All parts visible';
+    }
+  }
 
   var lastEl = document.getElementById('configLastUpdated');
   if (c.lastUpdated) {
@@ -7585,7 +8073,7 @@ function renderConfigDetail() {
   if (selAllBtn) {
     var allChecked = allRoles.every(function(r){ return c.permittedRoles.indexOf(r) !== -1; });
     selAllBtn.textContent = allChecked ? 'Deselect all' : 'Select all';
-    selAllBtn.style.display = c.isReadOnly ? 'none' : '';
+    selAllBtn.style.display = '';
     selAllBtn.onclick = function() {
       if (allChecked) { c.permittedRoles = []; }
       else { c.permittedRoles = allRoles.slice(); }
@@ -7598,23 +8086,35 @@ function renderConfigDetail() {
     var cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.checked = c.permittedRoles.indexOf(role) !== -1;
-    cb.disabled = c.isReadOnly;
+    cb.disabled = false;
     cb.onchange = function() {
       if (cb.checked) { if (c.permittedRoles.indexOf(role)===-1) c.permittedRoles.push(role); }
       else { c.permittedRoles = c.permittedRoles.filter(function(r){ return r !== role; }); }
-      document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ' roles)';
+      document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ')';
     };
     var span = document.createElement('span');
     span.textContent = role;
-    if (c.isReadOnly) span.style.color = '#7f7f7f';
     label.appendChild(cb);
     label.appendChild(span);
     permBody.appendChild(label);
   });
-  document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ' roles)';
+  document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ')';
+  // Perm preview (shown when collapsed)
+  var permPreview = document.getElementById('configPermPreview');
+  if (permPreview) {
+    if (c.permittedRoles.length === 0) {
+      permPreview.innerHTML = '<span style="color:#ff1f1f;">No roles — hidden from everyone</span>';
+    } else if (c.permittedRoles.length === allRoles.length) {
+      permPreview.innerHTML = '<span style="color:#0a9e4a;">All roles can access</span>';
+    } else {
+      var preview = c.permittedRoles.slice(0, 3).join(', ');
+      if (c.permittedRoles.length > 3) preview += ' +' + (c.permittedRoles.length - 3) + ' more';
+      permPreview.textContent = preview;
+    }
+  }
 
   // Footer visibility
-  document.getElementById('configDetailFooter').style.display = (c.isDefault && !c.lastUpdated) ? 'none' : 'flex';
+  document.getElementById('configDetailFooter').style.display = (c.isDefault && !c.lastUpdated) ? 'none' : '';
 
   nameInput.oninput = function() {
     c.name = nameInput.value; c.lastUpdated = new Date().toISOString();
@@ -7656,7 +8156,7 @@ function toggleDetailEnabled() {
 
 function toggleStatusPill() {
   var c = configData.find(function(x){ return x.id === configSelectedId && x.type === 'config'; });
-  if (!c || c.isDefault || c.isReadOnly) return;
+  if (!c || c.isDefault) return;
   c.isEnabled = !c.isEnabled;
   c.lastUpdated = new Date().toISOString();
   renderConfigList(document.getElementById('configSearchInput').value);
@@ -7700,6 +8200,10 @@ function createConfig(mode) {
     return;
   }
 
+  // EC4d: Warn if creating more than 20 configurations
+  var configCount = configData.filter(function(c){ return c.type === 'config'; }).length;
+  if (configCount >= 20) { showConfigToast('Large numbers of configurations may affect performance'); }
+
   var counter = 1;
   while (configData.some(function(c){ return c.type === 'config' && c.name === 'Configuration ' + counter; })) counter++;
   var maxOrder = 0;
@@ -7718,21 +8222,34 @@ function createConfig(mode) {
     parentId: null,
     order: maxOrder,
     createdBy: 'You',
-    partStates: mode === 'view' ? captureCurrentSceneState() : {}
+    partStates: mode === 'view' ? captureCurrentSceneState() : (function() {
+      var def = configData.find(function(c){ return c.isDefault; });
+      return def && def.partStates ? JSON.parse(JSON.stringify(def.partStates)) : {};
+    })()
   };
   configData.push(newConfig);
   configSelectedId = newConfig.id;
   configActiveId = newConfig.id;
   renderConfigList(document.getElementById('configSearchInput').value);
   renderConfigDetail();
+  updateConfigViewportLabel();
+  // Animate the new config item
+  var newEl = document.querySelector('[data-config-id="' + newConfig.id + '"]');
+  if (newEl) {
+    newEl.classList.add('cfg-new');
+    newEl.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
   showConfigToast('Configuration "' + newConfig.name + '" created (' + (mode === 'default' ? 'from default' : 'from current view') + ')');
 }
 
 function addConfigTag() {
   var c = configData.find(function(x){ return x.id === configSelectedId && x.type === 'config'; });
-  if (!c || c.isReadOnly) return;
+  if (!c) return;
   var input = document.getElementById('configTagInput');
   var tag = input.value.trim().toLowerCase();
+  // FR84: Tag validation — max 50 chars per tag, max 20 tags
+  if (tag.length > 50) { tag = tag.substring(0, 50); }
+  if (c.tags.length >= 20) { showConfigToast('Maximum 20 tags per configuration'); input.value = ''; return; }
   if (tag && c.tags.indexOf(tag) === -1) {
     c.tags.push(tag);
     c.lastUpdated = new Date().toISOString();
@@ -7744,7 +8261,7 @@ function addConfigTag() {
 
 function removeConfigTag(tag) {
   var c = configData.find(function(x){ return x.id === configSelectedId && x.type === 'config'; });
-  if (!c || c.isReadOnly) return;
+  if (!c) return;
   c.tags = c.tags.filter(function(t){ return t !== tag; });
   c.lastUpdated = new Date().toISOString();
   renderConfigList(document.getElementById('configSearchInput').value);
@@ -7753,7 +8270,7 @@ function removeConfigTag(tag) {
 
 function configSetFromView() {
   var c = configData.find(function(x){ return x.id === configSelectedId && x.type === 'config'; });
-  if (!c || c.isDefault || c.isReadOnly) return;
+  if (!c) return;
   var captured = captureCurrentSceneState();
   c.partStates = captured;
   c.lastUpdated = new Date().toISOString();
@@ -7786,7 +8303,7 @@ function configExport() {
 function renameConfig(id) {
   var c = configData.find(function(x){ return x.id === id; });
   if (!c) return;
-  if (c.type === 'config' && c.isReadOnly) return;
+  if (c.type === 'config' && c.isReadOnly && !c.isDefault) return;
 
   // If it's a config and the detail panel can show it, open detail and focus name input
   if (c.type === 'config') {
@@ -7810,26 +8327,31 @@ function openCfgRenameModal(item) {
   if (existing) existing.remove();
   var overlay = document.createElement('div');
   overlay.id = 'cfgRenameOverlay';
-  overlay.style.cssText = 'position:fixed; inset:0; z-index:250; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;';
+  overlay.style.cssText = 'position:fixed; inset:0; z-index:250; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; animation:fadeIn .15s;';
   var modal = document.createElement('div');
-  modal.style.cssText = 'background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); width:320px; padding:20px; display:flex; flex-direction:column; gap:12px;';
+  modal.style.cssText = 'background:#fff; border-radius:14px; box-shadow:0 8px 40px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.06); border:1px solid #e9e9e9; width:320px; padding:22px; display:flex; flex-direction:column; gap:14px;';
   var title = document.createElement('div');
-  title.style.cssText = 'font-size:14px; font-weight:700; color:#36415d;';
+  title.style.cssText = 'font-size:15px; font-weight:700; color:#36415d;';
   title.textContent = 'Rename ' + (item.type === 'folder' ? 'folder' : 'configuration');
   var input = document.createElement('input');
   input.type = 'text';
   input.value = item.name;
-  input.style.cssText = 'width:100%; height:36px; border:1px solid #c2c9db; border-radius:8px; padding:0 12px; font-family:inherit; font-size:13px; color:#36415d; outline:none; box-sizing:border-box;';
-  input.onfocus = function() { input.style.borderColor = '#2e80ed'; };
-  input.onblur = function() { input.style.borderColor = '#c2c9db'; };
+  input.maxLength = 100;
+  input.style.cssText = 'width:100%; height:38px; border:1px solid #e9e9e9; border-radius:10px; padding:0 12px; font-family:inherit; font-size:13px; font-weight:500; color:#36415d; outline:none; box-sizing:border-box; background:#f5f5f5; transition:all 0.15s;';
+  input.onfocus = function() { input.style.borderColor = '#2e80ed'; input.style.background = '#fff'; input.style.boxShadow = '0 0 0 2px rgba(46,128,237,0.12)'; };
+  input.onblur = function() { input.style.borderColor = '#e9e9e9'; input.style.background = '#f5f5f5'; input.style.boxShadow = 'none'; };
   var btnRow = document.createElement('div');
   btnRow.style.cssText = 'display:flex; justify-content:flex-end; gap:8px;';
   var cancelBtn = document.createElement('button');
   cancelBtn.textContent = 'Cancel';
-  cancelBtn.style.cssText = 'height:32px; padding:0 16px; background:#e9e9e9; color:#36415d; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer;';
+  cancelBtn.style.cssText = 'height:34px; padding:0 18px; background:none; color:#868d9e; border:1px solid #c2c9db; border-radius:8px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s;';
+  cancelBtn.onmouseenter = function() { cancelBtn.style.background = '#f5f5f5'; };
+  cancelBtn.onmouseleave = function() { cancelBtn.style.background = 'none'; };
   var saveBtn = document.createElement('button');
   saveBtn.textContent = 'Rename';
-  saveBtn.style.cssText = 'height:32px; padding:0 16px; background:#2f80ed; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:500; cursor:pointer;';
+  saveBtn.style.cssText = 'height:34px; padding:0 20px; background:#2f80ed; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; box-shadow:0 2px 8px rgba(47,128,237,0.25);';
+  saveBtn.onmouseenter = function() { saveBtn.style.background = '#5999f1'; };
+  saveBtn.onmouseleave = function() { saveBtn.style.background = '#2f80ed'; };
 
   function doRename() {
     var newName = input.value.trim();
@@ -7891,28 +8413,52 @@ function duplicateConfig(id) {
   configSelectedId = dup.id;
   renderConfigList(document.getElementById('configSearchInput').value);
   renderConfigDetail();
+  var dupEl = document.querySelector('[data-config-id="' + dup.id + '"]');
+  if (dupEl) {
+    dupEl.classList.add('cfg-new');
+    dupEl.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  showConfigToast('"' + dup.name + '" duplicated');
 }
 
-function deleteConfig(id) {
+function deleteConfig(id, skipConfirm) {
   var c = configData.find(function(x){ return x.id === id && x.type === 'config'; });
-  if (!c || c.isDefault || c.isReadOnly) return;
+  if (!c || c.isDefault) return;
+  // FR4/FR19: Show confirmation before deleting
+  if (!skipConfirm) {
+    var row = document.querySelector('[data-config-id="' + id + '"]');
+    if (row && !row.querySelector('.cfg-delete-confirm')) {
+      var confirm = document.createElement('div');
+      confirm.className = 'cfg-delete-confirm';
+      confirm.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.95);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:8px;z-index:5;padding:0 8px;';
+      confirm.innerHTML = '<span style="font-size:12px;color:#36415d;">Delete?</span>'
+        + '<button style="height:26px;padding:0 10px;background:#ff1f1f;color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;" onclick="deleteConfig(\'' + id + '\',true);this.closest(\'.cfg-delete-confirm\').remove();">Yes</button>'
+        + '<button style="height:26px;padding:0 10px;background:#e9e9e9;color:#36415d;border:none;border-radius:6px;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;" onclick="this.closest(\'.cfg-delete-confirm\').remove();">Cancel</button>';
+      row.style.position = 'relative';
+      row.appendChild(confirm);
+    }
+    return;
+  }
   var name = c.name;
-  configData = configData.filter(function(x){ return x.id !== id; });
+  configData = configData.filter(function(x){ return x.id !== id; }); window.configData = configData;
   if (configSelectedId === id) { configSelectedId = null; flHide('configDetailPanel'); }
   if (id === configActiveId) {
-    configActiveId = null;
-    // Reset scene to default
-    if (typeof showAllParts === 'function') showAllParts();
+    // EC4b: Switch to default config when active config is deleted
+    var defCfg = configData.find(function(x){ return x.isDefault; });
+    if (defCfg) { applyConfiguration(defCfg.id); } else { configActiveId = null; if (typeof showAllParts === 'function') showAllParts(); }
+    updateConfigViewportLabel();
   }
   configSelectedIds.delete(id);
   renderConfigList(document.getElementById('configSearchInput').value);
-  showConfigToast('"' + name + '" deleted — Ctrl+Z to undo');
+  showConfigToast('"' + name + '" deleted');
 }
 
 function copyConfigLink(id) {
   var c = configData.find(function(x){ return x.id === id; });
   if (!c) return;
-  var url = location.origin + location.pathname + '?config=' + encodeURIComponent(c.id);
+  // FR78: Deep link format — frontline://open/{digitalTwinId}?config={configId}
+  var dtId = document.getElementById('itemName') ? document.getElementById('itemName').value.replace(/\s+/g, '-').toLowerCase() : 'digital-twin';
+  var url = 'frontline://open/' + encodeURIComponent(dtId) + '?config=' + encodeURIComponent(c.id);
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url).then(function() {
       showConfigToast('Link copied to clipboard');
@@ -7926,6 +8472,9 @@ function copyConfigLink(id) {
 
 // --- Folder functions ---
 function createConfigFolder() {
+  // EC4e: Warn if creating more than 50 folders
+  var folderCount = configData.filter(function(c){ return c.type === 'folder'; }).length;
+  if (folderCount >= 50) { showConfigToast('Consider consolidating folders for easier management'); }
   var counter = 1;
   var folders = configData.filter(function(c){ return c.type === 'folder'; });
   while (folders.some(function(f){ return f.name === 'New Folder' + (counter > 1 ? ' ' + counter : ''); })) counter++;
@@ -7956,7 +8505,7 @@ function deleteConfigFolder(folderId) {
   configData.forEach(function(c) {
     if (c.parentId === folderId) { c.parentId = null; c.order = maxOrder++; }
   });
-  configData = configData.filter(function(x){ return x.id !== folderId; });
+  configData = configData.filter(function(x){ return x.id !== folderId; }); window.configData = configData;
   configExpandedFolders.delete(folderId);
   configSelectedIds.delete(folderId);
   renderConfigList(document.getElementById('configSearchInput').value);
@@ -7984,13 +8533,28 @@ function openConfigFooterMenu(e) {
   var menu = document.getElementById('configCtxMenu');
   if (!menu) return;
   menu._cfgId = null;
-  menu.innerHTML = '<button class="config-ctx-menu-item" data-cfg-action="import"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>Import Excel</button>'
-    + '<button class="config-ctx-menu-item" data-cfg-action="export"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Export Excel</button>';
+  menu.innerHTML =
+      '<button class="config-ctx-menu-item" data-cfg-action="import"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>Import from Excel</button>'
+    + '<button class="config-ctx-menu-item" data-cfg-action="export"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Export to Excel</button>'
+    + '<div class="config-ctx-sep"></div>'
+    + '<button class="config-ctx-menu-item" onclick="configExpandAll()"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z"/></svg>Expand all folders</button>'
+    + '<button class="config-ctx-menu-item" onclick="configCollapseAll()"><svg viewBox="0 0 24 24" width="14" height="14" fill="#868d9e"><path d="M7.41 18.59L8.83 20 12 16.83 15.17 20l1.41-1.41L12 14l-4.59 4.59zm9.18-13.18L15.17 4 12 7.17 8.83 4 7.41 5.41 12 10l4.59-4.59z"/></svg>Collapse all folders</button>';
   var r = e.target.closest('button').getBoundingClientRect();
   menu.style.top = 'auto';
   menu.style.bottom = (window.innerHeight - r.top + 4) + 'px';
   menu.style.left = Math.min(r.left, window.innerWidth - 220) + 'px';
   menu.classList.add('show');
+}
+
+function configExpandAll() {
+  configData.filter(function(c){ return c.type === 'folder'; }).forEach(function(f){ configExpandedFolders.add(f.id); });
+  renderConfigList(document.getElementById('configSearchInput').value);
+  document.getElementById('configCtxMenu').classList.remove('show');
+}
+function configCollapseAll() {
+  configExpandedFolders.clear();
+  renderConfigList(document.getElementById('configSearchInput').value);
+  document.getElementById('configCtxMenu').classList.remove('show');
 }
 
 // Config picker (From existing)
@@ -8015,7 +8579,9 @@ function renderCfgPicker() {
     return c.name.toLowerCase().indexOf(q) !== -1 || c.tags.some(function(t){ return t.toLowerCase().indexOf(q) !== -1; });
   });
   if (configs.length === 0) {
-    list.innerHTML = '<div style="padding:24px; text-align:center; color:#868d9e; font-size:13px;">No configurations found</div>';
+    list.innerHTML = '<div style="padding:28px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;">'
+      + '<svg viewBox="0 0 24 24" width="20" height="20" fill="#c2c9db"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>'
+      + '<span style="font-size:12px;color:#868d9e;">No configurations found</span></div>';
     return;
   }
   var html = '';
@@ -8023,10 +8589,22 @@ function renderCfgPicker() {
     var pkVisC = 0, pkXfC = 0;
     if (c.partStates) { var pkK = Object.keys(c.partStates); for (var pki = 0; pki < pkK.length; pki++) { var pkE = normalizePartState(c.partStates[pkK[pki]]); if (pkE.hasTransform) pkXfC++; else pkVisC++; } }
     var pkTotal = pkVisC + pkXfC;
-    var pkText = pkTotal === 0 ? 'No overrides' : (pkXfC === 0 ? pkVisC + ' visibility override' + (pkVisC !== 1 ? 's' : '') : (pkVisC === 0 ? pkXfC + ' transform override' + (pkXfC !== 1 ? 's' : '') : pkVisC + ' visibility + ' + pkXfC + ' transform'));
-    html += '<div onclick="cfgPickerSelect(\'' + c.id + '\')" style="padding:8px 10px; border-radius:8px; cursor:pointer; transition:background 0.1s;" onmouseover="this.style.background=\'#f0f3f8\'" onmouseout="this.style.background=\'\'">'
-      + '<div style="font-size:13px; font-weight:500; color:#36415d;">' + escHtml(c.name) + (c.isDefault ? ' <span style="font-size:10px;color:#2f80ed;font-weight:600;">DEFAULT</span>' : '') + '</div>'
-      + '<div style="font-size:11px; color:#868d9e; margin-top:1px;">' + pkText + '</div>'
+    var tagsHtml = '';
+    if (c.tags && c.tags.length > 0) {
+      tagsHtml = '<div style="display:flex;gap:3px;margin-top:4px;">';
+      c.tags.slice(0,3).forEach(function(t) { tagsHtml += '<span style="font-size:9px;color:#868d9e;background:#f0f0f3;padding:1px 6px;border-radius:99px;line-height:14px;">' + escHtml(t) + '</span>'; });
+      if (c.tags.length > 3) tagsHtml += '<span style="font-size:9px;color:#2f80ed;background:rgba(47,128,237,0.06);padding:1px 6px;border-radius:99px;line-height:14px;">+' + (c.tags.length - 3) + '</span>';
+      tagsHtml += '</div>';
+    }
+    html += '<div onclick="cfgPickerSelect(\'' + c.id + '\')" style="padding:10px 12px; border-radius:10px; cursor:pointer; transition:all 0.1s; border:1px solid transparent;" onmouseover="this.style.background=\'rgba(47,128,237,0.04)\';this.style.borderColor=\'rgba(47,128,237,0.1)\'" onmouseout="this.style.background=\'\';this.style.borderColor=\'transparent\'">'
+      + '<div style="display:flex;align-items:center;gap:6px;">'
+      + '<div style="width:8px;height:8px;border-radius:50%;background:' + (c.isEnabled ? '#11e874' : '#c2c9db') + ';flex-shrink:0;"></div>'
+      + '<span style="font-size:13px; font-weight:600; color:#36415d;">' + escHtml(c.name) + '</span>'
+      + (c.isDefault ? '<span style="font-size:9px;color:#2f80ed;background:rgba(47,128,237,0.08);padding:1px 6px;border-radius:99px;font-weight:600;">DEFAULT</span>' : '')
+      + (pkTotal > 0 ? '<span style="font-size:9px;color:#868d9e;margin-left:auto;">' + pkTotal + ' overrides</span>' : '')
+      + '</div>'
+      + (c.description ? '<div style="font-size:11px; color:#868d9e; margin-top:3px; line-height:1.4; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + escHtml(c.description) + '</div>' : '')
+      + tagsHtml
       + '</div>';
   });
   list.innerHTML = html;
@@ -8108,9 +8686,10 @@ function applyConfiguration(configId) {
     });
   }
 
-  // 4. For default config (empty partStates) — just the reset above is enough
-  if (cfg.isDefault || !cfg.partStates || Object.keys(cfg.partStates).length === 0) {
+  // 4. If no part overrides, the reset above is enough
+  if (!cfg.partStates || Object.keys(cfg.partStates).length === 0) {
     configActiveId = configId;
+    updateConfigViewportLabel();
     if (typeof renderPartsList === 'function') renderPartsList();
     return;
   }
@@ -8154,7 +8733,30 @@ function applyConfiguration(configId) {
   }
 
   configActiveId = configId;
+  updateConfigViewportLabel();
   if (typeof renderPartsList === 'function') renderPartsList();
+}
+
+// FR85: Update viewport label showing active config name
+function updateConfigViewportLabel() {
+  var label = document.getElementById('configViewportLabel');
+  var nameEl = document.getElementById('configViewportLabelName');
+  if (!label || !nameEl) return;
+  var activeTab = document.querySelector('.panel-tab[data-tab="configurations"]');
+  var isConfigsTabActive = activeTab && activeTab.classList.contains('active');
+  if (configActiveId && isConfigsTabActive) {
+    var cfg = configData.find(function(c){ return c.id === configActiveId; });
+    if (cfg) {
+      nameEl.textContent = cfg.name;
+      label.style.display = '';
+      label.onclick = function() {
+        var row = document.querySelector('[data-config-id="' + configActiveId + '"]');
+        if (row) { row.scrollIntoView({block:'nearest',behavior:'smooth'}); row.style.background='#d9e0f0'; setTimeout(function(){row.style.background='';},800); }
+      };
+      return;
+    }
+  }
+  label.style.display = 'none';
 }
 
 function captureCurrentSceneState() {
@@ -8203,7 +8805,7 @@ function captureCurrentSceneState() {
 function autoSaveActiveConfig() {
   if (!configActiveId) return;
   var cfg = configData.find(function(c){ return c.id === configActiveId && c.type === 'config'; });
-  if (!cfg || cfg.isDefault || cfg.isReadOnly) return;
+  if (!cfg) return;
   if (!state.parts || !state.parts.length) return;
   cfg.partStates = captureCurrentSceneState();
   cfg.lastUpdated = new Date().toISOString();
@@ -8237,22 +8839,33 @@ window.openCfgPicker = openCfgPicker;
 window.closeCfgPicker = closeCfgPicker;
 window.renderCfgPicker = renderCfgPicker;
 window.cfgPickerSelect = cfgPickerSelect;
+window.showConfigToast = showConfigToast;
+window.updateConfigViewportLabel = updateConfigViewportLabel;
+window.renderConfigDetail = renderConfigDetail;
 window.openCfgRenameModal = openCfgRenameModal;
 window.getPartByName = getPartByName;
 window.applyConfiguration = applyConfiguration;
 window.captureCurrentSceneState = captureCurrentSceneState;
 window.autoSaveActiveConfig = autoSaveActiveConfig;
+window.configData = configData;
 
 function showConfigToast(msg) {
   var existing = document.getElementById('configToast');
   if (existing) existing.remove();
   var toast = document.createElement('div');
   toast.id = 'configToast';
-  toast.textContent = msg;
-  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#36415d;color:#fff;padding:8px 20px;border-radius:8px;font-size:13px;font-family:inherit;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:opacity .3s;';
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:#fff;color:#36415d;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;z-index:10000;box-shadow:0 4px 24px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.06);border:1px solid #e9e9e9;display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .2s,transform .2s;';
+  toast.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#2f80ed;flex-shrink:0;"></span>' + escHtml(msg);
   document.body.appendChild(toast);
-  setTimeout(function(){ toast.style.opacity = '0'; }, 1800);
-  setTimeout(function(){ toast.remove(); }, 2200);
+  requestAnimationFrame(function() {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  setTimeout(function(){
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(12px)';
+  }, 2200);
+  setTimeout(function(){ toast.remove(); }, 2600);
 }
 
 /* ── In-app modal system (replaces native alert/confirm/prompt) ── */
@@ -8344,8 +8957,17 @@ function appPrompt(msg, defaultVal, title) {
 }
 
 // Search filtering
-document.getElementById('configSearchInput').addEventListener('input', function() {
+var cfgSearchInput = document.getElementById('configSearchInput');
+var cfgSearchWrap = cfgSearchInput.parentElement;
+cfgSearchInput.addEventListener('input', function() {
   renderConfigList(this.value);
+  cfgSearchWrap.classList.toggle('has-value', this.value.length > 0);
+});
+document.getElementById('cfgSearchClear').addEventListener('click', function() {
+  cfgSearchInput.value = '';
+  cfgSearchWrap.classList.remove('has-value');
+  renderConfigList('');
+  cfgSearchInput.focus();
 });
 
 // Toolbar buttons
@@ -8364,10 +8986,8 @@ document.addEventListener('click', function(e) {
 });
 document.getElementById('cfgFooterMenuBtn').addEventListener('click', function(e) { e.stopPropagation(); openConfigFooterMenu(e); });
 
-// Tag input enter key
-document.getElementById('configTagInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') addConfigTag();
-});
+// Tag input — Enter key handled inline via onkeydown attribute
+// updateTagAddBtn removed — no separate Add button, Enter adds tags
 
 // Initialize configurations on page load
 renderConfigList('');
@@ -16364,12 +16984,23 @@ flInit('procModal',    { x: Math.round(window.innerWidth/2 - 240), y: Math.round
 flInit('matWindow',    { x: 80, y: topOff + 20, w: 340, h: 520, minW: 260, minH: 280 });
 flInit('animManager',  { x: 80, y: topOff + 40, w: 320, h: 420, minW: 240, minH: 200 });
 flInit('bookmarksPanel', { x: window.innerWidth - 660, y: topOff + 20, w: 520, h: 700, minW: 320, minH: 300 });
-flInit('configDetailPanel', { x: window.innerWidth - 680, y: topOff + 20, w: 320, h: 420, minW: 260, minH: 200 });
+flInit('configDetailPanel', { x: window.innerWidth - 720, y: topOff + 20, w: 340, h: 480, minW: 280, minH: 240 });
 // Override close button to also deselect config
 document.getElementById('configDetailClose').addEventListener('click', function(e) {
   e.stopPropagation();
   closeConfigDetail();
 });
+// Scroll shadow on detail panel
+(function() {
+  var detailBody = document.querySelector('#configDetailPanel .fl-body');
+  if (detailBody) {
+    detailBody.addEventListener('scroll', function() {
+      detailBody.classList.toggle('scrolled', detailBody.scrollTop > 8);
+      var atBottom = detailBody.scrollHeight - detailBody.scrollTop - detailBody.clientHeight < 8;
+      detailBody.classList.toggle('scrolled-bottom', atBottom);
+    });
+  }
+})();
 
 // Procedures panel search
 

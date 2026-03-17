@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useClickOutside } from '../../hooks/useClickOutside';
+import { useAppPopup } from '../../contexts/AppPopupContext';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -165,6 +166,7 @@ function KnowledgeBaseContent() {
     currentProject
   } = useProject();
   const { showToast } = useToast();
+  const { confirm } = useAppPopup();
   const { currentRole } = useRole();
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
@@ -693,9 +695,10 @@ function KnowledgeBaseContent() {
     }
   };
 
-  const deleteSelectedItems = () => {
+  const deleteSelectedItems = async () => {
     if (selectedItems.size > 3) {
-      if (!window.confirm(`Delete ${selectedItems.size} items? This can be undone.`)) return;
+      const ok = await confirm(`Delete ${selectedItems.size} items? This can be undone.`, { title: 'Delete Items', variant: 'warning', destructive: true });
+      if (!ok) return;
     }
     const itemsCopy = [...items];
     const count = selectedItems.size;
@@ -914,7 +917,7 @@ function KnowledgeBaseContent() {
       case 'folder':
         return 'text-primary bg-primary/10';
       case 'digital-twin':
-        return 'text-[#8404b3] bg-[#8404b3]/10';
+        return 'text-[#8B5CF6] bg-[#8B5CF6]/10';
       case 'procedure':
         return 'text-[#2F80ED] bg-[#2F80ED]/10';
       case 'media':
@@ -1693,8 +1696,14 @@ function KnowledgeBaseContent() {
     return path;
   };
 
+  // Default type priority: folders first, then digital twins, then procedures, then media
+  const TYPE_PRIORITY: Record<string, number> = { 'folder': 0, 'digital-twin': 1, 'procedure': 2, 'media': 3 };
+  const sortByTypePriority = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
+    return [...items].sort((a, b) => (TYPE_PRIORITY[a.type] ?? 9) - (TYPE_PRIORITY[b.type] ?? 9));
+  };
+
   const sortItems = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
-    if (!sortColumn || !sortDirection) return items;
+    if (!sortColumn || !sortDirection) return sortByTypePriority(items);
 
     const sorted = [...items].sort((a, b) => {
       const aValue = getColumnValue(a, sortColumn);
@@ -1754,7 +1763,8 @@ function KnowledgeBaseContent() {
 
     if (viewMode === 'grid' || selectedFilter !== 'all' || searchQuery) {
       itemsToFilter = sortItems(itemsToFilter);
-    } else if (sortColumn && sortDirection) {
+    } else {
+      // List view: apply sort recursively through tree (uses type priority as default)
       const sortRecursive = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
         const sorted = sortItems(items);
         return sorted.map(item => ({
@@ -1955,8 +1965,8 @@ function KnowledgeBaseContent() {
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
                   >
-                    <div className="p-1.5 rounded bg-[#8404b3]/10 shrink-0">
-                      <Box size={16} className="text-[#8404b3]" />
+                    <div className="p-1.5 rounded bg-[#2F80ED]/10 shrink-0">
+                      <Box size={16} className="text-[#2F80ED]" />
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <p style={{ fontWeight: 'var(--font-weight-bold)' }}>Digital Twin</p>

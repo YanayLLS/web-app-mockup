@@ -135,7 +135,7 @@ export function ProcedureSettings({
                 </span>
                 <span className="text-xs text-muted">(optional)</span>
               </div>
-              <button className="text-xs bg-clip-text text-transparent bg-gradient-to-r from-[#5b19b4] to-[#004fff] hover:opacity-80 transition-opacity" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              <button className="text-xs bg-clip-text text-transparent bg-gradient-to-r from-[#2F80ED] to-[#004fff] hover:opacity-80 transition-opacity" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 Summarize with AI
               </button>
             </div>

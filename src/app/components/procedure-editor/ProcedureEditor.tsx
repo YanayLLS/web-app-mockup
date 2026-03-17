@@ -10,7 +10,7 @@ import { ValidationPanel } from './ValidationPanel';
 import { OptionsManager } from './OptionsManager';
 import { BookmarksModal } from './BookmarksModal';
 import { PartsCatalogPanel } from './PartsCatalogPanel';
-import { MOCK_CONFIGURATIONS } from './configurationsData';
+import { MOCK_CONFIGURATIONS } from '../../data/configurationsData';
 import type { ModelHierarchyNode } from './Viewer3D';
 import { TableOfContents } from './TableOfContents';
 import { Tutorial } from './Tutorial';
@@ -23,6 +23,7 @@ import { motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProcedureSteps } from '../../contexts/ProcedureStepsContext';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
+import { useAppPopup } from '../../contexts/AppPopupContext';
 
 // Extend window type for validation callback
 declare global {
@@ -246,7 +247,7 @@ const sampleSteps: Step[] = [
         title: 'Base Frame & Mounts',
         description: 'Check all anti-vibration mounts for cracking or compression. Verify anchor bolts are tight. Look for fluid puddles under the base frame.',
         position: { x: 45, y: 70 },
-        color: '#8404B3',
+        color: '#2F80ED',
         mediaFiles: [],
         arrowDirection: 'up',
       },
@@ -273,7 +274,7 @@ const sampleSteps: Step[] = [
     title: 'Check Engine Oil Level & Condition',
     description: 'Remove the oil dipstick, wipe clean, reinsert fully, and withdraw to read the level. Oil should be between the LOW and FULL marks. Inspect oil color and consistency — dark black or gritty oil indicates the need for an oil change.',
     actions: [],
-    color: '#8404B3',
+    color: '#2F80ED',
     hasAnimation: false,
     popups: [
       {
@@ -281,7 +282,7 @@ const sampleSteps: Step[] = [
         title: 'Dipstick Location',
         description: 'The engine oil dipstick has a yellow handle and is located on the left side of the engine block, near the oil fill cap.',
         position: { x: 35, y: 40 },
-        color: '#8404B3',
+        color: '#2F80ED',
         mediaFiles: [],
         arrowDirection: 'right',
       },
@@ -462,7 +463,7 @@ const sampleSteps: Step[] = [
         title: 'Fuel Filter Replacement',
         description: 'If replacing: close fuel supply valve, use a filter wrench to remove old filter, prime new filter with clean diesel, install hand-tight plus 1/2 turn. Bleed air from the system using the bleed screw on the injection pump.',
         position: { x: 50, y: 70 },
-        color: '#8404B3',
+        color: '#2F80ED',
         mediaFiles: [],
         arrowDirection: 'up',
       },
@@ -520,7 +521,7 @@ const sampleSteps: Step[] = [
     title: 'Inspect Drive Belt & Coolant Hoses',
     description: 'Check the serpentine drive belt for cracks, fraying, glazing, or excessive slack. Belt deflection should be 10-12mm at the longest span. Inspect all coolant hoses by squeezing them — they should be firm but flexible. Soft, spongy, or cracked hoses must be replaced.',
     actions: [],
-    color: '#8404B3',
+    color: '#2F80ED',
     hasAnimation: false,
     popups: [
       {
@@ -528,7 +529,7 @@ const sampleSteps: Step[] = [
         title: 'Belt Tension Check',
         description: 'Press the belt at the midpoint between the alternator and water pump pulleys. Acceptable deflection: 10–12mm. If the auto-tensioner is at its limit, replace the belt.',
         position: { x: 35, y: 45 },
-        color: '#8404B3',
+        color: '#2F80ED',
         mediaFiles: [],
         arrowDirection: 'right',
       },
@@ -601,7 +602,7 @@ const sampleSteps: Step[] = [
         title: 'Maintenance Log Entry',
         description: 'Record: date, run hours, oil level/change, filter status, coolant level, battery voltage, belt condition, and any issues found. Sign and date the entry.',
         position: { x: 45, y: 75 },
-        color: '#8404B3',
+        color: '#2F80ED',
         mediaFiles: [],
         requiresConfirmation: true,
         confirmButtonText: 'Logbook updated',
@@ -658,6 +659,7 @@ export function ProcedureEditor() {
   // Role-based permission check — only content creators / admins can edit
   const { currentRole } = useRole();
   const canEdit = hasAccess(currentRole, 'projects-edit');
+  const { alert: appAlert, confirm: appConfirm } = useAppPopup();
 
   // Shared procedure steps context — single source of truth
   const { getSteps, setSteps: setContextSteps, getTitle, setTitle: setContextTitle } = useProcedureSteps();
@@ -1126,12 +1128,12 @@ export function ProcedureEditor() {
     
     // Check for duplicates
     if (currentStep.actions.some(a => a.label === trimmedAction)) {
-      alert('This option already exists');
+      appAlert('This option already exists.', { title: 'Duplicate Option', variant: 'warning' });
       return;
     }
 
     if (currentStep.actions.length >= 20) {
-      alert('Maximum 20 options per step');
+      appAlert('Maximum 20 options per step.', { title: 'Limit Reached', variant: 'warning' });
       return;
     }
 
@@ -1205,7 +1207,7 @@ export function ProcedureEditor() {
 
   const handleAddMediaFiles = useCallback((files: MediaFile[]) => {
     if (currentStep.mediaFiles.length + files.length > 10) {
-      alert('Maximum 10 media files per step');
+      appAlert('Maximum 10 media files per step.', { title: 'Limit Reached', variant: 'warning' });
       return;
     }
 
@@ -1259,7 +1261,7 @@ export function ProcedureEditor() {
 
   const handleAddPopup = useCallback((popup: Popup) => {
     if (currentStep.popups.length >= 10) {
-      alert('Maximum 10 popups per step');
+      appAlert('Maximum 10 popups per step.', { title: 'Limit Reached', variant: 'warning' });
       return;
     }
 
@@ -1975,22 +1977,21 @@ export function ProcedureEditor() {
     // This would hide all parts except selected ones
   }, []);
 
-  const handleStartTutorial = useCallback(() => {
+  const handleStartTutorial = useCallback(async () => {
     // Check if screen is too small
     if (window.innerWidth < 768) {
-      if (!confirm('Tutorial is best viewed on larger screens. Continue anyway?')) {
-        return;
-      }
+      const ok = await appConfirm('Tutorial is best viewed on larger screens. Continue anyway?', { title: 'Small Screen', variant: 'warning' });
+      if (!ok) return;
     }
 
     // Only start if editing is enabled
     if (!editingEnabled) {
-      alert('Please enable editing mode to view the tutorial');
+      appAlert('Please enable editing mode to view the tutorial.', { title: 'Editing Required', variant: 'info' });
       return;
     }
 
     setShowTutorial(true);
-  }, [editingEnabled]);
+  }, [editingEnabled, appAlert, appConfirm]);
 
   // Sample object targets for AR placement
   const availableTargets: ObjectTarget[] = useMemo(() => [
@@ -2561,43 +2562,8 @@ export function ProcedureEditor() {
                   </div>
                 )}
 
-                {/* GAP 3 (FR55-57): Configuration dropdown for steps — shown in edit mode */}
-                {editingEnabled && (
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 pointer-events-auto"
-                    style={{ top: '-32px', zIndex: 20 }}
-                  >
-                    <div className="flex items-center gap-2" style={{ fontSize: '12px', fontFamily: 'var(--font-family)' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Config:</span>
-                      <select
-                        value={currentStep.configurationId || ''}
-                        onChange={(e) => {
-                          const configId = e.target.value || undefined;
-                          const configName = configId
-                            ? MOCK_CONFIGURATIONS.find(c => c.id === configId)?.name
-                            : undefined;
-                          handleUpdateStep({ configurationId: configId, configurationName: configName });
-                        }}
-                        style={{
-                          fontSize: '12px',
-                          fontFamily: 'var(--font-family)',
-                          color: currentStep.configurationId ? '#8404B3' : '#36415D',
-                          backgroundColor: 'rgba(255,255,255,0.95)',
-                          border: currentStep.configurationId ? '1px solid #8404B3' : '1px solid #C2C9DB',
-                          borderRadius: '6px',
-                          padding: '3px 8px',
-                          cursor: 'pointer',
-                          fontWeight: currentStep.configurationId ? 600 : 400,
-                        }}
-                      >
-                        <option value="">None</option>
-                        {MOCK_CONFIGURATIONS.filter(c => !c.isDefault).map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
+                {/* Configuration is set at the digital twin level, not per-step.
+                   Cannot change configuration mid-procedure. */}
 
                 {/* GAP 7 (FR58): Config-filtered options note in viewer mode */}
                 {!editingEnabled && activeConfigName && currentStep.actions.length > 1 && (
@@ -2648,7 +2614,7 @@ export function ProcedureEditor() {
                 backdropFilter: 'blur(8px)',
                 borderRadius: '20px',
                 padding: '6px 14px 6px 10px',
-                borderLeft: '3px solid #8404B3',
+                borderLeft: '3px solid #2F80ED',
                 maxWidth: '220px',
               }}
             >

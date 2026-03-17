@@ -651,7 +651,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                 </div>
 
                 {/* 3D Preview */}
-                <div className="relative w-full aspect-[16/9] bg-gradient-to-b from-[#5b19b4] to-[#004fff] rounded-[var(--radius)] overflow-hidden mb-3 flex items-center justify-center">
+                <div className="relative w-full aspect-[16/9] bg-gradient-to-b from-[#2F80ED] to-[#004fff] rounded-[var(--radius)] overflow-hidden mb-3 flex items-center justify-center">
                   {(isDT || selectedDigitalTwins.length > 0) ? (
                     <>
                       {!show3DViewer ? (
@@ -671,6 +671,10 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                         <Simple3DViewer
                           digitalTwinName={isDT ? procedureName : (selectedDigitalTwins.length === 1 ? selectedDigitalTwins[0]!.name : `${selectedDigitalTwins.length} digital twins`)}
                           onClose={() => setShow3DViewer(false)}
+                          onOpenSettings={() => {
+                            setShow3DViewer(false);
+                            setSettingsExpanded(true);
+                          }}
                           procedureId={!isDT ? procedure.id : undefined}
                         />
                       )}
@@ -852,15 +856,27 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 interface Simple3DViewerProps {
   digitalTwinName: string;
   onClose: () => void;
+  onOpenSettings?: () => void;
   procedureId?: string; // If provided, shows the procedure 3D view instead of the DT scene
 }
 
-function Simple3DViewer({ digitalTwinName, onClose, procedureId }: Simple3DViewerProps) {
+function Simple3DViewer({ digitalTwinName, onClose, onOpenSettings, procedureId }: Simple3DViewerProps) {
   const baseUrl = import.meta.env.BASE_URL;
   const iframeSrc = procedureId
     ? `${baseUrl}app/procedure-editor/${procedureId}?mode=view&preview=true`
     : `${baseUrl}app/digital-twin-scene.html?embedded=true`;
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Listen for settings request from embedded 3D scene
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'open-flow-settings' && onOpenSettings) {
+        onOpenSettings();
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [onOpenSettings]);
 
   return (
     <div className={isFullscreen ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "absolute inset-0 bg-black flex items-center justify-center"}>

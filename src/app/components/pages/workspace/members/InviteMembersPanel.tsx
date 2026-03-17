@@ -9,6 +9,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/app/components/ui/too
 import { calculateMenuPosition } from '@/app/utils/positionUtils';
 import * as XLSX from 'xlsx';
 import { RequestSeatsModal } from './RequestSeatsModal';
+import { useAppPopup } from '../../../../contexts/AppPopupContext';
 
 export interface Group {
   id: string;
@@ -45,6 +46,7 @@ const existingMembers = [
 ];
 
 export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateToRoles, groups = [], onNavigateToGroups, publicFeatureEnabled = true, availableSeats = 999, totalSeats = 999, availableRoles }: InviteMembersPanelProps) {
+  const { alert: appAlert } = useAppPopup();
   // Extract group names from groups data
   const availableGroups = groups.map(g => g.name);
   
@@ -278,7 +280,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
         setEmailTags([...emailTags, ...newTags]);
       } catch (error) {
         console.error('Error parsing file:', error);
-        alert('Failed to parse the file. Please make sure it\'s a valid Excel or CSV file.');
+        appAlert("Failed to parse the file. Please make sure it's a valid Excel or CSV file.", { title: 'Parse Error', variant: 'error' });
       }
     };
     
@@ -298,7 +300,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
       if (validTypes.includes(file.type) || file.name.endsWith('.csv') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
         extractEmailsFromFile(file);
       } else {
-        alert('Please upload a valid Excel (.xlsx, .xls) or CSV (.csv) file.');
+        appAlert('Please upload a valid Excel (.xlsx, .xls) or CSV (.csv) file.', { title: 'Invalid File Type', variant: 'error' });
       }
     }
     

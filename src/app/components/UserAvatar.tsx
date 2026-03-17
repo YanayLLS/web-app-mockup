@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Upload, Trash2, Camera } from 'lucide-react';
 import { useAvatar } from '../contexts/AvatarContext';
+import { useAppPopup } from '../contexts/AppPopupContext';
 import { useClickOutside } from '../hooks/useClickOutside';
 
 interface UserAvatarProps {
@@ -17,6 +18,7 @@ export function UserAvatar({
   initials = 'YD'
 }: UserAvatarProps) {
   const { avatarUrl, uploadAvatar, removeAvatar } = useAvatar();
+  const { alert: appAlert } = useAppPopup();
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const avatarRef = useRef<HTMLDivElement>(null);
@@ -80,13 +82,13 @@ export function UserAvatar({
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        await appAlert('Please select an image file.', { title: 'Invalid File', variant: 'error' });
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB');
+        await appAlert('Image size should be less than 5MB.', { title: 'File Too Large', variant: 'error' });
         return;
       }
 

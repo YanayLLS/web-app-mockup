@@ -261,7 +261,7 @@ export function AppVirtualRoomPage() {
                         key={i}
                         name={['Luy Robin', 'David Amrosa', 'Nika Jerrardo', 'Jared Sunn', 'Sarah Chen'][i % 5]}
                         initials={['LR', 'DA', 'NJ', 'JS', 'SC'][i % 5]}
-                        color={['#2F80ED', '#8404B3', '#E91E63', '#FF6B35', '#00BCD4'][i % 5]}
+                        color={['#2F80ED', '#2F80ED', '#E91E63', '#FF6B35', '#00BCD4'][i % 5]}
                         size="lg"
                         border={true}
                         className={i > 0 ? '-ml-1' : ''}

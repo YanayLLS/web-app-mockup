@@ -17,7 +17,7 @@ const allMembersData: MemberOption[] = [
   { id: 'member-7', name: 'Lucia Rossi', email: 'lucia.r@company.com', initials: 'LR', color: '#FF6B35' },
   { id: 'member-8', name: 'Tomasz Kowalski', email: 'tomasz.k@company.com', initials: 'TK', color: '#2F80ED' },
   { id: 'member-9', name: 'Rachel Torres', email: 'rachel.t@company.com', initials: 'RT', color: '#E91E63' },
-  { id: 'member-10', name: 'James Mitchell', email: 'james.m@company.com', initials: 'JM', color: '#8404B3' },
+  { id: 'member-10', name: 'James Mitchell', email: 'james.m@company.com', initials: 'JM', color: '#2F80ED' },
   { id: 'member-11', name: 'Karen Wells', email: 'karen.w@company.com', initials: 'KW', color: '#FF9800' },
   { id: 'member-12', name: 'Chris Anderson', email: 'chris.a@company.com', initials: 'CA', color: '#00BCD4' },
 ];

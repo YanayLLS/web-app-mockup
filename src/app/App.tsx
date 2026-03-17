@@ -43,6 +43,7 @@ import { FavoritesProvider, useFavorites } from './contexts/FavoritesContext';
 import { ActiveCallProvider } from './contexts/ActiveCallContext';
 import { ProcedureStepsProvider } from './contexts/ProcedureStepsContext';
 import { UserProfileProvider } from './contexts/UserProfileContext';
+import { AppPopupProvider } from './contexts/AppPopupContext';
 import { FloatingMinimizedCall } from './components/FloatingMinimizedCall';
 import { getUrlParam, setUrlParam } from './utils/urlParams';
 import { LoginScreen } from './components/LoginScreen';
@@ -609,7 +610,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
   return (
     <div
         id="app-root"
-        className="flex flex-col h-screen w-screen bg-background overflow-hidden"
+        className="flex flex-col h-screen w-full bg-background overflow-hidden"
         style={{
           userSelect: (isResizing || isResizingChat || isResizingSecondarySidebar) ? 'none' : 'auto'
         }}
@@ -931,7 +932,9 @@ function AppRouter() {
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <AppRouter />
+      <AppPopupProvider>
+        <AppRouter />
+      </AppPopupProvider>
     </BrowserRouter>
   );
 }

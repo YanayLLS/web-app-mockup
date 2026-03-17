@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Mic, MicOff, Users, PhoneOff, Crosshair, UserPlus, Send, Crown, Eye, EyeOff, Sliders } from 'lucide-react';
-import { ConfigurationsPanel } from '../procedure-editor/ConfigurationsPanel';
-import { MOCK_CONFIGURATIONS } from '../procedure-editor/configurationsData';
+import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Mic, MicOff, Users, PhoneOff, Crosshair, UserPlus, Send, Crown, Eye, EyeOff } from 'lucide-react';
 import { AppKnowledgeBasePage } from './pages/AppKnowledgeBasePage';
 import { AppProjectKBPage } from './pages/AppProjectKBPage';
 import { AppRemoteSupportPage } from './pages/AppRemoteSupportPage';
@@ -55,7 +53,7 @@ const appRecentlyViewed = allKBItems.filter(i => ['gen-p2', 'p2', 'dt1', 'mfg-p1
 
 const sidebarContacts = [
   { id: '1', name: 'Luy Robin', role: 'Field Engineer', initials: 'LR', online: true, color: '#2F80ED' },
-  { id: '2', name: 'David Amrosa', role: 'Service Support Expert', initials: 'DA', online: true, color: '#8404B3' },
+  { id: '2', name: 'David Amrosa', role: 'Service Support Expert', initials: 'DA', online: true, color: '#2F80ED' },
   { id: '3', name: 'Nika Jerrardo', role: 'Instructor', initials: 'NJ', online: false, color: '#11E874' },
   { id: '4', name: 'Jared Sunn', role: 'Operator', initials: 'JS', online: true, color: '#FF6B35' },
   { id: '5', name: 'Sarah Chen', role: 'Admin', initials: 'SC', online: false, color: '#E91E63' },
@@ -76,7 +74,7 @@ const sceneProcedures: Record<string, { id: string; projectId: string; name: str
 
 const INITIAL_PARTICIPANTS = [
   { id: 'self', name: 'You', initials: 'YN', color: '#2F80ED', isSelf: true, role: 'Host' },
-  { id: 'da', name: 'David Amrosa', initials: 'DA', color: '#8404B3', isSelf: false, role: 'Engineer' },
+  { id: 'da', name: 'David Amrosa', initials: 'DA', color: '#2F80ED', isSelf: false, role: 'Engineer' },
   { id: 'nj', name: 'Nika Jerrardo', initials: 'NJ', color: '#E91E63', isSelf: false, role: 'Instructor' },
 ];
 
@@ -89,10 +87,10 @@ const INVITABLE_CONTACTS = [
 ];
 
 const CHAT_MESSAGES = [
-  { id: 1, sender: 'David Amrosa', initials: 'DA', color: '#8404B3', text: 'Can everyone see the exhaust manifold? I\'m pointing at it now.', time: '2:34 PM' },
+  { id: 1, sender: 'David Amrosa', initials: 'DA', color: '#2F80ED', text: 'Can everyone see the exhaust manifold? I\'m pointing at it now.', time: '2:34 PM' },
   { id: 2, sender: 'Nika Jerrardo', initials: 'NJ', color: '#E91E63', text: 'Yes, I see your laser. The gasket looks worn on that side.', time: '2:35 PM' },
   { id: 3, sender: 'You', initials: 'YN', color: '#2F80ED', text: 'Let me isolate that part so we can get a better look.', time: '2:36 PM', isSelf: true },
-  { id: 4, sender: 'David Amrosa', initials: 'DA', color: '#8404B3', text: 'Good idea. Can you also X-ray the housing around it?', time: '2:36 PM' },
+  { id: 4, sender: 'David Amrosa', initials: 'DA', color: '#2F80ED', text: 'Good idea. Can you also X-ray the housing around it?', time: '2:36 PM' },
 ];
 
 function ImmersiveActionBar({ onLeave, iframeRef }: { onLeave: () => void; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
@@ -423,7 +421,6 @@ function App3DViewer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [procedureModal, setProcedureModal] = useState<string | null>(null);
-  const [showConfigurations, setShowConfigurations] = useState(false);
   const sceneIframeRef = useRef<HTMLIFrameElement>(null);
 
   const openProcInfo = (id: string | null) => {
@@ -467,64 +464,13 @@ function App3DViewer() {
       <div className="w-full h-full relative" style={{ overflow: 'hidden', touchAction: 'none' }}>
         <iframe
           ref={sceneIframeRef}
-          src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true${startMode}`}
+          src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true${startMode}&v=${Date.now()}`}
           className="absolute inset-0 w-full h-full border-0"
           style={{ overflow: 'hidden' }}
           title="Digital Twin"
           allow="autoplay; fullscreen; camera; xr-spatial-tracking"
         />
         {isImmersiveMode && <ImmersiveActionBar onLeave={() => navigate('/app/immersive')} iframeRef={sceneIframeRef} />}
-
-        {/* Configurations button — editor mode only */}
-        {urlMode === 'editor' && (
-          <button
-            onClick={() => setShowConfigurations(prev => !prev)}
-            data-demo="configurations-btn"
-            className="absolute flex items-center gap-2 rounded-lg border shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] z-10"
-            style={{
-              top: '16px',
-              right: '16px',
-              padding: '8px 14px',
-              backgroundColor: showConfigurations ? '#8404B3' : '#FFFFFF',
-              color: showConfigurations ? '#FFFFFF' : '#36415D',
-              borderColor: showConfigurations ? '#8404B3' : '#C2C9DB',
-              fontFamily: 'var(--font-family, Inter, sans-serif)',
-              fontWeight: 600,
-              fontSize: '13px',
-            }}
-            title={showConfigurations ? 'Close configurations' : 'Open configurations'}
-            aria-label={showConfigurations ? 'Close configurations' : 'Open configurations'}
-            aria-pressed={showConfigurations}
-          >
-            <Sliders className="size-4" />
-            <span>Configurations</span>
-            {MOCK_CONFIGURATIONS.filter(c => !c.isDefault).length > 0 && (
-              <span
-                className="rounded-full flex items-center justify-center"
-                style={{
-                  minWidth: '18px',
-                  height: '18px',
-                  padding: '0 5px',
-                  backgroundColor: showConfigurations ? 'rgba(255,255,255,0.25)' : '#8404B3',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  color: '#FFFFFF',
-                  lineHeight: 1,
-                }}
-              >
-                {MOCK_CONFIGURATIONS.filter(c => !c.isDefault).length}
-              </span>
-            )}
-          </button>
-        )}
-
-        {/* Configurations Panel — overlays on the right side */}
-        {urlMode === 'editor' && (
-          <ConfigurationsPanel
-            isOpen={showConfigurations}
-            onClose={() => setShowConfigurations(false)}
-          />
-        )}
       </div>
       {proc && (
         <AppProcedureInfoModal
@@ -716,7 +662,7 @@ export function AppLayout() {
                 style={{ border: '1px solid #C2C9DB', borderRadius: '25px', height: '32px', fontWeight: 'var(--font-weight-semibold)', color: '#36415D' }}
               >
                 Update
-                <span className="w-1.5 h-1.5 rounded-full bg-[#8404b3] animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] animate-pulse" />
               </button>
 
               {showUpdatePopup && (
@@ -728,8 +674,8 @@ export function AppLayout() {
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-[#E9E9E9]" style={{ background: 'linear-gradient(135deg, #f8f0ff 0%, #f0f4ff 100%)' }}>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#8404b3]/15 flex items-center justify-center">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="#8404b3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <div className="w-8 h-8 rounded-lg bg-[#2F80ED]/15 flex items-center justify-center">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="#2F80ED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M8 2.5v7M5.5 6L8 3.5 10.5 6M3 12.5h10"/>
                         </svg>
                       </div>
@@ -748,8 +694,8 @@ export function AppLayout() {
                         { tag: 'NEW', color: '#0aad52', bg: 'rgba(17,232,116,0.12)', text: 'Flow editor with drag-and-drop canvas' },
                         { tag: 'NEW', color: '#0aad52', bg: 'rgba(17,232,116,0.12)', text: 'Digital twin modal with connected flows' },
                         { tag: 'FIX', color: '#2F80ED', bg: 'rgba(47,128,237,0.12)', text: 'Improved 3D scene performance and selection' },
-                        { tag: 'UPD', color: '#8404b3', bg: 'rgba(132,4,179,0.12)', text: 'Media library integration with knowledge base' },
-                        { tag: 'UPD', color: '#8404b3', bg: 'rgba(132,4,179,0.12)', text: 'Analytics dashboard with PDF export' },
+                        { tag: 'UPD', color: '#2F80ED', bg: 'rgba(47, 128, 237,0.12)', text: 'Media library integration with knowledge base' },
+                        { tag: 'UPD', color: '#2F80ED', bg: 'rgba(47, 128, 237,0.12)', text: 'Analytics dashboard with PDF export' },
                       ].map((item, i) => (
                         <div key={i} className="flex items-start gap-2">
                           <span className="mt-0.5 shrink-0 px-1.5 py-px rounded" style={{ fontSize: '9px', fontWeight: 700, color: item.color, background: item.bg }}>{item.tag}</span>
@@ -782,7 +728,7 @@ export function AppLayout() {
                       onClick={handleUpdate}
                       disabled={isUpdating}
                       className="flex items-center gap-1.5 px-4 py-1.5 text-white transition-colors disabled:opacity-60"
-                      style={{ fontSize: '13px', fontWeight: 700, background: '#8404b3', borderRadius: '8px' }}
+                      style={{ fontSize: '13px', fontWeight: 700, background: '#2F80ED', borderRadius: '8px' }}
                     >
                       {isUpdating && (
                         <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">

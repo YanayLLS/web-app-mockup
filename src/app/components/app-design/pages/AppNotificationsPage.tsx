@@ -22,7 +22,7 @@ export const initialAppNotifications: Notification[] = [
 
 const typeColors: Record<string, string> = {
   'knowledge-base': '#2F80ED',
-  'remote-support': '#8404B3',
+  'remote-support': '#2F80ED',
   'system': '#36415D',
 };
 

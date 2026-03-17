@@ -20,7 +20,7 @@ export function WorkspaceDesignPage() {
   const [accentColor, setAccentColor] = useState('#2F80ED');
 
   const presetColors = [
-    '#2F80ED', '#11E874', '#FF1F1F', '#8404B3', '#FF9500',
+    '#2F80ED', '#11E874', '#FF1F1F', '#2F80ED', '#FF9500',
     '#00D9FF', '#FF3B82', '#10B981', '#F59E0B', '#8B5CF6'
   ];
 

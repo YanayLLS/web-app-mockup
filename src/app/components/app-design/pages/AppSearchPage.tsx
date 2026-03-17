@@ -67,7 +67,7 @@ const typeIcons: Record<string, typeof FolderOpen> = {
 const typeColors: Record<string, string> = {
   folder: '#2F80ED',
   procedure: '#36415D',
-  'digital-twin': '#8404B3',
+  'digital-twin': '#2F80ED',
   media: '#11E874',
   project: '#2F80ED',
 };
@@ -461,7 +461,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                 {/* Quick access chips */}
                 <div className="mb-5">
                   <div className="flex items-center gap-2 mb-2.5">
-                    <Sparkles className="size-3.5" style={{ color: '#8404B3' }} />
+                    <Sparkles className="size-3.5" style={{ color: '#2F80ED' }} />
                     <span className="text-xs uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)', color: '#868D9E' }}>
                       Quick access
                     </span>
@@ -492,13 +492,13 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                     onClick={startListening}
                     className="w-full flex items-center gap-3 p-3 rounded-xl mb-4 transition-colors hover:opacity-90"
                     style={{
-                      background: 'linear-gradient(135deg, #F0E6FF 0%, #E6F0FF 100%)',
-                      border: '1px solid #E0D4F5',
+                      background: 'linear-gradient(135deg, #E6F0FF 0%, #D9E8FF 100%)',
+                      border: '1px solid #C2D6F5',
                     }}
                   >
                     <div
                       className="size-9 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: '#8404B3' }}
+                      style={{ backgroundColor: '#2F80ED' }}
                     >
                       <Mic className="size-4 text-white" />
                     </div>
@@ -596,7 +596,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                         className="mt-4 flex items-center gap-2 px-4 py-2 rounded-full text-xs transition-colors hover:opacity-80"
                         style={{ backgroundColor: '#F5F5F5', color: '#36415D', border: '1px solid #E9E9E9', fontWeight: 'var(--font-weight-medium)' }}
                       >
-                        <Mic className="size-3.5" style={{ color: '#8404B3' }} />
+                        <Mic className="size-3.5" style={{ color: '#2F80ED' }} />
                         Search by voice
                       </button>
                     )}

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { X, Search, ChevronDown } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import { useAvatar } from '../contexts/AvatarContext';
+import { useAppPopup } from '../contexts/AppPopupContext';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface UserSettingsModalProps {
 
 export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
   const { logout } = useAvatar();
+  const { alert: appAlert } = useAppPopup();
   const [firstName, setFirstName] = useState('Yanay');
   const [lastName, setLastName] = useState('Nadel');
   const [email] = useState('yanay@lls-ltd.com');
@@ -79,9 +81,9 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const handlePasswordReset = () => {
+  const handlePasswordReset = async () => {
     // In a real app, this would send a password reset email
-    alert('A password reset link has been sent to your email address.');
+    await appAlert('A password reset link has been sent to your email address.', { title: 'Password Reset', variant: 'success' });
   };
 
   if (!isOpen) return null;

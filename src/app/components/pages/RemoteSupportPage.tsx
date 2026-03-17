@@ -19,6 +19,7 @@ import { getUrlParam, setUrlParam } from '../../utils/urlParams';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
 import { MemberAvatar } from '../MemberAvatar';
+import { useAppPopup } from '../../contexts/AppPopupContext';
 
 function IconPeopleList() {
   return (
@@ -690,6 +691,7 @@ export function RemoteSupportPage({
 }) {
   const isMobile = useIsMobile();
   const [isLandscape, setIsLandscape] = useState(false);
+  const { prompt: appPrompt } = useAppPopup();
   const { currentRole } = useRole();
   const canScheduleMeeting = hasAccess(currentRole, 'schedule-meeting');
   const canStartCall = hasAccess(currentRole, 'start-call');
@@ -1626,18 +1628,18 @@ export function RemoteSupportPage({
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseDown = async (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawingMode || !canvasRef.current) return;
-    
+
     const rect = canvasRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-    
+
     // Freeze frame on first draw
     if (!frozenFrame) {
       handleStartDrawing();
     }
-    
+
     if (drawingTool === 'pen') {
       // Start freehand drawing
       setIsDrawing(true);
@@ -1652,7 +1654,7 @@ export function RemoteSupportPage({
       toast.success('Beacon placed');
     } else if (drawingTool === 'label') {
       // Place label on click
-      const text = prompt('Enter label text:', 'Label');
+      const text = await appPrompt('Enter label text:', { title: 'Add Label', defaultValue: 'Label' });
       if (text) {
         setDrawingPaths(prev => [...prev, {
           tool: 'label',

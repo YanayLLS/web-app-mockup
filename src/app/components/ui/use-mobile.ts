@@ -9,12 +9,27 @@ export function useIsMobile() {
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+
+    const update = (overrideWidth?: number | null) => {
+      const effectiveWidth = overrideWidth ?? window.innerWidth;
+      setIsMobile(effectiveWidth < MOBILE_BREAKPOINT);
     };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
+
+    const onMediaChange = () => update();
+
+    const onDebugViewport = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      update(detail?.width ?? null);
+    };
+
+    mql.addEventListener("change", onMediaChange);
+    window.addEventListener("debug-viewport", onDebugViewport);
+    update();
+
+    return () => {
+      mql.removeEventListener("change", onMediaChange);
+      window.removeEventListener("debug-viewport", onDebugViewport);
+    };
   }, []);
 
   return !!isMobile;

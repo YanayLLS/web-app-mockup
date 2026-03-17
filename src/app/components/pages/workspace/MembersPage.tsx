@@ -83,7 +83,7 @@ export function MembersPage() {
 
   const getRoleColor = (role: MemberRole) => {
     switch (role) {
-      case 'Owner': return { color: 'var(--accent)', background: 'rgba(132, 4, 179, 0.1)' };
+      case 'Owner': return { color: 'var(--accent)', background: 'rgba(47, 128, 237, 0.1)' };
       case 'Admin': return { color: 'var(--primary)', background: 'rgba(47, 128, 237, 0.1)' };
       case 'Operator': return { color: '#FF9800', background: 'rgba(255, 152, 0, 0.1)' };
       case 'Support Agent': return { color: '#00BCD4', background: 'rgba(0, 188, 212, 0.1)' };

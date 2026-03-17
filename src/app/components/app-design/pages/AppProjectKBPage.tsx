@@ -3,7 +3,7 @@ import { FolderOpen, FileText, Film, ChevronRight, Plus, ChevronDown, X, Eye, Ey
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { AppProcedureInfoModal } from '../components/AppProcedureInfoModal';
 import { AppConfigurationSelector } from '../components/AppConfigurationSelector';
-import { MOCK_CONFIGURATIONS } from '../../procedure-editor/configurationsData';
+import { MOCK_CONFIGURATIONS } from '../../../data/configurationsData';
 import { getUrlParam, setUrlParam } from '../../../utils/urlParams';
 import { useProject } from '../../../contexts/ProjectContext';
 import { useRole, hasAccess } from '../../../contexts/RoleContext';
@@ -81,6 +81,7 @@ export function AppProjectKBPage() {
   const [loadingDT, setLoadingDT] = useState<KBItem | null>(null);
   const [loadProgress, setLoadProgress] = useState(0);
   const [dtLoadingPaused, setDtLoadingPaused] = useState(false);
+  const [dtLoadingStarted, setDtLoadingStarted] = useState(false); // GAP 6: true only after user confirms config
   const [showDTConfigSelector, setShowDTConfigSelector] = useState(false);
   const [dtSelectedConfigName, setDtSelectedConfigName] = useState<string | null>(null);
   const { dtThumbnail } = useProject();
@@ -88,12 +89,17 @@ export function AppProjectKBPage() {
   const canCreate = hasAccess(currentRole, 'create-content');
 
   // Count enabled configs accessible to current role (Fix 2)
-  const accessibleConfigCount = useMemo(() => {
+  const accessibleConfigs = useMemo(() => {
     return MOCK_CONFIGURATIONS.filter(
       (c) => c.isEnabled && c.permittedRoles.includes(currentRole)
-    ).length;
+    );
   }, [currentRole]);
+  const accessibleConfigCount = accessibleConfigs.length;
   const showConfigSelector = accessibleConfigCount >= 2;
+  const defaultConfigName = useMemo(() => {
+    const def = accessibleConfigs.find((c) => c.isDefault);
+    return def?.name ?? accessibleConfigs[0]?.name ?? null;
+  }, [accessibleConfigs]);
 
   const selectItem = (item: KBItem | null) => {
     setSelectedItem(item);
@@ -119,9 +125,9 @@ export function AppProjectKBPage() {
     }
   }, []);
 
-  // Digital twin loading animation (pauses when config selector is open)
+  // Digital twin loading animation — GAP 6: only runs after dtLoadingStarted is true
   useEffect(() => {
-    if (!loadingDT || dtLoadingPaused) return;
+    if (!loadingDT || dtLoadingPaused || !dtLoadingStarted) return;
     setLoadProgress(0);
     let progress = 0;
     const interval = setInterval(() => {
@@ -133,13 +139,14 @@ export function AppProjectKBPage() {
           const configParam = dtSelectedConfigName ? `?config=${encodeURIComponent(dtSelectedConfigName)}` : '';
           setLoadingDT(null);
           setDtSelectedConfigName(null);
+          setDtLoadingStarted(false);
           navigate(`/app/3d-viewer${configParam}`);
         }, 200);
       }
       setLoadProgress(progress);
     }, 80);
     return () => clearInterval(interval);
-  }, [loadingDT, dtLoadingPaused]);
+  }, [loadingDT, dtLoadingPaused, dtLoadingStarted]);
 
   // Group by type
   const folders = project.items.filter(i => i.type === 'folder');
@@ -223,7 +230,7 @@ export function AppProjectKBPage() {
         <div className="flex items-center gap-2 mb-3" style={{ fontSize: '12px', color: '#868D9E' }}>
           {twinCount > 0 && (
             <span className="flex items-center gap-1">
-              <Cuboid style={{ width: '12px', height: '12px', color: '#8404B3' }} />
+              <Cuboid style={{ width: '12px', height: '12px', color: '#8B5CF6' }} />
               {twinCount} Digital Twin{twinCount !== 1 ? 's' : ''}
             </span>
           )}
@@ -348,7 +355,7 @@ export function AppProjectKBPage() {
         {digitalTwins.map((item) => (
           <div
             key={item.id}
-            onClick={() => { setDtLoadingPaused(showConfigSelector); setDtSelectedConfigName(null); setLoadingDT(item); }}
+            onClick={() => { setDtLoadingPaused(showConfigSelector); setDtSelectedConfigName(defaultConfigName); setDtLoadingStarted(!showConfigSelector); setLoadingDT(item); }}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
               width: '100%',
@@ -359,11 +366,11 @@ export function AppProjectKBPage() {
             }}
           >
             <div className="w-full h-full flex items-center justify-center">
-              <Cuboid style={{ width: '48px', height: '48px', color: '#8404B3' }} />
+              <Cuboid style={{ width: '48px', height: '48px', color: '#8B5CF6' }} />
             </div>
             <div
               className="absolute flex items-center gap-1 px-2 py-1"
-              style={{ top: '8px', left: '8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: 'white', border: '1px solid #8404B3', backgroundColor: 'rgba(132,4,179,0.5)' }}
+              style={{ top: '8px', left: '8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'var(--font-weight-bold)', color: 'white', border: '1px solid #8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.5)' }}
             >
               <Cuboid style={{ width: '12px', height: '12px' }} />
               Digital Twin
@@ -453,7 +460,7 @@ export function AppProjectKBPage() {
       {/* Digital Twin Loading Modal */}
       {loadingDT && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-50" onClick={() => { setLoadingDT(null); setDtLoadingPaused(false); setDtSelectedConfigName(null); }} />
+          <div className="fixed inset-0 bg-black/40 z-50" onClick={() => { setLoadingDT(null); setDtLoadingPaused(false); setDtLoadingStarted(false); setDtSelectedConfigName(null); }} />
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
             <div
               className="pointer-events-auto flex flex-col items-center"
@@ -471,7 +478,7 @@ export function AppProjectKBPage() {
               {/* Close button */}
               <div className="flex items-center justify-end w-full" style={{ marginBottom: '8px' }}>
                 <button
-                  onClick={() => { setLoadingDT(null); setDtLoadingPaused(false); setDtSelectedConfigName(null); }}
+                  onClick={() => { setLoadingDT(null); setDtLoadingPaused(false); setDtLoadingStarted(false); setDtSelectedConfigName(null); }}
                   className="flex items-center justify-center hover:bg-white/50 transition-colors"
                   style={{ width: '40px', height: '40px', borderRadius: '10px' }}
                 >
@@ -512,34 +519,43 @@ export function AppProjectKBPage() {
                   className="w-full flex items-center justify-between"
                   style={{
                     backgroundColor: '#FFFFFF',
-                    borderRadius: '10px',
-                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    padding: '11px 14px',
                     marginBottom: '12px',
-                    border: '1px solid #C2C9DB',
+                    border: '1px solid #E9E9E9',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                   }}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span style={{ fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', flexShrink: 0 }}>
-                      Configuration:
-                    </span>
-                    <span className="truncate" style={{ fontSize: '13px', color: dtSelectedConfigName ? '#8404B3' : '#868D9E', fontWeight: dtSelectedConfigName ? 'var(--font-weight-semibold)' : 'normal' }}>
-                      {dtSelectedConfigName || 'None selected'}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: '#2F80ED',
+                        flexShrink: 0,
+                        boxShadow: '0 0 0 3px rgba(47,128,237,0.12)',
+                      }}
+                    />
+                    <span className="truncate" style={{ fontSize: '13px', color: '#2F80ED', fontWeight: 'var(--font-weight-semibold)' }}>
+                      {dtSelectedConfigName}
                     </span>
                   </div>
                   <button
                     onClick={() => setShowDTConfigSelector(true)}
-                    className="hover:opacity-80 transition-opacity shrink-0"
+                    className="hover:bg-[rgba(47,128,237,0.06)] active:scale-[0.97] transition-all shrink-0"
                     style={{
                       fontSize: '12px',
                       color: '#2F80ED',
                       fontWeight: 'var(--font-weight-semibold)',
                       background: 'none',
-                      border: 'none',
+                      border: '1px solid rgba(47,128,237,0.2)',
+                      borderRadius: '8px',
                       cursor: 'pointer',
-                      padding: '2px 6px',
+                      padding: '4px 12px',
                     }}
                   >
-                    {dtSelectedConfigName ? 'Change' : 'Select'}
+                    Change
                   </button>
                 </div>
               )}
@@ -547,17 +563,25 @@ export function AppProjectKBPage() {
               {/* Selected config badge (shown during loading, only if configs are available) */}
               {!dtLoadingPaused && dtSelectedConfigName && showConfigSelector && (
                 <div
-                  className="w-full flex items-center gap-2"
+                  className="w-full flex items-center gap-2.5"
                   style={{
                     marginBottom: '12px',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(132,4,179,0.08)',
-                    borderLeft: '3px solid #8404B3',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(47, 128, 237, 0.05)',
+                    border: '1px solid rgba(47, 128, 237, 0.1)',
                   }}
                 >
-                  <span style={{ fontSize: '12px', color: '#868D9E' }}>Configuration:</span>
-                  <span style={{ fontSize: '12px', color: '#8404B3', fontWeight: 'var(--font-weight-semibold)' }}>
+                  <div
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: '#2F80ED',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ fontSize: '12px', color: '#2F80ED', fontWeight: 'var(--font-weight-semibold)' }}>
                     {dtSelectedConfigName}
                   </span>
                 </div>
@@ -593,33 +617,39 @@ export function AppProjectKBPage() {
               {dtLoadingPaused ? (
                 <div className="w-full flex flex-col items-center" style={{ gap: '10px' }}>
                   <button
-                    onClick={() => setDtLoadingPaused(false)}
-                    className="w-full flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+                    onClick={() => { setDtLoadingPaused(false); setDtLoadingStarted(true); }}
+                    className="w-full flex items-center justify-center gap-2 hover:shadow-[0_4px_16px_rgba(47,128,237,0.3)] active:scale-[0.98] transition-all"
                     style={{
-                      padding: '12px 16px',
+                      padding: '13px 16px',
                       backgroundColor: '#2F80ED',
-                      borderRadius: '25px',
+                      borderRadius: '14px',
                       fontSize: '14px',
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'white',
                       border: 'none',
                       cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(47,128,237,0.25)',
                     }}
                   >
-                    {dtSelectedConfigName ? `Open with "${dtSelectedConfigName}"` : 'Open without Configuration'}
+                    Open
                   </button>
                 </div>
               ) : (
-                <div className="w-full flex flex-col items-center" style={{ gap: '8px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-semibold)', color: '#36415D' }}>
-                    Loading &nbsp;{Math.min(Math.round(loadProgress), 100)} %
-                  </span>
+                <div className="w-full flex flex-col items-center" style={{ gap: '10px' }}>
+                  <div className="w-full flex items-center justify-between">
+                    <span style={{ fontSize: '13px', fontWeight: 'var(--font-weight-semibold)', color: '#36415D' }}>
+                      Loading...
+                    </span>
+                    <span style={{ fontSize: '13px', fontWeight: 'var(--font-weight-bold)', color: '#2F80ED' }}>
+                      {Math.min(Math.round(loadProgress), 100)}%
+                    </span>
+                  </div>
                   <div
                     style={{
                       width: '100%',
                       height: '6px',
                       backgroundColor: '#E9E9E9',
-                      borderRadius: '3px',
+                      borderRadius: '99px',
                       overflow: 'hidden',
                     }}
                   >
@@ -628,8 +658,9 @@ export function AppProjectKBPage() {
                         width: `${Math.min(loadProgress, 100)}%`,
                         height: '100%',
                         backgroundColor: '#2F80ED',
-                        borderRadius: '3px',
+                        borderRadius: '99px',
                         transition: 'width 0.15s ease',
+                        boxShadow: '0 0 8px rgba(47,128,237,0.3)',
                       }}
                     />
                   </div>

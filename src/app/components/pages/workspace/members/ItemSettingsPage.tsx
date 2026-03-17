@@ -298,7 +298,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
             <button 
               className="text-xs px-2 py-1 rounded-lg hover:bg-secondary transition-colors"
               style={{
-                background: 'linear-gradient(90deg, #5b19b4 0%, #004fff 100%)',
+                background: 'linear-gradient(90deg, #2F80ED 0%, #004fff 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontFamily: 'var(--font-family)',

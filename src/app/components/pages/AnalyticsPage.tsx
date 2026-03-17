@@ -1397,7 +1397,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
   const avgDurationStr = `${Math.floor(avgDurationMinutes / 60)}:${String(Math.round(avgDurationMinutes % 60)).padStart(2, '0')}`;
 
   // Per-procedure chart colors
-  const procChartColors = ['var(--color-primary)', 'var(--color-accent)', '#10b981', '#f59e0b', '#8404b3'];
+  const procChartColors = ['var(--color-primary)', 'var(--color-accent)', '#10b981', '#f59e0b', '#2F80ED'];
   const topProcNames = (dynamicData.topProcedures || []).slice(0, 5).map(p => p.name);
 
   // User performance aggregation
@@ -1641,7 +1641,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
             { label: 'Total Views', value: totalViews.toLocaleString(), icon: <Eye size={16} className="text-primary" />, bg: 'bg-primary/10', trend: viewsTrend },
             { label: 'Total Sessions', value: totalSessions.toString(), icon: <Activity size={16} className="text-accent" />, bg: 'bg-accent/10', trend: sessionsTrend },
             { label: 'Completed', value: completedSessions.toString(), icon: <CheckCircle2 size={16} className="text-[#10b981]" />, bg: 'bg-[#10b981]/10', trend: completedTrend },
-            { label: 'Avg Completion', value: `${avgCompletionRate}%`, icon: <Target size={16} style={{ color: '#8404b3' }} />, bg: 'bg-[#8404b3]/10', trend: completionTrend },
+            { label: 'Avg Completion', value: `${avgCompletionRate}%`, icon: <Target size={16} style={{ color: '#2F80ED' }} />, bg: 'bg-[#2F80ED]/10', trend: completionTrend },
             { label: 'Avg Duration', value: avgDurationStr, icon: <Timer size={16} className="text-primary" />, bg: 'bg-primary/10', trend: null },
           ].map((card) => (
             <div key={card.label} className="bg-card border border-border rounded-[var(--radius)] p-4">

@@ -1,10 +1,10 @@
 import { X, Search, Plus, MoreVertical, Copy, Trash2, ChevronDown, ChevronRight, Upload, Download, Shield, Sliders, GripVertical, Pencil, PlusSquare, MinusSquare, Eye, Link2, FolderOpen, FolderPlus, FolderInput } from 'lucide-react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useClickOutside } from '../../hooks/useClickOutside';
+import { useClickOutside } from '../hooks/useClickOutside';
 import { MOCK_CONFIGURATIONS, MOCK_FOLDERS, type Configuration, type ConfigFolder } from './configurationsData';
-import { ROLES, type UserRole } from '../../contexts/RoleContext';
-import { FrontlineWindow } from './FrontlineWindow';
+import { ROLES, type UserRole } from '../contexts/RoleContext';
+import { FrontlineWindow } from '../components/procedure-editor/FrontlineWindow';
 
 interface ConfigurationsPanelProps {
   isOpen: boolean;
@@ -21,17 +21,34 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 16, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 16, scale: 0.96 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] pointer-events-auto"
     >
       <div
-        className="flex items-center gap-3 px-5 py-3 rounded-lg shadow-elevation-lg border border-border bg-card"
-        style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D' }}
+        className="flex items-center gap-3 px-5 py-3 rounded-[10px] shadow-elevation-lg bg-white"
+        style={{
+          fontFamily: 'var(--font-family)',
+          fontSize: '13px',
+          fontWeight: 500,
+          color: '#36415D',
+          border: '1px solid #E9E9E9',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)',
+        }}
       >
+        <div
+          style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#2F80ED',
+            flexShrink: 0,
+          }}
+        />
         <span>{message}</span>
-        <button onClick={onDismiss} className="hover:opacity-70 transition-opacity" style={{ color: '#868D9E' }}>
+        <button onClick={onDismiss} className="hover:bg-[#F5F5F5] transition-colors rounded-md p-1 -mr-1" style={{ color: '#C2C9DB' }}>
           <X className="size-3.5" />
         </button>
       </div>
@@ -62,35 +79,46 @@ function ConfirmDialog({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[300] flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
       onClick={onCancel}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-card rounded-lg shadow-elevation-lg border border-border w-[calc(100vw-48px)] max-w-[380px]"
-        style={{ padding: '24px' }}
+        transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+        className="bg-white rounded-[14px] shadow-elevation-lg w-[calc(100vw-48px)] max-w-[380px]"
+        style={{
+          padding: '24px',
+          border: '1px solid #E9E9E9',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontFamily: 'var(--font-family)', fontSize: '15px', fontWeight: 600, color: '#36415D', marginBottom: '8px' }}>
+        <h3 style={{ fontFamily: 'var(--font-family)', fontSize: '16px', fontWeight: 600, color: '#36415D', marginBottom: '8px' }}>
           {title}
         </h3>
-        <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#868D9E', marginBottom: '20px', lineHeight: 1.5 }}>
+        <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#868D9E', marginBottom: '24px', lineHeight: 1.6 }}>
           {message}
         </p>
-        <div className="flex justify-end" style={{ gap: '8px' }}>
+        <div className="flex justify-end" style={{ gap: '10px' }}>
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-button hover:bg-foreground/5 transition-colors min-h-[44px]"
+            className="px-5 py-2.5 rounded-[8px] hover:bg-[#F5F5F5] active:scale-[0.97] transition-all min-h-[40px]"
             style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#36415D', border: '1px solid #C2C9DB' }}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded-button text-white hover:opacity-90 transition-opacity min-h-[44px]"
-            style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 600, backgroundColor: confirmColor }}
+            className="px-5 py-2.5 rounded-[8px] text-white hover:opacity-90 active:scale-[0.97] transition-all min-h-[40px]"
+            style={{
+              fontFamily: 'var(--font-family)',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: confirmColor,
+              boxShadow: `0 2px 8px ${confirmColor}40`,
+            }}
           >
             {confirmLabel}
           </button>
@@ -149,19 +177,18 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
 
   return (
     <div
-      className={`group cursor-pointer transition-colors ${isActive ? '' : 'hover:bg-[#E9E9E9]/60'}`}
+      className={`group cursor-pointer transition-all ${isActive ? '' : 'hover:bg-[#E9E9E9]/40'}`}
       data-demo={`config-item-${config.id}`}
       data-config-default={config.isDefault ? 'true' : undefined}
-      data-config-readonly={config.isReadOnly ? 'true' : undefined}
       style={{
-        padding: '4px 8px',
-        borderRadius: 'var(--radius-button)',
+        padding: '5px 8px',
+        borderRadius: '8px',
         backgroundColor: isActive ? '#D9E0F0' : undefined,
         borderLeft: isActive ? '3px solid #2F80ED' : '3px solid transparent',
       }}
       onClick={onSelect}
     >
-      <div className="flex items-center" style={{ gap: '6px', minHeight: '28px' }}>
+      <div className="flex items-center" style={{ gap: '6px', minHeight: '30px' }}>
         {/* Multi-select checkbox for non-default configs */}
         {!config.isDefault && (
           <input
@@ -179,17 +206,18 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
 
         {/* Active indicator */}
         <div
-          className="flex-shrink-0 rounded-full"
+          className="flex-shrink-0 rounded-full transition-colors"
           style={{
-            width: '7px',
-            height: '7px',
-            backgroundColor: config.isEnabled ? (isActive ? '#2F80ED' : '#11E874') : '#7F7F7F',
+            width: '8px',
+            height: '8px',
+            backgroundColor: config.isEnabled ? (isActive ? '#2F80ED' : '#11E874') : '#C2C9DB',
+            boxShadow: isActive ? '0 0 0 2px rgba(47,128,237,0.2)' : undefined,
           }}
         />
 
         {/* Name / inline edit */}
         <div className="flex-1 min-w-0">
-          {isEditing && !config.isReadOnly ? (
+          {isEditing ? (
             <input
               ref={inputRef}
               value={editName}
@@ -200,13 +228,14 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                 if (e.key === 'Escape') { setEditName(config.name); setIsEditing(false); }
               }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-white border outline-none px-1.5 py-0"
+              className="w-full bg-white border outline-none px-1.5 py-0.5"
               style={{
                 fontFamily: 'var(--font-family)',
                 fontSize: '12px',
                 color: '#36415D',
                 borderColor: '#2E80ED',
-                borderRadius: '4px',
+                borderRadius: '6px',
+                boxShadow: '0 0 0 2px rgba(46,128,237,0.12)',
               }}
             />
           ) : (
@@ -219,10 +248,8 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                 color: config.isEnabled ? '#36415D' : '#7F7F7F',
               }}
               onDoubleClick={(e) => {
-                if (!config.isReadOnly) {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }
+                e.stopPropagation();
+                setIsEditing(true);
               }}
             >
               {config.name}
@@ -239,10 +266,11 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
               fontSize: '9px',
               fontWeight: 600,
               color: '#2F80ED',
-              backgroundColor: 'rgba(47, 128, 237,0.1)',
-              padding: '1px 5px',
+              backgroundColor: 'rgba(47, 128, 237,0.08)',
+              padding: '2px 6px',
               borderRadius: '99px',
               lineHeight: '13px',
+              letterSpacing: '0.3px',
             }}
           >
             DEFAULT
@@ -266,12 +294,11 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
         )}
 
         {/* Three-dot menu */}
-        {!config.isReadOnly && (
-          <div className="flex-shrink-0">
+        <div className="flex-shrink-0">
             <button
               ref={menuBtnRef}
               data-demo="config-menu-btn"
-              className="opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-foreground/10 flex items-center justify-center"
+              className="opacity-0 group-hover:opacity-100 transition-all rounded-md hover:bg-[#E9E9E9] flex items-center justify-center"
               style={{ width: '24px', height: '24px' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -292,12 +319,12 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.1 }}
-                  className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
-                  style={{ minWidth: '130px', top: menuPos.top, left: menuPos.left }}
+                  className="fixed bg-white border rounded-[10px] shadow-elevation-lg z-[100]"
+                  style={{ minWidth: '150px', top: menuPos.top, left: menuPos.left, borderColor: '#E9E9E9' }}
                 >
-                  <div style={{ padding: '3px' }}>
+                  <div style={{ padding: '4px' }}>
                     <button
-                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
                       style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -306,11 +333,11 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                         onStartInlineRename();
                       }}
                     >
-                      <Pencil className="size-3" style={{ color: '#868D9E' }} />
+                      <Pencil className="size-3.5" style={{ color: '#868D9E' }} />
                       Rename
                     </button>
                     <button
-                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
                       style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -318,11 +345,11 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                         setShowMenu(false);
                       }}
                     >
-                      <Copy className="size-3" style={{ color: '#868D9E' }} />
+                      <Copy className="size-3.5" style={{ color: '#868D9E' }} />
                       Duplicate
                     </button>
                     <button
-                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
                       style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -330,32 +357,32 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                         onCopyLink();
                       }}
                     >
-                      <Link2 className="size-3" style={{ color: '#868D9E' }} />
+                      <Link2 className="size-3.5" style={{ color: '#868D9E' }} />
                       Copy Link
                     </button>
                     {/* Move to Folder */}
                     <div className="relative">
                       <button
-                        className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
                         style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowMoveSubmenu(!showMoveSubmenu);
                         }}
                       >
-                        <FolderInput className="size-3" style={{ color: '#868D9E' }} />
+                        <FolderInput className="size-3.5" style={{ color: '#868D9E' }} />
                         Move to Folder
-                        <ChevronRight className="size-3 ml-auto" style={{ color: '#868D9E' }} />
+                        <ChevronRight className="size-3 ml-auto" style={{ color: '#C2C9DB' }} />
                       </button>
                       {showMoveSubmenu && (
                         <div
-                          className="absolute left-full top-0 ml-1 bg-card border border-border rounded-lg shadow-elevation-lg z-[101]"
-                          style={{ minWidth: '120px' }}
+                          className="absolute left-full top-0 ml-1 bg-white border rounded-[10px] shadow-elevation-lg z-[101]"
+                          style={{ minWidth: '130px', borderColor: '#E9E9E9' }}
                         >
-                          <div style={{ padding: '3px' }}>
+                          <div style={{ padding: '4px' }}>
                             {config.folderId && (
                               <button
-                                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                                className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
                                 style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -370,7 +397,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                             {folders.filter((f) => f.id !== config.folderId).map((folder) => (
                               <button
                                 key={folder.id}
-                                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                                className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
                                 style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -385,8 +412,8 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                             ))}
                             {folders.filter((f) => f.id !== config.folderId).length === 0 && !config.folderId && (
                               <span
-                                className="block px-2.5 py-1.5"
-                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
+                                className="block px-3 py-2"
+                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', fontStyle: 'italic' }}
                               >
                                 No folders yet
                               </span>
@@ -395,9 +422,9 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                         </div>
                       )}
                     </div>
-                    <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '2px 6px' }} />
+                    <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '3px 8px' }} />
                     <button
-                      className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-[#FF1F1F]/10 transition-colors text-left"
+                      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#FF1F1F]/8 transition-colors text-left min-h-[32px]"
                       style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#FF1F1F' }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -405,7 +432,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                         setShowMenu(false);
                       }}
                     >
-                      <Trash2 className="size-3" />
+                      <Trash2 className="size-3.5" />
                       Delete
                     </button>
                   </div>
@@ -460,21 +487,19 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
 
   return (
     <div
-      className="group cursor-pointer transition-colors hover:bg-[#E9E9E9]/60"
+      className="group cursor-pointer transition-all hover:bg-[#E9E9E9]/40"
       style={{
-        padding: '4px 8px',
-        borderRadius: 'var(--radius-button)',
-        marginTop: '4px',
+        padding: '5px 8px',
+        borderRadius: '8px',
+        marginTop: '6px',
       }}
       onClick={onToggleExpand}
     >
-      <div className="flex items-center" style={{ gap: '6px', minHeight: '28px' }}>
-        {isExpanded ? (
-          <ChevronDown className="size-3 flex-shrink-0" style={{ color: '#868D9E' }} />
-        ) : (
-          <ChevronRight className="size-3 flex-shrink-0" style={{ color: '#868D9E' }} />
-        )}
-        <FolderOpen className="size-3.5 flex-shrink-0" style={{ color: '#868D9E' }} />
+      <div className="flex items-center" style={{ gap: '6px', minHeight: '30px' }}>
+        <div className="flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+          <ChevronDown className="size-3" style={{ color: '#868D9E' }} />
+        </div>
+        <FolderOpen className="size-3.5 flex-shrink-0" style={{ color: isExpanded ? '#2F80ED' : '#868D9E' }} />
 
         {isEditing ? (
           <input
@@ -487,13 +512,14 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
               if (e.key === 'Escape') { setEditName(folder.name); setIsEditing(false); }
             }}
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 bg-white border outline-none px-1.5 py-0"
+            className="flex-1 min-w-0 bg-white border outline-none px-1.5 py-0.5"
             style={{
               fontFamily: 'var(--font-family)',
               fontSize: '12px',
               color: '#36415D',
               borderColor: '#2E80ED',
-              borderRadius: '4px',
+              borderRadius: '6px',
+              boxShadow: '0 0 0 2px rgba(46,128,237,0.12)',
             }}
           />
         ) : (
@@ -519,7 +545,12 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
           style={{
             fontFamily: 'var(--font-family)',
             fontSize: '10px',
+            fontWeight: 600,
             color: '#868D9E',
+            backgroundColor: '#E9E9E9',
+            padding: '1px 6px',
+            borderRadius: '99px',
+            lineHeight: '14px',
           }}
         >
           {configCount}
@@ -529,7 +560,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
         <div className="flex-shrink-0">
           <button
             ref={menuBtnRef}
-            className="opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-foreground/10 flex items-center justify-center"
+            className="opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-[#E9E9E9] flex items-center justify-center"
             style={{ width: '24px', height: '24px' }}
             onClick={(e) => {
               e.stopPropagation();
@@ -550,12 +581,12 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.1 }}
-                className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
-                style={{ minWidth: '120px', top: menuPos.top, left: menuPos.left }}
+                className="fixed bg-white border rounded-[10px] shadow-elevation-lg z-[100]"
+                style={{ minWidth: '140px', top: menuPos.top, left: menuPos.left, borderColor: '#E9E9E9' }}
               >
-                <div style={{ padding: '3px' }}>
+                <div style={{ padding: '4px' }}>
                   <button
-                    className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
                     style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -563,12 +594,12 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
                       setIsEditing(true);
                     }}
                   >
-                    <Pencil className="size-3" style={{ color: '#868D9E' }} />
+                    <Pencil className="size-3.5" style={{ color: '#868D9E' }} />
                     Rename
                   </button>
-                  <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '2px 6px' }} />
+                  <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '3px 8px' }} />
                   <button
-                    className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-[#FF1F1F]/10 transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#FF1F1F]/8 transition-colors text-left min-h-[32px]"
                     style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#FF1F1F' }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -576,7 +607,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
                       setShowMenu(false);
                     }}
                   >
-                    <Trash2 className="size-3" />
+                    <Trash2 className="size-3.5" />
                     Delete Folder
                   </button>
                 </div>
@@ -629,267 +660,428 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
 
   const roleEntries = Object.values(ROLES);
 
+  const visibleCount = Object.values(config.partStates).filter(Boolean).length;
+  const hiddenCount = Object.values(config.partStates).filter(v => !v).length;
+  const hasPartStates = Object.keys(config.partStates).length > 0;
+
   return (
-    <div data-demo="configurations-detail" style={{ padding: '12px 16px 16px' }}>
-      <div>
-        {/* Name */}
+    <div data-demo="configurations-detail" className="overflow-y-auto" style={{ padding: '14px 16px 16px' }}>
+      {/* ── Header badge ── */}
+      {config.isDefault ? (
+        <div
+          className="flex items-center gap-2 mb-4"
+          style={{
+            padding: '9px 12px',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(47, 128, 237, 0.05)',
+            border: '1px solid rgba(47, 128, 237, 0.1)',
+          }}
+        >
+          <Shield className="size-3.5 shrink-0" style={{ color: '#2F80ED' }} />
+          <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#2F80ED', fontWeight: 600 }}>
+            Default Configuration
+          </span>
+          <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', marginLeft: 'auto' }}>
+            Always pre-selected
+          </span>
+        </div>
+      ) : (
+        <div
+          className="flex items-center gap-2 mb-4"
+          style={{
+            padding: '9px 12px',
+            borderRadius: '10px',
+            backgroundColor: config.isEnabled ? 'rgba(17, 232, 116, 0.06)' : 'rgba(127,127,127,0.06)',
+            border: `1px solid ${config.isEnabled ? 'rgba(17, 232, 116, 0.15)' : 'rgba(127,127,127,0.12)'}`,
+          }}
+        >
+          <div
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: config.isEnabled ? '#11E874' : '#C2C9DB',
+              flexShrink: 0,
+            }}
+          />
+          <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: config.isEnabled ? '#36415D' : '#868D9E', fontWeight: 600 }}>
+            {config.isEnabled ? 'Enabled' : 'Disabled'}
+          </span>
+          {config.tags.length > 0 && (
+            <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', marginLeft: 'auto' }}>
+              {config.tags[0]}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── Identity Section ── */}
+      <div style={{ marginBottom: '16px' }}>
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px' }}
+          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Name
         </label>
         <input
           value={config.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          disabled={config.isReadOnly}
-          className="w-full bg-white border outline-none mb-3 min-h-[36px]"
+          placeholder="Configuration name..."
+          className="w-full bg-white border outline-none mb-3 min-h-[36px] focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all placeholder:text-[#C2C9DB]"
           style={{
             fontFamily: 'var(--font-family)',
             fontSize: '13px',
-            color: config.isReadOnly ? '#7F7F7F' : '#36415D',
+            fontWeight: 500,
+            color: '#36415D',
             borderColor: '#C2C9DB',
-            borderRadius: '6px',
-            padding: '6px 10px',
+            borderRadius: '8px',
+            padding: '7px 10px',
           }}
         />
 
-        {/* Description */}
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px' }}
+          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Description
         </label>
         <textarea
           value={config.description}
           onChange={(e) => onUpdate({ description: e.target.value })}
-          disabled={config.isReadOnly}
+          placeholder="Describe this configuration..."
           rows={3}
-          className="w-full bg-white border outline-none mb-3 resize-none"
+          className="w-full bg-white border outline-none resize-none focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all placeholder:text-[#C2C9DB]"
           style={{
             fontFamily: 'var(--font-family)',
             fontSize: '13px',
-            color: config.isReadOnly ? '#7F7F7F' : '#36415D',
+            color: '#36415D',
             borderColor: '#C2C9DB',
-            borderRadius: '6px',
-            padding: '6px 10px',
-            lineHeight: 1.4,
+            borderRadius: '8px',
+            padding: '7px 10px',
+            lineHeight: 1.5,
           }}
         />
+      </div>
 
-        {/* Tags */}
+      {/* ── Tags Section ── */}
+      <div style={{ marginBottom: '16px' }}>
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px' }}
+          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '6px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Tags
         </label>
-        <div className="flex flex-wrap mb-1.5" style={{ gap: '4px' }}>
+        <div className="flex flex-wrap mb-2" style={{ gap: '5px' }}>
           {config.tags.map((tag) => (
             <span
               key={tag}
-              className="flex items-center"
+              className="flex items-center group/tag hover:bg-[#D9E0F0] transition-colors"
               style={{
                 fontFamily: 'var(--font-family)',
                 fontSize: '11px',
                 fontWeight: 500,
                 color: '#36415D',
                 backgroundColor: '#E9E9E9',
-                padding: '2px 4px 2px 8px',
+                padding: '3px 6px 3px 9px',
                 borderRadius: '99px',
-                lineHeight: '18px',
-                gap: '2px',
+                lineHeight: '16px',
+                gap: '3px',
               }}
             >
               {tag}
-              {!config.isReadOnly && (
-                <button
-                  onClick={() => handleRemoveTag(tag)}
-                  className="hover:opacity-70 transition-opacity p-0.5"
-                  style={{ color: '#868D9E' }}
-                >
-                  <X className="size-2.5" />
-                </button>
-              )}
+              <button
+                onClick={() => handleRemoveTag(tag)}
+                className="opacity-50 hover:opacity-100 transition-opacity p-0.5 rounded-full hover:bg-black/5"
+                style={{ color: '#36415D' }}
+              >
+                <X className="size-2.5" />
+              </button>
             </span>
           ))}
+          {config.tags.length === 0 && (
+            <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB' }}>
+              No tags yet — add one below
+            </span>
+          )}
         </div>
-        {!config.isReadOnly && (
-          <div data-demo="configurations-tags" className="flex mb-3" style={{ gap: '4px' }}>
-            <input
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddTag();
-              }}
-              placeholder="Add tag..."
-              data-demo="configurations-tag-input"
-              className="flex-1 bg-white border outline-none min-h-[32px]"
-              style={{
-                fontFamily: 'var(--font-family)',
-                fontSize: '12px',
-                color: '#36415D',
-                borderColor: '#C2C9DB',
-                borderRadius: '6px',
-                padding: '4px 8px',
-              }}
-            />
-            <button
-              onClick={handleAddTag}
-              className="px-3 rounded-button hover:opacity-90 transition-opacity min-h-[32px]"
-              style={{
-                fontFamily: 'var(--font-family)',
-                fontSize: '12px',
-                fontWeight: 500,
-                color: 'white',
-                backgroundColor: '#2F80ED',
-              }}
-            >
-              Add
-            </button>
-          </div>
-        )}
-
-        {/* Set from View button */}
-        {!config.isReadOnly && (
-          <button
-            data-demo="configurations-set-from-view"
-            className="w-full flex items-center justify-center gap-2 rounded-button mb-3 hover:opacity-90 transition-opacity min-h-[40px]"
+        <div data-demo="configurations-tags" className="flex" style={{ gap: '6px' }}>
+          <input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleAddTag();
+            }}
+            placeholder="Add tag..."
+            data-demo="configurations-tag-input"
+            className="flex-1 bg-white border outline-none min-h-[32px] focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all"
             style={{
               fontFamily: 'var(--font-family)',
-              fontSize: '13px',
+              fontSize: '12px',
+              color: '#36415D',
+              borderColor: '#C2C9DB',
+              borderRadius: '8px',
+              padding: '4px 10px',
+            }}
+          />
+          <button
+            onClick={handleAddTag}
+            disabled={!tagInput.trim()}
+            className="px-3 rounded-[8px] hover:opacity-90 active:scale-[0.95] transition-all min-h-[32px] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+            style={{
+              fontFamily: 'var(--font-family)',
+              fontSize: '12px',
               fontWeight: 600,
               color: 'white',
               backgroundColor: '#2F80ED',
-              padding: '8px 16px',
-            }}
-            onClick={() => {
-              // Mock: in a real implementation, this captures the current 3D view state
-              onShowToast('Configuration updated from current view');
             }}
           >
-            <Sliders className="size-3.5" />
-            Set from View
+            Add
           </button>
-        )}
+        </div>
+      </div>
 
-        {/* Add/Remove selected parts — GAP 9 (FR17-18): hidden until parts selected */}
-        {!config.isReadOnly && (
-          <div className="mb-3" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {hasSelectedParts ? (
+      {/* ── Divider ── */}
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E9E9E9 15%, #E9E9E9 85%, transparent 100%)', margin: '0 -16px 16px' }} />
+
+      {/* ── 3D Scene Actions ── */}
+      <div style={{ marginBottom: '16px' }}>
+        <label
+          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+        >
+          Scene State
+        </label>
+
+        {/* Captured parts summary */}
+        {hasPartStates && (() => {
+          const total = visibleCount + hiddenCount;
+          const visiblePct = total > 0 ? (visibleCount / total) * 100 : 0;
+          return (
+            <div
+              className="mb-3 rounded-[10px]"
+              style={{
+                padding: '12px',
+                backgroundColor: 'rgba(47, 128, 237, 0.04)',
+                border: '1px solid rgba(47, 128, 237, 0.1)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Eye className="size-3.5" style={{ color: '#2F80ED' }} />
+                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', fontWeight: 600, color: '#2F80ED' }}>
+                    State Captured
+                  </span>
+                </div>
+                <span style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#868D9E' }}>
+                  {total} parts
+                </span>
+              </div>
+              {/* Mini visibility bar */}
+              <div
+                style={{
+                  width: '100%',
+                  height: '6px',
+                  borderRadius: '99px',
+                  backgroundColor: '#E9E9E9',
+                  overflow: 'hidden',
+                  marginBottom: '8px',
+                }}
+              >
+                <div
+                  style={{
+                    width: `${visiblePct}%`,
+                    height: '100%',
+                    borderRadius: '99px',
+                    backgroundColor: '#11E874',
+                    transition: 'width 0.3s ease',
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#11E874' }} />
+                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}>
+                    <strong style={{ fontWeight: 600 }}>{visibleCount}</strong> visible
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#E9E9E9' }} />
+                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E' }}>
+                    <strong style={{ fontWeight: 600 }}>{hiddenCount}</strong> hidden
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Set from View button */}
+        <button
+          data-demo="configurations-set-from-view"
+          className="w-full flex items-center justify-center gap-2.5 rounded-[10px] mb-3 hover:shadow-[0_4px_16px_rgba(47,128,237,0.3)] active:scale-[0.97] transition-all min-h-[42px]"
+          style={{
+            fontFamily: 'var(--font-family)',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: 'white',
+            background: 'linear-gradient(135deg, #2F80ED 0%, #004FFF 100%)',
+            padding: '9px 16px',
+            boxShadow: '0 2px 8px rgba(47,128,237,0.2)',
+          }}
+          onClick={() => {
+            onShowToast('Configuration updated from current view');
+          }}
+        >
+          <Sliders className="size-4" />
+          Set from View
+        </button>
+
+        {/* Add/Remove selected parts — FR17-18: hidden until parts selected */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {hasSelectedParts ? (
+            <div
+              className="rounded-[10px]"
+              style={{
+                padding: '10px',
+                backgroundColor: 'rgba(47,128,237,0.04)',
+                border: '1px solid rgba(47,128,237,0.1)',
+              }}
+            >
+              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#2F80ED', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+                Parts selected — choose action:
+              </span>
               <div className="flex" style={{ gap: '6px' }}>
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-button hover:opacity-90 transition-opacity min-h-[36px] border"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-[8px] hover:bg-white active:scale-[0.97] transition-all min-h-[34px] border"
                   style={{
                     fontFamily: 'var(--font-family)',
                     fontSize: '12px',
-                    fontWeight: 500,
-                    color: '#36415D',
-                    borderColor: '#C2C9DB',
+                    fontWeight: 600,
+                    color: '#2F80ED',
+                    borderColor: 'rgba(47,128,237,0.2)',
+                    backgroundColor: 'white',
                     padding: '6px 10px',
                   }}
                   onClick={() => onShowToast('Selected parts added to configuration')}
                 >
-                  <PlusSquare className="size-3.5" style={{ color: '#868D9E' }} />
-                  Add Selected Parts
+                  <PlusSquare className="size-3.5" />
+                  Add
                 </button>
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-button hover:opacity-90 transition-opacity min-h-[36px] border"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-[8px] hover:bg-white active:scale-[0.97] transition-all min-h-[34px] border"
                   style={{
                     fontFamily: 'var(--font-family)',
                     fontSize: '12px',
-                    fontWeight: 500,
-                    color: '#36415D',
-                    borderColor: '#C2C9DB',
+                    fontWeight: 600,
+                    color: '#FF1F1F',
+                    borderColor: 'rgba(255,31,31,0.2)',
+                    backgroundColor: 'white',
                     padding: '6px 10px',
                   }}
                   onClick={() => onShowToast('Selected parts removed from configuration')}
                 >
-                  <MinusSquare className="size-3.5" style={{ color: '#868D9E' }} />
-                  Remove Selected Parts
+                  <MinusSquare className="size-3.5" />
+                  Remove
                 </button>
               </div>
-            ) : (
-              <div
-                className="flex items-center rounded-lg"
-                style={{
-                  padding: '8px 10px',
-                  backgroundColor: '#F5F5F5',
-                  border: '1px dashed #C2C9DB',
-                  gap: '8px',
-                }}
-              >
-                <Eye className="size-3.5 shrink-0" style={{ color: '#868D9E' }} />
-                <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', flex: 1 }}>
-                  Select parts in the 3D view to add or remove them from this configuration.
-                </span>
-              </div>
-            )}
-            {/* Demo toggle for part selection simulation */}
-            <button
-              onClick={() => setHasSelectedParts((v) => !v)}
-              className="flex items-center justify-center gap-1 rounded-button hover:opacity-80 transition-opacity"
+            </div>
+          ) : (
+            <div
+              className="flex items-center rounded-[10px]"
               style={{
-                fontFamily: 'var(--font-family)',
-                fontSize: '10px',
-                color: '#868D9E',
-                background: 'none',
-                border: '1px dashed #C2C9DB',
-                padding: '3px 8px',
-                cursor: 'pointer',
+                padding: '10px 12px',
+                backgroundColor: '#F5F5F5',
+                border: '1px dashed #E9E9E9',
+                gap: '10px',
               }}
             >
-              {hasSelectedParts ? 'Clear part selection (demo)' : 'Simulate part selection (demo)'}
-            </button>
-          </div>
-        )}
-
-        {/* Captured parts summary */}
-        {Object.keys(config.partStates).length > 0 && (
-          <div
-            className="mb-3 rounded-lg"
-            style={{
-              padding: '8px 10px',
-              backgroundColor: 'rgba(47, 128, 237, 0.06)',
-              border: '1px solid rgba(47, 128, 237, 0.15)',
-            }}
-          >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Eye className="size-3" style={{ color: '#2F80ED' }} />
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 700, color: '#2F80ED' }}>
-                Scene State Captured
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
+                  backgroundColor: '#E9E9E9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Eye className="size-3.5" style={{ color: '#C2C9DB' }} />
+              </div>
+              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', flex: 1, lineHeight: 1.4 }}>
+                Select parts in the 3D view to add or remove them.
               </span>
             </div>
-            <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E' }}>
-              {Object.values(config.partStates).filter(Boolean).length} parts visible, {Object.values(config.partStates).filter(v => !v).length} hidden
-            </span>
-          </div>
-        )}
+          )}
+          {/* Demo toggle for part selection simulation */}
+          <button
+            onClick={() => setHasSelectedParts((v) => !v)}
+            className="flex items-center justify-center gap-1 rounded-[8px] hover:opacity-80 transition-opacity"
+            style={{
+              fontFamily: 'var(--font-family)',
+              fontSize: '10px',
+              color: '#C2C9DB',
+              background: 'none',
+              border: '1px dashed #E9E9E9',
+              padding: '3px 8px',
+              cursor: 'pointer',
+            }}
+          >
+            {hasSelectedParts ? 'Clear part selection (demo)' : 'Simulate part selection (demo)'}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Divider ── */}
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E9E9E9 15%, #E9E9E9 85%, transparent 100%)', margin: '0 -16px 16px' }} />
+
+      {/* ── Settings Section ── */}
+      <div style={{ marginBottom: '16px' }}>
+        <label
+          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+        >
+          Settings
+        </label>
 
         {/* Enable/Disable checkbox */}
         {!config.isDefault && (
-          <label className="flex items-center gap-2 mb-3 cursor-pointer min-h-[32px]">
+          <label
+            className="flex items-center gap-3 mb-3 cursor-pointer min-h-[38px] rounded-[10px] hover:bg-[#E9E9E9]/40 transition-colors px-3 -mx-3 py-2"
+            style={{
+              border: `1px solid ${config.isEnabled ? 'rgba(17,232,116,0.15)' : '#E9E9E9'}`,
+              backgroundColor: config.isEnabled ? 'rgba(17,232,116,0.03)' : undefined,
+            }}
+          >
             <input
               type="checkbox"
               checked={config.isEnabled}
               onChange={() => onUpdate({ isEnabled: !config.isEnabled })}
-              className="accent-[#2F80ED]"
+              className="accent-[#11E874]"
               style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
-            <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D' }}>
-              Enabled
-            </span>
+            <div className="flex-1">
+              <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D', fontWeight: 500, display: 'block' }}>
+                {config.isEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E' }}>
+                {config.isEnabled ? 'Visible to permitted roles' : 'Hidden from all users'}
+              </span>
+            </div>
+            <div
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: config.isEnabled ? '#11E874' : '#C2C9DB',
+                flexShrink: 0,
+                boxShadow: config.isEnabled ? '0 0 0 3px rgba(17,232,116,0.15)' : undefined,
+              }}
+            />
           </label>
         )}
-
-        {/* Last Updated */}
-        <p style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', marginBottom: '12px' }}>
-          Last updated: {new Date(config.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-        </p>
 
         {/* Permissions (expandable) */}
         <div
           data-demo="configurations-permissions"
-          className="border rounded-lg overflow-hidden"
-          style={{ borderColor: '#C2C9DB' }}
+          className="border rounded-[10px] overflow-hidden"
+          style={{ borderColor: '#E9E9E9' }}
         >
           <button
             data-demo="configurations-permissions-btn"
@@ -901,15 +1093,23 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#36415D' }}>
                 Permissions
               </span>
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E' }}>
-                ({config.permittedRoles.length} roles)
+              <span
+                style={{
+                  fontFamily: 'var(--font-family)',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: '#2F80ED',
+                  backgroundColor: 'rgba(47, 128, 237, 0.08)',
+                  padding: '1px 6px',
+                  borderRadius: '99px',
+                }}
+              >
+                {config.permittedRoles.length}
               </span>
             </div>
-            {showPermissions ? (
+            <div className="transition-transform" style={{ transform: showPermissions ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
               <ChevronDown className="size-3.5" style={{ color: '#868D9E' }} />
-            ) : (
-              <ChevronRight className="size-3.5" style={{ color: '#868D9E' }} />
-            )}
+            </div>
           </button>
           <AnimatePresence>
             {showPermissions && (
@@ -922,22 +1122,21 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               >
                 <div
                   className="border-t"
-                  style={{ borderColor: '#C2C9DB', padding: '8px 12px' }}
+                  style={{ borderColor: '#E9E9E9', padding: '6px 8px' }}
                 >
                   {roleEntries.map((role) => (
                     <label
                       key={role.id}
-                      className="flex items-center gap-2 py-1.5 cursor-pointer min-h-[32px]"
+                      className="flex items-center gap-2.5 py-1.5 cursor-pointer min-h-[30px] rounded-md hover:bg-[#E9E9E9]/40 transition-colors px-2"
                     >
                       <input
                         type="checkbox"
                         checked={config.permittedRoles.includes(role.id)}
                         onChange={() => handleToggleRole(role.id)}
-                        disabled={config.isReadOnly}
                         className="accent-[#2F80ED] flex-shrink-0"
                         style={{ width: '14px', height: '14px' }}
                       />
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: config.isReadOnly ? '#7F7F7F' : '#36415D' }}>
+                      <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}>
                         {role.label}
                       </span>
                     </label>
@@ -947,6 +1146,35 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      {/* ── Footer ── */}
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E9E9E9 15%, #E9E9E9 85%, transparent 100%)', margin: '0 -16px 12px' }} />
+      <div className="flex items-center justify-between">
+        <p style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', margin: 0 }}>
+          {new Date(config.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        </p>
+        {!config.isDefault && (
+          <button
+            onClick={() => onShowToast('Use the context menu in the list to delete')}
+            className="flex items-center gap-1.5 hover:bg-[#FF1F1F]/6 active:scale-[0.97] transition-all rounded-[6px]"
+            style={{
+              fontFamily: 'var(--font-family)',
+              fontSize: '11px',
+              fontWeight: 500,
+              color: '#C2C9DB',
+              padding: '4px 8px',
+              border: 'none',
+              background: 'none',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#FF1F1F'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#C2C9DB'; }}
+          >
+            <Trash2 className="size-3" />
+            Delete
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1084,7 +1312,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
 
   const handleDelete = useCallback((configId: string) => {
     const config = configurations.find((c) => c.id === configId);
-    if (!config || config.isDefault || config.isReadOnly) return;
+    if (!config || config.isDefault) return;
     setConfirmDialog({
       title: 'Delete Configuration',
       message: `Are you sure you want to delete "${config.name}"?`,
@@ -1320,7 +1548,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name or tag..."
                 data-demo="configurations-search-input"
-                className="w-full bg-white border outline-none min-h-[40px]"
+                className="w-full bg-white border outline-none min-h-[40px] focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all"
                 style={{
                   borderRadius: '8px',
                   padding: '8px 12px 8px 32px',
@@ -1334,11 +1562,11 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center" style={{ padding: '4px 12px 8px', gap: '6px' }}>
+          <div className="flex items-center" style={{ padding: '4px 12px 10px', gap: '6px' }}>
             <button
               onClick={handleCreateConfiguration}
               data-demo="configurations-create"
-              className="flex-1 flex items-center justify-center gap-2 rounded-button hover:opacity-90 transition-opacity min-h-[36px]"
+              className="flex-1 flex items-center justify-center gap-2 rounded-[8px] hover:shadow-[0_2px_8px_rgba(47,128,237,0.25)] active:scale-[0.98] transition-all min-h-[36px]"
               style={{
                 fontFamily: 'var(--font-family)',
                 fontSize: '12px',
@@ -1353,7 +1581,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             </button>
             <button
               onClick={handleCreateFolder}
-              className="flex items-center justify-center gap-1.5 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+              className="flex items-center justify-center gap-1.5 rounded-[8px] border hover:bg-[#E9E9E9]/50 active:scale-[0.97] transition-all min-h-[36px]"
               style={{
                 fontFamily: 'var(--font-family)',
                 fontSize: '12px',
@@ -1369,11 +1597,11 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             {selectableConfigs.length > 0 && (
               <button
                 onClick={handleToggleSelectAll}
-                className="flex items-center justify-center rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                className="flex items-center justify-center rounded-[8px] border hover:bg-[#E9E9E9]/50 active:scale-[0.97] transition-all min-h-[36px]"
                 style={{
                   fontFamily: 'var(--font-family)',
                   fontSize: '10px',
-                  fontWeight: 500,
+                  fontWeight: 600,
                   color: allSelected ? '#2F80ED' : '#868D9E',
                   borderColor: allSelected ? '#2F80ED' : '#C2C9DB',
                   padding: '6px 8px',
@@ -1404,7 +1632,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                     onSelect={() => {
                       if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
                         const prev = configurations.find((c) => c.id === selectedId);
-                        if (prev && !prev.isDefault && !prev.isReadOnly) {
+                        if (prev && !prev.isDefault) {
                           setToastMessage('Previous configuration state saved');
                         }
                       }
@@ -1458,7 +1686,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                                 onSelect={() => {
                                   if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
                                     const prev = configurations.find((c) => c.id === selectedId);
-                                    if (prev && !prev.isDefault && !prev.isReadOnly) {
+                                    if (prev && !prev.isDefault) {
                                       setToastMessage('Previous configuration state saved');
                                     }
                                   }
@@ -1494,12 +1722,27 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             ) : (
               <div
                 className="flex flex-col items-center justify-center"
-                style={{ padding: '32px 16px', gap: '8px' }}
+                style={{ padding: '40px 24px', gap: '12px' }}
               >
-                <Sliders className="size-8" style={{ color: '#C2C9DB' }} />
-                <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#868D9E', textAlign: 'center' }}>
-                  {searchQuery ? 'No configurations match your search' : 'No configurations yet'}
-                </p>
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#F5F5F5',
+                  }}
+                >
+                  <Sliders className="size-5" style={{ color: '#C2C9DB' }} />
+                </div>
+                <div className="text-center">
+                  <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#868D9E', margin: '0 0 4px' }}>
+                    {searchQuery ? 'No configurations match your search' : 'No configurations yet'}
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', margin: 0 }}>
+                    {searchQuery ? 'Try a different search term' : 'Create a configuration to get started'}
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -1509,14 +1752,25 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             <div
               className="border-t"
               style={{
-                borderColor: '#C2C9DB',
+                borderColor: '#E9E9E9',
                 padding: '8px 12px',
-                backgroundColor: '#F5F5F5',
+                backgroundColor: 'rgba(47, 128, 237, 0.04)',
               }}
             >
-              <div className="flex items-center" style={{ gap: '4px' }}>
-                <span className="flex-shrink-0" style={{ fontFamily: 'var(--font-family)', fontSize: '12px', fontWeight: 500, color: '#36415D' }}>
-                  {checkedIds.size} selected
+              <div className="flex items-center" style={{ gap: '5px' }}>
+                <span
+                  className="flex-shrink-0"
+                  style={{
+                    fontFamily: 'var(--font-family)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#2F80ED',
+                    backgroundColor: 'rgba(47, 128, 237, 0.08)',
+                    padding: '2px 8px',
+                    borderRadius: '99px',
+                  }}
+                >
+                  {checkedIds.size}
                 </span>
                   {/* Move to folder */}
                   <div className="relative">
@@ -1529,7 +1783,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                         }
                         setShowMoveToFolderMenu(!showMoveToFolderMenu);
                       }}
-                      className="flex items-center gap-1 rounded-button border hover:bg-white transition-colors min-h-[30px]"
+                      className="flex items-center gap-1 rounded-[6px] border hover:bg-white active:scale-[0.97] transition-all min-h-[28px]"
                       style={{
                         fontFamily: 'var(--font-family)',
                         fontSize: '11px',
@@ -1551,12 +1805,12 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.1 }}
-                          className="fixed bg-card border border-border rounded-lg shadow-elevation-lg z-[100]"
-                          style={{ minWidth: '140px', bottom: `calc(100vh - ${moveMenuPos.top}px)`, left: moveMenuPos.left }}
+                          className="fixed bg-white border rounded-[10px] shadow-elevation-lg z-[100]"
+                          style={{ minWidth: '140px', bottom: `calc(100vh - ${moveMenuPos.top}px)`, left: moveMenuPos.left, borderColor: '#E9E9E9' }}
                         >
-                          <div style={{ padding: '3px' }}>
+                          <div style={{ padding: '4px' }}>
                             <button
-                              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                              className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
                               style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
                               onClick={() => handleBulkMoveToFolder(undefined)}
                             >
@@ -1565,7 +1819,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                             {folders.map((folder) => (
                               <button
                                 key={folder.id}
-                                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md hover:bg-foreground/5 transition-colors text-left"
+                                className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
                                 style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}
                                 onClick={() => handleBulkMoveToFolder(folder.id)}
                               >
@@ -1580,7 +1834,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                   </div>
                   <button
                     onClick={handleBulkToggleEnabled}
-                    className="flex items-center gap-1 rounded-button border hover:bg-white transition-colors min-h-[30px]"
+                    className="flex items-center gap-1 rounded-[6px] border hover:bg-white active:scale-[0.97] transition-all min-h-[28px]"
                     style={{
                       fontFamily: 'var(--font-family)',
                       fontSize: '11px',
@@ -1596,29 +1850,28 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                   <div className="flex-1" />
                   <button
                     onClick={() => setCheckedIds(new Set())}
-                    className="flex items-center gap-1 rounded-button border hover:bg-white transition-colors min-h-[30px]"
+                    className="flex items-center justify-center rounded-[6px] hover:bg-white transition-colors"
                     style={{
-                      fontFamily: 'var(--font-family)',
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      color: '#36415D',
-                      borderColor: '#C2C9DB',
-                      padding: '3px 8px',
+                      width: '28px',
+                      height: '28px',
+                      color: '#868D9E',
+                      border: '1px solid #C2C9DB',
                     }}
+                    title="Clear selection"
                   >
-                    <X className="size-3" style={{ color: '#868D9E' }} />
-                    Cancel
+                    <X className="size-3" />
                   </button>
                   <button
                     onClick={handleBulkDelete}
-                    className="flex items-center gap-1 rounded-button hover:opacity-90 transition-opacity min-h-[30px]"
+                    className="flex items-center gap-1 rounded-[6px] hover:opacity-90 active:scale-[0.97] transition-all min-h-[28px]"
                     style={{
                       fontFamily: 'var(--font-family)',
                       fontSize: '11px',
                       fontWeight: 600,
                       color: 'white',
                       backgroundColor: '#FF1F1F',
-                      padding: '3px 8px',
+                      padding: '3px 10px',
+                      boxShadow: '0 1px 4px rgba(255,31,31,0.2)',
                     }}
                   >
                     <Trash2 className="size-3" />
@@ -1633,16 +1886,16 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             data-demo="configurations-footer"
             className="border-t flex flex-col"
             style={{
-              borderColor: '#e9e9e9',
-              padding: '8px 12px',
-              gap: '6px',
+              borderColor: '#E9E9E9',
+              padding: '10px 12px',
+              gap: '8px',
             }}
           >
-            <div className="flex" style={{ gap: '8px' }}>
+            <div className="flex" style={{ gap: '6px' }}>
               <button
                 onClick={handleImport}
                 data-demo="configurations-import"
-                className="flex-1 flex items-center justify-center gap-2 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                className="flex-1 flex items-center justify-center gap-2 rounded-[8px] border hover:bg-[#E9E9E9]/40 active:scale-[0.97] transition-all min-h-[36px]"
                 style={{
                   fontFamily: 'var(--font-family)',
                   fontSize: '12px',
@@ -1653,12 +1906,12 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 }}
               >
                 <Upload className="size-3.5" style={{ color: '#868D9E' }} />
-                Import Excel
+                Import
               </button>
               <button
                 onClick={handleExport}
                 data-demo="configurations-export"
-                className="flex-1 flex items-center justify-center gap-2 rounded-button border hover:bg-[#E9E9E9]/60 transition-colors min-h-[36px]"
+                className="flex-1 flex items-center justify-center gap-2 rounded-[8px] border hover:bg-[#E9E9E9]/40 active:scale-[0.97] transition-all min-h-[36px]"
                 style={{
                   fontFamily: 'var(--font-family)',
                   fontSize: '12px',
@@ -1669,11 +1922,11 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 }}
               >
                 <Download className="size-3.5" style={{ color: '#868D9E' }} />
-                Export Excel
+                Export
               </button>
             </div>
-            <p style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#868D9E', textAlign: 'center', margin: 0 }}>
-              Export parts catalog with configuration visibility columns
+            <p style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#C2C9DB', textAlign: 'center', margin: 0 }}>
+              Excel — parts catalog with config visibility columns
             </p>
           </div>
         </div>
@@ -1683,10 +1936,24 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
       <FrontlineWindow
         isOpen={isOpen && !!selectedConfig}
         onClose={() => setSelectedId(null)}
-        title={selectedConfig ? `${selectedConfig.name} — Details` : 'Configuration Details'}
-        icon={<Sliders className="size-4" style={{ color: '#2F80ED' }} />}
+        title={selectedConfig ? selectedConfig.name : 'Configuration Details'}
+        icon={
+          <div className="flex items-center gap-1.5">
+            <Sliders className="size-4" style={{ color: '#2F80ED' }} />
+            {selectedConfig && (
+              <div
+                className="rounded-full"
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  backgroundColor: selectedConfig.isEnabled ? '#11E874' : '#C2C9DB',
+                }}
+              />
+            )}
+          </div>
+        }
         defaultPosition={{ x: Math.max(16, window.innerWidth - 360 - 16 - 350 - 16), y: 60 }}
-        defaultSize={{ width: 340, height: 520 }}
+        defaultSize={{ width: 340, height: 560 }}
         minWidth={280}
         minHeight={240}
       >

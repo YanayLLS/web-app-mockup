@@ -390,6 +390,23 @@ export function ProcedurePanel({
                       >
 Step {stepIndex + 1} of {totalSteps}
                       </p>
+                      {/* GAP 3 (FR55-57): Purple badge when step has a configuration */}
+                      {step.configurationName && (
+                        <span
+                          className="ml-2 hidden sm:inline-flex items-center rounded-full"
+                          style={{
+                            fontSize: '10px',
+                            fontFamily: 'var(--font-family)',
+                            fontWeight: 600,
+                            color: 'white',
+                            backgroundColor: '#2F80ED',
+                            padding: '1px 8px',
+                            lineHeight: '16px',
+                          }}
+                        >
+                          {step.configurationName}
+                        </span>
+                      )}
                     </button>
                     <div className="flex flex-[1_0_0] flex-row items-center self-stretch">
                       <div className="flex-[1_0_0] h-full min-h-px min-w-px" />
@@ -407,16 +424,6 @@ Step {stepIndex + 1} of {totalSteps}
                         </button>
                       )}
 
-                      {/* Delete Step Button - Only show if editing enabled and more than 1 step */}
-                      {editingEnabled && totalSteps > 1 && (
-                        <button 
-                          onClick={onDeleteStep}
-                          className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] min-h-[44px] min-w-[44px] cursor-pointer hover:bg-destructive/20 flex items-center justify-center group"
-                          title="Delete step"
-                        >
-                          <X className="size-3 sm:size-4 text-white/70 group-hover:text-destructive transition-colors" />
-                        </button>
-                      )}
                       
                       <button
                         onClick={() => setIsCollapsed(!isCollapsed)}

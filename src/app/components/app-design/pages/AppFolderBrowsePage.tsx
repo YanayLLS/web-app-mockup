@@ -258,7 +258,7 @@ export function AppFolderBrowsePage() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#E9E9E9' }}>
                     {item.badgeType === 'digital-twin' ? (
-                      <Cuboid style={{ width: '48px', height: '48px', color: '#8404B3' }} />
+                      <Cuboid style={{ width: '48px', height: '48px', color: '#8B5CF6' }} />
                     ) : (
                       <FileText style={{ width: '48px', height: '48px', color: '#2F80ED' }} />
                     )}
@@ -280,8 +280,8 @@ export function AppFolderBrowsePage() {
                       fontSize: '10px',
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'white',
-                      border: item.badgeType === 'digital-twin' ? '1px solid #8404B3' : '1px solid #2F80ED',
-                      backgroundColor: item.badgeType === 'digital-twin' ? 'rgba(132,4,179,0.5)' : 'rgba(47,128,237,0.5)',
+                      border: item.badgeType === 'digital-twin' ? '1px solid #8B5CF6' : '1px solid #2F80ED',
+                      backgroundColor: item.badgeType === 'digital-twin' ? 'rgba(139, 92, 246, 0.5)' : 'rgba(47,128,237,0.5)',
                     }}
                   >
                     {item.badgeType === 'digital-twin' ? (
@@ -318,7 +318,7 @@ export function AppFolderBrowsePage() {
               border: '1px solid #E9E9E9',
             }}
           >
-            <Cuboid style={{ width: '48px', height: '48px', color: '#8404B3' }} />
+            <Cuboid style={{ width: '48px', height: '48px', color: '#8B5CF6' }} />
             <div
               className="mt-2 text-center px-3 truncate w-full"
               style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}

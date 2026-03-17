@@ -11,6 +11,7 @@ interface BookmarkItem {
   type: 'file' | 'folder';
   isFavorite?: boolean;
   children?: BookmarkItem[];
+  configurationName?: string; // GAP 5 (FR62-63): Config active when bookmark was saved
 }
 
 const mockBookmarks: BookmarkItem[] = [
@@ -18,13 +19,15 @@ const mockBookmarks: BookmarkItem[] = [
     id: '1',
     name: 'Spare Parts Overview',
     type: 'file',
-    isFavorite: true
+    isFavorite: true,
+    configurationName: 'Standard Model',
   },
   {
     id: '2',
     name: 'API Reference',
     type: 'file',
-    isFavorite: true
+    isFavorite: true,
+    configurationName: 'Premium Package',
   },
   {
     id: '3',
@@ -36,7 +39,8 @@ const mockBookmarks: BookmarkItem[] = [
     id: '4',
     name: 'Documentation Hub',
     type: 'file',
-    isFavorite: false
+    isFavorite: false,
+    configurationName: 'Standard Model',
   },
   {
     id: '5',
@@ -44,7 +48,7 @@ const mockBookmarks: BookmarkItem[] = [
     type: 'folder',
     isFavorite: false,
     children: [
-      { id: '5-1', name: 'Team Guidelines', type: 'file' },
+      { id: '5-1', name: 'Team Guidelines', type: 'file', configurationName: 'Premium Package' },
       { id: '5-2', name: 'API Reference', type: 'file', isFavorite: true }
     ]
   }
@@ -104,9 +108,17 @@ export function BookmarksModal({ onClose }: BookmarksModalProps) {
       className="flex items-center gap-[8px] px-[10px] min-h-[44px] rounded-[8px] cursor-pointer group w-full text-left hover:bg-secondary/30"
     >
       <BookmarkIcon isFavorite={bookmark.isFavorite} />
-      <span className="flex-1 text-foreground text-[14px] font-normal leading-[21px] truncate">
-        {bookmark.name}
-      </span>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <span className="text-foreground text-[14px] font-normal leading-[21px] truncate">
+          {bookmark.name}
+        </span>
+        {/* GAP 5 (FR62-63): Show which config was active when bookmark was saved */}
+        {bookmark.configurationName && (
+          <span className="text-[11px] leading-[14px] truncate" style={{ color: '#2F80ED', fontWeight: 500 }}>
+            Configuration: {bookmark.configurationName}
+          </span>
+        )}
+      </div>
     </button>
   );
 
