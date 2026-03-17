@@ -4636,11 +4636,11 @@ export function RemoteSupportPage({
 
               {/* Create Button with Schedule split */}
               <div className="relative">
-                <div className="flex items-stretch h-9 rounded-[var(--radius)] overflow-hidden">
+                <div className="flex items-stretch rounded-[var(--radius)] overflow-hidden">
                   <button
                     ref={createButtonRef}
                     onClick={() => setShowCreateMenu(!showCreateMenu)}
-                    className="px-4 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center"
+                    className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   >
                     Create meeting
@@ -4648,7 +4648,7 @@ export function RemoteSupportPage({
                   {canScheduleMeeting && (
                     <button
                       onClick={() => openScheduleModal(true)}
-                      className="w-9 bg-primary text-primary-foreground border-l border-white/20 hover:bg-primary/80 transition-colors flex items-center justify-center"
+                      className="px-2.5 bg-primary text-primary-foreground border-l border-white/20 hover:bg-primary/80 transition-colors flex items-center justify-center"
                       title="Schedule for later"
                     >
                       <Calendar size={15} />
