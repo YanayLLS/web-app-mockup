@@ -384,7 +384,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         <div className="flex items-center gap-2">
           {/* Search Field - Desktop */}
           {!isMobile && (
-            <div className="flex items-center gap-3 bg-background border border-input rounded-[var(--radius)] px-3 py-2 w-full max-w-[420px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm focus-within:border-primary focus-within:shadow-md active:scale-[0.99]">
+            <div className="flex items-center gap-3 bg-background border border-input rounded-full px-3 py-2 w-full max-w-[420px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm focus-within:border-primary focus-within:shadow-md active:scale-[0.99]">
               <IconSearch />
               <input
                 type="text"
