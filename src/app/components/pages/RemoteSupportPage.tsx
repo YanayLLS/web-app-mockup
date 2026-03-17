@@ -472,9 +472,16 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
 
 // ScheduleMeetingModal is now imported from ../ScheduleMeetingModal
 
+interface PreJoinSettings {
+  isMuted: boolean;
+  isVideoOff: boolean;
+  audioDeviceId: string;
+  videoDeviceId: string;
+}
+
 interface PreJoinMeetingProps {
   meeting: Meeting;
-  onJoin: () => void;
+  onJoin: (settings: PreJoinSettings) => void;
   onCancel: () => void;
   isCreateMode?: boolean;
   onTitleChange?: (title: string) => void;
@@ -824,7 +831,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                 Cancel
               </button>
               <button
-                onClick={onJoin}
+                onClick={() => onJoin({ isMuted, isVideoOff, audioDeviceId: selectedAudio, videoDeviceId: selectedVideo })}
                 className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] text-sm hover:opacity-90 transition-opacity"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
@@ -1449,12 +1456,18 @@ export function RemoteSupportPage({
     }
   };
 
-  const handleJoinCall = async () => {
+  const handleJoinCall = async (settings: PreJoinSettings) => {
+    // Apply pre-join settings
+    setIsMuted(settings.isMuted);
+    setIsVideoOff(settings.isVideoOff);
+    if (settings.audioDeviceId) setSelectedAudioDevice(settings.audioDeviceId);
+    if (settings.videoDeviceId) setSelectedVideoDevice(settings.videoDeviceId);
+
     setShowPreJoin(false);
     setInCall(true);
     const startTime = new Date();
     setCallStartTime(startTime);
-    
+
     // Set active call in global context
     if (currentMeeting) {
       setActiveCall({
@@ -1462,15 +1475,13 @@ export function RemoteSupportPage({
         meetingTitle: currentMeeting.title,
         startTime: startTime,
         participantCount: callParticipants.length,
-        isAudioEnabled: !isMuted,
-        isVideoEnabled: !isVideoOff
+        isAudioEnabled: !settings.isMuted,
+        isVideoEnabled: !settings.isVideoOff
       });
     }
-    
-    // Start video stream if not already started
-    if (!localStream) {
-      await startLocalVideo();
-    }
+
+    // Start video stream with selected devices
+    await startLocalVideo(settings.videoDeviceId || undefined, settings.audioDeviceId || undefined);
   };
 
   const handleLeaveCall = () => {
