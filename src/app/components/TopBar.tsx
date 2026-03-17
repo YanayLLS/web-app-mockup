@@ -17,6 +17,7 @@ interface TopBarProps {
   isMobile?: boolean;
   isWorkspaceManagement?: boolean;
   onToggleWorkspaceManagement?: () => void;
+  onOpenSearch?: () => void;
 }
 
 function IconDownload() {
@@ -127,7 +128,7 @@ function IconLogo() {
   );
 }
 
-export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWorkspaceManagement, onToggleWorkspaceManagement }: TopBarProps) {
+export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWorkspaceManagement, onToggleWorkspaceManagement, onOpenSearch }: TopBarProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showXRLogin, setShowXRLogin] = useState(false);
@@ -386,7 +387,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           {!isMobile && (
             <div className="flex items-center bg-background border border-input rounded-full w-full max-w-[560px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm overflow-hidden">
               <button
-                onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', shiftKey: true, bubbles: true }))}
+                onClick={() => onOpenSearch?.()}
                 className="flex items-center gap-2 flex-1 px-3 py-2 min-w-0"
                 aria-label="Open search"
               >

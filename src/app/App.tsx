@@ -53,6 +53,7 @@ import { ProductSelector } from './components/ProductSelector';
 import { ProcedureEditorPage } from './components/pages/ProcedureEditorPage';
 import { AppLayout } from './components/app-design/AppLayout';
 import { DebugMenu } from './components/DebugMenu';
+import { GlobalSearchModal } from './components/GlobalSearchModal';
 import {
   IconHome,
   IconNotifications,
@@ -158,6 +159,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
   const [isWorkspaceManagement, setIsWorkspaceManagement] = useState(false);
   const [shouldShowScheduleModal, setShouldShowScheduleModal] = useState(false);
   const [openFavoriteItem, setOpenFavoriteItem] = useState<any | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Wrappers that keep URL params in sync with modal state
   const openSettingsModal = (open: boolean) => {
@@ -633,7 +635,9 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
         isMobile={isMobile}
         isWorkspaceManagement={isWorkspaceManagement}
         onToggleWorkspaceManagement={handleToggleWorkspaceManagement}
+        onOpenSearch={() => setIsSearchOpen(true)}
       />
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       {/* Shortcuts Bar - User-level, always visible */}
       <FavoritesBar
