@@ -687,29 +687,32 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
               <div className="flex items-center justify-center gap-4 md:gap-6">
                 {/* Mic control */}
                 <div className="relative" ref={audioPickerRef}>
-                  <button
-                    onClick={() => { setShowAudioPicker(!showAudioPicker); setShowVideoPicker(false); }}
-                    className={`flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-full backdrop-blur-sm transition-all ${isMuted ? 'bg-red-500/90 hover:bg-red-500' : 'bg-white/15 hover:bg-white/25'}`}
-                  >
+                  <div className={`flex items-center rounded-full backdrop-blur-sm transition-all ${isMuted ? 'bg-red-500/90' : 'bg-white/15'}`}>
                     <div
-                      className="shrink-0 size-7 rounded-full flex items-center justify-center cursor-pointer text-white"
+                      className={`shrink-0 size-9 rounded-full flex items-center justify-center cursor-pointer text-white transition-all ${isMuted ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
                       onClick={(e) => { e.stopPropagation(); handleToggleMute(); }}
                       title={isMuted ? 'Unmute' : 'Mute'}
                     >
                       {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
                     </div>
-                    <div className="min-w-0 max-w-[140px] hidden md:block">
-                      <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
-                        {isMuted ? 'Muted' : 'Microphone'}
+                    <div className="w-px h-5 bg-white/20 shrink-0 hidden md:block" />
+                    <button
+                      onClick={() => { setShowAudioPicker(!showAudioPicker); setShowVideoPicker(false); }}
+                      className={`hidden md:flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-r-full transition-all ${isMuted ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
+                    >
+                      <div className="min-w-0 max-w-[130px]">
+                        <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
+                          {isMuted ? 'Muted' : 'Microphone'}
+                        </div>
+                        <div className="text-white text-xs truncate leading-tight mt-0.5" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                          {audioDevices.find(d => d.deviceId === selectedAudio)?.label || 'Default'}
+                        </div>
                       </div>
-                      <div className="text-white text-xs truncate leading-tight mt-0.5" style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                        {audioDevices.find(d => d.deviceId === selectedAudio)?.label || 'Default'}
-                      </div>
-                    </div>
-                    <svg className={`shrink-0 size-2.5 text-white/50 transition-transform ${showAudioPicker ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 12 12">
-                      <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
+                      <svg className={`shrink-0 size-2.5 text-white/50 transition-transform ${showAudioPicker ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 12 12">
+                        <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
                   {showAudioPicker && (
                     <div
                       className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#1e1e2e]/95 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden min-w-[240px]"
@@ -738,29 +741,32 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
 
                 {/* Camera control */}
                 <div className="relative" ref={videoPickerRef}>
-                  <button
-                    onClick={() => { setShowVideoPicker(!showVideoPicker); setShowAudioPicker(false); }}
-                    className={`flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-full backdrop-blur-sm transition-all ${isVideoOff ? 'bg-red-500/90 hover:bg-red-500' : 'bg-white/15 hover:bg-white/25'}`}
-                  >
+                  <div className={`flex items-center rounded-full backdrop-blur-sm transition-all ${isVideoOff ? 'bg-red-500/90' : 'bg-white/15'}`}>
                     <div
-                      className="shrink-0 size-7 rounded-full flex items-center justify-center cursor-pointer text-white"
+                      className={`shrink-0 size-9 rounded-full flex items-center justify-center cursor-pointer text-white transition-all ${isVideoOff ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
                       onClick={(e) => { e.stopPropagation(); handleToggleVideo(); }}
                       title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                     >
                       {isVideoOff ? <IconVideoOff /> : <IconVideo />}
                     </div>
-                    <div className="min-w-0 max-w-[140px] hidden md:block">
-                      <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
-                        {isVideoOff ? 'Camera off' : 'Camera'}
+                    <div className="w-px h-5 bg-white/20 shrink-0 hidden md:block" />
+                    <button
+                      onClick={() => { setShowVideoPicker(!showVideoPicker); setShowAudioPicker(false); }}
+                      className={`hidden md:flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-r-full transition-all ${isVideoOff ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
+                    >
+                      <div className="min-w-0 max-w-[130px]">
+                        <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
+                          {isVideoOff ? 'Camera off' : 'Camera'}
+                        </div>
+                        <div className="text-white text-xs truncate leading-tight mt-0.5" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                          {videoDevices.find(d => d.deviceId === selectedVideo)?.label || 'Default'}
+                        </div>
                       </div>
-                      <div className="text-white text-xs truncate leading-tight mt-0.5" style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                        {videoDevices.find(d => d.deviceId === selectedVideo)?.label || 'Default'}
-                      </div>
-                    </div>
-                    <svg className={`shrink-0 size-2.5 text-white/50 transition-transform ${showVideoPicker ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 12 12">
-                      <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
+                      <svg className={`shrink-0 size-2.5 text-white/50 transition-transform ${showVideoPicker ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 12 12">
+                        <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
                   {showVideoPicker && (
                     <div
                       className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#1e1e2e]/95 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden min-w-[240px]"
