@@ -384,7 +384,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         <div className="flex items-center gap-2">
           {/* Search Field - Desktop */}
           {!isMobile && (
-            <div className="flex items-center bg-background border border-input rounded-full w-full max-w-[420px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm overflow-hidden">
+            <div className="flex items-center bg-background border border-input rounded-full w-full max-w-[560px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm overflow-hidden">
               <button
                 onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', shiftKey: true, bubbles: true }))}
                 className="flex items-center gap-2 flex-1 px-3 py-2 min-w-0"
@@ -395,7 +395,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               </button>
               {canAccessAiChat && (
                 <div
-                  className="group flex items-center gap-1.5 flex-shrink-0 border-l border-input pl-2 pr-2.5 py-1.5 cursor-pointer hover:bg-secondary transition-colors"
+                  className="group flex items-center gap-1.5 flex-shrink-0 pr-2.5 py-1.5 cursor-pointer hover:bg-secondary transition-colors"
                   onClick={onToggleChat}
                   role="button"
                   aria-label="AI chat"
