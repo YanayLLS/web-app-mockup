@@ -385,27 +385,24 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         <div className="flex items-center gap-2">
           {/* Search Field - Desktop */}
           {!isMobile && (
-            <div className="flex items-center bg-background border border-input rounded-full w-full max-w-[560px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm overflow-hidden">
-              <button
-                onClick={() => onOpenSearch?.()}
-                className="flex items-center gap-2 flex-1 px-3 py-2 min-w-0"
-                aria-label="Open search"
-              >
-                <IconSearch />
-                <span className="text-xs text-muted">Search</span>
-              </button>
+            <button
+              onClick={() => onOpenSearch?.()}
+              className="flex items-center gap-2 bg-background border border-input rounded-full px-3 py-2 w-full max-w-[560px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm"
+              aria-label="Open search"
+            >
+              <IconSearch />
+              <span className="flex-1 text-left text-xs text-muted">Search</span>
               {canAccessAiChat && (
-                <div
-                  className="group flex items-center gap-1.5 flex-shrink-0 pr-2.5 py-1.5 cursor-pointer hover:bg-secondary transition-colors"
-                  onClick={onToggleChat}
-                  role="button"
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleChat(); }}
+                  className="group flex items-center gap-1.5 flex-shrink-0 p-1 rounded-full hover:bg-secondary transition-colors"
                   aria-label="AI chat"
                 >
                   <span className="text-xs text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap select-none">Ask AI</span>
                   <IconAi />
-                </div>
+                </button>
               )}
-            </div>
+            </button>
           )}
 
           {/* Search Icon - Mobile */}
