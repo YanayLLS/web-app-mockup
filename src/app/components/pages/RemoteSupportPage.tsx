@@ -687,9 +687,9 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
               <div className="flex items-center justify-center gap-4 md:gap-6">
                 {/* Mic control */}
                 <div className="relative" ref={audioPickerRef}>
-                  <div className={`flex items-center rounded-full backdrop-blur-sm transition-all ${isMuted ? 'bg-red-500/90' : 'bg-white/15'}`}>
+                  <div className={`flex items-center rounded-full backdrop-blur-sm transition-all ${isMuted ? 'bg-white/25' : 'bg-white/15'}`}>
                     <div
-                      className={`shrink-0 size-9 rounded-full flex items-center justify-center cursor-pointer text-white transition-all ${isMuted ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
+                      className={`shrink-0 size-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${isMuted ? 'text-white/60 hover:bg-white/30' : 'text-white hover:bg-white/25'}`}
                       onClick={(e) => { e.stopPropagation(); handleToggleMute(); }}
                       title={isMuted ? 'Unmute' : 'Mute'}
                     >
@@ -698,7 +698,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                     <div className="w-px h-5 bg-white/20 shrink-0 hidden md:block" />
                     <button
                       onClick={() => { setShowAudioPicker(!showAudioPicker); setShowVideoPicker(false); }}
-                      className={`hidden md:flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-r-full transition-all ${isMuted ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
+                      className={`hidden md:flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-r-full transition-all ${isMuted ? 'hover:bg-white/30' : 'hover:bg-white/25'}`}
                     >
                       <div className="min-w-0 max-w-[130px]">
                         <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
@@ -741,9 +741,9 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
 
                 {/* Camera control */}
                 <div className="relative" ref={videoPickerRef}>
-                  <div className={`flex items-center rounded-full backdrop-blur-sm transition-all ${isVideoOff ? 'bg-red-500/90' : 'bg-white/15'}`}>
+                  <div className={`flex items-center rounded-full backdrop-blur-sm transition-all ${isVideoOff ? 'bg-white/25' : 'bg-white/15'}`}>
                     <div
-                      className={`shrink-0 size-9 rounded-full flex items-center justify-center cursor-pointer text-white transition-all ${isVideoOff ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
+                      className={`shrink-0 size-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${isVideoOff ? 'text-white/60 hover:bg-white/30' : 'text-white hover:bg-white/25'}`}
                       onClick={(e) => { e.stopPropagation(); handleToggleVideo(); }}
                       title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                     >
@@ -752,7 +752,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                     <div className="w-px h-5 bg-white/20 shrink-0 hidden md:block" />
                     <button
                       onClick={() => { setShowVideoPicker(!showVideoPicker); setShowAudioPicker(false); }}
-                      className={`hidden md:flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-r-full transition-all ${isVideoOff ? 'hover:bg-red-600/90' : 'hover:bg-white/25'}`}
+                      className={`hidden md:flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-r-full transition-all ${isVideoOff ? 'hover:bg-white/30' : 'hover:bg-white/25'}`}
                     >
                       <div className="min-w-0 max-w-[130px]">
                         <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
