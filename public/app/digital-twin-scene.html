@@ -536,13 +536,7 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 .config-item.active { background:rgba(47,128,237,0.08); border-left:3px solid #2f80ed; }
 .config-item.cfg-selected { background:rgba(47,128,237,0.06); outline:2px solid rgba(47,128,237,0.4); outline-offset:-2px; }
 .config-item.cfg-dragging { opacity:0.4; }
-.config-item.cfg-new {
-  animation:cfgItemNew 0.3s ease;
-}
-@keyframes cfgItemNew {
-  from { opacity:0; transform:translateX(-8px); background:rgba(47,128,237,0.1); }
-  to { opacity:1; transform:translateX(0); background:transparent; }
-}
+.config-item.cfg-new { background:rgba(47,128,237,0.08); }
 
 /* Drag-and-drop indicators */
 .config-item.cfg-dragging {
@@ -553,22 +547,17 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   content:''; position:absolute; top:-1px; left:8px; right:8px; height:2px;
   background:linear-gradient(90deg, transparent, #2f80ed 20%, #2f80ed 80%, transparent);
   border-radius:1px; z-index:10; pointer-events:none;
-  animation:cfgDropLine 0.3s ease;
+
 }
 .config-drop-after { position:relative; }
 .config-drop-after::after {
   content:''; position:absolute; bottom:-1px; left:8px; right:8px; height:2px;
   background:linear-gradient(90deg, transparent, #2f80ed 20%, #2f80ed 80%, transparent);
   border-radius:1px; z-index:10; pointer-events:none;
-  animation:cfgDropLine 0.3s ease;
 }
 .config-drop-inside {
   outline:2px solid #2f80ed; outline-offset:-2px; border-radius:8px;
   background:rgba(47,128,237,0.04) !important;
-}
-@keyframes cfgDropLine {
-  from { opacity:0; transform:scaleX(0.3); }
-  to { opacity:1; transform:scaleX(1); }
 }
 
 /* Folder chevron */
@@ -628,11 +617,7 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   box-shadow:0 4px 12px rgba(0,0,0,0.15);
 }
 .config-item[data-config-type="config"][data-desc]:not(.active):hover::after {
-  display:block; animation:cfgTooltipIn 0.15s ease;
-}
-@keyframes cfgTooltipIn {
-  from { opacity:0; transform:translateY(-2px); }
-  to { opacity:1; transform:translateY(0); }
+  display:block;
 }
 .config-dot {
   width:8px; height:8px; border-radius:50%; flex-shrink:0;
@@ -752,39 +737,17 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 #configDetailPanel.cfg-mode-enabled .fl-header { border-bottom:2px solid rgba(17,232,116,0.3); }
 #configDetailPanel.cfg-mode-disabled .fl-header { border-bottom:2px solid rgba(127,127,127,0.2); }
 #configDetailPanel .fl-body {
-  padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px;
+  padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px;
   position:relative;
 }
 #configDetailPanel .fl-body::-webkit-scrollbar { width:3px; }
 #configDetailPanel .fl-body::-webkit-scrollbar-track { background:transparent; }
 #configDetailPanel .fl-body::-webkit-scrollbar-thumb { background:#e9e9e9; border-radius:2px; }
 #configDetailPanel .fl-body::-webkit-scrollbar-thumb:hover { background:#c2c9db; }
-#configDetailPanel .fl-body > * {
-  animation:cfgDetailFadeIn 0.2s ease;
-}
-@keyframes cfgDetailFadeIn {
-  from { opacity:0; transform:translateY(4px); }
-  to { opacity:1; transform:translateY(0); }
-}
-/* Scroll shadow at top of detail body */
-#configDetailPanel .fl-body.scrolled::before {
-  content:''; position:sticky; top:0; left:0; right:0; display:block;
-  height:0; margin:-14px -16px 0; padding:0;
-  box-shadow:0 4px 12px rgba(0,0,0,0.06);
-  z-index:2; pointer-events:none;
-}
-/* Bottom fade when scrollable */
-#configDetailPanel .fl-body::after {
-  content:''; position:sticky; bottom:0; left:0; right:0; display:block;
-  height:16px; margin:0 -16px -16px; pointer-events:none;
-  background:linear-gradient(to top, #fff 0%, transparent 100%);
-  z-index:2; flex-shrink:0;
-}
-/* Hide bottom fade when fully scrolled to bottom */
-#configDetailPanel .fl-body.scrolled-bottom::after { opacity:0; transition:opacity 0.15s; }
+/* (fade/shadow effects removed per feedback) */
 #configDetailPanel .fl-body label { font-size:11px; font-weight:600; color:#868d9e; display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.3px; }
 .config-hero {
-  display:flex; flex-direction:column; gap:6px; padding:12px 14px; border-radius:12px;
+  display:flex; flex-direction:column; gap:5px; padding:10px 12px; border-radius:10px;
   background:linear-gradient(135deg, rgba(47,128,237,0.05) 0%, rgba(47,128,237,0.02) 100%);
   border:1px solid rgba(47,128,237,0.1);
   border-left:3px solid #2f80ed;
@@ -805,17 +768,18 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   transition:color 0.15s;
 }
 .config-hero-actions {
-  display:flex; gap:4px; margin-top:2px;
+  display:flex; gap:4px; margin-top:4px;
 }
 .config-hero-action {
-  display:flex; align-items:center; gap:4px; padding:3px 10px;
-  font-size:10px; font-weight:500; color:#868d9e;
-  background:none; border:1px solid rgba(134,141,158,0.2); border-radius:6px;
+  display:flex; align-items:center; gap:5px; padding:5px 12px; height:28px;
+  font-size:11px; font-weight:500; color:#868d9e;
+  background:#fff; border:1px solid #e9e9e9; border-radius:8px;
   cursor:pointer; font-family:inherit; transition:all 0.15s;
-  white-space:nowrap;
+  white-space:nowrap; box-sizing:border-box;
 }
 .config-hero-action:hover { color:#2f80ed; border-color:rgba(47,128,237,0.3); background:rgba(47,128,237,0.04); }
 .config-hero-action:active { transform:scale(0.97); }
+.config-hero-action:focus-visible { outline:2px solid #2f80ed; outline-offset:1px; }
 .config-status-pill {
   font-size:10px; font-weight:700; padding:3px 10px; border-radius:99px; line-height:14px;
   border:none; font-family:inherit; letter-spacing:0.3px;
@@ -878,22 +842,20 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 }
 .config-tag-add-row button:hover { background:#5999f1; }
 .config-setview-btn {
-  width:100%; min-height:40px; height:40px; background:linear-gradient(135deg, #2f80ed 0%, #004fff 100%); color:#fff; border:none; border-radius:10px;
-  font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0;
+  width:100%; min-height:36px; height:36px; background:linear-gradient(135deg, #2f80ed 0%, #004fff 100%); color:#fff; border:none; border-radius:8px;
+  font-family:inherit; font-size:12px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px; flex-shrink:0;
   box-shadow:0 2px 8px rgba(47,128,237,0.2);
   transition:all 0.15s;
 }
 .config-setview-btn:hover { box-shadow:0 4px 16px rgba(47,128,237,0.3); transform:translateY(-1px); }
 .config-setview-btn:hover svg { transform:scale(1.15); }
 .config-setview-btn:active { transform:translateY(0) scale(0.98); }
-.config-setview-btn svg { width:16px; height:16px; fill:#fff; transition:transform 0.15s; }
+.config-setview-btn svg { width:14px; height:14px; fill:#fff; transition:transform 0.15s; }
 .config-capture-area { display:flex; flex-direction:column; gap:4px; }
 .config-capture-hint {
   font-size:10px; color:#c2c9db; text-align:center;
-  opacity:0; transition:opacity 0.15s;
 }
-.config-capture-area:hover .config-capture-hint { opacity:1; }
 .config-part-action-btn {
   flex:1; height:34px; background:#fff; border:1px solid #c2c9db; border-radius:8px;
   font-family:inherit; font-size:12px; font-weight:600; cursor:pointer;
@@ -911,23 +873,27 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   display:flex; align-items:center; justify-content:space-between; gap:8px;
   padding:8px 0 0; margin-top:auto;
 }
-.config-detail-footer .config-delete-btn {
-  background:none; border:1px solid rgba(255,31,31,0.2); cursor:pointer;
-  color:#ff1f1f; font-family:inherit; font-size:11px; font-weight:600;
-  display:flex; align-items:center; gap:5px; padding:6px 14px;
-  flex-shrink:0; border-radius:8px; transition:all 0.15s;
+.config-delete-zone {
+  padding:0; margin-top:4px;
 }
-.config-detail-footer .config-delete-btn:hover {
-  background:rgba(255,31,31,0.06); border-color:#ff1f1f;
+.config-delete-zone .config-delete-btn {
+  width:100%; background:none; border:1px dashed rgba(255,31,31,0.15); cursor:pointer;
+  color:#c2c9db; font-family:inherit; font-size:11px; font-weight:500;
+  display:flex; align-items:center; justify-content:center; gap:5px; padding:7px 14px;
+  border-radius:8px; transition:all 0.2s;
 }
-.config-detail-footer .config-delete-btn:active { transform:scale(0.97); }
+.config-delete-zone .config-delete-btn:hover {
+  background:rgba(255,31,31,0.04); border-color:#ff1f1f; border-style:solid;
+  color:#ff1f1f;
+}
+.config-delete-zone .config-delete-btn:active { transform:scale(0.98); }
 .config-detail-section-label {
   font-size:11px; font-weight:600; color:#2f80ed; text-transform:uppercase; letter-spacing:0.05em;
   margin:4px 0 0 0;
 }
 .config-detail-divider {
-  height:1px; margin:2px -16px;
-  background:linear-gradient(90deg, transparent 0%, #e9e9e9 15%, #e9e9e9 85%, transparent 100%);
+  height:1px; margin:2px -14px;
+  background:linear-gradient(90deg, transparent 0%, #eeeff2 20%, #eeeff2 80%, transparent 100%);
 }
 .config-detail-card {
   display:flex; flex-direction:column; gap:10px;
@@ -988,9 +954,10 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   border:1px solid #2a3040;
 }
 .config-scene-header {
-  display:flex; align-items:center; gap:6px; padding:8px 12px;
-  background:#36415d; color:rgba(255,255,255,0.9);
-  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px;
+  display:flex; align-items:center; gap:6px; padding:7px 12px;
+  background:linear-gradient(135deg, #36415d 0%, #2a3348 100%);
+  color:rgba(255,255,255,0.9);
+  font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px;
 }
 .config-scene-body {
   display:flex; flex-direction:column; gap:8px;
@@ -1008,29 +975,7 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   border-color:#2e80ed !important;
   background:#fff;
 }
-/* Collapsible card sections */
-.config-collapsible { padding:0 !important; overflow:hidden; }
-.config-collapse-trigger {
-  display:flex; align-items:center; gap:5px; width:100%; padding:10px 12px;
-  background:none; border:none; cursor:pointer; font-family:inherit; text-align:left;
-  transition:background 0.1s;
-}
-.config-collapse-trigger:hover { background:rgba(0,0,0,0.02); }
-.config-collapse-chevron { transition:transform 0.2s; flex-shrink:0; }
-.config-collapsible.collapsed .config-collapse-chevron { transform:rotate(-90deg); }
-.config-collapse-body {
-  display:grid; grid-template-columns:1fr 1fr; gap:2px;
-  padding:0 10px 10px; transition:all 0.2s;
-}
-.config-collapsible.collapsed .config-collapse-body {
-  max-height:0; padding-top:0; padding-bottom:0; overflow:hidden; opacity:0;
-}
-/* Permission preview when collapsed */
-.config-perm-preview {
-  display:none; padding:0 12px 10px; font-size:10px; color:#868d9e; line-height:1.4;
-}
-.config-collapsible.collapsed .config-perm-preview { display:block; }
-.config-collapsible:not(.collapsed) .config-perm-preview { display:none; }
+/* (collapsible sections removed — permissions always visible) */
 /* Tag add row inside card */
 .config-detail-card .config-tag-add-row { gap:4px; }
 .config-detail-card .config-tag-add-row input { height:28px; min-height:28px; font-size:11px; padding:4px 8px; border-radius:6px; }
@@ -3810,10 +3755,6 @@ html.embedded .ar-sub-btns { top:66px; }
           <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
           Duplicate
         </button>
-        <button class="config-hero-action" id="configHeroCopyLink" onclick="copyConfigLink(configSelectedId)" title="Copy deep link to this configuration">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
-          Copy Link
-        </button>
       </div>
     </div>
 
@@ -3871,29 +3812,31 @@ html.embedded .ar-sub-btns { top:66px; }
       </div>
     </div>
 
-    <!-- Permitted Roles (collapsible) -->
-    <div id="configPermissions" class="config-detail-card config-collapsible collapsed">
-      <button class="config-collapse-trigger" onclick="this.parentElement.classList.toggle('collapsed')">
-        <svg class="config-collapse-chevron" viewBox="0 0 24 24" width="12" height="12" fill="#868d9e"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="#868d9e" style="padding:3px;background:rgba(134,141,158,0.08);border-radius:5px;box-sizing:content-box;"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-        <span style="font-size:11px;font-weight:600;color:#868d9e;text-transform:uppercase;letter-spacing:0.3px;">Roles</span>
-        <span id="configPermCount" style="font-size:10px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08); padding:1px 6px; border-radius:99px;">(9)</span>
-        <span style="flex:1;"></span>
-        <span class="config-perm-select-all" id="configPermSelectAll" onclick="event.stopPropagation()">Select all</span>
-      </button>
-      <div class="config-perm-preview" id="configPermPreview"></div>
-      <div class="config-collapse-body" id="configPermBody"></div>
+    <!-- Permitted Roles -->
+    <div id="configPermissions" class="config-detail-card">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div class="config-card-header" style="margin-bottom:0;">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="#868d9e"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          <span>Roles</span>
+          <span id="configPermCount" style="font-size:10px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08); padding:1px 6px; border-radius:99px;">(9)</span>
+        </div>
+        <button class="config-perm-select-all" id="configPermSelectAll">Select all</button>
+      </div>
+      <div class="config-perm-list" id="configPermBody"></div>
     </div>
 
     <!-- Section Divider -->
     <div class="config-detail-divider"></div>
 
-    <!-- Footer row: Last Updated + Delete -->
+    <!-- Footer -->
     <div id="configDetailFooter" class="config-detail-footer">
       <div class="config-last-updated" id="configLastUpdated" style="flex:1; min-width:0;"></div>
+    </div>
+    <!-- Delete zone (separate from footer, at very bottom) -->
+    <div id="configDeleteZone" class="config-delete-zone">
       <button id="configDeleteBtn" class="config-delete-btn" onclick="deleteSelectedConfig()" title="Delete this configuration">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="#ff1f1f"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-        Delete
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        Delete configuration
       </button>
     </div>
   </div>
@@ -8009,7 +7952,8 @@ function renderConfigDetail() {
 
   // Section visibility for default
   document.getElementById('configPermissions').style.display = '';
-  document.getElementById('configDeleteBtn').style.display = c.isDefault ? 'none' : '';
+  var deleteZone = document.getElementById('configDeleteZone');
+  if (deleteZone) deleteZone.style.display = c.isDefault ? 'none' : '';
   document.getElementById('configHeroActions').style.display = c.isDefault ? 'none' : 'flex';
 
   var nameInput = document.getElementById('configDetailName');
@@ -8029,6 +7973,12 @@ function renderConfigDetail() {
   // Tags
   var tagsEl = document.getElementById('configDetailTags');
   tagsEl.innerHTML = '';
+  if (c.tags.length === 0) {
+    var emptyHint = document.createElement('span');
+    emptyHint.style.cssText = 'font-size:10px;color:#c2c9db;padding:2px 0;';
+    emptyHint.textContent = 'No tags ·';
+    tagsEl.appendChild(emptyHint);
+  }
   c.tags.forEach(function(t) {
     var span = document.createElement('span');
     span.className = 'config-detail-tag';
@@ -8099,20 +8049,6 @@ function renderConfigDetail() {
     permBody.appendChild(label);
   });
   document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ')';
-  // Perm preview (shown when collapsed)
-  var permPreview = document.getElementById('configPermPreview');
-  if (permPreview) {
-    if (c.permittedRoles.length === 0) {
-      permPreview.innerHTML = '<span style="color:#ff1f1f;">No roles — hidden from everyone</span>';
-    } else if (c.permittedRoles.length === allRoles.length) {
-      permPreview.innerHTML = '<span style="color:#0a9e4a;">All roles can access</span>';
-    } else {
-      var preview = c.permittedRoles.slice(0, 3).join(', ');
-      if (c.permittedRoles.length > 3) preview += ' +' + (c.permittedRoles.length - 3) + ' more';
-      permPreview.textContent = preview;
-    }
-  }
-
   // Footer visibility
   document.getElementById('configDetailFooter').style.display = (c.isDefault && !c.lastUpdated) ? 'none' : '';
 
@@ -8165,7 +8101,7 @@ function toggleStatusPill() {
 }
 
 function deleteSelectedConfig() {
-  if (configSelectedId) deleteConfig(configSelectedId);
+  if (configSelectedId) deleteConfig(configSelectedId, true);
 }
 
 function configDeleteInline() {
@@ -16984,23 +16920,13 @@ flInit('procModal',    { x: Math.round(window.innerWidth/2 - 240), y: Math.round
 flInit('matWindow',    { x: 80, y: topOff + 20, w: 340, h: 520, minW: 260, minH: 280 });
 flInit('animManager',  { x: 80, y: topOff + 40, w: 320, h: 420, minW: 240, minH: 200 });
 flInit('bookmarksPanel', { x: window.innerWidth - 660, y: topOff + 20, w: 520, h: 700, minW: 320, minH: 300 });
-flInit('configDetailPanel', { x: window.innerWidth - 720, y: topOff + 20, w: 340, h: 480, minW: 280, minH: 240 });
+flInit('configDetailPanel', { x: window.innerWidth - 720, y: topOff + 10, w: 340, h: 620, minW: 280, minH: 480 });
 // Override close button to also deselect config
 document.getElementById('configDetailClose').addEventListener('click', function(e) {
   e.stopPropagation();
   closeConfigDetail();
 });
-// Scroll shadow on detail panel
-(function() {
-  var detailBody = document.querySelector('#configDetailPanel .fl-body');
-  if (detailBody) {
-    detailBody.addEventListener('scroll', function() {
-      detailBody.classList.toggle('scrolled', detailBody.scrollTop > 8);
-      var atBottom = detailBody.scrollHeight - detailBody.scrollTop - detailBody.clientHeight < 8;
-      detailBody.classList.toggle('scrolled-bottom', atBottom);
-    });
-  }
-})();
+// (scroll shadow listener removed)
 
 // Procedures panel search
 

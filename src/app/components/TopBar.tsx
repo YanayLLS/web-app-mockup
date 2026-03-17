@@ -392,6 +392,15 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                 className="flex-1 bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted"
                 aria-label="Search"
               />
+              {canAccessAiChat && (
+                <button
+                  onClick={onToggleChat}
+                  className="flex-shrink-0 p-1 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                  aria-label="AI chat"
+                >
+                  <IconAi />
+                </button>
+              )}
             </div>
           )}
 
@@ -402,22 +411,6 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               aria-label="Search"
             >
               <Search size={20} />
-            </button>
-          )}
-
-          {/* Chat Button */}
-          {canAccessAiChat && (
-            <button
-              onClick={onToggleChat}
-              className={`p-2.5 rounded-[var(--radius)] transition-all ${
-                isChatOpen
-                  ? 'bg-primary/10 border border-primary shadow-[0px_4px_17.7px_0px_rgba(151,71,255,0.3)]'
-                  : 'border border-primary/30 hover:border-primary hover:shadow-[0px_4px_17.7px_0px_rgba(151,71,255,0.2)]'
-              }`}
-              aria-label="Toggle AI chat"
-              aria-expanded={isChatOpen}
-            >
-              <IconAi />
             </button>
           )}
         </div>
