@@ -489,7 +489,11 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudio, setSelectedAudio] = useState('');
   const [selectedVideo, setSelectedVideo] = useState('');
+  const [showAudioPicker, setShowAudioPicker] = useState(false);
+  const [showVideoPicker, setShowVideoPicker] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioPickerRef = useRef<HTMLDivElement>(null);
+  const videoPickerRef = useRef<HTMLDivElement>(null);
 
   const startVideo = async (videoId?: string, audioId?: string) => {
     try {
@@ -678,73 +682,89 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
               </div>
             )}
 
-            <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-3">
-              <button
-                onClick={handleToggleVideo}
-                className="p-3.5 md:p-3 rounded-full transition-all hover:bg-foreground/20 text-foreground backdrop-blur-sm"
-                title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
-              >
-                {isVideoOff ? <IconVideoOff /> : <IconVideo />}
-              </button>
-
-              <button
-                onClick={handleToggleMute}
-                className="p-3.5 md:p-3 rounded-full transition-all hover:bg-foreground/20 text-foreground backdrop-blur-sm"
-                title={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
-              </button>
-            </div>
-          </div>
-
-          {/* Device Selection */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <label className="flex items-center gap-2 mb-1.5 text-muted" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}>
-                <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-                Microphone
-              </label>
-              <div className="relative">
-                <select
-                  value={selectedAudio}
-                  onChange={(e) => handleChangeAudio(e.target.value)}
-                  className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
-                  style={{ fontSize: 'var(--text-sm)' }}
+            <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 md:gap-2">
+              {/* Mic toggle + device picker */}
+              <div className="relative flex items-center" ref={audioPickerRef}>
+                <button
+                  onClick={handleToggleMute}
+                  className={`p-2.5 md:p-3 rounded-full transition-all backdrop-blur-sm ${isMuted ? 'bg-destructive/80 text-white' : 'hover:bg-white/20 text-white'}`}
+                  title={isMuted ? 'Unmute' : 'Mute'}
                 >
-                  {audioDevices.length > 0 ? audioDevices.map((d, i) => (
-                    <option key={d.deviceId} value={d.deviceId}>{d.label || `Microphone ${i + 1}`}</option>
-                  )) : (
-                    <option>Default Microphone</option>
-                  )}
-                </select>
-                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                  {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
+                </button>
+                <button
+                  onClick={() => { setShowAudioPicker(!showAudioPicker); setShowVideoPicker(false); }}
+                  className="p-1 rounded-full hover:bg-white/20 text-white/70 hover:text-white transition-all backdrop-blur-sm -ml-1"
+                  title="Select microphone"
+                >
+                  <svg className="size-3" fill="none" viewBox="0 0 12 12">
+                    <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                {showAudioPicker && (
+                  <div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-card/95 backdrop-blur-md border border-border rounded-[var(--radius)] overflow-hidden min-w-[220px] max-w-[280px]"
+                    style={{ boxShadow: 'var(--elevation-md)' }}
+                  >
+                    <div className="px-3 py-1.5 border-b border-border">
+                      <span className="text-muted uppercase tracking-wide" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-semibold)' }}>Microphone</span>
+                    </div>
+                    {audioDevices.length > 0 ? audioDevices.map((d, i) => (
+                      <button
+                        key={d.deviceId}
+                        onClick={() => { handleChangeAudio(d.deviceId); setShowAudioPicker(false); }}
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-secondary/50 transition-colors truncate ${selectedAudio === d.deviceId ? 'text-primary bg-primary/5' : 'text-foreground'}`}
+                        style={{ fontWeight: selectedAudio === d.deviceId ? 'var(--font-weight-semibold)' : 'normal' }}
+                      >
+                        {d.label || `Microphone ${i + 1}`}
+                      </button>
+                    )) : (
+                      <div className="px-3 py-2 text-xs text-muted">Default Microphone</div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="flex-1">
-              <label className="flex items-center gap-2 mb-1.5 text-muted" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}>
-                <IconVideo />
-                Camera
-              </label>
-              <div className="relative">
-                <select
-                  value={selectedVideo}
-                  onChange={(e) => handleChangeVideo(e.target.value)}
-                  className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
-                  style={{ fontSize: 'var(--text-sm)' }}
+
+              {/* Camera toggle + device picker */}
+              <div className="relative flex items-center" ref={videoPickerRef}>
+                <button
+                  onClick={handleToggleVideo}
+                  className={`p-2.5 md:p-3 rounded-full transition-all backdrop-blur-sm ${isVideoOff ? 'bg-destructive/80 text-white' : 'hover:bg-white/20 text-white'}`}
+                  title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                 >
-                  {videoDevices.length > 0 ? videoDevices.map((d, i) => (
-                    <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${i + 1}`}</option>
-                  )) : (
-                    <option>Default Camera</option>
-                  )}
-                </select>
-                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                  {isVideoOff ? <IconVideoOff /> : <IconVideo />}
+                </button>
+                <button
+                  onClick={() => { setShowVideoPicker(!showVideoPicker); setShowAudioPicker(false); }}
+                  className="p-1 rounded-full hover:bg-white/20 text-white/70 hover:text-white transition-all backdrop-blur-sm -ml-1"
+                  title="Select camera"
+                >
+                  <svg className="size-3" fill="none" viewBox="0 0 12 12">
+                    <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                {showVideoPicker && (
+                  <div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-card/95 backdrop-blur-md border border-border rounded-[var(--radius)] overflow-hidden min-w-[220px] max-w-[280px]"
+                    style={{ boxShadow: 'var(--elevation-md)' }}
+                  >
+                    <div className="px-3 py-1.5 border-b border-border">
+                      <span className="text-muted uppercase tracking-wide" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-semibold)' }}>Camera</span>
+                    </div>
+                    {videoDevices.length > 0 ? videoDevices.map((d, i) => (
+                      <button
+                        key={d.deviceId}
+                        onClick={() => { handleChangeVideo(d.deviceId); setShowVideoPicker(false); }}
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-secondary/50 transition-colors truncate ${selectedVideo === d.deviceId ? 'text-primary bg-primary/5' : 'text-foreground'}`}
+                        style={{ fontWeight: selectedVideo === d.deviceId ? 'var(--font-weight-semibold)' : 'normal' }}
+                      >
+                        {d.label || `Camera ${i + 1}`}
+                      </button>
+                    )) : (
+                      <div className="px-3 py-2 text-xs text-muted">Default Camera</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
