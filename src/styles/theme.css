@@ -310,10 +310,15 @@ html {
   scrollbar-color: var(--muted) var(--secondary);
 }
 
-/* Focus ring for keyboard navigation accessibility */
+/* Focus ring for keyboard navigation accessibility — skip inputs/textareas */
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
 }
 
 /* Skip-to-content link for screen reader / keyboard accessibility */
