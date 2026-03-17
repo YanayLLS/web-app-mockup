@@ -384,22 +384,25 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         <div className="flex items-center gap-2">
           {/* Search Field - Desktop */}
           {!isMobile && (
-            <div className="flex items-center gap-3 bg-background border border-input rounded-full px-3 py-2 w-full max-w-[420px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm focus-within:border-primary focus-within:shadow-md active:scale-[0.99]">
-              <IconSearch />
-              <input
-                type="text"
-                placeholder="Search"
-                className="flex-1 bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted"
-                aria-label="Search"
-              />
+            <div className="flex items-center bg-background border border-input rounded-full w-full max-w-[420px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm overflow-hidden">
+              <button
+                onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', shiftKey: true, bubbles: true }))}
+                className="flex items-center gap-2 flex-1 px-3 py-2 min-w-0"
+                aria-label="Open search"
+              >
+                <IconSearch />
+                <span className="text-xs text-muted">Search</span>
+              </button>
               {canAccessAiChat && (
-                <button
+                <div
+                  className="group flex items-center gap-1.5 flex-shrink-0 border-l border-input pl-2 pr-2.5 py-1.5 cursor-pointer hover:bg-secondary transition-colors"
                   onClick={onToggleChat}
-                  className="flex-shrink-0 p-1 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                  role="button"
                   aria-label="AI chat"
                 >
+                  <span className="text-xs text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap select-none">Ask AI</span>
                   <IconAi />
-                </button>
+                </div>
               )}
             </div>
           )}
