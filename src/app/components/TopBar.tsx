@@ -387,7 +387,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           {!isMobile && (
             <button
               onClick={() => onOpenSearch?.()}
-              className="flex items-center gap-2 bg-background border border-input rounded-full px-3 py-2 w-full max-w-[720px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm"
+              className="flex items-center gap-2 bg-background border border-input rounded-full px-3 py-1 w-full max-w-[720px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm"
               aria-label="Open search"
             >
               <IconSearch />
