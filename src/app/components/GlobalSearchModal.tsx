@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProject } from '../contexts/ProjectContext';
-import { Search, X, Home, Bell, Headphones, Sparkles, Archive, Users, Settings, Folder } from 'lucide-react';
+import { useProject, KnowledgeBaseItem } from '../contexts/ProjectContext';
+import { Search, X, Home, Bell, Headphones, Sparkles, Archive, Users, Settings, Folder, Box, ClipboardList, FileImage, Film, File } from 'lucide-react';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -31,6 +31,31 @@ const WORKSPACE_ITEMS = [
   { id: 'ws-design', label: 'Workspace Design', subtitle: 'Branding and appearance', icon: <Settings size={15} />, path: '/web/workspace/design' },
 ];
 
+function kbItemIcon(item: KnowledgeBaseItem) {
+  if (item.type === 'folder') return <Folder size={15} />;
+  if (item.type === 'digital-twin') return <Box size={15} />;
+  if (item.type === 'procedure') return <ClipboardList size={15} />;
+  if (item.type === 'media') {
+    if (item.mediaType === 'video') return <Film size={15} />;
+    if (item.mediaType === 'image') return <FileImage size={15} />;
+    return <File size={15} />;
+  }
+  return <File size={15} />;
+}
+
+// Flatten nested KB items recursively
+function flattenKbItems(items: KnowledgeBaseItem[], projectId: string, projectName: string, parentPath = ''): { item: KnowledgeBaseItem; projectId: string; projectName: string; path: string }[] {
+  const results: { item: KnowledgeBaseItem; projectId: string; projectName: string; path: string }[] = [];
+  for (const it of items) {
+    const path = parentPath ? `${parentPath} / ${it.name}` : it.name;
+    results.push({ item: it, projectId, projectName, path });
+    if (it.children?.length) {
+      results.push(...flattenKbItems(it.children, projectId, projectName, path));
+    }
+  }
+  return results;
+}
+
 export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
   const [query, setQuery] = useState('');
   const [focusedIdx, setFocusedIdx] = useState(0);
@@ -38,7 +63,6 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
   const navigate = useNavigate();
   const { projects } = useProject();
 
-  // Focus input on open
   useEffect(() => {
     if (isOpen) {
       setQuery('');
@@ -47,35 +71,58 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
     }
   }, [isOpen]);
 
-  const navigate_and_close = useCallback((path: string) => {
-    navigate(path);
-    onClose();
-  }, [navigate, onClose]);
+  const nav = useCallback((path: string) => { navigate(path); onClose(); }, [navigate, onClose]);
+
+  // Flatten all KB items across all projects once
+  const allKbItems = useMemo(() =>
+    projects.flatMap(p => flattenKbItems(p.knowledgeBaseItems, p.id, p.name)),
+    [projects]
+  );
 
   // Build results
-  const results: SearchResult[] = [];
-  const q = query.toLowerCase().trim();
+  const results: SearchResult[] = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    const out: SearchResult[] = [];
 
-  const pageMatches = PAGE_ITEMS.filter(p =>
-    !q || p.label.toLowerCase().includes(q) || (p.subtitle?.toLowerCase().includes(q))
-  );
-  const wsMatches = WORKSPACE_ITEMS.filter(p =>
-    !q || p.label.toLowerCase().includes(q) || (p.subtitle?.toLowerCase().includes(q))
-  );
-  const projectMatches = projects.filter(p =>
-    !q || p.name.toLowerCase().includes(q)
-  );
+    PAGE_ITEMS
+      .filter(p => !q || p.label.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q))
+      .forEach(p => out.push({ ...p, category: 'Pages', action: () => nav(p.path) }));
 
-  pageMatches.forEach(p => results.push({ ...p, category: 'Pages', action: () => navigate_and_close(p.path) }));
-  wsMatches.forEach(p => results.push({ ...p, category: 'Workspace', action: () => navigate_and_close(p.path) }));
-  projectMatches.forEach(p => results.push({
-    id: p.id,
-    label: p.name,
-    subtitle: `${p.knowledgeBaseItems.length} items`,
-    icon: <Folder size={15} />,
-    category: 'Projects',
-    action: () => navigate_and_close(`/web/project/${p.id}/knowledgebase`),
-  }));
+    WORKSPACE_ITEMS
+      .filter(p => !q || p.label.toLowerCase().includes(q) || p.subtitle!.toLowerCase().includes(q))
+      .forEach(p => out.push({ ...p, category: 'Workspace', action: () => nav(p.path) }));
+
+    projects
+      .filter(p => !q || p.name.toLowerCase().includes(q))
+      .forEach(p => out.push({
+        id: p.id,
+        label: p.name,
+        subtitle: `${p.knowledgeBaseItems.length} items`,
+        icon: <Folder size={15} />,
+        category: 'Projects',
+        action: () => nav(`/web/project/${p.id}/knowledgebase`),
+      }));
+
+    // KB items — only when there's a query
+    if (q) {
+      allKbItems
+        .filter(({ item, projectName }) =>
+          item.name.toLowerCase().includes(q) ||
+          projectName.toLowerCase().includes(q)
+        )
+        .slice(0, 12)
+        .forEach(({ item, projectId, projectName }) => out.push({
+          id: `kb-${projectId}-${item.id}`,
+          label: item.name,
+          subtitle: projectName,
+          icon: kbItemIcon(item),
+          category: 'Knowledge Base',
+          action: () => nav(`/web/project/${projectId}/knowledgebase`),
+        }));
+    }
+
+    return out;
+  }, [query, projects, allKbItems, nav]);
 
   // Keyboard nav
   useEffect(() => {
@@ -94,14 +141,14 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
 
   if (!isOpen) return null;
 
-  // Group results by category for rendering
-  const categories: { label: string; items: (SearchResult & { globalIdx: number })[] }[] = [];
+  const categoryOrder = ['Pages', 'Workspace', 'Projects', 'Knowledge Base'];
   let idx = 0;
-  const categoryOrder = ['Pages', 'Workspace', 'Projects'];
-  categoryOrder.forEach(cat => {
-    const items = results.filter(r => r.category === cat).map(r => ({ ...r, globalIdx: idx++ }));
-    if (items.length > 0) categories.push({ label: cat, items });
-  });
+  const categories = categoryOrder
+    .map(cat => ({
+      label: cat,
+      items: results.filter(r => r.category === cat).map(r => ({ ...r, globalIdx: idx++ })),
+    }))
+    .filter(c => c.items.length > 0);
 
   return (
     <div
@@ -121,7 +168,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search pages, projects, workspace…"
+            placeholder="Search pages, projects, knowledge base…"
             className="flex-1 bg-transparent border-none outline-none text-sm"
             style={{ color: 'var(--color-foreground)', fontFamily: 'var(--font-family)' }}
           />
@@ -144,10 +191,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
           ) : (
             categories.map(cat => (
               <div key={cat.label}>
-                <div
-                  className="px-4 py-1.5 text-[10px] font-semibold tracking-wider uppercase"
-                  style={{ color: 'var(--color-muted)' }}
-                >
+                <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider uppercase" style={{ color: 'var(--color-muted)' }}>
                   {cat.label}
                 </div>
                 {cat.items.map(item => (
@@ -162,20 +206,13 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                       outlineOffset: '-1px',
                     }}
                   >
-                    <span
-                      className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: 'var(--color-secondary)', color: 'var(--color-foreground)' }}
-                    >
+                    <span className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-secondary)', color: 'var(--color-foreground)' }}>
                       {item.icon}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate" style={{ color: 'var(--color-foreground)' }}>
-                        {item.label}
-                      </div>
+                      <div className="text-sm font-medium truncate" style={{ color: 'var(--color-foreground)' }}>{item.label}</div>
                       {item.subtitle && (
-                        <div className="text-xs truncate" style={{ color: 'var(--color-muted)' }}>
-                          {item.subtitle}
-                        </div>
+                        <div className="text-xs truncate" style={{ color: 'var(--color-muted)' }}>{item.subtitle}</div>
                       )}
                     </div>
                   </button>
