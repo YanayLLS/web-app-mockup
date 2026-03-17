@@ -253,6 +253,8 @@ interface ChatMessage {
     name: string;
     type: string;
     projectName: string;
+    projectId: string;
+    description?: string;
   }>;
 }
 
@@ -923,7 +925,10 @@ export function RemoteSupportPage({
     name: string;
     type: string;
     projectName: string;
+    projectId: string;
+    description?: string;
   }>>([]);
+  const [attachmentSearch, setAttachmentSearch] = useState('');
   const [chatPanelWidth, setChatPanelWidth] = useState(360);
   const [isResizingChat, setIsResizingChat] = useState(false);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
@@ -4005,25 +4010,47 @@ export function RemoteSupportPage({
                             )}
                             {message.attachments && message.attachments.length > 0 && (
                               <div className={`flex flex-col gap-2 ${message.text ? 'mt-2.5' : ''}`}>
-                                {message.attachments.map((attachment) => (
-                                  <button
-                                    key={attachment.id}
-                                    onClick={() => {
-                                      toast.success(`Opening ${attachment.name}`);
-                                    }}
-                                    className="flex items-center gap-2.5 p-2.5 bg-card border border-border rounded-[var(--radius)] hover:bg-secondary hover:border-primary/30 transition-all text-left group/attachment shadow-sm"
-                                  >
-                                    <div className="size-8 bg-primary/10 rounded-[var(--radius)] flex items-center justify-center shrink-0 group-hover/attachment:bg-primary/20 transition-colors">
-                                      <FileText size={16} className="text-primary" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm text-foreground truncate group-hover/attachment:text-primary transition-colors" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                                        {attachment.name}
-                                      </p>
-                                      <p className="text-xs text-muted truncate">{attachment.projectName}</p>
-                                    </div>
-                                  </button>
-                                ))}
+                                {message.attachments.map((attachment) => {
+                                  const kbTypeIcon: Record<string, JSX.Element> = {
+                                    procedure: <FileText size={15} className="text-primary" />,
+                                    'digital-twin': <svg className="size-[15px] text-primary" fill="none" viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>,
+                                    media: <svg className="size-[15px] text-primary" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8l5 2.5-5 2.5V8z" fill="currentColor"/></svg>,
+                                    folder: <Folder size={15} className="text-primary" />,
+                                  };
+                                  const kbTypeLabel: Record<string, string> = {
+                                    procedure: 'Procedure', 'digital-twin': 'Digital Twin', media: 'Media', folder: 'Folder',
+                                  };
+                                  return (
+                                    <button
+                                      key={attachment.id}
+                                      onClick={() => toast.success(`Opening ${attachment.name} in ${attachment.projectName}`)}
+                                      className="flex items-start gap-3 p-3 bg-card border border-border rounded-[var(--radius)] hover:border-primary/40 hover:bg-primary/5 transition-all text-left group/attachment"
+                                      style={{ boxShadow: 'var(--elevation-sm)' }}
+                                    >
+                                      <div className="size-9 bg-primary/10 rounded-[var(--radius)] flex items-center justify-center shrink-0 group-hover/attachment:bg-primary/20 transition-colors mt-0.5">
+                                        {kbTypeIcon[attachment.type] ?? <FileText size={15} className="text-primary" />}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                          <span className="text-[10px] text-primary/80 uppercase tracking-wide" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                            {kbTypeLabel[attachment.type] ?? attachment.type}
+                                          </span>
+                                          <span className="text-[10px] text-muted">·</span>
+                                          <span className="text-[10px] text-muted truncate">{attachment.projectName}</span>
+                                        </div>
+                                        <p className="text-sm text-foreground truncate group-hover/attachment:text-primary transition-colors" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                          {attachment.name}
+                                        </p>
+                                        {attachment.description && (
+                                          <p className="text-xs text-muted truncate mt-0.5">{attachment.description}</p>
+                                        )}
+                                      </div>
+                                      <svg className="size-3.5 text-muted group-hover/attachment:text-primary transition-colors shrink-0 mt-1.5" fill="none" viewBox="0 0 16 16">
+                                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                    </button>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -5311,7 +5338,7 @@ export function RemoteSupportPage({
           <div
             className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
             style={{ zIndex: 10000 }}
-            onClick={() => setShowAttachmentPicker(false)}
+            onClick={() => { setShowAttachmentPicker(false); setAttachmentSearch(''); }}
           >
             <div
               className="bg-card border border-border rounded-[var(--radius)] w-full max-w-[700px] max-h-[80vh] flex flex-col overflow-hidden"
@@ -5346,97 +5373,121 @@ export function RemoteSupportPage({
                 </div>
               </div>
 
+              {/* Search */}
+              <div className="px-6 py-3 border-b border-border bg-secondary/20 shrink-0">
+                <div className="flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-[var(--radius)] focus-within:border-primary transition-colors">
+                  <svg className="size-3.5 text-muted shrink-0" fill="none" viewBox="0 0 14 14">
+                    <path d="M6.125 11.375C8.88642 11.375 11.125 9.13642 11.125 6.375C11.125 3.61358 8.88642 1.375 6.125 1.375C3.36358 1.375 1.125 3.61358 1.125 6.375C1.125 9.13642 3.36358 11.375 6.125 11.375Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12.625 12.875L9.71875 9.96875" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search knowledge base..."
+                    value={attachmentSearch}
+                    onChange={(e) => setAttachmentSearch(e.target.value)}
+                    className="flex-1 bg-transparent text-foreground outline-none placeholder:text-muted"
+                    style={{ fontSize: 'var(--text-sm)' }}
+                    autoFocus
+                  />
+                  {attachmentSearch && (
+                    <button onClick={() => setAttachmentSearch('')} className="text-muted hover:text-foreground transition-colors">
+                      <svg className="size-3.5" fill="none" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Content */}
               <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-                {projects.map((project) => {
-                  const projectItems = knowledgeBaseItems.filter(
-                    (item) => item.projectId === project.id && (item.type === 'procedure' || item.type === 'folder')
+                {(() => {
+                  const typeIcon: Record<string, JSX.Element> = {
+                    procedure: <FileText size={17} />,
+                    'digital-twin': <svg className="size-[17px]" fill="none" viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>,
+                    media: <svg className="size-[17px]" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8l5 2.5-5 2.5V8z" fill="currentColor"/></svg>,
+                    folder: <Folder size={17} />,
+                  };
+                  const typeLabel: Record<string, string> = {
+                    procedure: 'Procedure', 'digital-twin': 'Digital Twin', media: 'Media', folder: 'Folder',
+                  };
+
+                  const q = attachmentSearch.toLowerCase();
+                  const hasResults = projects.some(p =>
+                    p.knowledgeBaseItems.some(item => !q || item.name.toLowerCase().includes(q))
                   );
 
-                  if (projectItems.length === 0) return null;
+                  if (!hasResults) return (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <svg className="size-10 text-muted mb-3" fill="none" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      <p className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-semibold)' }}>No results found</p>
+                      <p className="text-xs text-muted mt-1">Try a different search term</p>
+                    </div>
+                  );
 
-                  return (
-                    <div key={project.id} className="mb-6 last:mb-0">
-                      <div className="flex items-center gap-2 mb-3 px-1">
-                        <div className="size-6 bg-primary/10 rounded-[var(--radius)] flex items-center justify-center">
-                          <Folder size={14} className="text-primary" />
+                  return projects.map((project) => {
+                    const projectItems = project.knowledgeBaseItems.filter(item =>
+                      !q || item.name.toLowerCase().includes(q)
+                    );
+                    if (projectItems.length === 0) return null;
+
+                    return (
+                      <div key={project.id} className="mb-6 last:mb-0">
+                        <div className="flex items-center gap-2 mb-3 px-1">
+                          <div className="size-5 bg-primary/10 rounded flex items-center justify-center">
+                            <Folder size={12} className="text-primary" />
+                          </div>
+                          <span className="text-foreground text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>{project.name}</span>
+                          <span className="text-xs text-muted">({projectItems.length})</span>
                         </div>
-                        <h4
-                          className="text-foreground"
-                          style={{
-                            fontSize: 'var(--text-sm)',
-                            fontWeight: 'var(--font-weight-bold)',
-                          }}
-                        >
-                          {project.name}
-                        </h4>
-                        <span className="text-xs text-muted">
-                          ({projectItems.length} item{projectItems.length !== 1 ? 's' : ''})
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        {projectItems.map((item) => {
-                          const isSelected = selectedAttachments.some((a) => a.id === item.id);
-                          return (
-                            <button
-                              key={item.id}
-                              onClick={() => {
-                                if (isSelected) {
-                                  setSelectedAttachments((prev) =>
-                                    prev.filter((a) => a.id !== item.id)
-                                  );
-                                } else {
-                                  setSelectedAttachments((prev) => [
-                                    ...prev,
-                                    {
+                        <div className="space-y-1.5">
+                          {projectItems.map((item) => {
+                            const isSelected = selectedAttachments.some((a) => a.id === item.id);
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedAttachments(prev => prev.filter(a => a.id !== item.id));
+                                  } else {
+                                    setSelectedAttachments(prev => [...prev, {
                                       id: item.id,
                                       name: item.name,
                                       type: item.type,
                                       projectName: project.name,
-                                    },
-                                  ]);
-                                }
-                              }}
-                              className={`w-full flex items-center gap-3 p-3.5 rounded-[var(--radius)] transition-all text-left group ${
-                                isSelected
-                                  ? 'bg-primary/10 border border-primary shadow-sm'
-                                  : 'bg-secondary/30 border border-transparent hover:bg-secondary hover:border-border/50 hover:shadow-sm'
-                              }`}
-                            >
-                              <div className={`size-9 rounded-[var(--radius)] flex items-center justify-center shrink-0 ${
-                                isSelected ? 'bg-primary/20' : 'bg-card group-hover:bg-card/80'
-                              }`}>
-                                <FileText size={18} className={isSelected ? 'text-primary' : 'text-muted group-hover:text-foreground'} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className={`text-sm truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}
-                                  style={{ fontWeight: 'var(--font-weight-bold)' }}
-                                >
-                                  {item.name}
-                                </p>
-                                <p className="text-xs text-muted capitalize mt-0.5">{item.type}</p>
-                              </div>
-                              {isSelected && (
-                                <div className="size-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                                  <svg className="size-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                      d="M5 13l4 4L19 7"
-                                      stroke="currentColor"
-                                      strokeWidth="3"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
+                                      projectId: project.id,
+                                      description: item.description,
+                                    }]);
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] transition-all text-left group ${
+                                  isSelected
+                                    ? 'bg-primary/10 border border-primary/30'
+                                    : 'border border-transparent hover:bg-secondary/50 hover:border-border/50'
+                                }`}
+                              >
+                                <div className={`size-8 rounded-[var(--radius)] flex items-center justify-center shrink-0 transition-colors ${
+                                  isSelected ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted group-hover:text-foreground'
+                                }`}>
+                                  {typeIcon[item.type] ?? <FileText size={17} />}
                                 </div>
-                              )}
-                            </button>
-                          );
-                        })}
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm truncate ${isSelected ? 'text-primary' : 'text-foreground'}`} style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                    {item.name}
+                                  </p>
+                                  <p className="text-xs text-muted mt-0.5">{typeLabel[item.type] ?? item.type}</p>
+                                </div>
+                                <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                  isSelected ? 'bg-primary border-primary' : 'border-border'
+                                }`}>
+                                  {isSelected && <svg className="size-3 text-primary-foreground" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
 
               {/* Footer */}
@@ -5451,6 +5502,7 @@ export function RemoteSupportPage({
                     onClick={() => {
                       setShowAttachmentPicker(false);
                       setSelectedAttachments([]);
+                      setAttachmentSearch('');
                     }}
                     className="flex-1 px-4 py-2.5 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-foreground"
                     style={{
@@ -5461,7 +5513,7 @@ export function RemoteSupportPage({
                     Cancel
                   </button>
                   <button
-                    onClick={() => setShowAttachmentPicker(false)}
+                    onClick={() => { setShowAttachmentPicker(false); setAttachmentSearch(''); }}
                     disabled={selectedAttachments.length === 0}
                     className="flex-1 px-4 py-2.5 rounded-[var(--radius)] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     style={{
