@@ -4634,16 +4634,27 @@ export function RemoteSupportPage({
                 <span>Join Meeting</span>
               </button>
 
-              {/* Create Button */}
+              {/* Create Button with Schedule split */}
               <div className="relative">
-                <button
-                  ref={createButtonRef}
-                  onClick={() => setShowCreateMenu(!showCreateMenu)}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-                  style={{ fontWeight: 'var(--font-weight-bold)' }}
-                >
-                  Create meeting
-                </button>
+                <div className="flex items-center">
+                  <button
+                    ref={createButtonRef}
+                    onClick={() => setShowCreateMenu(!showCreateMenu)}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-l-[var(--radius)] hover:opacity-90 transition-opacity"
+                    style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  >
+                    Create meeting
+                  </button>
+                  {canScheduleMeeting && (
+                    <button
+                      onClick={() => openScheduleModal(true)}
+                      className="px-2.5 py-2 bg-primary text-primary-foreground border-l border-white/20 rounded-r-[var(--radius)] hover:opacity-80 transition-opacity"
+                      title="Schedule for later"
+                    >
+                      <Calendar size={16} />
+                    </button>
+                  )}
+                </div>
                 <CreateMeetingMenu
                   isOpen={showCreateMenu}
                   onClose={() => setShowCreateMenu(false)}
@@ -4655,7 +4666,7 @@ export function RemoteSupportPage({
                   buttonRef={createButtonRef}
                   meetingTitle={meetingTitle}
                   onMeetingTitleChange={setMeetingTitle}
-                  canScheduleMeeting={canScheduleMeeting}
+                  canScheduleMeeting={false}
                   canStartCall={canStartCall}
                 />
               </div>
