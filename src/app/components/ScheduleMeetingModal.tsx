@@ -105,6 +105,11 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
   const [title, setTitle] = useState(initialTitle || 'Meeting with Host Name');
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isParticipantDropdownOpen, setIsParticipantDropdownOpen] = useState(false);
+  const [externalEmails, setExternalEmails] = useState<Person[]>([]);
+  const [meetingPassword, setMeetingPassword] = useState('');
+  const participantSearchRef = useRef<HTMLDivElement>(null);
+  const participantInputRef = useRef<HTMLInputElement>(null);
   const [startDate, setStartDate] = useState(defaultDateTime.dateStr);
   const [startTime, setStartTime] = useState(defaultDateTime.startTimeStr);
   const [endDate, setEndDate] = useState(defaultDateTime.dateStr);
@@ -119,7 +124,10 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
     if (editingMeeting) {
       setTitle(editingMeeting.title);
       setSelectedParticipants(editingMeeting.participants.map(p => p.id));
-      
+      // Restore external email participants
+      const externals = editingMeeting.participants.filter(p => p.role === 'External');
+      setExternalEmails(externals);
+
       const schedDate = new Date(editingMeeting.scheduledTime);
       const endDate = new Date(schedDate);
       endDate.setMinutes(endDate.getMinutes() + editingMeeting.duration);
@@ -150,11 +158,48 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
     setTimezoneSearchQuery('');
   });
 
+  // Close participant dropdown when clicking outside
+  useClickOutside(participantSearchRef, () => {
+    setIsParticipantDropdownOpen(false);
+  });
+
   if (!isOpen) return null;
 
-  const filteredPeople = people.filter(person => 
-    person.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const allPeople = [...people, ...externalEmails];
+
+  const filteredPeople = searchQuery.trim()
+    ? people.filter(person =>
+        !selectedParticipants.includes(person.id) &&
+        (person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         (person.id.includes('@') && person.id.toLowerCase().includes(searchQuery.toLowerCase())))
+      )
+    : [];
+
+  const isValidEmail = (str: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str.trim());
+  const searchIsEmail = isValidEmail(searchQuery);
+  const emailAlreadyInWorkspace = searchIsEmail && people.some(p => p.id.toLowerCase() === searchQuery.trim().toLowerCase() || p.name.toLowerCase() === searchQuery.trim().toLowerCase());
+  const emailAlreadyAdded = searchIsEmail && selectedParticipants.some(id => id.toLowerCase() === searchQuery.trim().toLowerCase());
+  const showInviteExternal = searchIsEmail && !emailAlreadyInWorkspace && !emailAlreadyAdded;
+
+  const getEmailInitials = (email: string) => {
+    const local = email.split('@')[0];
+    return local.substring(0, 2).toUpperCase();
+  };
+
+  const addExternalEmail = (email: string) => {
+    const trimmed = email.trim().toLowerCase();
+    const person: Person = {
+      id: trimmed,
+      name: trimmed,
+      initial: getEmailInitials(trimmed),
+      color: '#868D9E',
+      role: 'External',
+    };
+    setExternalEmails(prev => [...prev, person]);
+    setSelectedParticipants(prev => [...prev, trimmed]);
+    setSearchQuery('');
+    setIsParticipantDropdownOpen(false);
+  };
 
   const filteredTimezones = TIMEZONES.filter(tz =>
     tz.label.toLowerCase().includes(timezoneSearchQuery.toLowerCase()) ||
@@ -168,7 +213,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
     scheduledTime.setSeconds(0);
     scheduledTime.setMilliseconds(0);
     
-    const participants = people.filter(p => selectedParticipants.includes(p.id));
+    const participants = allPeople.filter(p => selectedParticipants.includes(p.id));
     
     const meetingData = {
       title,
@@ -192,6 +237,8 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
     setTitle('Meeting with Host Name');
     setSelectedParticipants([]);
     setSearchQuery('');
+    setExternalEmails([]);
+    setMeetingPassword('');
     const resetDateTime = getDefaultDateTime();
     setStartDate(resetDateTime.dateStr);
     setStartTime(resetDateTime.startTimeStr);
@@ -371,96 +418,187 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
 
             {/* Participants */}
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <label className="text-foreground" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
-                  <Users size={16} className="inline-block mr-2 mb-0.5" />
-                  Participants {selectedParticipants.length > 0 && (
-                    <span className="text-primary ml-1">({selectedParticipants.length})</span>
-                  )}
-                </label>
-                <div className="bg-card border border-border focus-within:border-primary rounded-[var(--radius)] w-full sm:w-[240px] flex items-center gap-2 px-3 py-2 transition-colors">
+              <label className="block text-foreground mb-2.5" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                <Users size={16} className="inline-block mr-2 mb-0.5" />
+                Participants {selectedParticipants.length > 0 && (
+                  <span className="text-primary ml-1">({selectedParticipants.length})</span>
+                )}
+              </label>
+
+              {/* Selected participants chips */}
+              {selectedParticipants.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {selectedParticipants.map(id => {
+                    const person = allPeople.find(p => p.id === id);
+                    if (!person) return null;
+                    const isExternal = externalEmails.some(e => e.id === id);
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center gap-2 pl-1 pr-2 py-1 bg-secondary/50 border border-border rounded-full"
+                      >
+                        <MemberAvatar
+                          name={person.name}
+                          id={person.id}
+                          initials={person.initial}
+                          color={person.color}
+                          size="sm"
+                          border={false}
+                          showTooltip={false}
+                          showProfileOnClick={false}
+                        />
+                        <span className="text-foreground max-w-[160px] truncate" style={{ fontSize: 'var(--text-sm)' }}>
+                          {person.name}
+                        </span>
+                        {isExternal && (
+                          <span className="text-muted" style={{ fontSize: '10px' }}>ext</span>
+                        )}
+                        <button
+                          onClick={() => {
+                            toggleParticipant(id);
+                            if (isExternal) setExternalEmails(prev => prev.filter(e => e.id !== id));
+                          }}
+                          className="ml-0.5 p-0.5 rounded-full hover:bg-destructive/15 text-muted hover:text-destructive transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Search input with dropdown */}
+              <div className="relative" ref={participantSearchRef}>
+                <div className="bg-card border border-border focus-within:border-primary rounded-[var(--radius)] flex items-center gap-2 px-4 py-3 transition-colors">
                   <IconSearch />
                   <input
+                    ref={participantInputRef}
                     type="text"
-                    placeholder="Search participants..."
+                    placeholder="Search by name or email..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setIsParticipantDropdownOpen(e.target.value.trim().length > 0);
+                    }}
+                    onFocus={() => {
+                      if (searchQuery.trim().length > 0) setIsParticipantDropdownOpen(true);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && showInviteExternal) {
+                        e.preventDefault();
+                        addExternalEmail(searchQuery);
+                      }
+                    }}
                     className="flex-1 bg-transparent text-foreground outline-none placeholder:text-muted"
-                    style={{ fontSize: 'var(--text-sm)' }}
                   />
                 </div>
-              </div>
 
-              <div className="border border-border rounded-[var(--radius)] overflow-hidden max-h-[280px] overflow-y-auto custom-scrollbar bg-card">
-                {/* Invited Participants */}
-                {filteredPeople.filter(p => selectedParticipants.includes(p.id)).map((person) => (
+                {/* Dropdown results */}
+                {isParticipantDropdownOpen && (searchQuery.trim().length > 0) && (
                   <div
-                    key={person.id}
-                    className="flex items-center gap-3 px-4 py-3 border-b border-border hover:bg-secondary/30 transition-colors"
+                    className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                    style={{ boxShadow: 'var(--elevation-md)' }}
                   >
-                    <MemberAvatar
-                      name={person.name}
-                      id={person.id}
-                      initials={person.initial}
-                      color={person.color}
-                      size="xl"
-                      border
-                      showTooltip={false}
-                      showProfileOnClick={false}
-                    />
-                    <div className="flex-1 text-foreground">
-                      {person.name}
-                    </div>
-                    <button
-                      onClick={() => toggleParticipant(person.id)}
-                      className="px-4 py-2 rounded-[var(--radius)] transition-all bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20"
-                      style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)' }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                    <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+                      {/* Workspace matches */}
+                      {filteredPeople.length > 0 && (
+                        <div className="px-3 pt-2 pb-1">
+                          <span className="text-muted uppercase tracking-wide" style={{ fontSize: '10px', fontWeight: 'var(--font-weight-semibold)' }}>
+                            Workspace Members
+                          </span>
+                        </div>
+                      )}
+                      {filteredPeople.slice(0, 8).map((person) => (
+                        <button
+                          key={person.id}
+                          type="button"
+                          onClick={() => {
+                            toggleParticipant(person.id);
+                            setSearchQuery('');
+                            setIsParticipantDropdownOpen(false);
+                            participantInputRef.current?.focus();
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/50 transition-colors text-left"
+                        >
+                          <MemberAvatar
+                            name={person.name}
+                            id={person.id}
+                            initials={person.initial}
+                            color={person.color}
+                            size="lg"
+                            border
+                            showTooltip={false}
+                            showProfileOnClick={false}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-foreground truncate">{person.name}</div>
+                            {person.role && (
+                              <div className="text-muted truncate" style={{ fontSize: 'var(--text-sm)' }}>{person.role}</div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
 
-                {/* Divider - only show if there are invited participants and non-invited participants */}
-                {filteredPeople.filter(p => selectedParticipants.includes(p.id)).length > 0 && 
-                 filteredPeople.filter(p => !selectedParticipants.includes(p.id)).length > 0 && (
-                  <div className="flex items-center gap-3 px-4 py-2 bg-secondary/20 border-b border-border">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-muted text-xs uppercase tracking-wide" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
-                      Not Invited
-                    </span>
-                    <div className="flex-1 h-px bg-border" />
+                      {/* No workspace results */}
+                      {filteredPeople.length === 0 && !showInviteExternal && (
+                        <div className="px-4 py-4 text-muted text-center" style={{ fontSize: 'var(--text-sm)' }}>
+                          No matching workspace members
+                        </div>
+                      )}
+
+                      {/* Invite external email option */}
+                      {showInviteExternal && (
+                        <>
+                          {filteredPeople.length > 0 && <div className="border-t border-border" />}
+                          <button
+                            type="button"
+                            onClick={() => addExternalEmail(searchQuery)}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/5 transition-colors text-left"
+                          >
+                            <div
+                              className="size-8 rounded-full flex items-center justify-center border border-dashed border-primary/40"
+                              style={{ background: 'var(--primary-alpha-10, rgba(47,128,237,0.1))' }}
+                            >
+                              <svg className="size-4 text-primary" fill="none" viewBox="0 0 16 16">
+                                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-primary" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                Invite "{searchQuery.trim()}"
+                              </div>
+                              <div className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>
+                                Send meeting invite to external email
+                              </div>
+                            </div>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
+              </div>
 
-                {/* Non-Invited Participants */}
-                {filteredPeople.filter(p => !selectedParticipants.includes(p.id)).slice(0, 12).map((person) => (
-                  <div
-                    key={person.id}
-                    className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-secondary/30 transition-colors"
-                  >
-                    <MemberAvatar
-                      name={person.name}
-                      id={person.id}
-                      initials={person.initial}
-                      color={person.color}
-                      size="xl"
-                      border
-                      showTooltip={false}
-                      showProfileOnClick={false}
-                    />
-                    <div className="flex-1 text-foreground">
-                      {person.name}
-                    </div>
-                    <button
-                      onClick={() => toggleParticipant(person.id)}
-                      className="px-4 py-2 rounded-[var(--radius)] transition-all bg-primary text-primary-foreground hover:opacity-90"
-                      style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)' }}
-                    >
-                      Add
-                    </button>
-                  </div>
-                ))}
+              <div className="mt-2 text-muted" style={{ fontSize: 'var(--text-sm)' }}>
+                Type a name to find workspace members, or enter an email to invite externally.
+              </div>
+            </div>
+
+            {/* Meeting Password */}
+            <div>
+              <label className="block text-foreground mb-2.5" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                Password <span className="text-muted" style={{ fontWeight: 'var(--font-weight-normal)', fontSize: 'var(--text-sm)' }}>(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={meetingPassword}
+                onChange={(e) => setMeetingPassword(e.target.value)}
+                className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                placeholder="Set a password for participants to join"
+              />
+              <div className="mt-2 text-muted" style={{ fontSize: 'var(--text-sm)' }}>
+                Participants will need this password to join the meeting.
               </div>
             </div>
           </div>
