@@ -1105,12 +1105,6 @@ export function RemoteSupportPage({
     return () => clearInterval(interval);
   }, [callStartTime]);
 
-  // Ensure call is not minimized when on Remote Support page
-  useEffect(() => {
-    if (inCall && isCallMinimized) {
-      setIsCallMinimized(false);
-    }
-  }, [inCall, isCallMinimized, setIsCallMinimized]);
 
   useEffect(() => {
     if (inCall) {
@@ -4177,16 +4171,89 @@ export function RemoteSupportPage({
                               procedure: <FileText size={16} />,
                               'digital-twin': <svg className="size-4" fill="none" viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>,
                               media: <svg className="size-4" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8l5 2.5-5 2.5V8z" fill="currentColor"/></svg>,
-                              folder: <Folder size={16} />,
                             };
                             const typeLabel: Record<string, string> = {
-                              procedure: 'Procedure', 'digital-twin': 'Digital Twin', media: 'Media', folder: 'Folder',
+                              procedure: 'Procedure', 'digital-twin': 'Digital Twin', media: 'Media',
                             };
+                            const toggleSection = (id: string) => setCollapsedProjects(prev => {
+                              const next = new Set(prev);
+                              next.has(id) ? next.delete(id) : next.add(id);
+                              return next;
+                            });
+                            const Chevron = ({ id }: { id: string }) => (
+                              <svg className={`size-3 text-muted shrink-0 transition-transform ${collapsedProjects.has(id) ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 10 10">
+                                <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            );
+
+                            type KBItem = { id: string; name: string; type: string; children?: KBItem[]; description?: string };
+                            const itemMatches = (item: KBItem, q: string): boolean =>
+                              !q || item.name.toLowerCase().includes(q) || (item.children?.some(c => itemMatches(c, q)) ?? false);
+
+                            const renderItems = (items: KBItem[], projectName: string, depth: number): JSX.Element[] =>
+                              items.flatMap(item => {
+                                if (!itemMatches(item, q)) return [];
+                                if (item.type === 'folder') {
+                                  const collapsed = collapsedProjects.has(item.id);
+                                  const children = item.children ?? [];
+                                  const visibleChildren = children.filter(c => itemMatches(c, q));
+                                  return [
+                                    <div key={item.id}>
+                                      <button
+                                        onClick={() => toggleSection(item.id)}
+                                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                                        style={{ paddingLeft: `${8 + depth * 14}px` }}
+                                      >
+                                        <Chevron id={item.id} />
+                                        <Folder size={13} className="text-muted shrink-0" />
+                                        <span className="text-foreground text-xs flex-1 text-left truncate" style={{ fontWeight: 'var(--font-weight-semibold)' }}>{item.name}</span>
+                                        <span className="text-xs text-muted shrink-0">({visibleChildren.length})</span>
+                                      </button>
+                                      {!collapsed && <div className="space-y-0.5 mt-0.5">{renderItems(children, projectName, depth + 1)}</div>}
+                                    </div>
+                                  ];
+                                }
+                                const isSelected = selectedAttachments.some(a => a.id === item.id);
+                                return [
+                                  <button
+                                    key={item.id}
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setSelectedAttachments(prev => prev.filter(a => a.id !== item.id));
+                                      } else {
+                                        setSelectedAttachments(prev => [...prev, {
+                                          id: item.id, name: item.name, type: item.type,
+                                          projectName, projectId: '', description: (item as KBItem & { description?: string }).description,
+                                        }]);
+                                      }
+                                    }}
+                                    className={`w-full flex items-center gap-2.5 py-2 pr-2.5 rounded-[var(--radius)] transition-all text-left group ${
+                                      isSelected ? 'bg-primary/10 border border-primary/30' : 'border border-transparent hover:bg-secondary/50 hover:border-border/50'
+                                    }`}
+                                    style={{ paddingLeft: `${10 + depth * 14}px` }}
+                                  >
+                                    <div className={`size-7 rounded-[var(--radius)] flex items-center justify-center shrink-0 transition-colors ${
+                                      isSelected ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted group-hover:text-foreground'
+                                    }`}>
+                                      {typeIcon[item.type] ?? <FileText size={16} />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-sm truncate ${isSelected ? 'text-primary' : 'text-foreground'}`} style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                        {item.name}
+                                      </p>
+                                      <p className="text-xs text-muted">{typeLabel[item.type] ?? item.type}</p>
+                                    </div>
+                                    <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                      isSelected ? 'bg-primary border-primary' : 'border-border'
+                                    }`}>
+                                      {isSelected && <svg className="size-2.5 text-primary-foreground" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                    </div>
+                                  </button>
+                                ];
+                              });
 
                             const q = attachmentSearch.toLowerCase();
-                            const hasResults = projects.some(p =>
-                              p.knowledgeBaseItems.some(item => !q || item.name.toLowerCase().includes(q))
-                            );
+                            const hasResults = projects.some(p => p.knowledgeBaseItems.some(item => itemMatches(item as KBItem, q)));
 
                             if (!hasResults) return (
                               <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -4197,80 +4264,26 @@ export function RemoteSupportPage({
                             );
 
                             return projects.map((project) => {
-                              const projectItems = project.knowledgeBaseItems.filter(item =>
-                                !q || item.name.toLowerCase().includes(q)
-                              );
-                              if (projectItems.length === 0) return null;
-
+                              if (!project.knowledgeBaseItems.some(item => itemMatches(item as KBItem, q))) return null;
                               const isCollapsed = collapsedProjects.has(project.id);
                               return (
                                 <div key={project.id} className="mb-2 last:mb-0">
                                   <button
-                                    onClick={() => setCollapsedProjects(prev => {
-                                      const next = new Set(prev);
-                                      next.has(project.id) ? next.delete(project.id) : next.add(project.id);
-                                      return next;
-                                    })}
-                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors group"
+                                    onClick={() => toggleSection(project.id)}
+                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
                                   >
-                                    <svg
-                                      className={`size-3 text-muted shrink-0 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-                                      fill="none" viewBox="0 0 10 10"
-                                    >
-                                      <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
+                                    <Chevron id={project.id} />
                                     <div className="size-4 bg-primary/10 rounded flex items-center justify-center shrink-0">
                                       <Folder size={10} className="text-primary" />
                                     </div>
-                                    <span className="text-foreground text-xs" style={{ fontWeight: 'var(--font-weight-bold)' }}>{project.name}</span>
-                                    <span className="text-xs text-muted">({projectItems.length})</span>
+                                    <span className="text-foreground text-xs flex-1 text-left" style={{ fontWeight: 'var(--font-weight-bold)' }}>{project.name}</span>
+                                    <span className="text-xs text-muted">({project.knowledgeBaseItems.filter(i => itemMatches(i as KBItem, q)).length})</span>
                                   </button>
-                                  {!isCollapsed && <div className="space-y-1 mt-1">
-                                    {projectItems.map((item) => {
-                                      const isSelected = selectedAttachments.some((a) => a.id === item.id);
-                                      return (
-                                        <button
-                                          key={item.id}
-                                          onClick={() => {
-                                            if (isSelected) {
-                                              setSelectedAttachments(prev => prev.filter(a => a.id !== item.id));
-                                            } else {
-                                              setSelectedAttachments(prev => [...prev, {
-                                                id: item.id,
-                                                name: item.name,
-                                                type: item.type,
-                                                projectName: project.name,
-                                                projectId: project.id,
-                                                description: item.description,
-                                              }]);
-                                            }
-                                          }}
-                                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius)] transition-all text-left group ${
-                                            isSelected
-                                              ? 'bg-primary/10 border border-primary/30'
-                                              : 'border border-transparent hover:bg-secondary/50 hover:border-border/50'
-                                          }`}
-                                        >
-                                          <div className={`size-7 rounded-[var(--radius)] flex items-center justify-center shrink-0 transition-colors ${
-                                            isSelected ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted group-hover:text-foreground'
-                                          }`}>
-                                            {typeIcon[item.type] ?? <FileText size={16} />}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <p className={`text-sm truncate ${isSelected ? 'text-primary' : 'text-foreground'}`} style={{ fontWeight: 'var(--font-weight-semibold)' }}>
-                                              {item.name}
-                                            </p>
-                                            <p className="text-xs text-muted">{typeLabel[item.type] ?? item.type}</p>
-                                          </div>
-                                          <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                                            isSelected ? 'bg-primary border-primary' : 'border-border'
-                                          }`}>
-                                            {isSelected && <svg className="size-2.5 text-primary-foreground" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                          </div>
-                                        </button>
-                                      );
-                                    })}
-                                  </div>}
+                                  {!isCollapsed && (
+                                    <div className="space-y-0.5 mt-0.5">
+                                      {renderItems(project.knowledgeBaseItems as KBItem[], project.name, 0)}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             });
