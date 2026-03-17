@@ -683,8 +683,8 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
             )}
 
             {/* Bottom controls overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent pt-10 pb-3 px-3 md:px-4">
-              <div className="flex items-center justify-center gap-2 md:gap-3">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent pt-10 pb-4 px-4 md:px-6">
+              <div className="flex items-center justify-center gap-4 md:gap-6">
                 {/* Mic control */}
                 <div className="relative" ref={audioPickerRef}>
                   <button
@@ -692,7 +692,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                     className={`flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-full backdrop-blur-sm transition-all ${isMuted ? 'bg-red-500/90 hover:bg-red-500' : 'bg-white/15 hover:bg-white/25'}`}
                   >
                     <div
-                      className="shrink-0 size-7 rounded-full flex items-center justify-center cursor-pointer"
+                      className="shrink-0 size-7 rounded-full flex items-center justify-center cursor-pointer text-white"
                       onClick={(e) => { e.stopPropagation(); handleToggleMute(); }}
                       title={isMuted ? 'Unmute' : 'Mute'}
                     >
@@ -743,7 +743,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                     className={`flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-full backdrop-blur-sm transition-all ${isVideoOff ? 'bg-red-500/90 hover:bg-red-500' : 'bg-white/15 hover:bg-white/25'}`}
                   >
                     <div
-                      className="shrink-0 size-7 rounded-full flex items-center justify-center cursor-pointer"
+                      className="shrink-0 size-7 rounded-full flex items-center justify-center cursor-pointer text-white"
                       onClick={(e) => { e.stopPropagation(); handleToggleVideo(); }}
                       title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                     >
