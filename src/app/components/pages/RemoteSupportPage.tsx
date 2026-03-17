@@ -485,28 +485,57 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [permissionError, setPermissionError] = useState(false);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedAudio, setSelectedAudio] = useState('');
+  const [selectedVideo, setSelectedVideo] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const startVideo = async () => {
+  const startVideo = async (videoId?: string, audioId?: string) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setPermissionError(true);
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
-        audio: true 
-      });
-      
+      // Stop existing tracks
+      if (videoRef.current?.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+      }
+
+      const constraints: MediaStreamConstraints = {
+        video: videoId ? { deviceId: { exact: videoId } } : true,
+        audio: audioId ? { deviceId: { exact: audioId } } : true,
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
       setPermissionError(false);
+
+      // Enumerate devices after permission granted
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audios = devices.filter(d => d.kind === 'audioinput');
+      const videos = devices.filter(d => d.kind === 'videoinput');
+      setAudioDevices(audios);
+      setVideoDevices(videos);
+      if (!selectedAudio && audios.length > 0) setSelectedAudio(audios[0].deviceId);
+      if (!selectedVideo && videos.length > 0) setSelectedVideo(videos[0].deviceId);
     } catch (err: any) {
       setPermissionError(true);
-      // Silently handle - user can still join without camera/mic
     }
+  };
+
+  const handleChangeAudio = (deviceId: string) => {
+    setSelectedAudio(deviceId);
+    startVideo(selectedVideo, deviceId);
+  };
+
+  const handleChangeVideo = (deviceId: string) => {
+    setSelectedVideo(deviceId);
+    startVideo(deviceId, selectedAudio);
   };
 
   useEffect(() => {
@@ -665,6 +694,58 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
               >
                 {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
               </button>
+            </div>
+          </div>
+
+          {/* Device Selection */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <label className="flex items-center gap-2 mb-1.5 text-muted" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}>
+                <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                Microphone
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedAudio}
+                  onChange={(e) => handleChangeAudio(e.target.value)}
+                  className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
+                  style={{ fontSize: 'var(--text-sm)' }}
+                >
+                  {audioDevices.length > 0 ? audioDevices.map((d, i) => (
+                    <option key={d.deviceId} value={d.deviceId}>{d.label || `Microphone ${i + 1}`}</option>
+                  )) : (
+                    <option>Default Microphone</option>
+                  )}
+                </select>
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <label className="flex items-center gap-2 mb-1.5 text-muted" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}>
+                <IconVideo />
+                Camera
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedVideo}
+                  onChange={(e) => handleChangeVideo(e.target.value)}
+                  className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2 pr-8 text-foreground outline-none focus:border-primary transition-colors cursor-pointer"
+                  style={{ fontSize: 'var(--text-sm)' }}
+                >
+                  {videoDevices.length > 0 ? videoDevices.map((d, i) => (
+                    <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${i + 1}`}</option>
+                  )) : (
+                    <option>Default Camera</option>
+                  )}
+                </select>
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
 
