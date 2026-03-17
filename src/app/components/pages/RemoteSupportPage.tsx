@@ -929,6 +929,7 @@ export function RemoteSupportPage({
     description?: string;
   }>>([]);
   const [attachmentSearch, setAttachmentSearch] = useState('');
+  const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(() => new Set());
   const [chatPanelWidth, setChatPanelWidth] = useState(360);
   const [isResizingChat, setIsResizingChat] = useState(false);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
@@ -4023,7 +4024,10 @@ export function RemoteSupportPage({
                                   return (
                                     <button
                                       key={attachment.id}
-                                      onClick={() => toast.success(`Opening ${attachment.name} in ${attachment.projectName}`)}
+                                      onClick={() => {
+                                        setIsCallMinimized(true);
+                                        toast.success(`Opening ${attachment.name}`);
+                                      }}
                                       className="flex items-start gap-3 p-3 bg-card border border-border rounded-[var(--radius)] hover:border-primary/40 hover:bg-primary/5 transition-all text-left group/attachment"
                                       style={{ boxShadow: 'var(--elevation-sm)' }}
                                     >
@@ -4198,16 +4202,30 @@ export function RemoteSupportPage({
                               );
                               if (projectItems.length === 0) return null;
 
+                              const isCollapsed = collapsedProjects.has(project.id);
                               return (
-                                <div key={project.id} className="mb-4 last:mb-0">
-                                  <div className="flex items-center gap-2 mb-2 px-1">
-                                    <div className="size-4 bg-primary/10 rounded flex items-center justify-center">
+                                <div key={project.id} className="mb-2 last:mb-0">
+                                  <button
+                                    onClick={() => setCollapsedProjects(prev => {
+                                      const next = new Set(prev);
+                                      next.has(project.id) ? next.delete(project.id) : next.add(project.id);
+                                      return next;
+                                    })}
+                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors group"
+                                  >
+                                    <svg
+                                      className={`size-3 text-muted shrink-0 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+                                      fill="none" viewBox="0 0 10 10"
+                                    >
+                                      <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <div className="size-4 bg-primary/10 rounded flex items-center justify-center shrink-0">
                                       <Folder size={10} className="text-primary" />
                                     </div>
                                     <span className="text-foreground text-xs" style={{ fontWeight: 'var(--font-weight-bold)' }}>{project.name}</span>
                                     <span className="text-xs text-muted">({projectItems.length})</span>
-                                  </div>
-                                  <div className="space-y-1">
+                                  </button>
+                                  {!isCollapsed && <div className="space-y-1 mt-1">
                                     {projectItems.map((item) => {
                                       const isSelected = selectedAttachments.some((a) => a.id === item.id);
                                       return (
@@ -4252,7 +4270,7 @@ export function RemoteSupportPage({
                                         </button>
                                       );
                                     })}
-                                  </div>
+                                  </div>}
                                 </div>
                               );
                             });
@@ -4287,7 +4305,12 @@ export function RemoteSupportPage({
                     )}
 
                     <button
-                      onClick={() => setShowAttachmentPicker(prev => !prev)}
+                      onClick={() => {
+                        if (!showAttachmentPicker) {
+                          setCollapsedProjects(new Set(projects.map(p => p.id)));
+                        }
+                        setShowAttachmentPicker(prev => !prev);
+                      }}
                       className={`h-[44px] w-[44px] flex items-center justify-center border rounded-[var(--radius)] transition-all shrink-0 shadow-sm ${
                         showAttachmentPicker
                           ? 'bg-primary/10 border-primary/40 text-primary'
