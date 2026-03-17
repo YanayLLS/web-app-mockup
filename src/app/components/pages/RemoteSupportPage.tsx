@@ -476,9 +476,12 @@ interface PreJoinMeetingProps {
   meeting: Meeting;
   onJoin: () => void;
   onCancel: () => void;
+  isCreateMode?: boolean;
+  onTitleChange?: (title: string) => void;
 }
 
-function PreJoinMeeting({ meeting, onJoin, onCancel }: PreJoinMeetingProps) {
+function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange }: PreJoinMeetingProps) {
+  const [editingTitle, setEditingTitle] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [permissionError, setPermissionError] = useState(false);
@@ -560,9 +563,32 @@ function PreJoinMeeting({ meeting, onJoin, onCancel }: PreJoinMeetingProps) {
             <IconVideo />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-foreground text-sm md:text-base truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-              {meeting.title}
-            </h2>
+            {isCreateMode && editingTitle ? (
+              <input
+                type="text"
+                value={meeting.title}
+                onChange={(e) => onTitleChange?.(e.target.value)}
+                onBlur={() => setEditingTitle(false)}
+                onKeyDown={(e) => { if (e.key === 'Enter') setEditingTitle(false); }}
+                autoFocus
+                className="text-foreground text-sm md:text-base bg-transparent border-b border-primary outline-none w-full"
+                style={{ fontWeight: 'var(--font-weight-bold)' }}
+              />
+            ) : (
+              <h2
+                className={`text-foreground text-sm md:text-base truncate ${isCreateMode ? 'cursor-pointer hover:text-primary' : ''}`}
+                style={{ fontWeight: 'var(--font-weight-bold)' }}
+                onClick={() => { if (isCreateMode) setEditingTitle(true); }}
+                title={isCreateMode ? 'Click to edit title' : undefined}
+              >
+                {meeting.title}
+                {isCreateMode && (
+                  <svg className="inline-block ml-1.5 size-3 text-muted" fill="none" viewBox="0 0 16 16">
+                    <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </h2>
+            )}
             <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-muted">
               <span className="truncate">{formatDate(meeting.scheduledTime)} at {formatTime(meeting.scheduledTime)}</span>
               <span className="hidden md:inline">•</span>
@@ -649,12 +675,14 @@ function PreJoinMeeting({ meeting, onJoin, onCancel }: PreJoinMeetingProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                  Ready to join?
+                  {isCreateMode ? 'Ready to start?' : 'Ready to join?'}
                 </h3>
                 <p className="text-xs text-muted truncate">
-                  {meeting.participants.length > 0 
-                    ? `${meeting.participants.length} participant${meeting.participants.length !== 1 ? 's are' : ' is'} waiting`
-                    : 'Be the first to join'}
+                  {isCreateMode
+                    ? 'Your meeting will begin when you start'
+                    : meeting.participants.length > 0
+                      ? `${meeting.participants.length} participant${meeting.participants.length !== 1 ? 's are' : ' is'} waiting`
+                      : 'Be the first to join'}
                 </p>
               </div>
             </div>
@@ -672,7 +700,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel }: PreJoinMeetingProps) {
                 className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] text-sm hover:opacity-90 transition-opacity"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
-                Join Meeting
+                {isCreateMode ? 'Start Meeting' : 'Join Meeting'}
               </button>
             </div>
           </div>
@@ -704,6 +732,7 @@ export function RemoteSupportPage({
   const [callStartTime, setCallStartTime] = useState<Date | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const [showPreJoin, setShowPreJoin] = useState(false);
+  const [isCreateMode, setIsCreateMode] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(initialShowScheduleModal);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
@@ -1213,7 +1242,7 @@ export function RemoteSupportPage({
   }, [localStream, isMuted]);
 
 
-  const handleStartMeetingNow = () => {
+  const handleCreateMeeting = () => {
     const newMeeting: Meeting = {
       id: Date.now().toString(),
       title: meetingTitle || 'Meeting with Host Name',
@@ -1223,12 +1252,13 @@ export function RemoteSupportPage({
       hostId: '1'
     };
     setCurrentMeeting(newMeeting);
-    setShowCreateMenu(false);
+    setIsCreateMode(true);
     setShowPreJoin(true);
   };
 
   const handleJoinMeeting = (meeting: Meeting) => {
     setCurrentMeeting(meeting);
+    setIsCreateMode(false);
     setShowPreJoin(true);
   };
 
@@ -1920,7 +1950,13 @@ export function RemoteSupportPage({
         onJoin={handleJoinCall}
         onCancel={() => {
           setShowPreJoin(false);
+          setIsCreateMode(false);
           setCurrentMeeting(null);
+        }}
+        isCreateMode={isCreateMode}
+        onTitleChange={(title) => {
+          setCurrentMeeting({ ...currentMeeting, title });
+          setMeetingTitle(title);
         }}
       />
     );
@@ -4635,41 +4671,26 @@ export function RemoteSupportPage({
               </button>
 
               {/* Create Button with Schedule split */}
-              <div className="relative">
-                <div className="flex items-stretch rounded-[var(--radius)] overflow-hidden">
+              {canStartCall && (
+              <div className="flex items-stretch rounded-[var(--radius)] overflow-hidden">
+                <button
+                  onClick={handleCreateMeeting}
+                  className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center"
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                >
+                  Create meeting
+                </button>
+                {canScheduleMeeting && (
                   <button
-                    ref={createButtonRef}
-                    onClick={() => setShowCreateMenu(!showCreateMenu)}
-                    className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center"
-                    style={{ fontWeight: 'var(--font-weight-bold)' }}
+                    onClick={() => openScheduleModal(true)}
+                    className="px-2.5 bg-primary text-primary-foreground border-l border-white/20 hover:bg-primary/80 transition-colors flex items-center justify-center"
+                    title="Schedule for later"
                   >
-                    Create meeting
+                    <Calendar size={15} />
                   </button>
-                  {canScheduleMeeting && (
-                    <button
-                      onClick={() => openScheduleModal(true)}
-                      className="px-2.5 bg-primary text-primary-foreground border-l border-white/20 hover:bg-primary/80 transition-colors flex items-center justify-center"
-                      title="Schedule for later"
-                    >
-                      <Calendar size={15} />
-                    </button>
-                  )}
-                </div>
-                <CreateMeetingMenu
-                  isOpen={showCreateMenu}
-                  onClose={() => setShowCreateMenu(false)}
-                  onScheduleForLater={() => {
-                    setShowCreateMenu(false);
-                    openScheduleModal(true);
-                  }}
-                  onStartNow={handleStartMeetingNow}
-                  buttonRef={createButtonRef}
-                  meetingTitle={meetingTitle}
-                  onMeetingTitleChange={setMeetingTitle}
-                  canScheduleMeeting={false}
-                  canStartCall={canStartCall}
-                />
+                )}
               </div>
+              )}
             </div>
           </div>
 
@@ -5565,8 +5586,7 @@ export function RemoteSupportPage({
 
             {/* Create Button */}
             <button
-              ref={createButtonRef}
-              onClick={() => setShowCreateMenu(!showCreateMenu)}
+              onClick={handleCreateMeeting}
               className="flex flex-col items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity flex-1"
             >
               <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
