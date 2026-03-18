@@ -62,22 +62,18 @@ export function getAvatarColor(nameOrId: string): string {
   return avatarColors[hash % avatarColors.length];
 }
 
-function StatusDot({ status }: { status: 'active' | 'invited' | 'offline' }) {
-  const colors = {
-    active: 'bg-[#11E874]',
-    invited: 'bg-[#f59e0b]',
-    offline: 'bg-[#7F7F7F]',
+function StatusBadge({ status }: { status: 'active' | 'invited' | 'offline' }) {
+  const config = {
+    active: { color: '#0a9e4a', bg: 'rgba(17,232,116,0.1)', dot: '#11E874', label: 'Active now' },
+    invited: { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', dot: '#F59E0B', label: 'Invited' },
+    offline: { color: '#7F7F7F', bg: 'rgba(127,127,127,0.08)', dot: '#7F7F7F', label: 'Offline' },
   };
-  const labels = {
-    active: 'Active now',
-    invited: 'Invited',
-    offline: 'Offline',
-  };
+  const c = config[status];
   return (
-    <span className="flex items-center gap-1.5">
-      <span className={`w-2 h-2 rounded-full ${colors[status]}`} />
-      <span className="text-xs" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-family)' }}>
-        {labels[status]}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: c.bg }}>
+      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.dot, boxShadow: status === 'active' ? `0 0 6px ${c.dot}60` : undefined }} />
+      <span className="text-xs" style={{ color: c.color, fontWeight: 'var(--font-weight-semibold)' }}>
+        {c.label}
       </span>
     </span>
   );
@@ -91,7 +87,7 @@ function UserProfileSideModal({ user, onClose }: { user: ProfileUser; onClose: (
   const color = user.color || getAvatarColor(user.id || user.name);
 
   return (
-    <div className="fixed inset-0 z-[200]" style={{ fontFamily: 'var(--font-family)' }}>
+    <div className="fixed inset-0 z-[200]">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/20 backdrop-blur-[1px] animate-in fade-in duration-200"
@@ -100,90 +96,109 @@ function UserProfileSideModal({ user, onClose }: { user: ProfileUser; onClose: (
       {/* Panel - slides in from right */}
       <div
         ref={panelRef}
-        className="absolute right-0 top-0 h-full w-[340px] max-w-[90vw] bg-card border-l border-border shadow-2xl animate-in slide-in-from-right duration-250 flex flex-col"
+        className="absolute right-0 top-0 h-full w-[340px] max-w-[90vw] bg-card border-l border-border animate-in slide-in-from-right duration-250 flex flex-col"
+        style={{ boxShadow: '-8px 0 32px rgba(0,0,0,0.08)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--color-foreground)' }}>
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/60">
+          <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
             User Profile
           </span>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[var(--radius)] flex items-center justify-center hover:bg-secondary transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted hover:text-foreground hover:bg-secondary transition-colors"
             aria-label="Close profile"
           >
-            <X size={16} style={{ color: 'var(--color-muted)' }} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Profile Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           {/* Avatar & Name */}
           <div className="flex flex-col items-center pt-8 pb-6 px-4">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl mb-4 shadow-lg ring-4 ring-white/10"
-              style={{
-                backgroundColor: color,
-                fontWeight: 'var(--font-weight-bold)',
-                fontFamily: 'var(--font-family)',
-              }}
-            >
-              {user.imageUrl ? (
-                <img src={user.imageUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
-              ) : (
-                initials
+            <div className="relative mb-4">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl"
+                style={{
+                  backgroundColor: color,
+                  fontWeight: 'var(--font-weight-bold)',
+                  boxShadow: `0 8px 24px ${color}40`,
+                }}
+              >
+                {user.imageUrl ? (
+                  <img src={user.imageUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  initials
+                )}
+              </div>
+              {user.status === 'active' && (
+                <div
+                  className="absolute bottom-0 right-0 w-5 h-5 rounded-full border-3 border-card"
+                  style={{ backgroundColor: '#11E874', boxShadow: '0 0 8px rgba(17,232,116,0.5)', borderWidth: '3px', borderColor: 'var(--color-card)' }}
+                />
               )}
             </div>
-            <h3 className="text-lg mb-1" style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--color-foreground)' }}>
+            <h3 className="text-lg text-foreground mb-1.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               {user.name}
             </h3>
-            {user.status && <StatusDot status={user.status} />}
+            {user.status && <StatusBadge status={user.status} />}
           </div>
 
           {/* Info Section */}
           <div className="px-4 space-y-1">
             {user.email && (
-              <div className="flex items-center gap-3 py-2.5 px-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors group cursor-pointer">
-                <Mail size={15} className="text-muted shrink-0" />
+              <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-secondary/50 transition-colors group cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
+                  <Mail size={14} className="text-primary" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] text-muted mb-0.5">Email</div>
+                  <div className="text-[10px] text-muted uppercase tracking-wide mb-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>Email</div>
                   <div className="text-sm text-foreground truncate">{user.email}</div>
                 </div>
                 <ExternalLink size={12} className="text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
               </div>
             )}
             {user.role && (
-              <div className="flex items-center gap-3 py-2.5 px-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors">
-                <Shield size={15} className="text-muted shrink-0" />
+              <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-[#8B5CF6]/8 flex items-center justify-center shrink-0">
+                  <Shield size={14} className="text-[#8B5CF6]" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] text-muted mb-0.5">Role</div>
+                  <div className="text-[10px] text-muted uppercase tracking-wide mb-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>Role</div>
                   <div className="text-sm text-foreground">{user.role}</div>
                 </div>
               </div>
             )}
             {user.phone && (
-              <div className="flex items-center gap-3 py-2.5 px-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors">
-                <Phone size={15} className="text-muted shrink-0" />
+              <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-[#11E874]/8 flex items-center justify-center shrink-0">
+                  <Phone size={14} className="text-[#0a9e4a]" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] text-muted mb-0.5">Phone</div>
+                  <div className="text-[10px] text-muted uppercase tracking-wide mb-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>Phone</div>
                   <div className="text-sm text-foreground">{user.phone}</div>
                 </div>
               </div>
             )}
             {user.location && (
-              <div className="flex items-center gap-3 py-2.5 px-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors">
-                <MapPin size={15} className="text-muted shrink-0" />
+              <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-[#F59E0B]/8 flex items-center justify-center shrink-0">
+                  <MapPin size={14} className="text-[#F59E0B]" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] text-muted mb-0.5">Location</div>
+                  <div className="text-[10px] text-muted uppercase tracking-wide mb-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>Location</div>
                   <div className="text-sm text-foreground">{user.location}</div>
                 </div>
               </div>
             )}
             {user.lastActive && (
-              <div className="flex items-center gap-3 py-2.5 px-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors">
-                <Clock size={15} className="text-muted shrink-0" />
+              <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                  <Clock size={14} className="text-muted" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] text-muted mb-0.5">Last Active</div>
+                  <div className="text-[10px] text-muted uppercase tracking-wide mb-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>Last Active</div>
                   <div className="text-sm text-foreground">{user.lastActive}</div>
                 </div>
               </div>
@@ -192,15 +207,16 @@ function UserProfileSideModal({ user, onClose }: { user: ProfileUser; onClose: (
 
           {/* Groups */}
           {user.groups && user.groups.length > 0 && (
-            <div className="px-4 mt-5">
-              <div className="text-xs text-muted mb-2 px-3" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+            <div className="px-4 mt-6 pb-4">
+              <div className="text-[10px] text-muted uppercase tracking-wide mb-2.5 px-3" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 Groups
               </div>
               <div className="flex flex-wrap gap-1.5 px-3">
                 {user.groups.map((group) => (
                   <span
                     key={group}
-                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-secondary text-foreground"
+                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-primary/8 text-primary border border-primary/10"
+                    style={{ fontWeight: 'var(--font-weight-semibold)' }}
                   >
                     {group}
                   </span>

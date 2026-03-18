@@ -32,10 +32,10 @@ jobs:
 
       - run: npm run build
 
-      # Copy standalone HTML pages and shared assets into dist
+      # Copy standalone HTML pages and shared assets into dist (merge contents, don't nest)
       - run: |
-          cp -r app dist/app
-          cp -r shared dist/shared
+          cp -r app/. dist/app/
+          cp -r shared/. dist/shared/
 
       # Copy index.html to 404.html so SPA routing works on GitHub Pages
       - run: cp dist/index.html dist/404.html

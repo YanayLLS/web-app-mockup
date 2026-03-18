@@ -335,8 +335,8 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
         role="dialog"
         aria-modal="true"
         aria-labelledby="procedure-modal-title"
-        className="bg-background rounded-[var(--radius)] shadow-lg w-full max-w-[1400px] h-[90vh] flex flex-col overflow-hidden"
-        style={{ boxShadow: 'var(--elevation-lg)' }}
+        className="bg-background rounded-xl shadow-lg w-full max-w-[1400px] h-[90vh] flex flex-col overflow-hidden border border-border"
+        style={{ boxShadow: '0 24px 48px rgba(0,0,0,0.15)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Breadcrumbs */}
@@ -375,20 +375,20 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                 <div className="relative" ref={shareMenuRef}>
                   <button
                     onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-primary text-primary hover:bg-primary/10 transition-colors"
+                    className="flex items-center gap-2 h-9 px-4 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all"
                     aria-haspopup="true"
                     aria-expanded={showShareMenu}
                   >
                     <Share2 size={14} />
-                    <span className="text-sm">Share</span>
+                    <span className="text-sm" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Share</span>
                   </button>
 
                   {showShareMenu && (
                     <div
-                      className="absolute right-0 top-full mt-1 w-96 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 p-4"
-                      style={{ boxShadow: 'var(--elevation-sm)' }}
+                      className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-32px)] bg-card border border-border rounded-xl z-10 p-4"
+                      style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
                     >
-                      <p className="text-sm text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                      <p className="text-sm text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                         Share this {isDT ? 'digital twin' : 'flow'}
                       </p>
                       <p className="text-xs text-muted mb-3">
@@ -399,9 +399,9 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                           type="text"
                           readOnly
                           value={`https://app.example.com/procedure/${procedure.id}`}
-                          className="flex-1 h-9 px-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground"
+                          className="flex-1 h-9 px-3 bg-secondary/50 border border-border rounded-lg text-xs text-foreground outline-none focus:border-primary transition-colors"
                         />
-                        <button className="h-9 px-3 bg-primary text-primary-foreground rounded-[var(--radius)] text-xs hover:bg-primary/90 shrink-0">
+                        <button className="h-9 px-4 bg-primary text-primary-foreground rounded-lg text-xs hover:brightness-110 hover:shadow-sm hover:shadow-primary/20 transition-all shrink-0" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                           Copy
                         </button>
                       </div>
@@ -427,7 +427,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                     }
                   }
                 }}
-                className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
                 title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
                 aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
               >
@@ -440,7 +440,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
               <button
                 onClick={handleClose}
-                className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
                 aria-label="Close modal"
               >
                 <X size={20} className="text-muted" />
@@ -453,7 +453,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
         <div className="shrink-0 bg-card border-b border-border">
           <div className="flex flex-wrap items-center gap-3 px-4 py-3">
             {/* Icon */}
-            <div className="p-2 bg-accent/10 rounded-[var(--radius)]">
+            <div className="p-2 bg-accent/10 rounded-lg">
               {isDT ? <Box size={20} className="text-accent" /> : <FileText size={20} className="text-accent" />}
             </div>
 
@@ -473,7 +473,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                       setIsEditingTitle(false);
                     }
                   }}
-                  className="h-9 px-3 bg-secondary border-2 border-primary rounded-[var(--radius)] text-sm text-foreground max-w-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-9 px-3 bg-card border border-primary rounded-lg text-sm text-foreground max-w-md outline-none focus:ring-2 focus:ring-primary/10"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 />
               ) : (
@@ -481,8 +481,8 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                   onMouseEnter={() => canEdit && setIsTitleHovered(true)}
                   onMouseLeave={() => setIsTitleHovered(false)}
                   onClick={() => canEdit && setIsEditingTitle(true)}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 ${canEdit ? 'cursor-pointer' : 'cursor-default'} rounded-[var(--radius)] transition-all ${canEdit ? 'group-hover/title:bg-secondary' : ''} ${
-                    isTitleHovered ? 'border-2 border-border' : 'border-2 border-transparent'
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 ${canEdit ? 'cursor-pointer' : 'cursor-default'} rounded-lg transition-all ${canEdit ? 'group-hover/title:bg-secondary/50' : ''} ${
+                    isTitleHovered ? 'border border-border' : 'border border-transparent'
                   }`}
                 >
                   <span
@@ -508,7 +508,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
             {/* Status Indicators - Only for editing roles */}
             {canEdit && hasUnsavedChanges && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-destructive/10 border border-destructive/20 rounded-[var(--radius)]">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <AlertCircle size={14} className="text-destructive" />
                 <span className="text-xs text-destructive" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   Unsaved changes
@@ -517,7 +517,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
             )}
 
             {canEdit && procedure.hasUnpublishedChanges && !hasUnsavedChanges && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-destructive/10 border border-destructive/20 rounded-[var(--radius)]">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <AlertCircle size={14} className="text-destructive" />
                 <span className="text-xs text-destructive" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   Unpublished changes
@@ -542,13 +542,13 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
               <div className="flex gap-2">
                 <button
                   onClick={handleCancelChanges}
-                  className="h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
+                  className="h-9 px-4 rounded-lg border border-border text-foreground hover:bg-secondary transition-colors"
                 >
                   <span className="text-sm">Cancel</span>
                 </button>
                 <button
                   onClick={handleSaveChanges}
-                  className="h-9 px-4 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="h-9 px-4 rounded-lg bg-primary text-primary-foreground hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
                 >
                   <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Save</span>
                 </button>
@@ -558,7 +558,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
               <button
                 onClick={handlePublish}
                 disabled={isPublishing}
-                className="h-9 px-4 rounded-[var(--radius)] border-2 border-[#11e874] text-[#0B9E4D] hover:bg-[#11e874]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="h-9 px-4 rounded-lg border border-[#11e874]/40 text-[#0B9E4D] hover:bg-[#11e874]/10 hover:border-[#11e874]/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isPublishing && (
                   <svg className="animate-spin size-4" viewBox="0 0 24 24" fill="none">
@@ -580,7 +580,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
             {/* Main Content */}
             <div className="flex-1 flex flex-col gap-3 min-w-0">
               {/* Preview Section */}
-              <div className="bg-card border border-border rounded-[var(--radius)] p-3">
+              <div className="bg-card border border-border rounded-lg p-3">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -600,7 +600,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                     <div className="relative" ref={dropdownRef}>
                       <button
                         onClick={() => canEdit && setShowDigitalTwinDropdown(!showDigitalTwinDropdown)}
-                        className={`flex items-center justify-between gap-3 h-10 px-4 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground transition-colors min-w-[240px] ${canEdit ? 'hover:bg-secondary cursor-pointer' : 'cursor-default'}`}
+                        className={`flex items-center justify-between gap-3 h-10 px-4 bg-card border border-border rounded-lg text-sm text-foreground transition-colors min-w-[240px] ${canEdit ? 'hover:bg-secondary cursor-pointer' : 'cursor-default'}`}
                         disabled={!canEdit}
                         aria-haspopup="listbox"
                         aria-expanded={showDigitalTwinDropdown}
@@ -617,15 +617,15 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
 
                       {showDigitalTwinDropdown && canEdit && (
                         <div
-                          className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 max-h-60 overflow-auto"
-                          style={{ boxShadow: 'var(--elevation-sm)' }}
+                          className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-32px)] bg-card border border-border rounded-xl z-10 max-h-60 overflow-auto custom-scrollbar p-1"
+                          style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
                         >
                           {digitalTwins.map((twin) => {
                             const isSelected = selectedDigitalTwinIds.includes(twin.id);
                             return (
                               <label
                                 key={twin.id}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer hover:bg-secondary"
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all cursor-pointer ${isSelected ? 'bg-primary/[0.06]' : 'hover:bg-secondary'}`}
                               >
                                 <input
                                   type="checkbox"
@@ -637,10 +637,10 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                                       setSelectedDigitalTwinIds(selectedDigitalTwinIds.filter(id => id !== twin.id));
                                     }
                                   }}
-                                  className="w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-primary/20"
+                                  className="w-4 h-4 rounded border-border accent-[#2F80ED] cursor-pointer"
                                 />
-                                <Box size={14} className="text-muted" />
-                                <span className="text-foreground">{twin.name}</span>
+                                <Box size={14} className={isSelected ? 'text-primary' : 'text-muted'} />
+                                <span className={isSelected ? 'text-primary' : 'text-foreground'} style={{ fontWeight: isSelected ? 'var(--font-weight-semibold)' : undefined }}>{twin.name}</span>
                               </label>
                             );
                           })}
@@ -651,7 +651,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                 </div>
 
                 {/* 3D Preview */}
-                <div className="relative w-full aspect-[16/9] bg-gradient-to-b from-[#2F80ED] to-[#004fff] rounded-[var(--radius)] overflow-hidden mb-3 flex items-center justify-center">
+                <div className="relative w-full aspect-[16/9] bg-gradient-to-b from-[#2F80ED] to-[#004fff] rounded-lg overflow-hidden mb-3 flex items-center justify-center">
                   {(isDT || selectedDigitalTwins.length > 0) ? (
                     <>
                       {!show3DViewer ? (
@@ -694,13 +694,15 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                       <>
                         <button
                           onClick={() => window.open(`${import.meta.env.BASE_URL}app/3d-viewer?mode=editor`, '_blank')}
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
+                          style={{ fontWeight: 'var(--font-weight-bold)' }}
                         >
                           <span className="text-sm">Edit Digital Twin</span>
                           <ExternalLink size={12} />
                         </button>
                         <button
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-card text-foreground border border-border rounded-lg hover:bg-secondary hover:border-primary/20 transition-all"
+                          style={{ fontWeight: 'var(--font-weight-semibold)' }}
                         >
                           <Clapperboard size={14} />
                           <span className="text-sm">Animate</span>
@@ -711,7 +713,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                         <button
                           disabled={selectedDigitalTwinIds.length === 0}
                           onClick={() => window.open(`${import.meta.env.BASE_URL}app/procedure-editor/${procedure.id}?mode=edit`, '_blank')}
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 border-2 border-primary text-primary rounded-[var(--radius)] hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 border border-primary/30 text-primary rounded-lg hover:bg-primary/10 hover:border-primary/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Edit in app</span>
                           <ExternalLink size={12} />
@@ -719,7 +721,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                         <button
                           onClick={onOpenCanvas}
                           disabled={selectedDigitalTwinIds.length === 0}
-                          className="flex-1 h-10 px-4 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 h-10 px-4 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Edit in canvas</span>
                         </button>
@@ -730,15 +732,15 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
               </div>
 
               {/* Description Section */}
-              <div className="bg-card border border-border rounded-[var(--radius)] p-3">
+              <div className="bg-card border border-border rounded-lg p-3">
                 <div className="flex gap-3">
                   {/* Thumbnail */}
-                  <div className="w-[120px] h-[68px] shrink-0 bg-secondary rounded-[var(--radius)] border border-border flex items-center justify-center">
+                  <div className="w-[120px] h-[68px] shrink-0 bg-secondary rounded-lg border border-border flex items-center justify-center">
                     {procedure.thumbnail ? (
                       <img 
                         src={procedure.thumbnail} 
                         alt="Flow thumbnail"
-                        className="w-full h-full object-cover rounded-[var(--radius)]"
+                        className="w-full h-full object-cover rounded-lg"
                       />
                     ) : isDT ? (
                       <Box size={24} className="text-muted" />
@@ -753,7 +755,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Write a description (optional)..."
-                      className="w-full h-full px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground placeholder:text-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full h-full px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted resize-none outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                       rows={3}
                       disabled={!canEdit}
                     />
@@ -767,7 +769,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
               <div className="w-full md:w-[400px] shrink-0 flex flex-col gap-3">
                 {isDT ? (
                   /* Connected Procedures - DT mode */
-                  <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden">
+                  <div className="bg-card border border-border rounded-lg overflow-hidden">
                     <button
                       onClick={() => setConnectedProceduresExpanded(!connectedProceduresExpanded)}
                       className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors"

@@ -92,14 +92,20 @@ const availableModels: AIModel[] = [
   },
 ];
 
+const providerColor: Record<string, string> = {
+  openai: '#10B981',
+  anthropic: '#F59E0B',
+  other: '#2F80ED',
+};
+
 interface ModelSelectorProps {
   selectedModel?: string;
   onModelChange?: (modelId: string) => void;
   compact?: boolean;
 }
 
-export function ModelSelector({ 
-  selectedModel = 'frontline-ai', 
+export function ModelSelector({
+  selectedModel = 'frontline-ai',
   onModelChange,
   compact = false
 }: ModelSelectorProps) {
@@ -115,114 +121,102 @@ export function ModelSelector({
     setIsOpen(false);
   };
 
+  // Group models by provider
+  const grouped = [
+    { label: 'Frontline', models: availableModels.filter(m => m.provider === 'other') },
+    { label: 'OpenAI', models: availableModels.filter(m => m.provider === 'openai') },
+    { label: 'Anthropic', models: availableModels.filter(m => m.provider === 'anthropic') },
+  ].filter(g => g.models.length > 0);
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Model Selector Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-[6px] px-[10px] py-[6px] rounded-[var(--radius)] hover:bg-secondary/50 transition-colors cursor-pointer"
-        style={{
-          border: '1px solid var(--border)',
-        }}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border hover:border-primary/20 hover:bg-secondary/50 transition-all cursor-pointer"
       >
         {currentModel.iconImage ? (
-          <img 
-            src={currentModel.iconImage} 
-            alt="" 
-            className="w-[16px] h-[16px] object-contain shrink-0"
+          <img
+            src={currentModel.iconImage}
+            alt=""
+            className="w-4 h-4 object-contain shrink-0"
           />
         ) : (
-          <span className="text-[14px]">{currentModel.icon}</span>
+          <span className="text-sm shrink-0">{currentModel.icon}</span>
         )}
         <span
+          className="text-foreground"
           style={{
             fontSize: compact ? 'var(--text-sm)' : 'var(--text-base)',
             fontWeight: 'var(--font-weight-bold)',
-            color: 'var(--foreground)',
           }}
         >
           {currentModel.name}
         </span>
-        <ChevronDown 
-          size={14} 
-          style={{ 
-            color: 'var(--foreground)',
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease',
-          }} 
+        <ChevronDown
+          size={14}
+          className={`text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute top-[calc(100%+4px)] left-0 z-[100] bg-card rounded-[var(--radius)] overflow-hidden custom-scrollbar"
-          style={{
-            width: '280px',
-            maxWidth: 'calc(100vw - 32px)',
-            maxHeight: '400px',
-            overflowY: 'auto',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--elevation-md)',
-          }}
+          className="absolute top-full mt-2 left-0 z-[100] bg-card border border-border rounded-xl w-[300px] max-w-[calc(100vw-32px)] max-h-[400px] overflow-y-auto custom-scrollbar"
+          style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
         >
-          {availableModels.map((model) => (
-            <button
-              key={model.id}
-              onClick={() => handleModelSelect(model.id)}
-              className="w-full text-left px-[12px] py-[10px] hover:bg-secondary/50 transition-colors flex items-start gap-[10px] relative"
-              style={{
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              {/* Model Icon */}
-              {model.iconImage ? (
-                <img 
-                  src={model.iconImage} 
-                  alt="" 
-                  className="w-[18px] h-[18px] object-contain shrink-0 mt-[2px]"
-                />
-              ) : (
-                <span className="text-[16px] shrink-0 mt-[2px]">{model.icon}</span>
-              )}
+          <div className="p-1.5">
+            {grouped.map((group, gi) => (
+              <div key={group.label}>
+                {gi > 0 && <div className="h-px bg-border/60 my-1.5 mx-2" />}
+                <div className="px-3 pt-2 pb-1">
+                  <span className="text-[10px] text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                    {group.label}
+                  </span>
+                </div>
+                {group.models.map((model) => {
+                  const isSelected = model.id === selectedModel;
+                  return (
+                    <button
+                      key={model.id}
+                      onClick={() => handleModelSelect(model.id)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex items-start gap-2.5 relative ${
+                        isSelected ? 'bg-primary/[0.06]' : 'hover:bg-secondary/60'
+                      }`}
+                    >
+                      {/* Model Icon */}
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${providerColor[model.provider]}10` }}>
+                        {model.iconImage ? (
+                          <img
+                            src={model.iconImage}
+                            alt=""
+                            className="w-4 h-4 object-contain"
+                          />
+                        ) : (
+                          <span className="text-sm">{model.icon}</span>
+                        )}
+                      </div>
 
-              {/* Model Info */}
-              <div className="flex-1 min-w-0">
-                <div
-                  style={{
-                    fontSize: 'var(--text-base)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--foreground)',
-                  }}
-                >
-                  {model.name}
-                </div>
-                <div
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--muted)',
-                    marginTop: '2px',
-                  }}
-                >
-                  {model.description}
-                </div>
+                      {/* Model Info */}
+                      <div className="flex-1 min-w-0 pr-6">
+                        <div className={`text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`} style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                          {model.name}
+                        </div>
+                        <div className="text-xs text-muted mt-0.5 leading-relaxed">
+                          {model.description}
+                        </div>
+                      </div>
+
+                      {/* Check Icon for Selected */}
+                      {isSelected && (
+                        <Check size={16} className="text-primary absolute right-3 top-1/2 -translate-y-1/2" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-
-              {/* Check Icon for Selected */}
-              {model.id === selectedModel && (
-                <Check 
-                  size={16} 
-                  style={{ 
-                    color: 'var(--primary)',
-                    position: 'absolute',
-                    right: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                  }} 
-                />
-              )}
-            </button>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>

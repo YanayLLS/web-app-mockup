@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, ChevronDown, Trash2 } from 'lucide-react';
+import { X, ChevronDown, Trash2, FolderOpen, Save, Plus } from 'lucide-react';
 import { MemberAvatarsRow } from './MemberAvatarsRow';
 import { AddMembersContextMenu, MemberOption, GroupOption } from './AddMembersContextMenu';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
@@ -325,57 +325,59 @@ export function ProjectSettingsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="project-settings-title"
-        className="bg-card rounded-[var(--radius-lg)] w-full max-w-[600px] max-h-[90vh] overflow-auto"
-        style={{ boxShadow: 'var(--shadow-elevation-sm)' }}
+        className="bg-card rounded-xl w-full max-w-[600px] max-h-[90vh] overflow-auto border border-border"
+        style={{ boxShadow: '0 24px 48px rgba(0,0,0,0.12)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-6 border-b border-border">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
-              <h2
-                id="project-settings-title"
-                className="text-foreground uppercase mb-2"
-                style={{ fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}
-              >
-                {mode === 'create' ? 'Create New Project' : 'Edit Project Settings'}
-              </h2>
-              <p className="text-xs text-foreground mb-1" style={{ fontFamily: 'var(--font-family)' }}>
-                Created at {currentDate}
-              </p>
-              <p className="text-xs text-foreground" style={{ fontFamily: 'var(--font-family)' }}>
-                A Project has its own digital twins, procedures and media.
-              </p>
+        <div className="px-6 py-5 border-b border-border/60">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                <FolderOpen size={20} />
+              </div>
+              <div className="flex-1">
+                <h2
+                  id="project-settings-title"
+                  className="text-foreground mb-1"
+                  style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}
+                >
+                  {mode === 'create' ? 'Create New Project' : 'Edit Project Settings'}
+                </h2>
+                <p className="text-xs text-muted">
+                  {mode === 'edit' ? `Created ${currentDate} · ` : ''}A project has its own digital twins, procedures and media.
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-secondary rounded transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground"
               aria-label="Close modal"
             >
-              <X className="w-4 h-4" />
+              <X size={18} />
             </button>
           </div>
         </div>
 
         {/* Project Name and Owners */}
-        <div className="p-6 border-b border-border grid grid-cols-2 gap-4">
+        <div className="px-6 py-5 border-b border-border/60 grid grid-cols-2 gap-4">
           <div>
-            <h4 className="text-foreground mb-2" style={{ fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}>
+            <h4 className="text-foreground mb-2 text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               Project Name
             </h4>
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              style={{ fontFamily: 'var(--font-family)' }}
+              className="w-full px-3 py-2.5 border border-border rounded-lg bg-card text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all hover:border-primary/30"
+              style={{ fontSize: 'var(--text-sm)' }}
             />
           </div>
           <div>
-            <h4 className="text-foreground mb-2" style={{ fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}>
+            <h4 className="text-foreground mb-2 text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               Owners
             </h4>
-            <div className="flex items-center justify-between px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card">
+            <div className="flex items-center justify-between px-3 py-2.5 border border-border rounded-lg bg-card hover:border-primary/20 transition-colors">
               <MemberAvatarsRow
                 members={owners}
                 groups={[]}
@@ -391,49 +393,50 @@ export function ProjectSettingsModal({
         </div>
 
         {/* Description */}
-        <div className="p-6 border-b border-border">
-          <h4 className="text-foreground mb-2" style={{ fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}>
+        <div className="px-6 py-5 border-b border-border/60">
+          <h4 className="text-foreground mb-2 text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
             Description{' '}
-            <span className="text-xs font-normal text-muted" style={{ fontFamily: 'var(--font-family)' }}>
+            <span className="text-muted" style={{ fontWeight: 'var(--font-weight-normal)', fontSize: 'var(--text-xs)' }}>
               (optional)
             </span>
           </h4>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            className="w-full px-3 py-2.5 border border-border rounded-lg bg-card text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none transition-all hover:border-primary/30"
             rows={4}
-            style={{ fontFamily: 'var(--font-family)' }}
+            style={{ fontSize: 'var(--text-sm)' }}
             placeholder="Introducing the Elitebook, a cutting-edge laptop designed for professionals who demand performance and elegance."
           />
         </div>
 
         {/* Privacy */}
-        <div className="p-6 border-b border-border">
+        <div className="px-6 py-5 border-b border-border/60">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h4 className="text-foreground mb-1" style={{ fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}>
+              <h4 className="text-foreground mb-1 text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 Privacy
               </h4>
-              <p className="text-xs text-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+              <p className="text-xs text-muted">
                 Set an access level to this project
               </p>
             </div>
             <div ref={privacyDropdownRef} className="relative w-[160px] max-w-[calc(100vw-64px)]">
               <button
                 onClick={() => setShowPrivacyDropdown(!showPrivacyDropdown)}
-                className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card flex items-center justify-between hover:bg-secondary transition-colors"
-                style={{ fontFamily: 'var(--font-family)' }}
+                className="w-full px-3 py-2.5 border border-border rounded-lg bg-card flex items-center justify-between hover:border-primary/20 hover:bg-secondary/30 transition-all"
+                style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}
                 aria-haspopup="listbox"
                 aria-expanded={showPrivacyDropdown}
               >
-                <span className="text-sm" style={{ fontFamily: 'var(--font-family)' }}>{selectedPrivacy?.label}</span>
-                <ChevronDown className="w-4 h-4" />
+                <span>{selectedPrivacy?.label}</span>
+                <ChevronDown size={14} className={`text-muted transition-transform ${showPrivacyDropdown ? 'rotate-180' : ''}`} />
               </button>
 
               {showPrivacyDropdown && (
                 <div
-                  className="absolute z-20 mt-1 w-[280px] max-w-[calc(100vw-64px)] right-0 bg-card border-2 border-secondary rounded-[var(--radius-lg)] shadow-elevation-sm overflow-hidden p-4"
+                  className="absolute z-20 mt-2 w-[280px] max-w-[calc(100vw-64px)] right-0 bg-card border border-border rounded-xl overflow-hidden p-2"
+                  style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
                 >
                   {privacyOptions.map((option) => (
                     <button
@@ -442,12 +445,16 @@ export function ProjectSettingsModal({
                         setPrivacy(option.value);
                         setShowPrivacyDropdown(false);
                       }}
-                      className="w-full text-left px-3 py-2 rounded-[var(--radius-lg)] hover:bg-secondary transition-colors mb-1"
+                      className={`w-full text-left px-3 py-2.5 rounded-lg transition-all mb-0.5 ${
+                        privacy === option.value
+                          ? 'bg-primary/[0.06] border border-primary/15'
+                          : 'hover:bg-secondary border border-transparent'
+                      }`}
                     >
-                      <h4 className="text-sm text-foreground mb-1" style={{ fontFamily: 'var(--font-family)' }}>
+                      <h4 className={`text-sm mb-0.5 ${privacy === option.value ? 'text-primary' : 'text-foreground'}`} style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                         {option.label}
                       </h4>
-                      <p className="text-xs text-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+                      <p className="text-xs text-muted">
                         {option.description}
                       </p>
                     </button>
@@ -459,8 +466,8 @@ export function ProjectSettingsModal({
 
           {/* Share Project With - Only show if private */}
           {privacy === 'private' && (
-            <div className="flex items-center justify-between p-4 border-t border-border">
-              <p className="text-xs text-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+            <div className="flex items-center justify-between p-4 border-t border-border/40 rounded-lg bg-secondary/20 mt-2">
+              <p className="text-xs text-muted" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                 Share project with:
               </p>
               <MemberAvatarsRow
@@ -479,33 +486,33 @@ export function ProjectSettingsModal({
         </div>
 
         {/* Default Digital Twin */}
-        <div className="p-6 border-b border-border">
+        <div className="px-6 py-5 border-b border-border/60">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h4 className="text-foreground mb-1" style={{ fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}>
+              <h4 className="text-foreground mb-1 text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 Default digital twin
               </h4>
-              <p className="text-xs text-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+              <p className="text-xs text-muted">
                 Automatically connects to new procedures
               </p>
             </div>
-            <div ref={digitalTwinDropdownRef} className="w-[250px] max-w-[calc(100vw-64px)]">
+            <div ref={digitalTwinDropdownRef} className="w-[250px] max-w-[calc(100vw-64px)] relative">
               <div
                 role="button"
                 tabIndex={0}
-                className="px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card flex items-center justify-between cursor-pointer hover:bg-secondary transition-colors"
+                className="px-3 py-2.5 border border-border rounded-lg bg-card flex items-center justify-between cursor-pointer hover:border-primary/20 hover:bg-secondary/30 transition-all"
                 onClick={() => setShowDigitalTwinDropdown(!showDigitalTwinDropdown)}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowDigitalTwinDropdown(!showDigitalTwinDropdown); } }}
                 aria-haspopup="listbox"
                 aria-expanded={showDigitalTwinDropdown}
               >
-                <span className="text-sm" style={{ fontFamily: 'var(--font-family)' }}>{defaultDigitalTwin}</span>
-                <ChevronDown className="w-4 h-4" />
+                <span className="text-sm" style={{ fontWeight: 'var(--font-weight-medium)' }}>{defaultDigitalTwin}</span>
+                <ChevronDown size={14} className={`text-muted transition-transform ${showDigitalTwinDropdown ? 'rotate-180' : ''}`} />
               </div>
               {showDigitalTwinDropdown && (
                 <div
-                  className="absolute mt-1 w-[250px] max-w-[calc(100vw-64px)] bg-card border border-border rounded-[var(--radius)] z-20 overflow-hidden"
-                  style={{ boxShadow: 'var(--shadow-elevation-md)' }}
+                  className="absolute mt-2 w-[250px] max-w-[calc(100vw-64px)] bg-card border border-border rounded-xl z-20 overflow-hidden p-1"
+                  style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
                 >
                   {['Elitebook 840 G9', 'ProBook 450 G10', 'ZBook Studio G9'].map((twin) => (
                     <button
@@ -514,10 +521,10 @@ export function ProjectSettingsModal({
                         setDefaultDigitalTwin(twin);
                         setShowDigitalTwinDropdown(false);
                       }}
-                      className={`w-full px-3 py-2 text-left hover:bg-secondary transition-colors ${
-                        defaultDigitalTwin === twin ? 'bg-secondary' : ''
+                      className={`w-full px-3 py-2.5 text-left rounded-lg transition-all text-sm ${
+                        defaultDigitalTwin === twin ? 'bg-primary/[0.06] text-primary' : 'hover:bg-secondary text-foreground'
                       }`}
-                      style={{ fontFamily: 'var(--font-family)' }}
+                      style={{ fontWeight: defaultDigitalTwin === twin ? 'var(--font-weight-semibold)' : 'var(--font-weight-medium)' }}
                     >
                       {twin}
                     </button>
@@ -529,21 +536,14 @@ export function ProjectSettingsModal({
         </div>
 
         {/* Footer */}
-        <div className="p-6 flex items-center justify-between border-t border-border">
+        <div className="px-6 py-4 flex items-center justify-between border-t border-border/60 bg-secondary/5">
           {mode === 'edit' && onDelete && canDelete ? (
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 transition-opacity flex items-center gap-2"
-              style={{
-                backgroundColor: 'var(--destructive)',
-                color: 'var(--destructive-foreground)',
-                borderRadius: 'var(--radius-lg)',
-                fontFamily: 'var(--font-family)',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              className="px-4 py-2.5 bg-destructive text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-destructive/20 transition-all flex items-center gap-2"
+              style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 size={15} />
               Delete
             </button>
           ) : (
@@ -552,17 +552,10 @@ export function ProjectSettingsModal({
           <button
             onClick={handleSave}
             disabled={!projectName.trim()}
-            className="px-4 py-2 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-              borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
-            }}
-            onMouseEnter={(e) => !projectName.trim() ? null : e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:hover:shadow-none flex items-center gap-2"
+            style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
           >
-            {mode === 'create' ? 'Create' : 'Save'}
+            {mode === 'create' ? <><Plus size={15} />Create Project</> : <><Save size={15} />Save Changes</>}
           </button>
         </div>
       </div>

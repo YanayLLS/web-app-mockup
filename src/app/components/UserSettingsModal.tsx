@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, Search, ChevronDown } from 'lucide-react';
+import { X, Search, ChevronDown, Monitor, Globe, Smartphone, Glasses, User, Lock, Languages, Fingerprint, Building2, AlertTriangle } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import { useAvatar } from '../contexts/AvatarContext';
 import { useAppPopup } from '../contexts/AppPopupContext';
@@ -30,13 +30,41 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
   const closeAccountRef = useRef<HTMLDivElement>(null);
 
   const sections = [
-    { id: 'personal-info', label: 'Update Personal Info', ref: personalInfoRef },
-    { id: 'password', label: 'Update Password', ref: passwordRef },
-    { id: 'language', label: 'Preferred viewing language', ref: languageRef },
-    { id: 'active-signins', label: 'Active sign-ins', ref: activeSigninsRef },
-    { id: 'workspaces', label: 'Workspaces list', ref: workspacesRef },
-    { id: 'close-account', label: 'Close Account', ref: closeAccountRef },
+    { id: 'personal-info', label: 'Update Personal Info', ref: personalInfoRef, icon: <User size={14} /> },
+    { id: 'password', label: 'Update Password', ref: passwordRef, icon: <Lock size={14} /> },
+    { id: 'language', label: 'Preferred viewing language', ref: languageRef, icon: <Languages size={14} /> },
+    { id: 'active-signins', label: 'Active sign-ins', ref: activeSigninsRef, icon: <Fingerprint size={14} /> },
+    { id: 'workspaces', label: 'Workspaces list', ref: workspacesRef, icon: <Building2 size={14} /> },
+    { id: 'close-account', label: 'Close Account', ref: closeAccountRef, icon: <AlertTriangle size={14} /> },
   ];
+
+  const getDeviceIcon = (type: string) => {
+    switch (type) {
+      case 'Windows': return <Monitor size={14} className="text-[#2F80ED]" />;
+      case 'Web Browser': return <Globe size={14} className="text-[#8B5CF6]" />;
+      case 'Android': return <Smartphone size={14} className="text-[#11E874]" />;
+      case 'iOS': return <Smartphone size={14} className="text-[#FF9800]" />;
+      case 'HoloLens': return <Glasses size={14} className="text-[#00BCD4]" />;
+      default: return <Monitor size={14} className="text-muted" />;
+    }
+  };
+
+  const getDeviceBg = (type: string) => {
+    switch (type) {
+      case 'Windows': return 'rgba(47,128,237,0.08)';
+      case 'Web Browser': return 'rgba(139,92,246,0.08)';
+      case 'Android': return 'rgba(17,232,116,0.08)';
+      case 'iOS': return 'rgba(255,152,0,0.08)';
+      case 'HoloLens': return 'rgba(0,188,212,0.08)';
+      default: return 'rgba(134,141,158,0.08)';
+    }
+  };
+
+  const getPermissionStyle = (perm: string) => {
+    if (perm === 'All') return { color: '#0a9e4a', bg: 'rgba(17,232,116,0.1)' };
+    if (perm === 'None') return { color: '#7F7F7F', bg: 'rgba(127,127,127,0.08)' };
+    return { color: '#2F80ED', bg: 'rgba(47,128,237,0.08)' };
+  };
 
   const activeSignins = [
     { type: 'Windows', date: '10.02.2026 14:26' },
@@ -108,16 +136,15 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
           {/* Sidebar Navigation - hidden on mobile */}
           <div className="hidden sm:flex w-64 border-r border-border flex-col">
             {/* Search */}
-            <div className="p-4 border-b border-border">
-              <div className="flex items-center gap-2 bg-secondary border border-border rounded-[var(--radius)] px-3 py-2">
-                <Search size={14} className="text-muted" />
+            <div className="p-3 border-b border-border/60">
+              <div className="flex items-center gap-2 bg-secondary/50 border border-border rounded-lg px-3 py-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+                <Search size={14} className="text-muted shrink-0" />
                 <input
                   type="text"
-                  placeholder="SEARCH"
+                  placeholder="Search settings..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted text-[16px] sm:text-[length:var(--text-xs)]"
-                  style={{ fontFamily: 'var(--font-family)' }}
                 />
               </div>
             </div>
@@ -128,9 +155,14 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.ref)}
-                  className="w-full text-left px-3 py-2.5 min-h-[44px] rounded-[var(--radius)] transition-colors text-foreground hover:bg-secondary"
-                  style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                  className={`w-full text-left px-3 py-2.5 min-h-[44px] rounded-lg transition-all flex items-center gap-2.5 ${
+                    section.id === 'close-account'
+                      ? 'text-destructive/70 hover:bg-destructive/5 hover:text-destructive'
+                      : 'text-foreground hover:bg-secondary hover:translate-x-[2px]'
+                  }`}
+                  style={{ fontSize: 'var(--text-sm)' }}
                 >
+                  <span className="text-muted shrink-0">{section.icon}</span>
                   {section.label}
                 </button>
               ))}
@@ -266,7 +298,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                     </div>
                   </div>
 
-                  <button className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}>
+                  <button className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>
                     Save Changes
                   </button>
                 </div>
@@ -289,9 +321,10 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
                 <button
                   onClick={handlePasswordReset}
-                  className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-                  style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
+                  className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all flex items-center gap-2"
+                  style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
                 >
+                  <Lock size={15} />
                   Request Password Reset Link
                 </button>
               </div>
@@ -353,25 +386,32 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   Active sign-ins
                 </h3>
 
-                <div className="border border-border rounded-[var(--radius)] overflow-hidden">
+                <div className="border border-border rounded-xl overflow-hidden">
                   <table className="w-full">
-                    <thead className="bg-secondary">
-                      <tr>
-                        <th className="text-left px-4 py-3 text-foreground" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                    <thead>
+                      <tr className="bg-secondary/60">
+                        <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                           Device type
                         </th>
-                        <th className="text-left px-4 py-3 text-foreground" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                        <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                           Login date
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {activeSignins.map((signin, index) => (
-                        <tr key={index} className="border-t border-border hover:bg-secondary/50 transition-colors">
-                          <td className="px-4 py-3 text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
-                            {signin.type}
+                        <tr key={index} className="border-t border-border/60 hover:bg-secondary/30 transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: getDeviceBg(signin.type) }}>
+                                {getDeviceIcon(signin.type)}
+                              </div>
+                              <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}>
+                                {signin.type}
+                              </span>
+                            </div>
                           </td>
-                          <td className="px-4 py-3 text-muted" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                          <td className="px-4 py-3 text-muted" style={{ fontSize: 'var(--text-sm)' }}>
                             {signin.date}
                           </td>
                         </tr>
@@ -387,44 +427,57 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   Workspaces list
                 </h3>
 
-                <div className="border border-border rounded-[var(--radius)] overflow-hidden">
+                <div className="border border-border rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-secondary">
-                        <tr>
-                          <th className="text-left px-4 py-3 text-foreground whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                      <thead>
+                        <tr className="bg-secondary/60">
+                          <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider whitespace-nowrap" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                             Workspace Name
                           </th>
-                          <th className="text-left px-4 py-3 text-foreground whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
-                            Training Permissions
+                          <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider whitespace-nowrap" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                            Training
                           </th>
-                          <th className="text-left px-4 py-3 text-foreground whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
-                            Content Permissions
+                          <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider whitespace-nowrap" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                            Content
                           </th>
-                          <th className="text-left px-4 py-3 text-foreground whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
-                            Admin Permissions
+                          <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider whitespace-nowrap" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                            Admin
                           </th>
-                          <th className="text-left px-4 py-3 text-foreground whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                          <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wider whitespace-nowrap" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                             Last Login
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {workspaces.map((workspace, index) => (
-                          <tr key={index} className="border-t border-border hover:bg-secondary/50 transition-colors">
-                            <td className="px-4 py-3 text-foreground whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
-                              {workspace.name}
+                          <tr key={index} className="border-t border-border/60 hover:bg-secondary/30 transition-colors">
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
+                                  <span className="text-[10px] text-primary" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                                    {workspace.name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}>
+                                  {workspace.name}
+                                </span>
+                              </div>
                             </td>
-                            <td className="px-4 py-3 text-muted whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
-                              {workspace.training}
-                            </td>
-                            <td className="px-4 py-3 text-muted whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
-                              {workspace.content}
-                            </td>
-                            <td className="px-4 py-3 text-muted whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
-                              {workspace.admin}
-                            </td>
-                            <td className="px-4 py-3 text-muted whitespace-nowrap" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                            {[workspace.training, workspace.content, workspace.admin].map((perm, i) => {
+                              const ps = getPermissionStyle(perm);
+                              return (
+                                <td key={i} className="px-4 py-3 whitespace-nowrap">
+                                  <span
+                                    className="inline-flex px-2 py-0.5 rounded-full text-[11px]"
+                                    style={{ color: ps.color, background: ps.bg, fontWeight: 'var(--font-weight-bold)' }}
+                                  >
+                                    {perm}
+                                  </span>
+                                </td>
+                              );
+                            })}
+                            <td className="px-4 py-3 text-muted whitespace-nowrap" style={{ fontSize: 'var(--text-sm)' }}>
                               {workspace.lastLogin}
                             </td>
                           </tr>
@@ -449,9 +502,10 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
                 <button
                   onClick={() => setShowCloseAccountConfirm(true)}
-                  className="px-6 py-2.5 min-h-[44px] bg-destructive text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-                  style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
+                  className="px-6 py-2.5 min-h-[44px] bg-destructive text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-destructive/20 transition-all flex items-center gap-2"
+                  style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
                 >
+                  <AlertTriangle size={15} />
                   Close Account
                 </button>
               </div>
@@ -470,20 +524,27 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
           />
           
           {/* Confirmation Dialog */}
-          <div className="relative bg-card border border-border rounded-[var(--radius)] w-full max-w-[calc(100vw-32px)] sm:max-w-[480px] px-4 py-6 sm:p-6" style={{ boxShadow: 'var(--elevation-lg)' }}>
-            <h3 className="text-foreground mb-4" style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
-              Close Account?
-            </h3>
+          <div className="relative bg-card border border-border rounded-xl w-full max-w-[calc(100vw-32px)] sm:max-w-[480px] overflow-hidden" style={{ boxShadow: '0 24px 48px rgba(0,0,0,0.12)' }}>
+            <div className="px-6 py-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive shrink-0">
+                  <AlertTriangle size={20} />
+                </div>
+                <h3 className="text-foreground" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
+                  Close Account?
+                </h3>
+              </div>
 
-            <p className="text-foreground mb-6" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
-              Are you sure you want to close your account? This action cannot be undone. All your data, projects, and settings will be permanently deleted.
-            </p>
+              <p className="text-foreground/80 leading-relaxed" style={{ fontSize: 'var(--text-sm)' }}>
+                Are you sure you want to close your account? This action cannot be undone. All your data, projects, and settings will be permanently deleted.
+              </p>
+            </div>
 
-            <div className="flex gap-3 justify-end">
+            <div className="border-t border-border/60 px-6 py-4 flex gap-3 justify-end">
               <button
                 onClick={() => setShowCloseAccountConfirm(false)}
-                className="px-4 py-2 min-h-[44px] bg-secondary text-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-                style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
+                className="px-4 py-2.5 min-h-[44px] bg-card text-foreground border border-border rounded-lg hover:bg-secondary hover:border-primary/20 transition-all"
+                style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)' }}
               >
                 Cancel
               </button>
@@ -493,8 +554,8 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                   onClose();
                   logout();
                 }}
-                className="px-4 py-2 min-h-[44px] bg-destructive text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-                style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}
+                className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-destructive/20 transition-all"
+                style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
               >
                 Close Account
               </button>
