@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Mic, MicOff, Users, PhoneOff, Crosshair, UserPlus, Send, Crown, Eye, EyeOff } from 'lucide-react';
+import { Search, Bell, ChevronDown, ChevronUp, X, BookOpen, Headset, Box, MessageSquare, HelpCircle, Star, Clock, User, Settings, LogOut, MoreVertical, Phone, Video, Mic, MicOff, Users, PhoneOff, Crosshair, UserPlus, Send, Crown, Eye, EyeOff } from 'lucide-react';
 import { AppKnowledgeBasePage } from './pages/AppKnowledgeBasePage';
 import { AppProjectKBPage } from './pages/AppProjectKBPage';
 import { AppRemoteSupportPage } from './pages/AppRemoteSupportPage';

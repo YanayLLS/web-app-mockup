@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../ui/use-mobile';
 import svgPaths from '../../../imports/svg-zo2c6wenwl';
 import scheduleSvgPaths from '../../../imports/svg-nmgvwn4834';
@@ -12,7 +13,7 @@ import {
   DropdownMenuItem,
 } from '../ui/dropdown-menu';
 import { ScheduleMeetingModal, type Person, type Meeting } from '../ScheduleMeetingModal';
-import { Paperclip, FileText, Folder, Phone, Video, Calendar, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Paperclip, FileText, Folder, Phone, PhoneOff, Video, Calendar, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useProject } from '../../contexts/ProjectContext';
 import { useActiveCall } from '../../contexts/ActiveCallContext';
 import { getUrlParam, setUrlParam } from '../../utils/urlParams';
@@ -650,25 +651,25 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
       </div>
 
       <div className="flex-1 flex items-center justify-center p-3 md:p-8 bg-secondary/20">
-        <div className="w-full max-w-[720px] flex flex-col gap-3 md:gap-6">
-          <div className="relative w-full aspect-video bg-[#1a1625] rounded-[var(--radius)] overflow-hidden border border-border">
+        <div className="w-full max-w-[720px] flex flex-col gap-3 md:gap-5">
+          <div className="relative w-full aspect-video bg-[#1a1625] rounded-xl overflow-hidden shadow-xl" style={{ boxShadow: '0 20px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08)' }}>
             {permissionError ? (
-              <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-[#1a1625] to-[#0f0d18]">
                 <div className="text-center px-6">
-                  <div className="size-16 rounded-full bg-destructive/20 flex items-center justify-center text-destructive mx-auto mb-4">
-                    <svg className="block size-8" fill="none" viewBox="0 0 24 24">
+                  <div className="size-16 rounded-2xl bg-destructive/15 flex items-center justify-center text-destructive mx-auto mb-4 border border-destructive/20">
+                    <svg className="block size-7" fill="none" viewBox="0 0 24 24">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                     </svg>
                   </div>
-                  <p className="text-sm text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                  <p className="text-sm text-white mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                     Camera & Microphone Access Needed
                   </p>
-                  <p className="text-xs text-muted max-w-[320px] mx-auto mb-4">
+                  <p className="text-xs text-white/50 max-w-[320px] mx-auto mb-5">
                     Please allow camera and microphone access in your browser settings to join the call
                   </p>
                   <button
                     onClick={startVideo}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity text-xs"
+                    className="px-5 py-2.5 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-lg hover:bg-white/20 transition-all text-xs"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   >
                     Retry Access
@@ -684,10 +685,11 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="size-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1a1625] to-[#0f0d18]">
+                <div className="size-24 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   ME
                 </div>
+                <p className="text-white/40 text-xs mt-3" style={{ fontWeight: 'var(--font-weight-medium)' }}>Camera is off</p>
               </div>
             )}
 
@@ -805,38 +807,55 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-[var(--radius)] p-3 md:p-4">
-            <div className="flex items-center gap-2 md:gap-3 mb-3">
-              <div className="p-2 bg-primary/10 rounded-[var(--radius)] shrink-0">
-                <IconPeopleList />
+          <div className="bg-card border border-border rounded-xl p-3 md:p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                  <IconPeopleList />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                    {isCreateMode ? 'Ready to start?' : 'Ready to join?'}
+                  </h3>
+                  <p className="text-xs text-muted truncate">
+                    {isCreateMode
+                      ? 'Your meeting will begin when you start'
+                      : meeting.participants.length > 0
+                        ? `${meeting.participants.length} participant${meeting.participants.length !== 1 ? 's are' : ' is'} waiting`
+                        : 'Be the first to join'}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                  {isCreateMode ? 'Ready to start?' : 'Ready to join?'}
-                </h3>
-                <p className="text-xs text-muted truncate">
-                  {isCreateMode
-                    ? 'Your meeting will begin when you start'
-                    : meeting.participants.length > 0
-                      ? `${meeting.participants.length} participant${meeting.participants.length !== 1 ? 's are' : ' is'} waiting`
-                      : 'Be the first to join'}
-                </p>
-              </div>
+              {!isCreateMode && meeting.participants.length > 0 && (
+                <div className="flex -space-x-2 shrink-0 ml-3">
+                  {meeting.participants.slice(0, 4).map((p) => (
+                    <div key={p.id} className="size-7 rounded-full border-2 border-card flex items-center justify-center text-[9px] text-white" style={{ backgroundColor: p.color, fontWeight: 'var(--font-weight-bold)' }}>
+                      {p.initial}
+                    </div>
+                  ))}
+                  {meeting.participants.length > 4 && (
+                    <div className="size-7 rounded-full border-2 border-card bg-secondary flex items-center justify-center text-[9px] text-muted" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                      +{meeting.participants.length - 4}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            
-            <div className="flex items-center gap-2 md:gap-3">
+
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={onCancel}
-                className="flex-1 px-3 md:px-4 py-2 md:py-2.5 border border-border text-foreground rounded-[var(--radius)] text-sm hover:bg-secondary transition-colors"
+                className="flex-1 px-3 md:px-4 py-2.5 border border-border text-foreground rounded-lg text-sm hover:bg-secondary transition-colors"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => onJoin({ isMuted, isVideoOff, audioDeviceId: selectedAudio, videoDeviceId: selectedVideo })}
-                className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] text-sm hover:opacity-90 transition-opacity"
+                className="flex-[2] px-3 md:px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm hover:opacity-90 transition-opacity shadow-sm shadow-primary/20 flex items-center justify-center gap-2"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
+                <Video size={15} />
                 {isCreateMode ? 'Start Meeting' : 'Join Meeting'}
               </button>
             </div>
@@ -856,6 +875,7 @@ export function RemoteSupportPage({
 }) {
   const isMobile = useIsMobile();
   const [isLandscape, setIsLandscape] = useState(false);
+  const navigate = useNavigate();
   const { prompt: appPrompt } = useAppPopup();
   const { currentRole } = useRole();
   const canScheduleMeeting = hasAccess(currentRole, 'schedule-meeting');
@@ -2112,20 +2132,31 @@ export function RemoteSupportPage({
         {/* Top Bar - White/Light */}
         <div className={`bg-card border-b border-border shrink-0`}>
           {/* Desktop Layout */}
-          <div className="hidden md:flex h-20 items-center justify-between px-6 py-3">
+          <div className="hidden md:flex h-16 items-center justify-between px-5 py-2">
             {/* Left: Meeting Info */}
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-[var(--radius)]">
-                <Phone className="size-5 text-foreground" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Video size={17} className="text-primary" />
               </div>
-              <div>
-                <h3 className="text-sm text-foreground truncate max-w-[200px]" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              <div className="min-w-0">
+                <h3 className="text-sm text-foreground truncate max-w-[220px]" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   {currentMeeting.title}
                 </h3>
-                <div className="text-xs text-muted">
-                  {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
-                  {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
-                  {String(callDuration % 60).padStart(2, '0')}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-1.5 rounded-full bg-[#11E874] animate-pulse" />
+                    <span className="text-[11px] text-muted tabular-nums" style={{ fontFamily: 'var(--font-family)' }}>
+                      {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
+                      {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
+                      {String(callDuration % 60).padStart(2, '0')}
+                    </span>
+                  </div>
+                  {connectedParticipants.length > 0 && (
+                    <>
+                      <span className="text-border">|</span>
+                      <span className="text-[11px] text-muted">{connectedParticipants.length} in call</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -2433,28 +2464,28 @@ export function RemoteSupportPage({
               <span className="text-xs text-foreground">Fullscreen</span>
             </button>
 
-            <div className="w-px h-10 bg-border mx-1" />
+            <div className="w-px h-8 bg-border mx-1.5" />
 
             <div className="relative flex">
               <button
                 onClick={handleToggleMute}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-l-[var(--radius)] hover:bg-secondary transition-colors ${
-                  isMuted ? 'opacity-50' : 'text-foreground'
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-l-lg transition-colors ${
+                  isMuted ? 'bg-destructive/8 text-destructive/70 hover:bg-destructive/12' : 'text-foreground hover:bg-secondary'
                 }`}
               >
                 {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
-                <span className="text-xs" style={{ fontWeight: !isMuted ? 'var(--font-weight-bold)' : 'normal' }}>
-                  Mic
+                <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                  {isMuted ? 'Unmute' : 'Mic'}
                 </span>
               </button>
               <button
                 onClick={() => setShowAudioDeviceMenu(!showAudioDeviceMenu)}
-                className={`flex items-center justify-center px-2 py-2 rounded-r-[var(--radius)] hover:bg-secondary transition-colors ${
-                  isMuted ? 'opacity-50' : 'text-foreground'
+                className={`flex items-center justify-center px-1.5 py-1.5 rounded-r-lg transition-colors ${
+                  isMuted ? 'text-destructive/50 hover:bg-destructive/8' : 'text-foreground hover:bg-secondary'
                 }`}
                 title="Select microphone"
               >
-                <svg className="size-3.5" fill="none" viewBox="0 0 12 8">
+                <svg className="size-3" fill="none" viewBox="0 0 12 8">
                   <path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
@@ -2612,23 +2643,23 @@ export function RemoteSupportPage({
             <div className="relative flex">
               <button
                 onClick={handleToggleVideo}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-l-[var(--radius)] hover:bg-secondary transition-colors ${
-                  isVideoOff ? 'opacity-50' : 'text-foreground'
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-l-lg transition-colors ${
+                  isVideoOff ? 'bg-destructive/8 text-destructive/70 hover:bg-destructive/12' : 'text-foreground hover:bg-secondary'
                 }`}
               >
                 {isVideoOff ? <IconVideoOff /> : <IconVideo />}
-                <span className="text-xs" style={{ fontWeight: !isVideoOff ? 'var(--font-weight-bold)' : 'normal' }}>
-                  Camera
+                <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                  {isVideoOff ? 'Start' : 'Camera'}
                 </span>
               </button>
               <button
                 onClick={() => setShowVideoDeviceMenu(!showVideoDeviceMenu)}
-                className={`flex items-center justify-center px-2 py-2 rounded-r-[var(--radius)] hover:bg-secondary transition-colors ${
-                  isVideoOff ? 'opacity-50' : 'text-foreground'
+                className={`flex items-center justify-center px-1.5 py-1.5 rounded-r-lg transition-colors ${
+                  isVideoOff ? 'text-destructive/50 hover:bg-destructive/8' : 'text-foreground hover:bg-secondary'
                 }`}
                 title="Select camera"
               >
-                <svg className="size-3.5" fill="none" viewBox="0 0 12 8">
+                <svg className="size-3" fill="none" viewBox="0 0 12 8">
                   <path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
@@ -2673,9 +2704,10 @@ export function RemoteSupportPage({
 
             <button
               onClick={handleLeaveCall}
-              className="flex items-center gap-2 px-5 py-2.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-[var(--radius)] transition-opacity ml-2"
+              className="flex items-center gap-1.5 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg transition-all ml-2 shadow-sm shadow-destructive/20"
               style={{ fontWeight: 'var(--font-weight-bold)' }}
             >
+              <PhoneOff size={15} />
               <span className="text-sm">Leave</span>
             </button>
           </div>
@@ -2819,13 +2851,18 @@ export function RemoteSupportPage({
           {showPeoplePanel && (
             <div className="fixed md:relative inset-0 md:inset-auto w-full md:w-80 bg-card md:border-r border-border flex flex-col shrink-0 z-50 md:z-auto">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-                <div className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                  People
+              <div className="h-14 flex items-center justify-between px-4 border-b border-border shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                    People
+                  </span>
+                  <span className="px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                    {connectedParticipants.length}
+                  </span>
                 </div>
                 <button
                   onClick={() => setShowPeoplePanel(false)}
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                  className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
                   <svg className="block size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -2834,8 +2871,8 @@ export function RemoteSupportPage({
               </div>
 
               {/* Search */}
-              <div className="px-4 py-3 border-b border-border shrink-0">
-                <div className="bg-white border border-border rounded-[var(--radius)] px-3 py-2 flex items-center gap-2 focus-within:border-primary transition-colors">
+              <div className="px-3 py-2.5 border-b border-border shrink-0">
+                <div className="bg-secondary/40 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card transition-colors">
                   <IconSearch />
                   <input
                     type="text"
@@ -2844,52 +2881,63 @@ export function RemoteSupportPage({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted"
                   />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} className="text-muted hover:text-foreground transition-colors">
+                      <svg className="size-3.5" fill="none" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Participants List */}
               <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {/* In this meeting */}
-                <div className="py-2">
-                  <button 
+                <div className="pt-1">
+                  <button
                     onClick={() => setCollapsedSections(prev => ({ ...prev, 'in-meeting': !prev['in-meeting'] }))}
                     className="flex items-center gap-2 px-4 py-2 w-full hover:bg-secondary/30 transition-colors"
                   >
-                    <svg 
-                      className={`size-3 shrink-0 text-muted transition-transform ${collapsedSections['in-meeting'] ? '' : 'rotate-90'}`} 
-                      fill="none" 
+                    <svg
+                      className={`size-3 shrink-0 text-muted transition-transform ${collapsedSections['in-meeting'] ? '' : 'rotate-90'}`}
+                      fill="none"
                       viewBox="0 0 11 11"
                     >
                       <path d="M3 2l4 3.5L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <div className="text-xs text-muted uppercase tracking-wide">
-                      In this meeting ({connectedParticipants.length})
-                    </div>
+                    <span className="text-xs text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                      In this meeting
+                    </span>
+                    <span className="text-xs text-muted">({connectedParticipants.length})</span>
                   </button>
 
                   {!collapsedSections['in-meeting'] && (
-                    <div className="space-y-0.5 px-2">
+                    <div className="space-y-0.5 px-2 pb-1">
                       {connectedParticipants.map((participant) => (
-                        <div 
+                        <div
                           key={participant.id}
                           onMouseEnter={() => setHoveredParticipantId(participant.id)}
                           onMouseLeave={() => setHoveredParticipantId(null)}
-                          className="group flex items-center gap-3 px-2 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors min-h-[40px] relative"
+                          className="group flex items-center gap-3 px-2.5 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors min-h-[42px] relative"
                         >
-                          <MemberAvatar name={participant.name} size="md" color={participant.color} initials={participant.initial} />
+                          <div className="relative shrink-0">
+                            <MemberAvatar name={participant.name} size="md" color={participant.color} initials={participant.initial} />
+                            <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#11E874] border-2 border-card" />
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm text-foreground truncate">
-                              {participant.name}
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                {participant.name}
+                              </span>
+                              {participant.id === hostId && (
+                                <span className="shrink-0 px-1.5 py-0.5 text-[9px] bg-primary/10 text-primary rounded" style={{ fontWeight: 'var(--font-weight-bold)' }}>HOST</span>
+                              )}
                             </div>
-                            {participant.id === hostId && (
-                              <div className="text-xs text-muted">Host</div>
-                            )}
                           </div>
 
                           {/* Muted indicator */}
                           {!participant.audioEnabled && (
-                            <div className="shrink-0 mr-1" title={participant.mutedByHost ? 'Muted by host (override)' : 'Muted'}>
-                              <svg className="size-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <div className="shrink-0 p-1 bg-secondary rounded" title={participant.mutedByHost ? 'Muted by host (override)' : 'Muted'}>
+                              <svg className="size-3.5 text-muted" fill="none" viewBox="0 0 24 24">
                                 <path d="M15 9v3a3 3 0 1 1-6 0V9a3 3 0 0 1 6 0Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 <path d="M5 10a7 7 0 0 0 14 0M12 19v2M8 21h8M19 4L5 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                               </svg>
@@ -3029,18 +3077,19 @@ export function RemoteSupportPage({
                       ))}
 
                       {callingParticipants.map((participant) => (
-                        <div 
+                        <div
                           key={participant.id}
-                          className="flex items-center gap-3 px-2 py-2 min-h-[40px]"
+                          className="flex items-center gap-3 px-2.5 py-2 min-h-[42px]"
                         >
-                          <div className="animate-pulse">
+                          <div className="relative shrink-0 animate-pulse">
                             <MemberAvatar name={participant.name} size="md" color={participant.color} initials={participant.initial} />
+                            <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-amber-400 border-2 border-card" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm text-muted truncate">
+                            <span className="text-sm text-muted truncate block" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                               {participant.name}
-                            </div>
-                            <div className="text-xs text-muted">Calling...</div>
+                            </span>
+                            <span className="text-[10px] text-amber-500" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Calling...</span>
                           </div>
                         </div>
                       ))}
@@ -3049,42 +3098,46 @@ export function RemoteSupportPage({
                 </div>
 
                 {/* Available */}
-                <div className="py-2">
-                  <button 
+                <div className="pt-1 border-t border-border/50">
+                  <button
                     onClick={() => setCollapsedSections(prev => ({ ...prev, 'available': !prev['available'] }))}
                     className="flex items-center gap-2 px-4 py-2 w-full hover:bg-secondary/30 transition-colors"
                   >
-                    <svg 
-                      className={`size-3 shrink-0 text-muted transition-transform ${collapsedSections['available'] ? '' : 'rotate-90'}`} 
-                      fill="none" 
+                    <svg
+                      className={`size-3 shrink-0 text-muted transition-transform ${collapsedSections['available'] ? '' : 'rotate-90'}`}
+                      fill="none"
                       viewBox="0 0 11 11"
                     >
                       <path d="M3 2l4 3.5L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <div className="text-xs text-muted uppercase tracking-wide">
+                    <span className="text-xs text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                       Available
-                    </div>
+                    </span>
                   </button>
 
                   {!collapsedSections['available'] && (
-                    <div className="space-y-0.5 px-2">
+                    <div className="space-y-0.5 px-2 pb-1">
                       {people
                         .filter(person => !callParticipants.some(p => p.id === person.id))
                         .filter(person => person.name.toLowerCase().includes(searchQuery.toLowerCase()))
                         .map((person) => (
-                          <div 
+                          <div
                             key={person.id}
-                            className="flex items-center gap-3 px-2 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors group min-h-[40px]"
+                            className="flex items-center gap-3 px-2.5 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors group min-h-[42px]"
                           >
-                            <MemberAvatar name={person.name} size="md" color={person.color} initials={person.initial} />
+                            <div className="relative shrink-0">
+                              <MemberAvatar name={person.name} size="md" color={person.color} initials={person.initial} />
+                              <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-border border-2 border-card" />
+                            </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm text-foreground truncate">
+                              <span className="text-sm text-foreground truncate block" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                                 {person.name}
-                              </div>
+                              </span>
                             </div>
                             <button
                               onClick={() => handleInviteParticipant(person)}
-                              className="text-xs text-primary hover:underline transition-opacity md:opacity-0 md:group-hover:opacity-100 shrink-0"
+                              className="text-xs px-2.5 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0"
+                              style={{ fontWeight: 'var(--font-weight-semibold)' }}
                             >
                               Add
                             </button>
@@ -3120,7 +3173,7 @@ export function RemoteSupportPage({
                           className={`${
                             isMobile ? 'w-full flex-1 max-h-full' : videoLayout === 'sidebar' ? 'flex-1 aspect-video' : 'w-full max-w-[1400px] aspect-video'
                           } bg-[#2a2438] rounded-[var(--radius)] overflow-hidden shadow-2xl relative group transition-all ${
-                            speakingParticipants.has(spotlightedParticipant.id) ? 'border-4 border-green-500' : 'border border-white/10'
+                            speakingParticipants.has(spotlightedParticipant.id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border border-white/10'
                           }`}
                         >
                           {/* Video content for spotlighted participant */}
@@ -3456,7 +3509,7 @@ export function RemoteSupportPage({
                                 ? 'w-32 aspect-video' 
                                 : ''
                             } bg-[#2a2438] rounded-[var(--radius)] overflow-visible shadow-2xl relative group transition-all select-none ${
-                              speakingParticipants.has(otherParticipants[0].id) ? 'border-4 border-green-500' : 'border-2 border-white/30'
+                              speakingParticipants.has(otherParticipants[0].id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border-2 border-white/30'
                             }`}
                             onMouseDown={(e) => {
                               if (isMobile) return;
@@ -3683,7 +3736,7 @@ export function RemoteSupportPage({
                                 className={`${
                                   isMobile ? (isLandscape ? 'w-full cursor-pointer' : 'w-32 cursor-pointer') : videoLayout === 'sidebar' ? 'w-full' : 'w-48'
                                 } aspect-video bg-[#2a2438] rounded-[var(--radius)] overflow-hidden shadow-xl relative group shrink-0 transition-all ${
-                                  speakingParticipants.has(participant.id) ? 'border-4 border-green-500' : 'border-2 border-white/30'
+                                  speakingParticipants.has(participant.id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border-2 border-white/30'
                                 }`}
                               >
                                 {participant.id === 'me' ? (
@@ -3726,25 +3779,27 @@ export function RemoteSupportPage({
                                 {!isMobile && (
                                   <button
                                     onClick={() => setSpotlightedParticipantId(participant.id)}
-                                    className="absolute top-1.5 right-1.5 p-1 bg-white/90 hover:bg-white backdrop-blur-sm rounded transition-all flex items-center gap-1.5 border border-white/20 text-black md:opacity-0 md:group-hover:opacity-100"
+                                    className="absolute top-2 right-2 px-2 py-1 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-lg transition-all flex items-center gap-1.5 border border-white/10 text-white md:opacity-0 md:group-hover:opacity-100"
                                     title="Spotlight this video"
                                   >
                                     <IconSpotlight />
-                                    <span className="text-xs pr-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>Spotlight</span>
+                                    <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Spotlight</span>
                                   </button>
                                 )}
 
                                 {/* Name label with mute icon */}
-                                <div className={`absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-sm rounded text-white border border-white/10 flex items-center gap-1 ${
-                                  isMobile ? 'px-1 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
-                                }`} style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                                  <span className={`truncate ${isMobile ? 'max-w-[60px]' : 'max-w-[120px]'}`}>{participant.name}</span>
-                                  {!participant.audioEnabled && (
-                                    <svg className={isMobile ? 'size-2.5' : 'size-3.5'} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path d="M15 9v3a3 3 0 1 1-6 0V9a3 3 0 0 1 6 0Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                      <path d="M5 10a7 7 0 0 0 14 0M12 19v2M8 21h8M19 4L5 20" strokeWidth="2" strokeLinecap="round"/>
-                                    </svg>
-                                  )}
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent pt-6 pb-2 px-2.5">
+                                  <div className={`flex items-center gap-1.5 ${isMobile ? 'text-[10px]' : 'text-xs'}`}>
+                                    <span className={`text-white truncate ${isMobile ? 'max-w-[60px]' : 'max-w-[120px]'}`} style={{ fontWeight: 'var(--font-weight-semibold)' }}>{participant.name}</span>
+                                    {!participant.audioEnabled && (
+                                      <div className="size-4 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+                                        <svg className="size-2.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path d="M15 9v3a3 3 0 1 1-6 0V9a3 3 0 0 1 6 0Z" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                          <path d="M19 4L5 20" strokeWidth="2.5" strokeLinecap="round"/>
+                                        </svg>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -3809,7 +3864,7 @@ export function RemoteSupportPage({
                       <div 
                         key={participant.id} 
                         className={`aspect-video bg-[#2a2438] rounded-[var(--radius)] overflow-hidden shadow-lg relative group transition-all ${
-                          speakingParticipants.has(participant.id) ? 'border-4 border-green-500' : 'border border-white/10'
+                          speakingParticipants.has(participant.id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border border-white/10'
                         }`}
                       >
                         {/* Video/Avatar Content */}
@@ -3958,48 +4013,61 @@ export function RemoteSupportPage({
 
               {/* Header */}
               <div className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0 bg-card">
-                <h3 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                  Chat
-                </h3>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                    Chat
+                  </span>
+                  {chatMessages.length > 0 && (
+                    <span className="px-1.5 py-0.5 text-[10px] bg-secondary text-muted rounded-full" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                      {chatMessages.length}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => setShowChatPanel(false)}
-                  className="p-2.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
                   <svg className="block size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </button>
               </div>
-              
+
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4">
                 {chatMessages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                    <div className="size-16 rounded-full bg-secondary/50 mx-auto mb-4 flex items-center justify-center">
+                    <div className="size-14 rounded-2xl bg-primary/5 border border-primary/10 mx-auto mb-4 flex items-center justify-center">
                       <IconChat />
                     </div>
                     <p className="text-sm text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                       No messages yet
                     </p>
-                    <p className="text-xs text-muted">Start the conversation with your team</p>
+                    <p className="text-xs text-muted max-w-[200px]">Send a message or share a knowledge base item</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {chatMessages.map((message) => (
-                      <div key={message.id} className="flex gap-3 group">
+                    {chatMessages.map((message) => {
+                      const isMe = message.sender === 'You';
+                      return (
+                      <div key={message.id} className={`flex gap-2.5 group ${isMe ? 'flex-row-reverse' : ''}`}>
                         <div className="shrink-0 mt-0.5">
                           <MemberAvatar name={message.sender} size="xl" color={message.senderColor} initials={message.senderInitial} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-baseline gap-2 mb-1.5">
-                            <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                        <div className={`flex-1 min-w-0 ${isMe ? 'flex flex-col items-end' : ''}`}>
+                          <div className={`flex items-baseline gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}`}>
+                            <span className="text-xs text-foreground" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                               {message.sender}
                             </span>
-                            <span className="text-xs text-muted">
+                            <span className="text-[10px] text-muted">
                               {message.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <div className="bg-secondary/40 rounded-lg rounded-tl-sm px-3.5 py-2.5 shadow-sm border border-border/50 hover:border-border transition-colors">
+                          <div className={`rounded-xl px-3.5 py-2.5 max-w-[85%] ${
+                            isMe
+                              ? 'bg-primary/10 rounded-tr-sm border border-primary/15'
+                              : 'bg-secondary/40 rounded-tl-sm border border-border/50'
+                          }`}>
                             {message.text && (
                               <p className="text-sm text-foreground break-words leading-relaxed whitespace-pre-wrap">{message.text}</p>
                             )}
@@ -4019,7 +4087,7 @@ export function RemoteSupportPage({
                                     <button
                                       key={attachment.id}
                                       onClick={() => {
-                                        setIsCallMinimized(true);
+                                        navigate(`/web/project/${attachment.projectId || 'generator'}/knowledgebase`);
                                         toast.success(`Opening ${attachment.name}`);
                                       }}
                                       className="flex items-start gap-3 p-3 bg-card border border-border rounded-[var(--radius)] hover:border-primary/40 hover:bg-primary/5 transition-all text-left group/attachment"
@@ -4054,13 +4122,14 @@ export function RemoteSupportPage({
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
               {/* Input Area */}
-              <div className="px-4 py-4 border-t border-border shrink-0 bg-card">
+              <div className="px-4 py-3 border-t border-border shrink-0 bg-card">
                 {/* Selected Attachments Preview */}
                 {selectedAttachments.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -4907,62 +4976,86 @@ export function RemoteSupportPage({
 
       {/* Left Panel - People */}
       <div className={`${
-        isMobile 
+        isMobile
           ? `fixed top-0 left-0 h-full w-[280px] z-50 transition-transform duration-300 ${
               showMobilePeople ? 'translate-x-0' : '-translate-x-full'
             }`
           : 'w-[280px] shrink-0'
       } bg-card border-r border-border flex flex-col`}>
         {/* Header */}
-        <div className="h-16 border-b border-border flex items-center px-4 shrink-0">
-          <div className="flex items-center gap-2">
-            <svg className="block size-4" fill="none" viewBox="0 0 16 16">
+        <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <svg className="block size-4 text-foreground" fill="none" viewBox="0 0 16 16">
               <circle cx="8" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
               <path d="M2 14c0-2.5 2.5-4 6-4s6 1.5 6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            <h3 className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-              People
+            <h3 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              Contacts
             </h3>
+            <span className="px-1.5 py-0.5 text-[10px] bg-secondary text-muted rounded-full" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+              {people.length}
+            </span>
           </div>
+          {isMobile && (
+            <button onClick={() => setShowMobilePeople(false)} className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted">
+              <svg className="size-4" fill="none" viewBox="0 0 18 18"><path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
+          )}
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-border shrink-0">
-          <div className="bg-input-background border border-border rounded-[var(--radius)] px-3 py-2 flex items-center gap-2">
+        <div className="px-3 py-2.5 border-b border-border shrink-0">
+          <div className="bg-secondary/40 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card transition-colors">
+            <IconSearch />
             <input
               type="text"
-              placeholder="Type a name"
+              placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted"
             />
-            <IconSearch />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="text-muted hover:text-foreground transition-colors">
+                <svg className="size-3.5" fill="none" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </button>
+            )}
           </div>
         </div>
 
         {/* People List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          {people.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((person) => {
-            // 20% of users have sub-workspace
-            const showSubWorkspace = person.subWorkspace;
-            
-            return (
-              <div 
-                key={person.id}
-                onMouseEnter={() => setHoveredPersonId(person.id)}
-                onMouseLeave={() => setHoveredPersonId(null)}
-                className="group flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/50 transition-colors border-b border-border"
-              >
-                <MemberAvatar name={person.name} size="lg" color={person.color} initials={person.initial} />
-                <div className="flex-1 text-sm text-foreground truncate">
-                  {person.name}
+          {(() => {
+            const filtered = people.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+            if (filtered.length === 0 && searchQuery) {
+              return (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <svg className="size-8 text-muted mb-2" fill="none" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <p className="text-xs text-muted">No contacts matching "{searchQuery}"</p>
                 </div>
-                <div className="ml-auto shrink-0 flex items-center gap-2">
-                  {showSubWorkspace && (
-                    <div className={`px-2 py-0.5 bg-secondary border border-border rounded-[var(--radius)] text-xs text-muted hidden md:block ${hoveredPersonId === person.id ? 'md:hidden' : ''}`}>
-                      {person.subWorkspace}
+              );
+            }
+            return filtered.map((person) => {
+              const showSubWorkspace = person.subWorkspace;
+              const isOnline = person.id.charCodeAt(0) % 3 !== 0; // deterministic online status
+              return (
+                <div
+                  key={person.id}
+                  onMouseEnter={() => setHoveredPersonId(person.id)}
+                  onMouseLeave={() => setHoveredPersonId(null)}
+                  className="group flex items-center gap-3 px-3.5 py-2.5 hover:bg-secondary/40 transition-colors"
+                >
+                  <div className="relative shrink-0">
+                    <MemberAvatar name={person.name} size="lg" color={person.color} initials={person.initial} />
+                    <div className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-card ${isOnline ? 'bg-[#11E874]' : 'bg-border'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                      {person.name}
                     </div>
-                  )}
+                    {showSubWorkspace && (
+                      <div className="text-[10px] text-muted truncate">{person.subWorkspace}</div>
+                    )}
+                  </div>
                   <button
                     onClick={() => {
                       const newMeeting: Meeting = {
@@ -4976,18 +5069,19 @@ export function RemoteSupportPage({
                       setCurrentMeeting(newMeeting);
                       setShowPreJoin(true);
                     }}
-                    className={`px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-foreground rounded-[var(--radius)] transition-all flex items-center gap-1.5 md:opacity-0 md:group-hover:opacity-100 ${hoveredPersonId === person.id ? 'md:opacity-100' : ''}`}
-                    title="Call"
+                    className={`p-1.5 rounded-[var(--radius)] transition-all shrink-0 md:opacity-0 md:group-hover:opacity-100 ${
+                      hoveredPersonId === person.id
+                        ? 'md:opacity-100 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground'
+                        : 'bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground'
+                    }`}
+                    title={`Call ${person.name}`}
                   >
-                    <Phone className="size-4" />
-                    <span className="text-xs">
-                      Call
-                    </span>
+                    <Phone className="size-3.5" />
                   </button>
                 </div>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       </div>
 
@@ -5025,44 +5119,43 @@ export function RemoteSupportPage({
                 }`}
                 style={{ fontFamily: 'var(--font-family)' }}
               >
-                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Clock size={16} />
                 <span style={{ fontWeight: activeTab === 'recent' ? 'var(--font-weight-bold)' : 'normal' }}>
-                  Recent Calls
+                  Recent
                 </span>
               </button>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Call Device Button */}
               <button
                 onClick={() => setShowCallDeviceModal(true)}
-                className="px-4 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2"
-                style={{ fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+                className="px-3.5 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-secondary hover:border-border/80 transition-all flex items-center gap-2 text-sm"
+                style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
-                <Phone className="size-4" />
+                <Phone size={15} className="text-muted" />
                 <span>Call Device</span>
               </button>
 
               {/* Join Meeting Button */}
               <button
                 onClick={() => setShowJoinMeetingModal(true)}
-                className="px-4 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2"
-                style={{ fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+                className="px-3.5 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-secondary hover:border-border/80 transition-all flex items-center gap-2 text-sm"
+                style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
-                <Video className="size-4" />
-                <span>Join Meeting</span>
+                <Video size={15} className="text-muted" />
+                <span>Join</span>
               </button>
 
               {/* Create Button with Schedule split */}
               {canStartCall && (
-              <div className="flex items-stretch rounded-[var(--radius)] overflow-hidden">
+              <div className="flex items-stretch rounded-lg overflow-hidden shadow-sm shadow-primary/15">
                 <button
                   onClick={handleCreateMeeting}
-                  className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center"
+                  className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
-                  Create meeting
+                  <Video size={15} />
+                  New meeting
                 </button>
                 {canScheduleMeeting && (
                   <button
@@ -5070,7 +5163,7 @@ export function RemoteSupportPage({
                     className="px-2.5 bg-primary text-primary-foreground border-l border-white/20 hover:bg-primary/80 transition-colors flex items-center justify-center"
                     title="Schedule for later"
                   >
-                    <Calendar size={15} />
+                    <Calendar size={14} />
                   </button>
                 )}
               </div>
@@ -5151,123 +5244,81 @@ export function RemoteSupportPage({
         {/* Call Device Modal */}
         {showCallDeviceModal && (
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
             onClick={() => setShowCallDeviceModal(false)}
           >
             <div
-              className="bg-card border border-border rounded-[var(--radius)] p-6 max-w-[480px] w-full"
+              className="bg-card border border-border rounded-xl max-w-[420px] w-full overflow-hidden"
               onClick={(e) => e.stopPropagation()}
-              style={{ boxShadow: 'var(--elevation-sm)' }}
+              style={{ boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
             >
-              <div className="flex items-center justify-between mb-5">
-                <h3
-                  className="text-foreground"
-                  style={{
-                    fontSize: 'var(--text-lg)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Call Device
-                </h3>
-                <button
-                  onClick={() => setShowCallDeviceModal(false)}
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
-                >
-                  <svg className="size-4" fill="none" viewBox="0 0 18 18">
-                    <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              </div>
-
-              <p
-                className="mb-5 text-muted"
-                style={{
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                Enter the 9-digit device ID to initiate a remote support call
-              </p>
-
-              <div className="mb-6">
-                <label
-                  className="block mb-2 text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Device ID
-                </label>
-                <input
-                  type="text"
-                  value={deviceId}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 9);
-                    setDeviceId(value);
-                  }}
-                  placeholder="123456789"
-                  className="w-full px-4 py-3 bg-background border border-border rounded-[var(--radius)] outline-none focus:border-primary transition-colors"
-                  style={{
-                    fontSize: 'var(--text-base)',
-                    color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
-                    letterSpacing: '0.15em',
-                  }}
-                  maxLength={9}
-                  autoFocus
-                />
-                <div className="flex items-center justify-between mt-2">
-                  <p
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--muted)',
-                    }}
-                  >
-                    {deviceId.length}/9 digits
-                  </p>
-                  {deviceId.length === 9 && (
-                    <p
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--primary)',
-                        fontWeight: 'var(--font-weight-bold)',
-                      }}
-                    >
-                      ✓ Ready to call
-                    </p>
-                  )}
+              {/* Header */}
+              <div className="px-6 pt-6 pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Phone size={18} className="text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-foreground text-base" style={{ fontWeight: 'var(--font-weight-bold)' }}>Call Device</h3>
+                      <p className="text-xs text-muted mt-0.5">Enter the 9-digit device ID</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowCallDeviceModal(false)} className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground -mr-1">
+                    <svg className="size-4" fill="none" viewBox="0 0 18 18"><path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </button>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              {/* Input */}
+              <div className="px-6 pb-2">
+                <label className="block mb-1.5 text-xs text-muted" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Device ID</label>
+                <div className={`flex items-center gap-2 px-4 py-3 bg-secondary/30 border rounded-lg transition-colors ${deviceId.length === 9 ? 'border-primary/40 bg-primary/5' : 'border-border focus-within:border-primary'}`}>
+                  <input
+                    type="text"
+                    value={deviceId}
+                    onChange={(e) => setDeviceId(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                    placeholder="000 000 000"
+                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted"
+                    style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em', fontFamily: 'var(--font-family)' }}
+                    maxLength={9}
+                    autoFocus
+                  />
+                  {deviceId.length === 9 && (
+                    <div className="size-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                      <svg className="size-3 text-primary-foreground" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-1.5 px-0.5">
+                  <span className="text-[10px] text-muted">{deviceId.length}/9 digits</span>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <div key={i} className={`size-1 rounded-full transition-colors ${i < deviceId.length ? 'bg-primary' : 'bg-border'}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 mt-2 flex gap-2.5 border-t border-border/50">
                 <button
-                  className="flex-1 px-4 py-2.5 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                  onClick={() => {
-                    setShowCallDeviceModal(false);
-                    setDeviceId('');
-                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-border hover:bg-secondary transition-colors text-foreground text-sm"
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  onClick={() => { setShowCallDeviceModal(false); setDeviceId(''); }}
                 >
                   Cancel
                 </button>
                 <button
-                  className="flex-1 px-4 py-2.5 rounded-[var(--radius)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    backgroundColor: deviceId.length === 9 ? 'var(--primary)' : 'var(--secondary)',
-                    color: deviceId.length === 9 ? 'var(--primary-foreground)' : 'var(--muted)',
-                  }}
+                  className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
+                    deviceId.length === 9 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90' : 'bg-secondary text-muted cursor-not-allowed'
+                  }`}
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
                   onClick={handleCallDevice}
                   disabled={deviceId.length !== 9}
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <Phone className="size-4" />
-                    <span>Call Device</span>
-                  </div>
+                  <Phone size={15} />
+                  Call Device
                 </button>
               </div>
             </div>
@@ -5277,123 +5328,81 @@ export function RemoteSupportPage({
         {/* Invite Device Modal */}
         {showInviteDeviceModal && (
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
             onClick={() => setShowInviteDeviceModal(false)}
           >
             <div
-              className="bg-card border border-border rounded-[var(--radius)] p-6 max-w-[480px] w-full"
+              className="bg-card border border-border rounded-xl max-w-[420px] w-full overflow-hidden"
               onClick={(e) => e.stopPropagation()}
-              style={{ boxShadow: 'var(--elevation-sm)', fontFamily: 'var(--font-family)' }}
+              style={{ boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
             >
-              <div className="flex items-center justify-between mb-5">
-                <h3
-                  className="text-foreground"
-                  style={{
-                    fontSize: 'var(--text-lg)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Invite by Device ID
-                </h3>
-                <button
-                  onClick={() => setShowInviteDeviceModal(false)}
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
-                >
-                  <svg className="size-4" fill="none" viewBox="0 0 18 18">
-                    <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              </div>
-
-              <p
-                className="mb-5 text-muted"
-                style={{
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                Enter the 9-digit device ID to invite it to this call
-              </p>
-
-              <div className="mb-6">
-                <label
-                  className="block mb-2 text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Device ID
-                </label>
-                <input
-                  type="text"
-                  value={inviteDeviceId}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 9);
-                    setInviteDeviceId(value);
-                  }}
-                  placeholder="123456789"
-                  className="w-full px-4 py-3 bg-input-background border border-border rounded-[var(--radius)] outline-none focus:border-primary transition-colors"
-                  style={{
-                    fontSize: 'var(--text-base)',
-                    color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
-                    letterSpacing: '0.15em',
-                  }}
-                  maxLength={9}
-                  autoFocus
-                />
-                <div className="flex items-center justify-between mt-2">
-                  <p
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--muted)',
-                    }}
-                  >
-                    {inviteDeviceId.length}/9 digits
-                  </p>
-                  {inviteDeviceId.length === 9 && (
-                    <p
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--primary)',
-                        fontWeight: 'var(--font-weight-bold)',
-                      }}
-                    >
-                      ✓ Ready to invite
-                    </p>
-                  )}
+              {/* Header */}
+              <div className="px-6 pt-6 pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Phone size={18} className="text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-foreground text-base" style={{ fontWeight: 'var(--font-weight-bold)' }}>Invite Device</h3>
+                      <p className="text-xs text-muted mt-0.5">Enter the 9-digit device ID</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowInviteDeviceModal(false)} className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground -mr-1">
+                    <svg className="size-4" fill="none" viewBox="0 0 18 18"><path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </button>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              {/* Input */}
+              <div className="px-6 pb-2">
+                <label className="block mb-1.5 text-xs text-muted" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Device ID</label>
+                <div className={`flex items-center gap-2 px-4 py-3 bg-secondary/30 border rounded-lg transition-colors ${inviteDeviceId.length === 9 ? 'border-primary/40 bg-primary/5' : 'border-border focus-within:border-primary'}`}>
+                  <input
+                    type="text"
+                    value={inviteDeviceId}
+                    onChange={(e) => setInviteDeviceId(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                    placeholder="000 000 000"
+                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted"
+                    style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em', fontFamily: 'var(--font-family)' }}
+                    maxLength={9}
+                    autoFocus
+                  />
+                  {inviteDeviceId.length === 9 && (
+                    <div className="size-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                      <svg className="size-3 text-primary-foreground" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-1.5 px-0.5">
+                  <span className="text-[10px] text-muted">{inviteDeviceId.length}/9 digits</span>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <div key={i} className={`size-1 rounded-full transition-colors ${i < inviteDeviceId.length ? 'bg-primary' : 'bg-border'}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 mt-2 flex gap-2.5 border-t border-border/50">
                 <button
-                  className="flex-1 px-4 py-2.5 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                  onClick={() => {
-                    setShowInviteDeviceModal(false);
-                    setInviteDeviceId('');
-                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-border hover:bg-secondary transition-colors text-foreground text-sm"
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  onClick={() => { setShowInviteDeviceModal(false); setInviteDeviceId(''); }}
                 >
                   Cancel
                 </button>
                 <button
-                  className="flex-1 px-4 py-2.5 rounded-[var(--radius)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    backgroundColor: inviteDeviceId.length === 9 ? 'var(--primary)' : 'var(--secondary)',
-                    color: inviteDeviceId.length === 9 ? 'var(--primary-foreground)' : 'var(--muted)',
-                  }}
+                  className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
+                    inviteDeviceId.length === 9 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90' : 'bg-secondary text-muted cursor-not-allowed'
+                  }`}
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
                   onClick={handleInviteByDeviceId}
                   disabled={inviteDeviceId.length !== 9}
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <Phone className="size-4" />
-                    <span>Invite Device</span>
-                  </div>
+                  <Phone size={15} />
+                  Invite Device
                 </button>
               </div>
             </div>
@@ -5403,148 +5412,98 @@ export function RemoteSupportPage({
         {/* Join Meeting Modal */}
         {showJoinMeetingModal && (
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
             onClick={() => setShowJoinMeetingModal(false)}
           >
             <div
-              className="bg-card border border-border rounded-[var(--radius)] p-6 max-w-[480px] w-full"
+              className="bg-card border border-border rounded-xl max-w-[420px] w-full overflow-hidden"
               onClick={(e) => e.stopPropagation()}
-              style={{ boxShadow: 'var(--elevation-sm)' }}
+              style={{ boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
             >
-              <div className="flex items-center justify-between mb-5">
-                <h3
-                  className="text-foreground"
-                  style={{
-                    fontSize: 'var(--text-lg)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Join Meeting
-                </h3>
-                <button
-                  onClick={() => setShowJoinMeetingModal(false)}
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
-                >
-                  <svg className="size-4" fill="none" viewBox="0 0 18 18">
-                    <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              </div>
-
-              <p
-                className="mb-5 text-muted"
-                style={{
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                Enter the 8-digit meeting code and optional password to join
-              </p>
-
-              <div className="mb-4">
-                <label
-                  className="block mb-2 text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Meeting Code
-                </label>
-                <input
-                  type="text"
-                  value={meetingCode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 8);
-                    setMeetingCode(value);
-                  }}
-                  placeholder="12345678"
-                  className="w-full px-4 py-3 bg-background border border-border rounded-[var(--radius)] outline-none focus:border-primary transition-colors"
-                  style={{
-                    fontSize: 'var(--text-base)',
-                    color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
-                    letterSpacing: '0.15em',
-                  }}
-                  maxLength={8}
-                  autoFocus
-                />
-                <div className="flex items-center justify-between mt-2">
-                  <p
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--muted)',
-                    }}
-                  >
-                    {meetingCode.length}/8 digits
-                  </p>
-                  {meetingCode.length === 8 && (
-                    <p
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--primary)',
-                        fontWeight: 'var(--font-weight-bold)',
-                      }}
-                    >
-                      ✓ Code valid
-                    </p>
-                  )}
+              {/* Header */}
+              <div className="px-6 pt-6 pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Video size={18} className="text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-foreground text-base" style={{ fontWeight: 'var(--font-weight-bold)' }}>Join Meeting</h3>
+                      <p className="text-xs text-muted mt-0.5">Enter code and optional password</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowJoinMeetingModal(false)} className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground -mr-1">
+                    <svg className="size-4" fill="none" viewBox="0 0 18 18"><path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </button>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <label
-                  className="block mb-2 text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                >
-                  Password (optional)
-                </label>
-                <input
-                  type="password"
-                  value={meetingPassword}
-                  onChange={(e) => setMeetingPassword(e.target.value)}
-                  placeholder="Enter password if required"
-                  className="w-full px-4 py-3 bg-background border border-border rounded-[var(--radius)] outline-none focus:border-primary transition-colors"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
-                  }}
-                />
+              {/* Inputs */}
+              <div className="px-6 space-y-3.5">
+                <div>
+                  <label className="block mb-1.5 text-xs text-muted" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Meeting Code</label>
+                  <div className={`flex items-center gap-2 px-4 py-3 bg-secondary/30 border rounded-lg transition-colors ${meetingCode.length === 8 ? 'border-primary/40 bg-primary/5' : 'border-border focus-within:border-primary'}`}>
+                    <input
+                      type="text"
+                      value={meetingCode}
+                      onChange={(e) => setMeetingCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                      placeholder="0000 0000"
+                      className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted"
+                      style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em', fontFamily: 'var(--font-family)' }}
+                      maxLength={8}
+                      autoFocus
+                    />
+                    {meetingCode.length === 8 && (
+                      <div className="size-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                        <svg className="size-3 text-primary-foreground" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5 px-0.5">
+                    <span className="text-[10px] text-muted">{meetingCode.length}/8 digits</span>
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className={`size-1 rounded-full transition-colors ${i < meetingCode.length ? 'bg-primary' : 'bg-border'}`} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block mb-1.5 text-xs text-muted" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Password <span className="text-muted/60">(optional)</span></label>
+                  <div className="flex items-center gap-2 px-4 py-3 bg-secondary/30 border border-border rounded-lg focus-within:border-primary transition-colors">
+                    <svg className="size-4 text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2" strokeWidth="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <input
+                      type="password"
+                      value={meetingPassword}
+                      onChange={(e) => setMeetingPassword(e.target.value)}
+                      placeholder="Enter if required"
+                      className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted text-sm"
+                      style={{ fontFamily: 'var(--font-family)' }}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="flex gap-3 mt-6">
+              {/* Footer */}
+              <div className="px-6 py-4 mt-3 flex gap-2.5 border-t border-border/50">
                 <button
-                  className="flex-1 px-4 py-2.5 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-foreground"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                  }}
-                  onClick={() => {
-                    setShowJoinMeetingModal(false);
-                    setMeetingCode('');
-                    setMeetingPassword('');
-                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-border hover:bg-secondary transition-colors text-foreground text-sm"
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  onClick={() => { setShowJoinMeetingModal(false); setMeetingCode(''); setMeetingPassword(''); }}
                 >
                   Cancel
                 </button>
                 <button
-                  className="flex-1 px-4 py-2.5 rounded-[var(--radius)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    backgroundColor: meetingCode.length === 8 ? 'var(--primary)' : 'var(--secondary)',
-                    color: meetingCode.length === 8 ? 'var(--primary-foreground)' : 'var(--muted)',
-                  }}
+                  className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
+                    meetingCode.length === 8 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90' : 'bg-secondary text-muted cursor-not-allowed'
+                  }`}
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
                   onClick={handleJoinMeetingByCode}
                   disabled={meetingCode.length !== 8}
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <Video className="size-4" />
-                    <span>Join Meeting</span>
-                  </div>
+                  <Video size={15} />
+                  Join Meeting
                 </button>
               </div>
             </div>
@@ -5556,107 +5515,135 @@ export function RemoteSupportPage({
             meetings.length > 0 ? (
               <div className="p-6">
                 {/* Agenda View */}
-                <div className="space-y-2">
-                  {meetings.map((meeting) => (
-                  <div 
+                <div className="space-y-2.5">
+                  {meetings.map((meeting) => {
+                    const now = new Date();
+                    const diffMs = meeting.scheduledTime.getTime() - now.getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const isStartingSoon = diffMins >= 0 && diffMins <= 15;
+                    const isToday = meeting.scheduledTime.toDateString() === now.toDateString();
+                    return (
+                  <div
                     key={meeting.id}
-                    className="bg-card border border-border rounded-[var(--radius)] hover:border-primary/50 transition-colors overflow-hidden"
+                    className={`bg-card border rounded-[var(--radius)] overflow-hidden transition-all group/card hover:shadow-md ${
+                      isStartingSoon ? 'border-primary/40 shadow-sm shadow-primary/5' : 'border-border hover:border-primary/30'
+                    }`}
                   >
-                    <div className="flex items-center gap-4 px-4 py-3">
-                      {/* Time column */}
-                      <div className="flex flex-col items-center shrink-0 w-16">
-                        <div className="text-xs text-muted uppercase tracking-wide">
-                          {meeting.scheduledTime.toLocaleDateString('en-US', { month: 'short' })}
-                        </div>
-                        <div className="text-xl text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                          {meeting.scheduledTime.getDate()}
-                        </div>
-                        <div className="text-xs text-muted">
-                          {meeting.scheduledTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                        </div>
-                      </div>
+                    <div className="flex items-stretch">
+                      {/* Accent bar */}
+                      <div className={`w-1 shrink-0 ${isStartingSoon ? 'bg-primary' : 'bg-border'}`} />
 
-                      {/* Divider */}
-                      <div className="w-px h-12 bg-border shrink-0" />
+                      <div className="flex items-center gap-4 px-4 py-3.5 flex-1 min-w-0">
+                        {/* Time block */}
+                        <div className="flex flex-col items-center shrink-0 w-14">
+                          {isToday ? (
+                            <>
+                              <div className="text-[10px] text-primary uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>Today</div>
+                              <div className="text-lg text-foreground leading-tight" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                                {meeting.scheduledTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-[10px] text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                {meeting.scheduledTime.toLocaleDateString('en-US', { month: 'short' })}
+                              </div>
+                              <div className="text-lg text-foreground leading-tight" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                                {meeting.scheduledTime.getDate()}
+                              </div>
+                              <div className="text-[10px] text-muted">
+                                {meeting.scheduledTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                              </div>
+                            </>
+                          )}
+                        </div>
 
-                      {/* Meeting info */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm text-foreground truncate mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                          {meeting.title}
-                        </h4>
-                        {meeting.participants.length > 0 && (
-                          <div className="flex items-center gap-2">
-                            <div className="flex -space-x-1.5">
-                              {meeting.participants.slice(0, 3).map((participant) => (
-                                <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
-                              ))}
-                            </div>
-                            <span className="text-xs text-muted">
-                              {meeting.participants.length} participant{meeting.participants.length !== 1 ? 's' : ''}
-                            </span>
+                        {/* Meeting info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                              {meeting.title}
+                            </h4>
+                            {isStartingSoon && (
+                              <span className="shrink-0 px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                {diffMins <= 0 ? 'Now' : `In ${diffMins}m`}
+                              </span>
+                            )}
                           </div>
-                        )}
-                      </div>
+                          {meeting.participants.length > 0 && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex -space-x-1.5">
+                                {meeting.participants.slice(0, 3).map((participant) => (
+                                  <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
+                                ))}
+                              </div>
+                              <span className="text-xs text-muted">
+                                {meeting.participants.length} participant{meeting.participants.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={() => handleEditMeeting(meeting)}
-                          className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded-[var(--radius)] transition-colors"
-                          title="Edit meeting"
-                        >
-                          <svg className="size-4" fill="none" viewBox="0 0 18 18">
-                            <path d="M12.5 2.5l3 3-8.5 8.5H4v-3l8.5-8.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M10.5 4.5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMeeting(meeting.id!)}
-                          className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-[var(--radius)] transition-colors"
-                          title="Delete meeting"
-                        >
-                          <svg className="size-4" fill="none" viewBox="0 0 18 18">
-                            <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleJoinMeeting(meeting)}
-                          className="px-3 py-1.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity text-xs"
-                          style={{ fontWeight: 'var(--font-weight-bold)' }}
-                        >
-                          Join
-                        </button>
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={() => handleEditMeeting(meeting)}
+                            className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded-[var(--radius)] transition-colors opacity-0 group-hover/card:opacity-100"
+                            title="Edit meeting"
+                          >
+                            <svg className="size-3.5" fill="none" viewBox="0 0 18 18">
+                              <path d="M12.5 2.5l3 3-8.5 8.5H4v-3l8.5-8.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M10.5 4.5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMeeting(meeting.id!)}
+                            className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-[var(--radius)] transition-colors opacity-0 group-hover/card:opacity-100"
+                            title="Delete meeting"
+                          >
+                            <svg className="size-3.5" fill="none" viewBox="0 0 18 18">
+                              <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleJoinMeeting(meeting)}
+                            className={`px-3.5 py-1.5 rounded-[var(--radius)] transition-all text-xs flex items-center gap-1.5 ${
+                              isStartingSoon
+                                ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-sm'
+                                : 'bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground'
+                            }`}
+                            style={{ fontWeight: 'var(--font-weight-bold)' }}
+                          >
+                            <Video size={13} />
+                            Join
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                    );
+                  })}
               </div>
             </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full bg-card">
-                <div className="p-5 bg-secondary/50 rounded-full mb-4">
-                  <Calendar size={36} className="text-muted" />
+              <div className="flex flex-col items-center justify-center h-full bg-card px-6">
+                <div className="size-16 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center mb-5">
+                  <Calendar size={28} className="text-primary/50" />
                 </div>
-                <h3 className="text-base text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                  No scheduled meetings
+                <h3 className="text-sm text-foreground mb-1.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                  No upcoming meetings
                 </h3>
-                <p className="text-sm text-muted text-center max-w-[300px] mb-1">
-                  Your scheduled meetings will show here.{' '}
-                  <button
-                    onClick={() => openScheduleModal(true)}
-                    className="text-primary hover:underline"
-                    style={{ fontWeight: 'var(--font-weight-bold)' }}
-                  >
-                    Learn more
-                  </button>
+                <p className="text-xs text-muted text-center max-w-[260px] leading-relaxed">
+                  Schedule a meeting to collaborate with your team and it will appear here
                 </p>
                 {canScheduleMeeting && (
                 <button
                   onClick={() => openScheduleModal(true)}
-                  className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                  className="mt-5 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity shadow-sm shadow-primary/20 flex items-center gap-2 text-sm"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
-                  + Schedule Meeting
+                  <Calendar size={15} />
+                  Schedule Meeting
                 </button>
                 )}
               </div>
@@ -5689,63 +5676,81 @@ export function RemoteSupportPage({
                     };
 
                     return (
-                      <div 
+                      <div
                         key={call.id}
-                        className="bg-card border border-border rounded-[var(--radius)] hover:border-primary/50 transition-colors overflow-hidden"
+                        className="bg-card border border-border rounded-[var(--radius)] overflow-hidden transition-all group/card hover:border-primary/30 hover:shadow-md"
                       >
-                        <div className="flex items-center gap-4 px-4 py-3">
-                          {/* Call Icon */}
-                          <div className="shrink-0">
-                            <div className={`size-10 rounded-full flex items-center justify-center ${
-                              call.type === 'completed' ? 'bg-primary/10 text-primary' :
-                              call.type === 'missed' ? 'bg-destructive/10 text-destructive' :
-                              'bg-muted text-muted'
-                            }`}>
-                              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                              </svg>
-                            </div>
-                          </div>
+                        <div className="flex items-stretch">
+                          {/* Accent bar */}
+                          <div className={`w-1 shrink-0 ${
+                            call.type === 'completed' ? 'bg-primary/60' :
+                            call.type === 'missed' ? 'bg-destructive/60' :
+                            'bg-border'
+                          }`} />
 
-                          {/* Call info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm text-foreground truncate mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                              {call.title}
-                            </h4>
-                            <div className="flex flex-col gap-1">
-                              {call.participants.length > 0 && (
-                                <div className="flex items-center gap-2">
-                                  <div className="flex -space-x-1.5">
-                                    {call.participants.slice(0, 3).map((participant) => (
-                                      <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
-                                    ))}
-                                  </div>
-                                  <span className="text-xs text-muted">
-                                    {call.participants.length} participant{call.participants.length !== 1 ? 's' : ''}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-3 text-xs text-muted">
-                                <span>{formatCallTime(call.timestamp)}</span>
-                                <span>•</span>
-                                <span>Duration: {formatDuration(call.duration)}</span>
+                          <div className="flex items-center gap-4 px-4 py-3.5 flex-1 min-w-0">
+                            {/* Call Icon */}
+                            <div className="shrink-0">
+                              <div className={`size-10 rounded-[var(--radius)] flex items-center justify-center ${
+                                call.type === 'completed' ? 'bg-primary/10 text-primary' :
+                                call.type === 'missed' ? 'bg-destructive/10 text-destructive' :
+                                'bg-secondary text-muted'
+                              }`}>
+                                {call.type === 'missed' ? (
+                                  <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                  </svg>
+                                ) : (
+                                  <Phone size={18} />
+                                )}
                               </div>
                             </div>
-                          </div>
 
-                          {/* Actions */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              onClick={() => handleCallAgain(call)}
-                              className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity text-xs flex items-center gap-2"
-                              style={{ fontWeight: 'var(--font-weight-bold)' }}
-                              title="Call again"
-                            >
-                              <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                              </svg>
-                              Call Again
-                            </button>
+                            {/* Call info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                                  {call.title}
+                                </h4>
+                                {call.type === 'missed' && (
+                                  <span className="shrink-0 px-1.5 py-0.5 text-[10px] bg-destructive/10 text-destructive rounded-full" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                    Missed
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {call.participants.length > 0 && (
+                                  <div className="flex items-center gap-1.5">
+                                    <div className="flex -space-x-1.5">
+                                      {call.participants.slice(0, 3).map((participant) => (
+                                        <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
+                                      ))}
+                                    </div>
+                                    <span className="text-xs text-muted">
+                                      {call.participants.length}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 text-xs text-muted">
+                                  <span>{formatCallTime(call.timestamp)}</span>
+                                  <span className="text-border">|</span>
+                                  <span>{formatDuration(call.duration)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={() => handleCallAgain(call)}
+                                className="px-3.5 py-1.5 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-primary hover:text-primary-foreground transition-all text-xs flex items-center gap-1.5"
+                                style={{ fontWeight: 'var(--font-weight-bold)' }}
+                                title="Call again"
+                              >
+                                <Phone size={13} />
+                                Call Again
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -5754,17 +5759,15 @@ export function RemoteSupportPage({
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full bg-card">
-                <div className="size-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-                  <svg className="size-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+              <div className="flex flex-col items-center justify-center h-full bg-card px-6">
+                <div className="size-16 rounded-2xl bg-secondary/50 border border-border/50 flex items-center justify-center mb-5">
+                  <Clock size={28} className="text-muted/50" />
                 </div>
-                <p className="text-sm text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
-                  No recent calls yet
+                <p className="text-sm text-foreground mb-1.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                  No recent calls
                 </p>
-                <p className="text-xs text-muted text-center max-w-[280px]">
-                  Your call history will appear here after you complete calls
+                <p className="text-xs text-muted text-center max-w-[240px] leading-relaxed">
+                  Your call history will appear here after you make or receive calls
                 </p>
               </div>
             )
