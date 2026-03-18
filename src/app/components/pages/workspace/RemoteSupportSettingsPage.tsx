@@ -1,12 +1,10 @@
-import { useState } from 'react';
 import { Headphones, Clock, Shield, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { useWorkspaceSettings } from '../../../contexts/WorkspaceContext';
 
 export function RemoteSupportSettingsPage() {
-  const [enableRemoteSupport, setEnableRemoteSupport] = useState(true);
-  const [requireApproval, setRequireApproval] = useState(true);
-  const [sessionTimeout, setSessionTimeout] = useState('30');
-  const [allowFileTransfer, setAllowFileTransfer] = useState(false);
+  const { settings, updateSettings } = useWorkspaceSettings();
+  const { enableRemoteSupport, requireApproval, sessionTimeout, allowFileTransfer } = settings;
 
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
@@ -40,7 +38,7 @@ export function RemoteSupportSettingsPage() {
               <input
                 type="checkbox"
                 checked={enableRemoteSupport}
-                onChange={(e) => setEnableRemoteSupport(e.target.checked)}
+                onChange={(e) => updateSettings({ enableRemoteSupport: e.target.checked })}
                 className="w-4 h-4 rounded border-border text-primary accent-[#2F80ED]"
               />
               <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-medium)' }}>
@@ -67,7 +65,7 @@ export function RemoteSupportSettingsPage() {
               <input
                 type="number"
                 value={sessionTimeout}
-                onChange={(e) => setSessionTimeout(e.target.value)}
+                onChange={(e) => updateSettings({ sessionTimeout: Math.max(5, Math.min(120, parseInt(e.target.value) || 5)) })}
                 className="w-20 px-3 py-2.5 bg-card border border-border rounded-lg text-foreground text-center outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
                 min="5"
@@ -93,7 +91,7 @@ export function RemoteSupportSettingsPage() {
                 <input
                   type="checkbox"
                   checked={requireApproval}
-                  onChange={(e) => setRequireApproval(e.target.checked)}
+                  onChange={(e) => updateSettings({ requireApproval: e.target.checked })}
                   className="w-4 h-4 rounded border-border text-primary accent-[#2F80ED]"
                 />
                 <div>
@@ -108,7 +106,7 @@ export function RemoteSupportSettingsPage() {
                 <input
                   type="checkbox"
                   checked={allowFileTransfer}
-                  onChange={(e) => setAllowFileTransfer(e.target.checked)}
+                  onChange={(e) => updateSettings({ allowFileTransfer: e.target.checked })}
                   className="w-4 h-4 rounded border-border text-primary accent-[#2F80ED]"
                 />
                 <div>

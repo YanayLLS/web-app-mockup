@@ -44,7 +44,14 @@ const appPages: PageLink[] = [
 const webPages: PageLink[] = [
   { label: 'Home', path: '/web/home' },
   { label: 'Notifications', path: '/web/notifications' },
-  { label: 'Remote Support', path: '/web/remote-support' },
+  { label: 'Remote Support', path: '/web/remote-support', children: [
+    { label: 'Simulate: Incoming Call', path: '/web/remote-support?sim=incoming-call' },
+    { label: 'Simulate: Waiting Room', path: '/web/remote-support?sim=waiting-room' },
+    { label: 'Simulate: Post-Call Summary', path: '/web/remote-support?sim=post-call-summary' },
+    { label: 'Simulate: Recording in Progress', path: '/web/remote-support?sim=recording' },
+    { label: 'Simulate: Poor Connection', path: '/web/remote-support?sim=poor-connection' },
+    { label: 'Simulate: Waiting Room Participant (in call)', path: '/web/remote-support?sim=waiting-participant' },
+  ]},
   { label: 'AI Studio', path: '/web/ai-studio' },
   { label: 'Archive', path: '/web/archive' },
   { label: 'Project', path: '/web/project/915-i-series/knowledgebase', children: [

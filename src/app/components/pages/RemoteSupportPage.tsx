@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '../ui/use-mobile';
 import svgPaths from '../../../imports/svg-zo2c6wenwl';
 import scheduleSvgPaths from '../../../imports/svg-nmgvwn4834';
@@ -21,6 +21,7 @@ import { useClickOutside } from '../../hooks/useClickOutside';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
 import { MemberAvatar } from '../MemberAvatar';
 import { useAppPopup } from '../../contexts/AppPopupContext';
+import { useWorkspaceSettings } from '../../contexts/WorkspaceContext';
 
 function IconPeopleList() {
   return (
@@ -279,6 +280,12 @@ interface RecentCall {
   timestamp: Date;
   duration: number;
   type: 'completed' | 'missed' | 'cancelled';
+  recording?: {
+    fileUrl: string;
+    fileSize: number;
+    recordingDuration: number;
+    recordedByUserId: string;
+  };
 }
 
 const people: Person[] = [
@@ -877,12 +884,14 @@ export function RemoteSupportPage({
   const isMobile = useIsMobile();
   const [isLandscape, setIsLandscape] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { prompt: appPrompt } = useAppPopup();
   const { currentRole } = useRole();
   const canScheduleMeeting = hasAccess(currentRole, 'schedule-meeting');
   const canStartCall = hasAccess(currentRole, 'start-call');
   const { projects, knowledgeBaseItems } = useProject();
   const { activeCall, setActiveCall, updateCallState, isCallMinimized, setIsCallMinimized } = useActiveCall();
+  const { settings: wsSettings } = useWorkspaceSettings();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [pastMeetings, setPastMeetings] = useState<Meeting[]>([]);
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null);
@@ -900,12 +909,24 @@ export function RemoteSupportPage({
   const [callId] = useState(() => Math.random().toString(36).substring(2, 11).toUpperCase());
   const [callPassword] = useState(() => Math.random().toString(36).substring(2, 8));
   const createButtonRef = useRef<HTMLButtonElement>(null);
-  const [activeTab, setActiveTab] = useState<'agenda' | 'recent'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'recent' | 'history'>('agenda');
   const [recentCalls, setRecentCalls] = useState<RecentCall[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [postCallSummary, setPostCallSummary] = useState<{
+    title: string;
+    duration: number;
+    participants: Person[];
+    chatMessageCount: number;
+    wasRecorded: boolean;
+    timestamp: Date;
+  } | null>(null);
+  const [callQuality, setCallQuality] = useState<'excellent' | 'good' | 'fair' | 'poor'>('excellent');
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   
   // Call Device and Join Meeting states
   const [showCallDeviceModal, setShowCallDeviceModal] = useState(false);
+  const [showRecordingConsent, setShowRecordingConsent] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
   const [showJoinMeetingModal, setShowJoinMeetingModal] = useState(false);
   const [showInviteDeviceModal, setShowInviteDeviceModal] = useState(false);
   const [deviceId, setDeviceId] = useState('');
@@ -915,6 +936,19 @@ export function RemoteSupportPage({
   
   // Mobile state
   const [showMobilePeople, setShowMobilePeople] = useState(false);
+
+  // Incoming call state
+  const [incomingCall, setIncomingCall] = useState<{ callerName: string; callerInitial: string; callerColor: string; meetingTitle: string } | null>(null);
+
+    // Waiting room state
+  const [inWaitingRoom, setInWaitingRoom] = useState(false);
+  const [waitingParticipants, setWaitingParticipants] = useState<Array<{
+    id: string;
+    name: string;
+    initial: string;
+    color: string;
+    joinedWaitingAt: Date;
+  }>>([]);
 
   // In-call states
   const [isMuted, setIsMuted] = useState(false);
@@ -1041,6 +1075,26 @@ export function RemoteSupportPage({
     onCallStateChange?.(inCall);
   }, [inCall, onCallStateChange]);
 
+  // Simulate call quality changes
+  useEffect(() => {
+    if (!inCall) return;
+    const interval = setInterval(() => {
+      const rand = Math.random();
+      let quality: 'excellent' | 'good' | 'fair' | 'poor';
+      if (rand < 0.5) quality = 'excellent';
+      else if (rand < 0.8) quality = 'good';
+      else if (rand < 0.95) quality = 'fair';
+      else quality = 'poor';
+      setCallQuality(prev => {
+        if (quality === 'poor' && prev !== 'poor') {
+          toast.error('Connection quality is poor');
+        }
+        return quality;
+      });
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [inCall]);
+
   // Detect landscape orientation on mobile
   useEffect(() => {
     const checkOrientation = () => {
@@ -1069,6 +1123,25 @@ export function RemoteSupportPage({
     }
   }, [callParticipants, spotlightedParticipantId]);
 
+  // Simulate someone entering the waiting room for meetings with requireAdmission
+  useEffect(() => {
+    if (!inCall || !currentMeeting?.requireAdmission) return;
+    const timeout = setTimeout(() => {
+      const randomPerson = people[Math.floor(Math.random() * people.length)];
+      if (randomPerson && !callParticipants.some(p => p.id === randomPerson.id) && !waitingParticipants.some(p => p.id === randomPerson.id)) {
+        setWaitingParticipants(prev => [...prev, {
+          id: randomPerson.id,
+          name: randomPerson.name,
+          initial: randomPerson.initial,
+          color: randomPerson.color,
+          joinedWaitingAt: new Date(),
+        }]);
+        toast('Someone is waiting to join', { description: `${randomPerson.name} is in the waiting room` });
+      }
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, [inCall, currentMeeting?.requireAdmission]);
+
   // Clear drawing state when spotlight changes
   useEffect(() => {
     setIsDrawingMode(false);
@@ -1077,6 +1150,9 @@ export function RemoteSupportPage({
     setFrozenFrame(null);
     setIsDrawing(false);
   }, [spotlightedParticipantId]);
+
+  // Incoming call is triggered only via debug menu (?sim=incoming-call), not automatically
+
 
   // Simulate random speaking with green border
   useEffect(() => {
@@ -1125,6 +1201,22 @@ export function RemoteSupportPage({
 
     return () => clearInterval(interval);
   }, [callStartTime]);
+
+  // Session timeout countdown
+  const sessionTimeoutSeconds = wsSettings.sessionTimeout * 60;
+  const sessionTimeRemaining = Math.max(0, sessionTimeoutSeconds - callDuration);
+  const [sessionTimeoutWarningShown, setSessionTimeoutWarningShown] = useState(false);
+
+  useEffect(() => {
+    if (!inCall) {
+      setSessionTimeoutWarningShown(false);
+      return;
+    }
+    if (sessionTimeRemaining <= 0 && !sessionTimeoutWarningShown) {
+      toast.warning('Session timeout reached');
+      setSessionTimeoutWarningShown(true);
+    }
+  }, [inCall, sessionTimeRemaining, sessionTimeoutWarningShown]);
 
 
   useEffect(() => {
@@ -1202,6 +1294,201 @@ export function RemoteSupportPage({
       setShowScheduleModal(true);
     }
   }, [initialShowScheduleModal]);
+
+  // Handle debug menu simulation shortcuts via URL param ?sim=
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const sim = params.get('sim');
+    if (!sim) return;
+    // Clear the param using navigate so React Router's location updates too
+    navigate('/web/remote-support', { replace: true });
+
+    // Force-reset all call/meeting state so every shortcut starts clean
+    setInCall(false);
+    setInWaitingRoom(false);
+    setCurrentMeeting(null);
+    setCallStartTime(null);
+    setIsRecording(false);
+    setCallQuality('excellent');
+    setCallParticipants([]);
+    setWaitingParticipants([]);
+    setPostCallSummary(null);
+    setIncomingCall(null);
+    setActiveCall(null);
+    setIsMuted(false);
+    setIsVideoOff(false);
+
+    const randomPerson = people[Math.floor(Math.random() * people.length)];
+
+    switch (sim) {
+      case 'incoming-call':
+        setIncomingCall({
+          callerName: randomPerson.name,
+          callerInitial: randomPerson.initial,
+          callerColor: randomPerson.color,
+          meetingTitle: `Call with ${randomPerson.name}`,
+        });
+        break;
+      case 'waiting-room': {
+        const meeting: Meeting = {
+          id: Date.now().toString(),
+          title: 'Simulated Meeting (Admission Required)',
+          participants: [randomPerson],
+          scheduledTime: new Date(),
+          duration: 30,
+          hostId: randomPerson.id,
+          requireAdmission: true,
+        };
+        setCurrentMeeting(meeting);
+        setIsCreateMode(false);
+        setInWaitingRoom(true);
+        // Auto-admit after 6 seconds
+        setTimeout(() => {
+          setInWaitingRoom(false);
+          setInCall(true);
+          setCallStartTime(new Date());
+          setActiveCall({
+            callId: meeting.id,
+            meetingTitle: meeting.title,
+            startTime: new Date(),
+            participantCount: 1,
+            isAudioEnabled: true,
+            isVideoEnabled: true,
+          });
+          toast.success('The host has admitted you to the meeting');
+        }, 6000);
+        break;
+      }
+      case 'post-call-summary':
+        setPostCallSummary({
+          title: 'Demo Support Session',
+          duration: 847,
+          participants: people.slice(0, 4),
+          chatMessageCount: 12,
+          wasRecorded: true,
+          timestamp: new Date(),
+        });
+        break;
+      case 'recording': {
+        // Start a call with recording active
+        const recMeeting: Meeting = {
+          id: Date.now().toString(),
+          title: 'Simulated Recording Session',
+          participants: [randomPerson],
+          scheduledTime: new Date(),
+          duration: 30,
+          hostId: '1',
+        };
+        setCurrentMeeting(recMeeting);
+        setInCall(true);
+        setCallStartTime(new Date());
+        setIsRecording(true);
+        setActiveCall({
+          callId: recMeeting.id,
+          meetingTitle: recMeeting.title,
+          startTime: new Date(),
+          participantCount: 2,
+          isAudioEnabled: true,
+          isVideoEnabled: true,
+        });
+        // Invite the random person
+        setCallParticipants(prev => [...prev, {
+          id: randomPerson.id,
+          name: randomPerson.name,
+          initial: randomPerson.initial,
+          color: randomPerson.color,
+          status: 'connected' as const,
+          videoUrl: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop`,
+          audioEnabled: true,
+          videoEnabled: true,
+        }]);
+        toast.success('Recording in progress (simulated)');
+        break;
+      }
+      case 'poor-connection': {
+        // Force a call if not already in one
+        if (!inCall) {
+          const pcMeeting: Meeting = {
+            id: Date.now().toString(),
+            title: 'Simulated Call (Poor Connection)',
+            participants: [randomPerson],
+            scheduledTime: new Date(),
+            duration: 30,
+            hostId: '1',
+          };
+          setCurrentMeeting(pcMeeting);
+          setInCall(true);
+          setCallStartTime(new Date());
+          setActiveCall({
+            callId: pcMeeting.id,
+            meetingTitle: pcMeeting.title,
+            startTime: new Date(),
+            participantCount: 2,
+            isAudioEnabled: true,
+            isVideoEnabled: true,
+          });
+          setCallParticipants(prev => [...prev, {
+            id: randomPerson.id,
+            name: randomPerson.name,
+            initial: randomPerson.initial,
+            color: randomPerson.color,
+            status: 'connected' as const,
+            videoUrl: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop`,
+            audioEnabled: true,
+            videoEnabled: true,
+          }]);
+        }
+        setCallQuality('poor');
+        toast.error('Connection quality is poor');
+        break;
+      }
+      case 'waiting-participant': {
+        // Force a call if not already in one
+        if (!inCall) {
+          const wpMeeting: Meeting = {
+            id: Date.now().toString(),
+            title: 'Simulated Call (Waiting Participant)',
+            participants: [randomPerson],
+            scheduledTime: new Date(),
+            duration: 30,
+            hostId: '1',
+          };
+          setCurrentMeeting(wpMeeting);
+          setInCall(true);
+          setCallStartTime(new Date());
+          setActiveCall({
+            callId: wpMeeting.id,
+            meetingTitle: wpMeeting.title,
+            startTime: new Date(),
+            participantCount: 2,
+            isAudioEnabled: true,
+            isVideoEnabled: true,
+          });
+          setCallParticipants(prev => [...prev, {
+            id: randomPerson.id,
+            name: randomPerson.name,
+            initial: randomPerson.initial,
+            color: randomPerson.color,
+            status: 'connected' as const,
+            videoUrl: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop`,
+            audioEnabled: true,
+            videoEnabled: true,
+          }]);
+        }
+        const wp = people.find(p => !callParticipants.some(cp => cp.id === p.id) && !waitingParticipants.some(w => w.id === p.id)) || randomPerson;
+        setWaitingParticipants(prev => [...prev, {
+          id: wp.id,
+          name: wp.name,
+          initial: wp.initial,
+          color: wp.color,
+          joinedWaitingAt: new Date(),
+        }]);
+        toast(`${wp.name} is waiting to join`, { description: 'Check the People panel to admit them' });
+        break;
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   // Restore call state when returning to page
   useEffect(() => {
@@ -1418,6 +1705,50 @@ export function RemoteSupportPage({
     setShowPreJoin(true);
   };
 
+  const handleAdmitParticipant = (participantId: string) => {
+    const waiting = waitingParticipants.find(p => p.id === participantId);
+    if (!waiting) return;
+    setWaitingParticipants(prev => prev.filter(p => p.id !== participantId));
+    // Add to call participants
+    const newParticipant: CallParticipant = {
+      id: waiting.id,
+      name: waiting.name,
+      initial: waiting.initial,
+      color: waiting.color,
+      status: 'connected',
+      videoUrl: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=400&h=300&fit=crop`,
+      audioEnabled: true,
+      videoEnabled: true,
+    };
+    setCallParticipants(prev => [...prev, newParticipant]);
+    toast.success(`${waiting.name} has been admitted`);
+  };
+
+  const handleDenyParticipant = (participantId: string) => {
+    const waiting = waitingParticipants.find(p => p.id === participantId);
+    if (!waiting) return;
+    setWaitingParticipants(prev => prev.filter(p => p.id !== participantId));
+    toast.success(`${waiting.name} was denied entry`);
+  };
+
+  const handleAdmitAll = () => {
+    waitingParticipants.forEach(waiting => {
+      const newParticipant: CallParticipant = {
+        id: waiting.id,
+        name: waiting.name,
+        initial: waiting.initial,
+        color: waiting.color,
+        status: 'connected',
+        videoUrl: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=400&h=300&fit=crop`,
+        audioEnabled: true,
+        videoEnabled: true,
+      };
+      setCallParticipants(prev => [...prev, newParticipant]);
+    });
+    toast.success(`${waitingParticipants.length} participants admitted`);
+    setWaitingParticipants([]);
+  };
+
   const handleCallDevice = () => {
     if (deviceId.length === 9) {
       const newMeeting: Meeting = {
@@ -1477,14 +1808,8 @@ export function RemoteSupportPage({
     }
   };
 
-  const handleJoinCall = async (settings: PreJoinSettings) => {
-    // Apply pre-join settings
-    setIsMuted(settings.isMuted);
-    setIsVideoOff(settings.isVideoOff);
-    if (settings.audioDeviceId) setSelectedAudioDevice(settings.audioDeviceId);
-    if (settings.videoDeviceId) setSelectedVideoDevice(settings.videoDeviceId);
-
-    setShowPreJoin(false);
+  const enterCall = async (settings: PreJoinSettings) => {
+    setInWaitingRoom(false);
     setInCall(true);
     const startTime = new Date();
     setCallStartTime(startTime);
@@ -1505,6 +1830,46 @@ export function RemoteSupportPage({
     await startLocalVideo(settings.videoDeviceId || undefined, settings.audioDeviceId || undefined);
   };
 
+  // Store pre-join settings for use after waiting room admission
+  const pendingJoinSettingsRef = useRef<PreJoinSettings | null>(null);
+
+  const handleJoinCall = async (settings: PreJoinSettings) => {
+    // Apply pre-join settings
+    setIsMuted(settings.isMuted);
+    setIsVideoOff(settings.isVideoOff);
+    if (settings.audioDeviceId) setSelectedAudioDevice(settings.audioDeviceId);
+    if (settings.videoDeviceId) setSelectedVideoDevice(settings.videoDeviceId);
+
+    setShowPreJoin(false);
+
+    // If meeting requires admission and user is joining (not creating), show waiting room
+    if (currentMeeting?.requireAdmission && !isCreateMode) {
+      pendingJoinSettingsRef.current = settings;
+      setInWaitingRoom(true);
+      // Start video for waiting room preview
+      await startLocalVideo(settings.videoDeviceId || undefined, settings.audioDeviceId || undefined);
+      // Simulate host admitting after 4 seconds
+      setTimeout(() => {
+        setInWaitingRoom(false);
+        pendingJoinSettingsRef.current = null;
+        enterCall(settings);
+        toast.success('The host has admitted you to the meeting');
+      }, 4000);
+      return;
+    }
+
+    await enterCall(settings);
+  };
+
+  const handleLeaveWaitingRoom = () => {
+    setInWaitingRoom(false);
+    pendingJoinSettingsRef.current = null;
+    stopLocalVideo();
+    setCurrentMeeting(null);
+    setShowPreJoin(false);
+    toast('You left the waiting room');
+  };
+
   const handleLeaveCall = () => {
     if (currentMeeting) {
       setPastMeetings([currentMeeting, ...pastMeetings]);
@@ -1516,15 +1881,35 @@ export function RemoteSupportPage({
         participants: currentMeeting.participants,
         timestamp: new Date(),
         duration: callDuration,
-        type: 'completed'
+        type: 'completed',
+        ...(isRecording ? {
+          recording: {
+            fileUrl: `#recording-${Date.now()}`,
+            fileSize: Math.floor(callDuration * 250000),
+            recordingDuration: callDuration,
+            recordedByUserId: 'me',
+          }
+        } : {})
       };
       setRecentCalls([recentCall, ...recentCalls]);
+
+      // Capture post-call summary before clearing state
+      setPostCallSummary({
+        title: currentMeeting.title,
+        duration: callDuration,
+        participants: currentMeeting.participants,
+        chatMessageCount: chatMessages.length,
+        wasRecorded: isRecording,
+        timestamp: new Date(),
+      });
     }
-    
+
     // Clear active call from global context
     setActiveCall(null);
-    
+
     stopLocalVideo();
+    setIsRecording(false);
+    setCallQuality('excellent');
     setInCall(false);
     setCurrentMeeting(null);
     setShowPreJoin(false);
@@ -2103,6 +2488,27 @@ export function RemoteSupportPage({
   const connectedParticipants = useMemo(() => callParticipants.filter(p => p.status === 'connected'), [callParticipants]);
   const callingParticipants = useMemo(() => callParticipants.filter(p => p.status === 'calling'), [callParticipants]);
 
+  // Show disabled state when remote support is turned off in workspace settings
+  if (!wsSettings.enableRemoteSupport) {
+    return (
+      <div className="h-full flex items-center justify-center bg-background">
+        <div className="text-center max-w-md px-6">
+          <div className="size-16 rounded-2xl bg-muted/10 flex items-center justify-center mx-auto mb-5">
+            <svg className="size-8 text-muted/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+          <h2 className="text-lg text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+            Remote Support is Disabled
+          </h2>
+          <p className="text-sm text-muted leading-relaxed">
+            Remote support has been disabled by a workspace administrator. Contact your admin to re-enable this feature in Workspace Settings.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (showPreJoin && currentMeeting) {
     return (
       <PreJoinMeeting
@@ -2119,6 +2525,91 @@ export function RemoteSupportPage({
           setMeetingTitle(title);
         }}
       />
+    );
+  }
+
+  // Waiting Room View
+  if (inWaitingRoom && currentMeeting) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-[#3a2f4d] relative">
+        {/* Background gradient */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(47,128,237,0.08) 0%, transparent 60%)' }} />
+
+        <div className="relative flex flex-col items-center max-w-md w-full px-6">
+          {/* Meeting title */}
+          <h2 className="text-white text-lg mb-6" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+            {currentMeeting.title}
+          </h2>
+
+          {/* Camera preview */}
+          <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 mb-6 relative">
+            {!isVideoOff && localStream ? (
+              <video
+                ref={(video) => { if (video && localStream) video.srcObject = localStream; }}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover mirror"
+                style={{ transform: 'scaleX(-1)' }}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <div className="size-20 rounded-full bg-primary/20 flex items-center justify-center mb-3">
+                  <span className="text-2xl text-white" style={{ fontWeight: 'var(--font-weight-bold)' }}>ME</span>
+                </div>
+                <span className="text-white/50 text-sm">Camera is off</span>
+              </div>
+            )}
+            {/* Mic/Video toggles */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsMuted(!isMuted);
+                  if (localStream) {
+                    localStream.getAudioTracks().forEach(track => { track.enabled = isMuted; });
+                  }
+                }}
+                className={`p-2.5 rounded-full transition-colors ${isMuted ? 'bg-destructive text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+              >
+                {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
+              </button>
+              <button
+                onClick={() => setIsVideoOff(!isVideoOff)}
+                className={`p-2.5 rounded-full transition-colors ${isVideoOff ? 'bg-destructive text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+              >
+                {isVideoOff ? <IconVideoOff /> : <IconVideo />}
+              </button>
+            </div>
+          </div>
+
+          {/* Waiting message */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex gap-1">
+                <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+            <p className="text-white/80 text-sm text-center" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+              Waiting for the host to let you in...
+            </p>
+            <p className="text-white/40 text-xs mt-2 text-center">
+              You'll join automatically once the host admits you
+            </p>
+          </div>
+
+          {/* Leave button */}
+          <button
+            onClick={handleLeaveWaitingRoom}
+            className="px-6 py-2.5 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors border border-white/10 flex items-center gap-2"
+            style={{ fontWeight: 'var(--font-weight-semibold)' }}
+          >
+            <PhoneOff size={16} />
+            Leave
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -2152,10 +2643,39 @@ export function RemoteSupportPage({
                       {String(callDuration % 60).padStart(2, '0')}
                     </span>
                   </div>
+                  {/* Session timeout countdown */}
+                  <span className="text-border">|</span>
+                  <span className={`flex items-center gap-1 text-[11px] tabular-nums ${sessionTimeRemaining <= 60 ? 'text-destructive' : sessionTimeRemaining <= 300 ? 'text-[#F59E0B]' : 'text-muted'}`} style={{ fontWeight: sessionTimeRemaining <= 300 ? 'var(--font-weight-semibold)' : 'normal' }} title="Session time remaining">
+                    <Clock size={11} />
+                    {Math.floor(sessionTimeRemaining / 3600) > 0 && `${Math.floor(sessionTimeRemaining / 3600)}:`}
+                    {String(Math.floor((sessionTimeRemaining % 3600) / 60)).padStart(2, '0')}:
+                    {String(sessionTimeRemaining % 60).padStart(2, '0')}
+                  </span>
                   {connectedParticipants.length > 0 && (
                     <>
                       <span className="text-border">|</span>
                       <span className="text-[11px] text-muted">{connectedParticipants.length} in call</span>
+                    </>
+                  )}
+                  <span className="text-border">|</span>
+                  <span className="flex items-center gap-1" title={`Call quality: ${callQuality}`}>
+                    <svg className="block" width="16" height="12" viewBox="0 0 16 12" fill="none">
+                      <rect x="0" y="9" width="3" height="3" rx="0.5" fill={callQuality === 'poor' ? '#FF1F1F' : callQuality === 'fair' ? '#F59E0B' : callQuality === 'good' ? '#2F80ED' : '#11E874'} />
+                      <rect x="4.5" y="6" width="3" height="6" rx="0.5" fill={callQuality === 'poor' ? '#D1D5DB' : callQuality === 'fair' ? '#F59E0B' : callQuality === 'good' ? '#2F80ED' : '#11E874'} />
+                      <rect x="9" y="3" width="3" height="9" rx="0.5" fill={callQuality === 'poor' || callQuality === 'fair' ? '#D1D5DB' : callQuality === 'good' ? '#2F80ED' : '#11E874'} />
+                      <rect x="13" y="0" width="3" height="12" rx="0.5" fill={callQuality === 'excellent' ? '#11E874' : '#D1D5DB'} />
+                    </svg>
+                    <span className="text-[11px]" style={{ fontWeight: 'var(--font-weight-semibold)', color: callQuality === 'poor' ? '#FF1F1F' : callQuality === 'fair' ? '#F59E0B' : callQuality === 'good' ? '#2F80ED' : '#11E874' }}>
+                      {callQuality.charAt(0).toUpperCase() + callQuality.slice(1)}
+                    </span>
+                  </span>
+                  {isRecording && (
+                    <>
+                      <span className="text-border">|</span>
+                      <span className="flex items-center gap-1 text-[11px] text-destructive" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                        <span className="size-1.5 rounded-full bg-destructive animate-pulse" />
+                        REC
+                      </span>
                     </>
                   )}
                 </div>
@@ -2203,16 +2723,22 @@ export function RemoteSupportPage({
                   </button>
                   <button
                     onClick={() => {
-                      toast.success('Recording started');
+                      if (isRecording) {
+                        setIsRecording(false);
+                        toast.success('Recording stopped');
+                      } else {
+                        setConsentChecked(false);
+                        setShowRecordingConsent(true);
+                      }
                       setShowMoreMenu(false);
                     }}
-                    className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary transition-colors flex items-center gap-3"
+                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-3 ${isRecording ? 'text-destructive' : 'text-foreground'}`}
                   >
                     <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                      <circle cx="12" cy="12" r="3" strokeWidth={2} fill={isRecording ? 'currentColor' : 'none'} />
                       <circle cx="12" cy="12" r="9" strokeWidth={2} />
                     </svg>
-                    <span>Start recording</span>
+                    <span>{isRecording ? 'Stop recording' : 'Start recording'}</span>
                   </button>
                   {hostId === 'me' && (
                     <button
@@ -2240,7 +2766,7 @@ export function RemoteSupportPage({
 
             <button
               onClick={() => setShowPeoplePanel(!showPeoplePanel)}
-              className={`flex flex-col items-center gap-1 px-2 md:px-4 py-2 rounded-[var(--radius)] transition-colors ${
+              className={`flex flex-col items-center gap-1 px-2 md:px-4 py-2 rounded-[var(--radius)] transition-colors relative ${
                 showPeoplePanel ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
               }`}
             >
@@ -2249,6 +2775,11 @@ export function RemoteSupportPage({
                 <span className="invisible absolute" style={{ fontWeight: 'var(--font-weight-bold)' }}>People</span>
                 <span style={{ fontWeight: showPeoplePanel ? 'var(--font-weight-bold)' : 'normal' }}>People</span>
               </span>
+              {waitingParticipants.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 size-4 flex items-center justify-center rounded-full bg-amber-500 text-white text-[9px]" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                  {waitingParticipants.length}
+                </span>
+              )}
             </button>
 
             <button
@@ -2727,12 +3258,20 @@ export function RemoteSupportPage({
                   <h3 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                     {currentMeeting.title}
                   </h3>
-                  <div className="flex items-center gap-1.5">
-                    <div className="size-1.5 rounded-full bg-[#11E874] animate-pulse" />
-                    <span className="text-[10px] text-muted tabular-nums">
-                      {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
-                      {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
-                      {String(callDuration % 60).padStart(2, '0')}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="size-1.5 rounded-full bg-[#11E874] animate-pulse" />
+                      <span className="text-[10px] text-muted tabular-nums">
+                        {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
+                        {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
+                        {String(callDuration % 60).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <span className="text-border">|</span>
+                    <span className={`flex items-center gap-1 text-[10px] tabular-nums ${sessionTimeRemaining <= 60 ? 'text-destructive' : sessionTimeRemaining <= 300 ? 'text-[#F59E0B]' : 'text-muted'}`} title="Session time remaining">
+                      <Clock size={10} />
+                      {String(Math.floor((sessionTimeRemaining % 3600) / 60)).padStart(2, '0')}:
+                      {String(sessionTimeRemaining % 60).padStart(2, '0')}
                     </span>
                   </div>
                 </div>
@@ -2794,16 +3333,22 @@ export function RemoteSupportPage({
                       </button>
                       <button
                         onClick={() => {
-                          toast.success('Recording started');
+                          if (isRecording) {
+                            setIsRecording(false);
+                            toast.success('Recording stopped');
+                          } else {
+                            setConsentChecked(false);
+                            setShowRecordingConsent(true);
+                          }
                           setShowMoreMenu(false);
                         }}
-                        className="w-full px-4 py-3 text-left text-sm text-foreground hover:bg-secondary transition-colors flex items-center gap-3"
+                        className={`w-full px-4 py-3 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-3 ${isRecording ? 'text-destructive' : 'text-foreground'}`}
                       >
                         <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                          <circle cx="12" cy="12" r="3" strokeWidth={2} fill={isRecording ? 'currentColor' : 'none'} />
                           <circle cx="12" cy="12" r="9" strokeWidth={2} />
                         </svg>
-                        <span>Start recording</span>
+                        <span>{isRecording ? 'Stop recording' : 'Start recording'}</span>
                       </button>
                       <button
                         onClick={() => {
@@ -2895,6 +3440,71 @@ export function RemoteSupportPage({
 
               {/* Participants List */}
               <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {/* Waiting to join (admission required) */}
+                {waitingParticipants.length > 0 && (
+                  <div className="pt-1">
+                    <button
+                      onClick={() => setCollapsedSections(prev => ({ ...prev, 'waiting': !prev['waiting'] }))}
+                      className="flex items-center gap-2 px-4 py-2 w-full hover:bg-secondary/30 transition-colors"
+                    >
+                      <svg
+                        className={`size-3 shrink-0 text-amber-500 transition-transform ${collapsedSections['waiting'] ? '' : 'rotate-90'}`}
+                        fill="none"
+                        viewBox="0 0 11 11"
+                      >
+                        <path d="M3 2l4 3.5L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="text-xs text-amber-600 uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                        Waiting to join
+                      </span>
+                      <span className="text-xs text-amber-500">({waitingParticipants.length})</span>
+                      {waitingParticipants.length >= 2 && hostId === 'me' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleAdmitAll(); }}
+                          className="ml-auto text-[10px] px-2 py-0.5 bg-primary text-primary-foreground rounded-full hover:brightness-110 transition-all"
+                          style={{ fontWeight: 'var(--font-weight-bold)' }}
+                        >
+                          Admit all
+                        </button>
+                      )}
+                    </button>
+                    {!collapsedSections['waiting'] && (
+                      <div className="space-y-0.5 px-2 pb-2">
+                        {waitingParticipants.map((wp) => (
+                          <div key={wp.id} className="flex items-center gap-2.5 px-2 py-2 rounded-[var(--radius)] bg-amber-50 border border-amber-200/50">
+                            <div className="relative shrink-0">
+                              <MemberAvatar name={wp.name} size="sm" color={wp.color} initials={wp.initial} />
+                              <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-amber-400 border border-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>{wp.name}</div>
+                              <div className="text-[10px] text-amber-600 animate-pulse">Waiting...</div>
+                            </div>
+                            {hostId === 'me' && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  onClick={() => handleAdmitParticipant(wp.id)}
+                                  className="px-2.5 py-1 text-[11px] bg-primary text-primary-foreground rounded-md hover:brightness-110 transition-all"
+                                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                                >
+                                  Admit
+                                </button>
+                                <button
+                                  onClick={() => handleDenyParticipant(wp.id)}
+                                  className="px-2 py-1 text-[11px] text-destructive bg-destructive/10 rounded-md hover:bg-destructive/20 transition-colors"
+                                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                                >
+                                  Deny
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* In this meeting */}
                 <div className="pt-1">
                   <button
@@ -3231,6 +3841,14 @@ export function RemoteSupportPage({
                             </>
                           )}
                           
+                          {/* Poor connection badge on spotlight video */}
+                          {callQuality === 'poor' && (
+                            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/80 backdrop-blur-sm z-[1] animate-pulse">
+                              <AlertTriangle size={11} className="text-white" />
+                              <span className="text-[11px] text-white" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Unstable connection</span>
+                            </div>
+                          )}
+
                           {/* Drawing canvas overlay */}
                           {isDrawingMode && (
                             <canvas
@@ -3245,7 +3863,7 @@ export function RemoteSupportPage({
                               onMouseLeave={handleMouseUp}
                             />
                           )}
-                          
+
                           {/* Top Controls */}
                           <div className="absolute top-3 right-3 flex items-center gap-2">
                             {/* Draw button */}
@@ -4180,7 +4798,7 @@ export function RemoteSupportPage({
                   />
                   <div className="flex gap-2 items-center relative">
                     {/* Click-outside backdrop */}
-                    {showAttachmentPicker && (
+                    {wsSettings.allowFileTransfer && showAttachmentPicker && (
                       <div
                         className="fixed inset-0 z-40"
                         onClick={() => { setShowAttachmentPicker(false); setAttachmentSearch(''); }}
@@ -4188,7 +4806,7 @@ export function RemoteSupportPage({
                     )}
 
                     {/* Attachment Picker Popover */}
-                    {showAttachmentPicker && (
+                    {wsSettings.allowFileTransfer && showAttachmentPicker && (
                       <div
                         className="absolute bottom-full right-0 mb-2 bg-card border border-border rounded-[var(--radius)] w-[480px] max-h-[60vh] flex flex-col overflow-hidden z-50"
                         style={{ boxShadow: 'var(--elevation-md)' }}
@@ -4390,22 +5008,24 @@ export function RemoteSupportPage({
                       </div>
                     )}
 
-                    <button
-                      onClick={() => {
-                        if (!showAttachmentPicker) {
-                          setCollapsedProjects(new Set(projects.map(p => p.id)));
-                        }
-                        setShowAttachmentPicker(prev => !prev);
-                      }}
-                      className={`h-[44px] w-[44px] flex items-center justify-center border rounded-[var(--radius)] transition-all shrink-0 shadow-sm ${
-                        showAttachmentPicker
-                          ? 'bg-primary/10 border-primary/40 text-primary'
-                          : 'bg-card border-border text-muted hover:bg-secondary hover:border-primary/30 hover:text-primary'
-                      }`}
-                      title="Attach knowledge base item"
-                    >
-                      <Paperclip size={18} />
-                    </button>
+                    {wsSettings.allowFileTransfer && (
+                      <button
+                        onClick={() => {
+                          if (!showAttachmentPicker) {
+                            setCollapsedProjects(new Set(projects.map(p => p.id)));
+                          }
+                          setShowAttachmentPicker(prev => !prev);
+                        }}
+                        className={`h-[44px] w-[44px] flex items-center justify-center border rounded-[var(--radius)] transition-all shrink-0 shadow-sm ${
+                          showAttachmentPicker
+                            ? 'bg-primary/10 border-primary/40 text-primary'
+                            : 'bg-card border-border text-muted hover:bg-secondary hover:border-primary/30 hover:text-primary'
+                        }`}
+                        title="Attach knowledge base item"
+                      >
+                        <Paperclip size={18} />
+                      </button>
+                    )}
                     <button
                       onClick={handleSendMessage}
                       disabled={!chatInput.trim() && selectedAttachments.length === 0}
@@ -4969,6 +5589,141 @@ export function RemoteSupportPage({
     );
   }
 
+  // Post-Call Summary View
+  if (postCallSummary) {
+    const summaryMinutes = Math.floor(postCallSummary.duration / 60);
+    const summarySeconds = postCallSummary.duration % 60;
+    const durationFormatted = `${summaryMinutes}m ${summarySeconds}s`;
+
+    return (
+      <div className="h-full flex items-center justify-center bg-background" style={{ fontFamily: 'var(--font-family)' }}>
+        <div
+          className="bg-card rounded-[var(--radius)] border border-border w-full flex flex-col items-center px-8 py-10"
+          style={{ maxWidth: 520, boxShadow: 'var(--elevation-lg)' }}
+        >
+          {/* Green checkmark */}
+          <div
+            className="flex items-center justify-center rounded-full mb-5"
+            style={{ width: 64, height: 64, backgroundColor: '#11E87420' }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" stroke="#11E874" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          {/* Call Ended heading */}
+          <h2
+            className="text-foreground mb-1"
+            style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-h2)' }}
+          >
+            Call Ended
+          </h2>
+
+          {/* Meeting title */}
+          <p className="text-muted mb-6" style={{ fontSize: 'var(--text-base)' }}>
+            {postCallSummary.title}
+          </p>
+
+          {/* Stats grid 2x2 */}
+          <div className="grid grid-cols-2 gap-3 w-full mb-6">
+            {/* Duration */}
+            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+              <Clock size={18} className="text-muted mb-1" />
+              <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
+                {durationFormatted}
+              </span>
+              <span className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>Duration</span>
+            </div>
+
+            {/* Participants */}
+            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+              <IconPeople />
+              <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
+                {postCallSummary.participants.length}
+              </span>
+              <span className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>Participants</span>
+            </div>
+
+            {/* Messages */}
+            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+              <IconChat />
+              <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
+                {postCallSummary.chatMessageCount}
+              </span>
+              <span className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>Messages</span>
+            </div>
+
+            {/* Recording */}
+            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-muted mb-1">
+                <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2" />
+                <circle cx="12" cy="12" r="3" fill={postCallSummary.wasRecorded ? '#FF1F1F' : 'currentColor'} />
+              </svg>
+              <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
+                {postCallSummary.wasRecorded ? 'Yes' : 'No'}
+              </span>
+              <span className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>Recorded</span>
+            </div>
+          </div>
+
+          {/* Participant avatars row */}
+          {postCallSummary.participants.length > 0 && (
+            <div className="flex items-center justify-center mb-6 -space-x-2">
+              {postCallSummary.participants.slice(0, 8).map((p) => (
+                <MemberAvatar
+                  key={p.id}
+                  name={p.name}
+                  id={p.id}
+                  initials={p.initial}
+                  color={p.color}
+                  size="lg"
+                  border
+                  showTooltip
+                />
+              ))}
+              {postCallSummary.participants.length > 8 && (
+                <div
+                  className="flex items-center justify-center rounded-full border-2 border-card bg-secondary text-muted"
+                  style={{ width: 32, height: 32, fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-semibold)' }}
+                >
+                  +{postCallSummary.participants.length - 8}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 w-full">
+            <button
+              onClick={() => setPostCallSummary(null)}
+              className="flex-1 px-5 py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+              style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--text-base)' }}
+            >
+              Return to Lobby
+            </button>
+            <button
+              onClick={() => {
+                const newMeeting: Meeting = {
+                  id: Date.now().toString(),
+                  title: postCallSummary.title,
+                  participants: postCallSummary.participants,
+                  date: new Date(),
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                };
+                setPostCallSummary(null);
+                handleJoinMeeting(newMeeting);
+              }}
+              className="flex-1 px-5 py-2.5 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+              style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--text-base)' }}
+            >
+              Call Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Meetings List View
   return (
     <div className={`h-full ${isMobile ? 'flex flex-col' : 'flex'} bg-background`}>
@@ -5155,6 +5910,25 @@ export function RemoteSupportPage({
                   Recent
                 </span>
               </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex items-center gap-2 py-1 px-1 border-b-[2.5px] transition-colors ${
+                  activeTab === 'history'
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted hover:text-foreground'
+                }`}
+                style={{ fontFamily: 'var(--font-family)' }}
+              >
+                <svg className={`block size-4 ${activeTab === 'history' ? 'text-primary' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span style={{ fontWeight: activeTab === 'history' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)' }}>
+                  Call History
+                </span>
+                {recentCalls.some(c => c.recording) && (
+                  <span className="size-1.5 rounded-full bg-primary" />
+                )}
+              </button>
             </div>
             <div className="flex items-center gap-2">
               {/* Call Device Button */}
@@ -5240,8 +6014,8 @@ export function RemoteSupportPage({
                   <button
                     onClick={() => setActiveTab('recent')}
                     className={`flex items-center gap-2 pb-0.5 border-b-2 transition-colors ${
-                      activeTab === 'recent' 
-                        ? 'border-primary text-foreground' 
+                      activeTab === 'recent'
+                        ? 'border-primary text-foreground'
                         : 'border-transparent text-muted hover:text-foreground'
                     }`}
                     style={{ fontFamily: 'var(--font-family)' }}
@@ -5251,6 +6025,22 @@ export function RemoteSupportPage({
                     </svg>
                     <span className="text-sm" style={{ fontWeight: activeTab === 'recent' ? 'var(--font-weight-bold)' : 'normal' }}>
                       Recent
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('history')}
+                    className={`flex items-center gap-2 pb-0.5 border-b-2 transition-colors ${
+                      activeTab === 'history'
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted hover:text-foreground'
+                    }`}
+                    style={{ fontFamily: 'var(--font-family)' }}
+                  >
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span className="text-sm" style={{ fontWeight: activeTab === 'history' ? 'var(--font-weight-bold)' : 'normal' }}>
+                      History
                     </span>
                   </button>
                 </div>
@@ -5271,6 +6061,94 @@ export function RemoteSupportPage({
           initialTitle={meetingTitle}
           editingMeeting={editingMeeting || undefined}
         />
+
+        {/* Recording Consent Modal */}
+        {showRecordingConsent && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
+            onClick={() => setShowRecordingConsent(false)}
+          >
+            <div
+              className="bg-card border border-border rounded-xl max-w-[420px] w-full overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+              style={{ boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
+            >
+              {/* Header */}
+              <div className="px-6 pt-6 pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                      <svg className="size-5 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3" strokeWidth={2} fill="currentColor" />
+                        <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-foreground text-base" style={{ fontWeight: 'var(--font-weight-bold)' }}>Start Recording?</h3>
+                      <p className="text-xs text-muted mt-0.5">Recording consent required</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowRecordingConsent(false)} className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground -mr-1">
+                    <svg className="size-4" fill="none" viewBox="0 0 18 18"><path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="px-6 pb-4">
+                <p className="text-sm text-muted leading-relaxed">
+                  All participants will be notified that this meeting is being recorded. By starting a recording, you confirm you have consent from all participants.
+                </p>
+              </div>
+
+              {/* Checkbox */}
+              <div className="px-6 pb-4">
+                <label className="flex items-start gap-3 cursor-pointer select-none group">
+                  <input
+                    type="checkbox"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    className="mt-0.5 size-4 rounded border-border accent-primary cursor-pointer"
+                  />
+                  <span className="text-sm text-foreground leading-snug" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                    I confirm all participants have been informed
+                  </span>
+                </label>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 mt-2 flex gap-2.5 border-t border-border/50">
+                <button
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-border hover:bg-secondary transition-colors text-foreground text-sm"
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  onClick={() => setShowRecordingConsent(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
+                    consentChecked ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:brightness-110 hover:shadow-md hover:shadow-primary/25' : 'bg-secondary text-muted cursor-not-allowed'
+                  }`}
+                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                  onClick={() => {
+                    if (consentChecked) {
+                      setIsRecording(true);
+                      setShowRecordingConsent(false);
+                      toast.success('Recording started — all participants notified');
+                    }
+                  }}
+                  disabled={!consentChecked}
+                >
+                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="3" strokeWidth={2} fill="currentColor" />
+                    <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                  </svg>
+                  Start Recording
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Call Device Modal */}
         {showCallDeviceModal && (
@@ -5600,6 +6478,12 @@ export function RemoteSupportPage({
                                 {diffMins <= 0 ? 'Now' : `In ${diffMins}m`}
                               </span>
                             )}
+                            {meeting.requireAdmission && (
+                              <span className="shrink-0 px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-700 rounded-full flex items-center gap-1" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                <svg className="size-2.5" fill="none" viewBox="0 0 12 12" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 2v4m0 4h.01M2 6a4 4 0 118 0 4 4 0 01-8 0z" /></svg>
+                                Admission
+                              </span>
+                            )}
                           </div>
                           {meeting.participants.length > 0 && (
                             <div className="flex items-center gap-2">
@@ -5687,7 +6571,7 @@ export function RemoteSupportPage({
                 </div>
               </div>
             )
-          ) : (
+          ) : activeTab === 'recent' ? (
             /* Recent Calls View */
             recentCalls.length > 0 ? (
               <div className="p-6">
@@ -5813,6 +6697,122 @@ export function RemoteSupportPage({
                 </div>
               </div>
             )
+          ) : (
+            /* Call History View */
+            recentCalls.filter(c => c.recording).length > 0 ? (
+              <div className="p-6">
+                <div className="space-y-2">
+                  {recentCalls.filter(c => c.recording).map((call) => {
+                    const formatDuration = (seconds: number) => {
+                      const mins = Math.floor(seconds / 60);
+                      const secs = seconds % 60;
+                      if (mins === 0) return `${secs}s`;
+                      return `${mins}m ${secs}s`;
+                    };
+
+                    const formatFileSize = (bytes: number) => {
+                      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+                      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+                    };
+
+                    return (
+                      <div
+                        key={call.id}
+                        className="bg-card border border-border rounded-[var(--radius)] overflow-hidden transition-all group/card hover:border-primary/30 hover:shadow-md"
+                      >
+                        <div className="flex items-stretch">
+                          {/* Accent bar */}
+                          <div className="w-1 shrink-0 bg-primary/60" />
+
+                          <div className="flex items-center gap-4 px-4 py-3.5 flex-1 min-w-0">
+                            {/* Recording Icon */}
+                            <div className="shrink-0">
+                              <div className="size-10 rounded-[var(--radius)] flex items-center justify-center bg-primary/10 text-primary">
+                                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <circle cx="12" cy="12" r="3" strokeWidth={2} fill="currentColor" />
+                                  <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                                </svg>
+                              </div>
+                            </div>
+
+                            {/* Call info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                                  {call.title}
+                                </h4>
+                                <span className="shrink-0 px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                                  Recording available
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {call.participants.length > 0 && (
+                                  <div className="flex items-center gap-1.5">
+                                    <div className="flex -space-x-1.5">
+                                      {call.participants.slice(0, 3).map((participant) => (
+                                        <MemberAvatar key={participant.id} name={participant.name} size="xs" color={participant.color} initials={participant.initial} border />
+                                      ))}
+                                    </div>
+                                    <span className="text-xs text-muted">
+                                      {call.participants.length}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 text-xs text-muted">
+                                  <span>{call.timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} {call.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                                  <span className="text-border">|</span>
+                                  <span>{formatDuration(call.duration)}</span>
+                                  {call.recording && (
+                                    <>
+                                      <span className="text-border">|</span>
+                                      <span>{formatFileSize(call.recording.fileSize)}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Download */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {call.recording?.recordedByUserId === 'me' && (
+                                <button
+                                  onClick={() => toast.success(`Downloading recording: ${call.title}`)}
+                                  className="px-3.5 py-1.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:brightness-110 transition-all text-xs flex items-center gap-1.5 shadow-sm"
+                                  style={{ fontWeight: 'var(--font-weight-bold)' }}
+                                  title="Download recording"
+                                >
+                                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                  </svg>
+                                  Download
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full px-6 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(47,128,237,0.03) 0%, transparent 70%)' }} />
+                <div className="relative flex flex-col items-center">
+                <div className="size-20 rounded-2xl bg-gradient-to-br from-primary/8 to-primary/3 border border-primary/10 flex items-center justify-center mb-6" style={{ boxShadow: '0 8px 32px rgba(47,128,237,0.06)' }}>
+                  <svg className="size-8 text-primary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <p className="text-[15px] text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                  No call recordings
+                </p>
+                <p className="text-xs text-muted text-center max-w-[280px] leading-relaxed">
+                  When you record a call, your recordings will appear here for download
+                </p>
+                </div>
+              </div>
+            )
           )}
         </div>
 
@@ -5856,6 +6856,138 @@ export function RemoteSupportPage({
           </div>
         </div>
       </div>
+      {/* Incoming Call Overlay */}
+      {incomingCall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
+          <div
+            className="bg-card rounded-[var(--radius)] p-8 flex flex-col items-center gap-5 border border-border"
+            style={{
+              boxShadow: 'var(--elevation-lg)',
+              fontFamily: 'var(--font-family)',
+              minWidth: '340px',
+              maxWidth: '420px',
+            }}
+          >
+            {/* Pulsing avatar */}
+            <div className="relative flex items-center justify-center" style={{ width: '112px', height: '112px' }}>
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: '96px',
+                  height: '96px',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: incomingCall.callerColor,
+                  opacity: 0.3,
+                  animation: 'incomingCallPulse 1.5s ease-out infinite',
+                }}
+              />
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: '112px',
+                  height: '112px',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: incomingCall.callerColor,
+                  opacity: 0.15,
+                  animation: 'incomingCallPulse 1.5s ease-out infinite 0.3s',
+                }}
+              />
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-white relative z-10"
+                style={{
+                  backgroundColor: incomingCall.callerColor,
+                  fontSize: 'var(--text-2xl)',
+                  fontWeight: 'var(--font-weight-bold)',
+                }}
+              >
+                {incomingCall.callerInitial}
+              </div>
+            </div>
+
+            {/* Caller info */}
+            <div className="flex flex-col items-center gap-1 mt-2">
+              <span
+                className="text-foreground"
+                style={{
+                  fontSize: 'var(--text-lg)',
+                  fontWeight: 'var(--font-weight-bold)',
+                }}
+              >
+                {incomingCall.callerName}
+              </span>
+              <span
+                className="text-muted"
+                style={{
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--font-weight-medium)',
+                }}
+              >
+                Incoming call...
+              </span>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-4 mt-3">
+              <button
+                onClick={() => {
+                  setIncomingCall(null);
+                  toast('Call declined');
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-[var(--radius)] text-white hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: '#FF1F1F',
+                  fontWeight: 'var(--font-weight-bold)',
+                  fontSize: 'var(--text-sm)',
+                }}
+              >
+                <PhoneOff size={16} />
+                Decline
+              </button>
+              <button
+                onClick={() => {
+                  const caller = incomingCall;
+                  const newMeeting: Meeting = {
+                    id: Date.now().toString(),
+                    title: caller.meetingTitle,
+                    participants: people.filter(p => p.name === caller.callerName),
+                    scheduledTime: new Date(),
+                    duration: 30,
+                    hostId: '1',
+                  };
+                  setIncomingCall(null);
+                  setCurrentMeeting(newMeeting);
+                  setIsCreateMode(false);
+                  setShowPreJoin(true);
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: '#11E874',
+                  fontWeight: 'var(--font-weight-bold)',
+                  fontSize: 'var(--text-sm)',
+                  color: '#1a1a2e',
+                }}
+              >
+                <Phone size={16} />
+                Accept
+              </button>
+            </div>
+          </div>
+
+          {/* Pulse animation keyframes */}
+          <style>{`
+            @keyframes incomingCallPulse {
+              0% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+              70% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+              100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+
     </div>
   );
 }

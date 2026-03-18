@@ -6,9 +6,18 @@ interface WorkspaceSettings {
   logoUrl: string | null; // data URL from uploaded file, or null for default
 }
 
+export interface RemoteSupportSettings {
+  enableRemoteSupport: boolean;
+  sessionTimeout: number; // minutes
+  requireApproval: boolean;
+  allowFileTransfer: boolean;
+}
+
 interface WorkspaceContextType {
   workspace: WorkspaceSettings;
   updateWorkspace: (settings: Partial<WorkspaceSettings>) => void;
+  remoteSupportSettings: RemoteSupportSettings;
+  updateRemoteSupportSettings: (settings: Partial<RemoteSupportSettings>) => void;
 }
 
 const defaultWorkspace: WorkspaceSettings = {
@@ -17,13 +26,27 @@ const defaultWorkspace: WorkspaceSettings = {
   logoUrl: null,
 };
 
+const defaultRemoteSupportSettings: RemoteSupportSettings = {
+  enableRemoteSupport: true,
+  sessionTimeout: 30,
+  requireApproval: true,
+  allowFileTransfer: false,
+};
+
 const WorkspaceContext = createContext<WorkspaceContextType>({
   workspace: defaultWorkspace,
   updateWorkspace: () => {},
+  remoteSupportSettings: defaultRemoteSupportSettings,
+  updateRemoteSupportSettings: () => {},
 });
 
 export function useWorkspace() {
   return useContext(WorkspaceContext);
+}
+
+export function useWorkspaceSettings() {
+  const { remoteSupportSettings, updateRemoteSupportSettings } = useContext(WorkspaceContext);
+  return { settings: remoteSupportSettings, updateSettings: updateRemoteSupportSettings };
 }
 
 function hexToRgba(hex: string): string {
@@ -60,6 +83,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return defaultWorkspace;
   });
 
+  const [remoteSupportSettings, setRemoteSupportSettings] = useState<RemoteSupportSettings>(() => {
+    try {
+      const saved = localStorage.getItem('workspace-remote-support-settings');
+      if (saved) return { ...defaultRemoteSupportSettings, ...JSON.parse(saved) };
+    } catch {}
+    return defaultRemoteSupportSettings;
+  });
+
   // Apply accent color on mount and whenever it changes
   useEffect(() => {
     applyAccentColor(workspace.accentColor);
@@ -73,8 +104,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateRemoteSupportSettings = useCallback((settings: Partial<RemoteSupportSettings>) => {
+    setRemoteSupportSettings(prev => {
+      const next = { ...prev, ...settings };
+      localStorage.setItem('workspace-remote-support-settings', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   return (
-    <WorkspaceContext.Provider value={{ workspace, updateWorkspace }}>
+    <WorkspaceContext.Provider value={{ workspace, updateWorkspace, remoteSupportSettings, updateRemoteSupportSettings }}>
       {children}
     </WorkspaceContext.Provider>
   );

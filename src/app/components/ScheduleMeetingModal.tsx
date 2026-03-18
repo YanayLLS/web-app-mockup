@@ -69,6 +69,7 @@ export interface Meeting {
   scheduledTime: Date;
   duration: number;
   hostId?: string;
+  requireAdmission?: boolean;
 }
 
 interface ScheduleMeetingModalProps {
@@ -108,6 +109,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
   const [isParticipantDropdownOpen, setIsParticipantDropdownOpen] = useState(false);
   const [externalEmails, setExternalEmails] = useState<Person[]>([]);
   const [meetingPassword, setMeetingPassword] = useState('');
+  const [requireAdmission, setRequireAdmission] = useState(false);
   const participantSearchRef = useRef<HTMLDivElement>(null);
   const participantInputRef = useRef<HTMLInputElement>(null);
   const [startDate, setStartDate] = useState(defaultDateTime.dateStr);
@@ -128,6 +130,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
       const externals = editingMeeting.participants.filter(p => p.role === 'External');
       setExternalEmails(externals);
 
+      setRequireAdmission(editingMeeting.requireAdmission || false);
       const schedDate = new Date(editingMeeting.scheduledTime);
       const endDate = new Date(schedDate);
       endDate.setMinutes(endDate.getMinutes() + editingMeeting.duration);
@@ -220,6 +223,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
       participants,
       scheduledTime,
       duration: 30,
+      requireAdmission,
     };
 
     if (editingMeeting && onUpdate) {
@@ -239,6 +243,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
     setSearchQuery('');
     setExternalEmails([]);
     setMeetingPassword('');
+    setRequireAdmission(false);
     const resetDateTime = getDefaultDateTime();
     setStartDate(resetDateTime.dateStr);
     setStartTime(resetDateTime.startTimeStr);
@@ -605,6 +610,26 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
               <div className="mt-2 text-muted" style={{ fontSize: 'var(--text-sm)' }}>
                 Participants will need this password to join the meeting.
               </div>
+            </div>
+
+            {/* Require Admission */}
+            <div>
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={requireAdmission}
+                  onChange={(e) => setRequireAdmission(e.target.checked)}
+                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary/20 cursor-pointer accent-[#2F80ED]"
+                />
+                <div>
+                  <span className="text-foreground group-hover:text-primary transition-colors" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                    Require admission
+                  </span>
+                  <p className="text-muted mt-1" style={{ fontSize: 'var(--text-sm)' }}>
+                    Participants must be admitted by the host before joining the call. They will wait in a waiting room until approved.
+                  </p>
+                </div>
+              </label>
             </div>
           </div>
         </div>
