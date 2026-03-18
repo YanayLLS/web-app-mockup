@@ -713,7 +713,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                     >
                       <div className="min-w-0 max-w-[130px]">
                         <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
-                          {isMuted ? 'Muted' : 'Microphone'}
+                          Microphone
                         </div>
                         <div className="text-white text-xs truncate leading-tight mt-0.5" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                           {audioDevices.find(d => d.deviceId === selectedAudio)?.label || 'Default'}
@@ -767,7 +767,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                     >
                       <div className="min-w-0 max-w-[130px]">
                         <div className="text-white/60 leading-none" style={{ fontSize: '9px', fontWeight: 'var(--font-weight-medium)' }}>
-                          {isVideoOff ? 'Camera off' : 'Camera'}
+                          Camera
                         </div>
                         <div className="text-white text-xs truncate leading-tight mt-0.5" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                           {videoDevices.find(d => d.deviceId === selectedVideo)?.label || 'Default'}
@@ -2475,7 +2475,7 @@ export function RemoteSupportPage({
               >
                 {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
                 <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
-                  {isMuted ? 'Unmute' : 'Mic'}
+                  Mic
                 </span>
               </button>
               <button
@@ -2649,7 +2649,7 @@ export function RemoteSupportPage({
               >
                 {isVideoOff ? <IconVideoOff /> : <IconVideo />}
                 <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
-                  {isVideoOff ? 'Start' : 'Camera'}
+                  Camera
                 </span>
               </button>
               <button
@@ -2717,19 +2717,22 @@ export function RemoteSupportPage({
           <div className="md:hidden">
             {/* Call Name Header - Hidden in landscape */}
             {!isLandscape && (
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-secondary rounded-[var(--radius)]">
-                  <Phone className="size-4 text-foreground" />
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Video size={15} className="text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                     {currentMeeting.title}
                   </h3>
-                  <div className="text-xs text-muted">
-                    {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
-                    {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
-                    {String(callDuration % 60).padStart(2, '0')}
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-1.5 rounded-full bg-[#11E874] animate-pulse" />
+                    <span className="text-[10px] text-muted tabular-nums">
+                      {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
+                      {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
+                      {String(callDuration % 60).padStart(2, '0')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2872,14 +2875,14 @@ export function RemoteSupportPage({
 
               {/* Search */}
               <div className="px-3 py-2.5 border-b border-border shrink-0">
-                <div className="bg-secondary/40 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card transition-colors">
+                <div className="bg-secondary/30 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
                   <IconSearch />
                   <input
                     type="text"
                     placeholder="Search people..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted"
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none ring-0 border-none placeholder:text-muted focus:outline-none focus:ring-0"
                   />
                   {searchQuery && (
                     <button onClick={() => setSearchQuery('')} className="text-muted hover:text-foreground transition-colors">
@@ -4418,14 +4421,16 @@ export function RemoteSupportPage({
 
         {/* Mobile Bottom Action Bar */}
         <div className="md:hidden border-t border-border bg-card shrink-0">
-          <div className="flex items-center justify-around px-3 py-3 gap-2">
+          <div className="flex items-center justify-around px-2 py-2 gap-1.5">
             {/* Mic Button */}
             <button
               onClick={handleToggleMute}
-              className="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-[var(--radius)] bg-secondary hover:bg-secondary/80 transition-colors flex-1 text-foreground"
+              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors flex-1 ${
+                isMuted ? 'bg-destructive/8 text-destructive/70' : 'bg-secondary/60 text-foreground'
+              }`}
             >
               {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
-              <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+              <span className="text-[9px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                 Mic
               </span>
             </button>
@@ -4433,10 +4438,12 @@ export function RemoteSupportPage({
             {/* Camera Button */}
             <button
               onClick={handleToggleVideo}
-              className="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-[var(--radius)] bg-secondary hover:bg-secondary/80 transition-colors flex-1 text-foreground"
+              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors flex-1 ${
+                isVideoOff ? 'bg-destructive/8 text-destructive/70' : 'bg-secondary/60 text-foreground'
+              }`}
             >
               {isVideoOff ? <IconVideoOff /> : <IconVideo />}
-              <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+              <span className="text-[9px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                 Camera
               </span>
             </button>
@@ -4449,30 +4456,28 @@ export function RemoteSupportPage({
                   setUnreadMessagesCount(0);
                 }
               }}
-              className={`flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-[var(--radius)] transition-colors flex-1 relative ${
-                showChatPanel ? 'bg-primary/10 text-primary' : 'bg-secondary hover:bg-secondary/80 text-foreground'
+              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors flex-1 relative ${
+                showChatPanel ? 'bg-primary/10 text-primary' : 'bg-secondary/60 text-foreground'
               }`}
             >
               <IconChat />
-              <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+              <span className="text-[9px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                 Chat
               </span>
               {unreadMessagesCount > 0 && !showChatPanel && (
-                <div className="absolute top-1.5 right-1.5 size-4 bg-destructive rounded-full flex items-center justify-center text-white text-[9px]" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                <div className="absolute top-1 right-2 size-4 bg-destructive rounded-full flex items-center justify-center text-white text-[9px]" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   {unreadMessagesCount}
                 </div>
               )}
             </button>
 
-            {/* Leave Call - Phone Hangup Icon */}
+            {/* Leave Call */}
             <button
               onClick={handleLeaveCall}
-              className="flex flex-col items-center gap-1.5 px-3 py-2.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-[var(--radius)] transition-opacity flex-1"
+              className="flex flex-col items-center gap-1 px-3 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl transition-colors flex-1"
             >
-              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
-              </svg>
-              <span className="text-[10px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+              <PhoneOff size={18} />
+              <span className="text-[9px]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                 Leave
               </span>
             </button>
@@ -4981,9 +4986,9 @@ export function RemoteSupportPage({
               showMobilePeople ? 'translate-x-0' : '-translate-x-full'
             }`
           : 'w-[280px] shrink-0'
-      } bg-card border-r border-border flex flex-col`}>
+      } bg-card border-r border-border/60 flex flex-col`} style={{ boxShadow: '2px 0 8px rgba(0,0,0,0.03)' }}>
         {/* Header */}
-        <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
+        <div className="h-14 flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-2.5">
             <svg className="block size-4 text-foreground" fill="none" viewBox="0 0 16 16">
               <circle cx="8" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
@@ -4992,8 +4997,12 @@ export function RemoteSupportPage({
             <h3 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               Contacts
             </h3>
-            <span className="px-1.5 py-0.5 text-[10px] bg-secondary text-muted rounded-full" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+            <span className="px-2 py-0.5 text-[10px] bg-primary/8 text-primary rounded-full" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               {people.length}
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-[#11E874]" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+              <span className="size-1.5 rounded-full bg-[#11E874] inline-block" />
+              {people.filter(p => p.id.charCodeAt(0) % 3 !== 0).length} online
             </span>
           </div>
           {isMobile && (
@@ -5004,15 +5013,15 @@ export function RemoteSupportPage({
         </div>
 
         {/* Search */}
-        <div className="px-3 py-2.5 border-b border-border shrink-0">
-          <div className="bg-secondary/40 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card transition-colors">
+        <div className="px-3 pb-2.5 pt-0.5 border-b border-border/60 shrink-0">
+          <div className="bg-secondary/30 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
             <IconSearch />
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted"
+              className="flex-1 bg-transparent text-sm text-foreground outline-none ring-0 border-none placeholder:text-muted focus:outline-none focus:ring-0"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="text-muted hover:text-foreground transition-colors">
@@ -5023,7 +5032,7 @@ export function RemoteSupportPage({
         </div>
 
         {/* People List */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
           {(() => {
             const filtered = people.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
             if (filtered.length === 0 && searchQuery) {
@@ -5034,26 +5043,44 @@ export function RemoteSupportPage({
                 </div>
               );
             }
-            return filtered.map((person) => {
+            // Sort: online contacts first, then alphabetical within each group
+            const sorted = [...filtered].sort((a, b) => {
+              const aOnline = a.id.charCodeAt(0) % 3 !== 0;
+              const bOnline = b.id.charCodeAt(0) % 3 !== 0;
+              if (aOnline !== bOnline) return aOnline ? -1 : 1;
+              return a.name.localeCompare(b.name);
+            });
+            let shownOfflineHeader = false;
+            return sorted.map((person) => {
               const showSubWorkspace = person.subWorkspace;
               const isOnline = person.id.charCodeAt(0) % 3 !== 0; // deterministic online status
+              const needsOfflineHeader = !isOnline && !shownOfflineHeader;
+              if (needsOfflineHeader) shownOfflineHeader = true;
               return (
+                <>{needsOfflineHeader && (
+                  <div key="__offline-header" className="flex items-center gap-2 px-4 pt-3 pb-1.5">
+                    <span className="text-[10px] text-muted/60 uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Offline</span>
+                    <div className="flex-1 h-px bg-border/40" />
+                  </div>
+                )}
                 <div
                   key={person.id}
                   onMouseEnter={() => setHoveredPersonId(person.id)}
                   onMouseLeave={() => setHoveredPersonId(null)}
-                  className="group flex items-center gap-3 px-3.5 py-2.5 hover:bg-secondary/40 transition-colors"
+                  className="group flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] hover:bg-secondary/50 transition-colors cursor-pointer rounded-lg mx-1"
                 >
-                  <div className="relative shrink-0">
+                  <div className={`relative shrink-0 ${isOnline ? '' : 'opacity-50'}`}>
                     <MemberAvatar name={person.name} size="lg" color={person.color} initials={person.initial} />
-                    <div className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-card ${isOnline ? 'bg-[#11E874]' : 'bg-border'}`} />
+                    {isOnline && (
+                    <div className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card bg-[#11E874]" style={{ boxShadow: '0 0 6px rgba(17,232,116,0.4)' }} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                    <div className={`text-sm truncate ${isOnline ? 'text-foreground' : 'text-muted'}`} style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                       {person.name}
                     </div>
                     {showSubWorkspace && (
-                      <div className="text-[10px] text-muted truncate">{person.subWorkspace}</div>
+                      <div className="text-[10px] text-muted/70 truncate mt-0.5">{person.subWorkspace}</div>
                     )}
                   </div>
                   <button
@@ -5069,58 +5096,61 @@ export function RemoteSupportPage({
                       setCurrentMeeting(newMeeting);
                       setShowPreJoin(true);
                     }}
-                    className={`p-1.5 rounded-[var(--radius)] transition-all shrink-0 md:opacity-0 md:group-hover:opacity-100 ${
+                    className={`p-2 rounded-lg transition-all shrink-0 md:opacity-0 md:group-hover:opacity-100 ${
                       hoveredPersonId === person.id
-                        ? 'md:opacity-100 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground'
-                        : 'bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground'
+                        ? 'md:opacity-100 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground hover:shadow-sm hover:shadow-primary/20'
+                        : 'bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm hover:shadow-primary/20'
                     }`}
                     title={`Call ${person.name}`}
                   >
                     <Phone className="size-3.5" />
                   </button>
                 </div>
+                </>
               );
             });
           })()}
         </div>
+        {/* Bottom fade hint for scroll */}
+        <div className="h-6 shrink-0 pointer-events-none" style={{ background: 'linear-gradient(to top, var(--card), transparent)', marginTop: '-24px', position: 'relative', zIndex: 1 }} />
       </div>
 
       {/* Right Panel - Meetings */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header with Tabs */}
-        <div className={`bg-card border-b border-border shrink-0`}>
+        <div className={`bg-card border-b border-border/60 shrink-0`}>
           {/* Desktop Layout */}
           <div className={`hidden md:flex h-16 items-center justify-between ${isMobile ? 'px-4' : 'px-6'}`}>
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setActiveTab('agenda')}
-                className={`flex items-center gap-2 pb-0.5 border-b-2 transition-colors ${
-                  activeTab === 'agenda' 
-                    ? 'border-primary text-foreground' 
+                className={`flex items-center gap-2 py-1 px-1 border-b-[2.5px] transition-colors ${
+                  activeTab === 'agenda'
+                    ? 'border-primary text-foreground'
                     : 'border-transparent text-muted hover:text-foreground'
                 }`}
                 style={{ fontFamily: 'var(--font-family)' }}
               >
-                <svg className="block size-4 text-foreground" fill="none" viewBox="0 0 16 16">
+                <svg className={`block size-4 ${activeTab === 'agenda' ? 'text-primary' : 'text-muted'}`} fill="none" viewBox="0 0 16 16">
                   <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                   <path d="M2 6h12" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M5 1v3M11 1v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-                <span style={{ fontWeight: activeTab === 'agenda' ? 'var(--font-weight-bold)' : 'normal' }}>
+                <span style={{ fontWeight: activeTab === 'agenda' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)' }}>
                   Agenda
                 </span>
               </button>
               <button
                 onClick={() => setActiveTab('recent')}
-                className={`flex items-center gap-2 pb-0.5 border-b-2 transition-colors ${
-                  activeTab === 'recent' 
-                    ? 'border-primary text-foreground' 
+                className={`flex items-center gap-2 py-1 px-1 border-b-[2.5px] transition-colors ${
+                  activeTab === 'recent'
+                    ? 'border-primary text-foreground'
                     : 'border-transparent text-muted hover:text-foreground'
                 }`}
                 style={{ fontFamily: 'var(--font-family)' }}
               >
-                <Clock size={16} />
-                <span style={{ fontWeight: activeTab === 'recent' ? 'var(--font-weight-bold)' : 'normal' }}>
+                <Clock size={16} className={activeTab === 'recent' ? 'text-primary' : ''} />
+                <span style={{ fontWeight: activeTab === 'recent' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)' }}>
                   Recent
                 </span>
               </button>
@@ -5129,29 +5159,29 @@ export function RemoteSupportPage({
               {/* Call Device Button */}
               <button
                 onClick={() => setShowCallDeviceModal(true)}
-                className="px-3.5 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-secondary hover:border-border/80 transition-all flex items-center gap-2 text-sm"
+                className="group/btn px-3.5 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-primary/5 hover:border-primary/25 hover:shadow-sm transition-all flex items-center gap-2 text-sm"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
-                <Phone size={15} className="text-muted" />
+                <Phone size={15} className="text-muted group-hover/btn:text-primary transition-colors" />
                 <span>Call Device</span>
               </button>
 
               {/* Join Meeting Button */}
               <button
                 onClick={() => setShowJoinMeetingModal(true)}
-                className="px-3.5 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-secondary hover:border-border/80 transition-all flex items-center gap-2 text-sm"
+                className="group/btn px-3.5 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-primary/5 hover:border-primary/25 hover:shadow-sm transition-all flex items-center gap-2 text-sm"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
-                <Video size={15} className="text-muted" />
+                <Video size={15} className="text-muted group-hover/btn:text-primary transition-colors" />
                 <span>Join</span>
               </button>
 
               {/* Create Button with Schedule split */}
               {canStartCall && (
-              <div className="flex items-stretch rounded-lg overflow-hidden shadow-sm shadow-primary/15">
+              <div className="flex items-stretch rounded-lg overflow-hidden shadow-sm shadow-primary/20">
                 <button
                   onClick={handleCreateMeeting}
-                  className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"
+                  className="px-4 py-2 bg-primary text-primary-foreground hover:brightness-110 transition-all flex items-center gap-2 text-sm"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
                   <Video size={15} />
@@ -5160,7 +5190,7 @@ export function RemoteSupportPage({
                 {canScheduleMeeting && (
                   <button
                     onClick={() => openScheduleModal(true)}
-                    className="px-2.5 bg-primary text-primary-foreground border-l border-white/20 hover:bg-primary/80 transition-colors flex items-center justify-center"
+                    className="px-3 bg-primary/90 text-primary-foreground border-l border-white/25 hover:bg-primary/70 transition-all flex items-center justify-center"
                     title="Schedule for later"
                   >
                     <Calendar size={14} />
@@ -5510,7 +5540,7 @@ export function RemoteSupportPage({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-card">
+        <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ background: 'linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--secondary) 15%, var(--card)) 100%)' }}>
           {activeTab === 'agenda' ? (
             meetings.length > 0 ? (
               <div className="p-6">
@@ -5626,26 +5656,34 @@ export function RemoteSupportPage({
               </div>
             </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full bg-card px-6">
-                <div className="size-16 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center mb-5">
-                  <Calendar size={28} className="text-primary/50" />
+              <div className="flex flex-col items-center justify-center h-full px-6 relative overflow-hidden">
+                {/* Subtle decorative background */}
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(47,128,237,0.03) 0%, transparent 70%)' }} />
+                <div className="relative flex flex-col items-center">
+                <div className="size-20 rounded-2xl bg-gradient-to-br from-primary/8 to-primary/3 border border-primary/10 flex items-center justify-center mb-6" style={{ boxShadow: '0 8px 32px rgba(47,128,237,0.06)' }}>
+                  <Calendar size={32} className="text-primary/40" />
                 </div>
-                <h3 className="text-sm text-foreground mb-1.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                <h3 className="text-[15px] text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   No upcoming meetings
                 </h3>
-                <p className="text-xs text-muted text-center max-w-[260px] leading-relaxed">
+                <p className="text-xs text-muted text-center max-w-[280px] leading-relaxed">
                   Schedule a meeting to collaborate with your team and it will appear here
                 </p>
                 {canScheduleMeeting && (
                 <button
                   onClick={() => openScheduleModal(true)}
-                  className="mt-5 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity shadow-sm shadow-primary/20 flex items-center gap-2 text-sm"
+                  className="mt-6 px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all hover:shadow-md hover:shadow-primary/20 shadow-sm shadow-primary/15 flex items-center gap-2 text-sm"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
                   <Calendar size={15} />
                   Schedule Meeting
                 </button>
                 )}
+                <p className="mt-4 text-[11px] text-muted/50 text-center flex items-center gap-1.5 justify-center">
+                  <svg className="size-3 text-muted/30" fill="none" viewBox="0 0 12 12"><path d="M7.5 2.5L3.5 6l4 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  or click a contact to start a call
+                </p>
+                </div>
               </div>
             )
           ) : (
@@ -5759,16 +5797,19 @@ export function RemoteSupportPage({
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full bg-card px-6">
-                <div className="size-16 rounded-2xl bg-secondary/50 border border-border/50 flex items-center justify-center mb-5">
-                  <Clock size={28} className="text-muted/50" />
+              <div className="flex flex-col items-center justify-center h-full px-6 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(47,128,237,0.03) 0%, transparent 70%)' }} />
+                <div className="relative flex flex-col items-center">
+                <div className="size-20 rounded-2xl bg-gradient-to-br from-primary/8 to-primary/3 border border-primary/10 flex items-center justify-center mb-6" style={{ boxShadow: '0 8px 32px rgba(47,128,237,0.06)' }}>
+                  <Clock size={32} className="text-primary/40" />
                 </div>
-                <p className="text-sm text-foreground mb-1.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                <p className="text-[15px] text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   No recent calls
                 </p>
-                <p className="text-xs text-muted text-center max-w-[240px] leading-relaxed">
+                <p className="text-xs text-muted text-center max-w-[260px] leading-relaxed">
                   Your call history will appear here after you make or receive calls
                 </p>
+                </div>
               </div>
             )
           )}

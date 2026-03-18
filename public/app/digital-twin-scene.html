@@ -524,17 +524,15 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 .config-list::-webkit-scrollbar-thumb { background:#e9e9e9; border-radius:2px; }
 .config-list::-webkit-scrollbar-thumb:hover { background:#c2c9db; }
 
-/* Config & folder items — unified */
+/* Config & folder items — unified, single line */
 .config-item {
-  display:flex; align-items:flex-start; gap:8px; padding:6px 10px; min-height:34px; border-radius:8px;
-  cursor:pointer; position:relative; user-select:none; transition:all .15s;
-  border-left:3px solid transparent;
+  display:flex; align-items:center; gap:8px; padding:0 10px; height:32px; border-radius:6px;
+  cursor:pointer; position:relative; user-select:none; transition:background .15s;
 }
-.config-item[data-config-type="folder"] { align-items:center; }
 .config-item:hover { background:rgba(233,233,233,0.35); }
-.config-item:focus-visible { outline:2px solid #2f80ed; outline-offset:-1px; border-radius:8px; }
-.config-item.active { background:rgba(47,128,237,0.08); border-left:3px solid #2f80ed; }
-.config-item.cfg-selected { background:rgba(47,128,237,0.06); outline:2px solid rgba(47,128,237,0.4); outline-offset:-2px; }
+.config-item:focus-visible { outline:2px solid #2f80ed; outline-offset:-1px; border-radius:6px; }
+.config-item.active { background:#d9e0f0; }
+.config-item.cfg-selected { background:#d9e0f0; outline:2px solid #2f80ed; outline-offset:-2px; }
 .config-item.cfg-dragging { opacity:0.4; }
 .config-item.cfg-new { background:rgba(47,128,237,0.08); }
 
@@ -585,43 +583,15 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 }
 
 /* Config item inner */
-.config-item-row { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
-.config-item-content { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.config-item-top { display:flex; align-items:center; gap:6px; min-width:0; }
-.config-item-meta { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
-.config-item-tag {
-  font-size:9px; font-weight:500; color:#868d9e; background:#f0f0f3;
-  padding:1px 6px; border-radius:99px; line-height:14px; white-space:nowrap;
-}
-.config-item-tag-more { color:#2f80ed; background:rgba(47,128,237,0.06); }
-.config-item-overrides {
-  font-size:9px; font-weight:600; white-space:nowrap;
-  padding:1px 6px; border-radius:99px; line-height:14px;
-  background:rgba(47,128,237,0.06); color:#2f80ed;
-}
+/* (multi-line item CSS removed — items are single-line) */
 .config-list-separator {
   height:1px; margin:4px 8px;
   background:linear-gradient(90deg, transparent 0%, #e9e9e9 20%, #e9e9e9 80%, transparent 100%);
 }
-/* Indented items inside folders - subtle left line */
-.config-item[data-config-depth="1"] { border-left:2px solid #e9e9e9 !important; }
-.config-item[data-config-depth="1"].active { border-left:2px solid #2f80ed !important; }
-.config-item[data-config-depth="1"]:hover { border-left-color:#c2c9db !important; }
-/* Config item description tooltip on hover */
-.config-item[data-config-type="config"]:not(.active)::after {
-  content:attr(data-desc);
-  display:none; position:absolute; left:8px; right:8px; top:calc(100% + 4px);
-  max-width:none; padding:8px 10px;
-  font-size:11px; color:#fff; background:#36415d; border-radius:8px;
-  line-height:1.4; white-space:normal; z-index:100; pointer-events:none;
-  box-shadow:0 4px 12px rgba(0,0,0,0.15);
-}
-.config-item[data-config-type="config"][data-desc]:not(.active):hover::after {
-  display:block;
-}
+/* (indented left border removed) */
+/* (tooltip removed — single-line items) */
 .config-dot {
   width:8px; height:8px; border-radius:50%; flex-shrink:0;
-  margin-top:5px;
 }
 .config-dot.enabled { background:#11e874; transition:box-shadow 0.15s; }
 .config-item:hover .config-dot.enabled { box-shadow:0 0 0 3px rgba(17,232,116,0.15); }
@@ -637,8 +607,7 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 }
 .config-item.active .config-name { font-weight:600; color:#2f80ed; }
 .config-name.cfg-disabled { color:#c2c9db; }
-.config-item[data-config-depth="0"] > .config-item-content > .config-item-top > .config-name { font-size:12px; }
-.config-item[data-config-depth="1"] > .config-item-content > .config-item-top > .config-name { font-size:11px; }
+/* (depth-based font sizes removed — single-line items) */
 .config-badge {
   font-size:10px; font-weight:600; padding:2px 7px; border-radius:99px; line-height:14px; flex-shrink:0;
   letter-spacing:0.2px;
@@ -659,7 +628,6 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   border-radius:6px; display:flex; align-items:center; justify-content:center;
   flex-shrink:0; opacity:0; transition:opacity .15s;
   color:#868d9e; font-size:16px; line-height:1; padding:0;
-  margin-top:1px; align-self:flex-start;
 }
 .config-item:hover .config-ctx-btn,
 .config-item .config-ctx-btn.open { opacity:1; }
@@ -740,6 +708,7 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
   padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px;
   position:relative;
 }
+#configDetailPanel .fl-body > * { flex-shrink:0; }
 #configDetailPanel .fl-body::-webkit-scrollbar { width:3px; }
 #configDetailPanel .fl-body::-webkit-scrollbar-track { background:transparent; }
 #configDetailPanel .fl-body::-webkit-scrollbar-thumb { background:#e9e9e9; border-radius:2px; }
@@ -983,19 +952,18 @@ html.procedure #animTimeline:not(.hidden) { display:flex; }
 
 /* Permissions list */
 .config-perm-list {
-  display:grid; grid-template-columns:1fr 1fr; gap:2px;
-  border:1px solid #e4e5ea; border-radius:8px; padding:3px;
-  background:#fff;
+  display:flex; flex-direction:column; gap:2px;
 }
-.config-perm-row {
-  display:flex; align-items:center; gap:5px; height:26px; padding:0 7px;
-  cursor:pointer; margin:0; border-radius:5px; transition:all 0.1s;
+#configDetailPanel .config-perm-row {
+  display:flex !important; align-items:center; gap:10px; height:32px; padding:0 10px;
+  cursor:pointer; margin:0 !important; border-radius:8px; transition:all 0.12s;
+  border:1px solid transparent; text-transform:none; letter-spacing:0; font-weight:400;
 }
-.config-perm-row:hover { background:#f5f5f5; }
-.config-perm-row:has(input:checked) { background:rgba(47,128,237,0.04); }
-.config-perm-row input { width:12px; height:12px; accent-color:#2f80ed; cursor:pointer; flex-shrink:0; margin:0; padding:0; }
-.config-perm-row span { font-size:10px; color:#868d9e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; transition:color 0.1s; }
-.config-perm-row:has(input:checked) span { color:#2f80ed; font-weight:600; }
+.config-perm-row:hover { background:rgba(47,128,237,0.04); border-color:rgba(47,128,237,0.08); }
+.config-perm-row:has(input:checked) { background:rgba(47,128,237,0.06); border-color:rgba(47,128,237,0.12); }
+.config-perm-row input { width:15px; height:15px; accent-color:#2f80ed; cursor:pointer; flex-shrink:0; margin:0; padding:0; }
+.config-perm-row span { font-size:12px; color:#868d9e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; transition:color 0.1s; }
+.config-perm-row:has(input:checked) span { color:#36415d; font-weight:600; }
 
 /* Config footer */
 .config-footer { border-top:1px solid #e9e9e9; padding-top:10px; display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
@@ -3813,12 +3781,11 @@ html.embedded .ar-sub-btns { top:66px; }
     </div>
 
     <!-- Permitted Roles -->
-    <div id="configPermissions" class="config-detail-card">
+    <div id="configPermissions" style="display:flex; flex-direction:column; gap:8px;">
       <div style="display:flex; align-items:center; justify-content:space-between;">
-        <div class="config-card-header" style="margin-bottom:0;">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="#868d9e"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-          <span>Roles</span>
-          <span id="configPermCount" style="font-size:10px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08); padding:1px 6px; border-radius:99px;">(9)</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <label style="margin-bottom:0 !important;">Permitted Roles</label>
+          <span id="configPermCount" style="font-size:10px; font-weight:600; color:#2f80ed; background:rgba(47,128,237,0.08); padding:2px 8px; border-radius:99px; line-height:1;">9</span>
         </div>
         <button class="config-perm-select-all" id="configPermSelectAll">Select all</button>
       </div>
@@ -7489,8 +7456,7 @@ function cfgRenderItem(item, depth) {
   if (isSelected) cls += ' cfg-selected';
   if (isFolder && configExpandedFolders.has(item.id)) cls += ' folder-expanded';
 
-  var descAttr = (!isFolder && item.description) ? ' data-desc="' + escHtml(item.description).substring(0, 120) + (item.description.length > 120 ? '...' : '') + '"' : '';
-  var html = '<div class="' + cls + '" data-config-id="' + item.id + '" data-config-type="' + item.type + '" data-config-depth="' + depth + '"' + descAttr + ' draggable="true" style="padding-left:' + indent + 'px;">';
+  var html = '<div class="' + cls + '" data-config-id="' + item.id + '" data-config-type="' + item.type + '" data-config-depth="' + depth + '" draggable="true" style="padding-left:' + indent + 'px;">';
 
   if (isFolder) {
     var isExpanded = configExpandedFolders.has(item.id);
@@ -7505,29 +7471,10 @@ function cfgRenderItem(item, depth) {
   } else {
     var dotClass = isActive ? 'active-sel' : (item.isEnabled ? 'enabled' : 'disabled');
     html += '<div class="config-dot ' + dotClass + '"></div>';
-    html += '<div class="config-item-content">';
-    html += '<div class="config-item-top">';
     html += '<div class="config-name' + (!item.isEnabled ? ' cfg-disabled' : '') + '" data-cfg-activate="' + item.id + '">' + escHtml(item.name) + '</div>';
     if (item.id === configActiveId && !item.isDefault) html += '<span class="config-badge active-badge">ACTIVE</span>';
     if (item.isDefault) html += '<span class="config-badge default">DEFAULT</span>';
     if (item.isReadOnly && !item.isDefault) html += '<span class="config-badge readonly">READ-ONLY</span>';
-    html += '</div>';
-    // Inline meta row: tags + override count
-    var partOverrides = item.partStates ? Object.keys(item.partStates).length : 0;
-    var hasMeta = (item.tags && item.tags.length > 0) || partOverrides > 0;
-    if (hasMeta) {
-      html += '<div class="config-item-meta">';
-      if (item.tags && item.tags.length > 0) {
-        var showTags = item.tags.slice(0, 2);
-        showTags.forEach(function(t) { html += '<span class="config-item-tag">' + escHtml(t) + '</span>'; });
-        if (item.tags.length > 2) html += '<span class="config-item-tag config-item-tag-more">+' + (item.tags.length - 2) + '</span>';
-      }
-      if (partOverrides > 0) {
-        html += '<span class="config-item-overrides">' + partOverrides + ' override' + (partOverrides !== 1 ? 's' : '') + '</span>';
-      }
-      html += '</div>';
-    }
-    html += '</div>';
     html += '<button class="config-ctx-btn" data-cfg-more="' + item.id + '" title="Options">&#8942;</button>';
   }
 
@@ -8040,7 +7987,7 @@ function renderConfigDetail() {
     cb.onchange = function() {
       if (cb.checked) { if (c.permittedRoles.indexOf(role)===-1) c.permittedRoles.push(role); }
       else { c.permittedRoles = c.permittedRoles.filter(function(r){ return r !== role; }); }
-      document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ')';
+      document.getElementById('configPermCount').textContent = c.permittedRoles.length;
     };
     var span = document.createElement('span');
     span.textContent = role;
@@ -8048,7 +7995,7 @@ function renderConfigDetail() {
     label.appendChild(span);
     permBody.appendChild(label);
   });
-  document.getElementById('configPermCount').textContent = '(' + c.permittedRoles.length + ')';
+  document.getElementById('configPermCount').textContent = c.permittedRoles.length;
   // Footer visibility
   document.getElementById('configDetailFooter').style.display = (c.isDefault && !c.lastUpdated) ? 'none' : '';
 

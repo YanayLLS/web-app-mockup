@@ -820,13 +820,176 @@ body {
 .proc-nav-btn svg { width: 32px; height: 32px; fill: #fff; }
 
 /* --- REMOTE SUPPORT --- */
-#rs-screen .xr-window { width: 1182px; }
+#rs-screen .xr-window { width: 820px; }
 #rs-screen .xr-body {
   width: 100%;
-  padding: 12px;
-  height: 671px;
-  display: flex; align-items: center; justify-content: center; gap: 24px;
+  padding: 20px;
 }
+.rs-content {
+  display: flex; flex-direction: column; gap: 18px;
+}
+/* Status bar */
+.rs-status-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 18px;
+  background: rgba(17,232,116,0.06); border: 1px solid rgba(17,232,116,0.15);
+}
+.rs-status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #11e874; flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(17,232,116,0.5);
+  animation: rsPulse 2s ease-in-out infinite;
+}
+@keyframes rsPulse { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+.rs-status-text { font-size: 12px; color: rgba(255,255,255,0.6); flex: 1; }
+.rs-status-text strong { color: #11e874; font-weight: 700; }
+.rs-status-avatars {
+  display: flex; margin-left: auto;
+}
+.rs-status-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff;
+  margin-left: -8px; border: 2px solid rgba(29,43,109,0.9);
+}
+.rs-status-avatar:first-child { margin-left: 0; }
+.rs-voice-hint {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: 11px; color: rgba(255,255,255,0.25);
+  padding: 8px 16px; border-radius: 99px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04);
+}
+.rs-voice-hint svg { width: 14px; height: 14px; fill: rgba(133,165,245,0.4); }
+/* Action cards */
+.rs-actions {
+  display: flex; gap: 14px;
+}
+.rs-action-card {
+  flex: 1; display: flex; flex-direction: column; gap: 10px;
+  padding: 20px 18px;
+  background: var(--xr-inner-bg); border: 2px solid rgba(99,131,216,0.12);
+  border-radius: 24px; cursor: pointer;
+  transition: all 0.2s;
+}
+.rs-action-card:hover {
+  background: var(--xr-item-hover); border-color: var(--xr-outline);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.rs-action-card:active { transform: scale(0.98); }
+.rs-action-card.rs-primary {
+  background: rgba(99,131,216,0.1); border-color: rgba(99,131,216,0.2);
+  box-shadow: inset 0 1px 0 rgba(133,165,245,0.08);
+}
+.rs-action-card.rs-primary:hover {
+  background: rgba(99,131,216,0.18); border-color: var(--xr-outline);
+  box-shadow: 0 8px 32px rgba(36,56,142,0.2), inset 0 1px 0 rgba(133,165,245,0.12);
+}
+/* Create meeting CTA */
+.rs-create-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; margin-top: auto;
+  background: linear-gradient(135deg, #2a4aaa 0%, #4f7de8 100%); border: none; border-radius: 14px;
+  color: #fff; font-family: 'Open Sans', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 4px 16px rgba(36,56,142,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.rs-create-btn:hover { background: linear-gradient(135deg, #3358c0, #6090f0); transform: scale(1.02); box-shadow: 0 6px 24px rgba(36,56,142,0.55), inset 0 1px 0 rgba(255,255,255,0.15); }
+.rs-create-btn svg { width: 16px; height: 16px; fill: #fff; }
+.rs-action-top {
+  display: flex; align-items: center; gap: 12px;
+}
+.rs-action-icon {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: rgba(99,131,216,0.15); border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 0 12px rgba(133,165,245,0.08);
+}
+.rs-action-card:hover .rs-action-icon { background: rgba(99,131,216,0.28); box-shadow: 0 0 20px rgba(133,165,245,0.15); }
+.rs-action-icon svg { width: 22px; height: 22px; fill: var(--xr-selected); filter: drop-shadow(0 0 4px rgba(133,165,245,0.3)); }
+.rs-action-card.rs-primary .rs-action-icon { background: rgba(133,165,245,0.2); box-shadow: 0 0 16px rgba(133,165,245,0.12); }
+.rs-action-title {
+  font-size: 17px; font-weight: 700; color: #fff;
+}
+.rs-action-desc {
+  font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5;
+}
+.rs-action-hint {
+  font-size: 10px; color: rgba(133,165,245,0.35); text-align: center; font-style: italic;
+}
+/* Join code input row */
+.rs-code-row {
+  display: flex; gap: 8px; margin-top: auto;
+}
+.rs-code-input {
+  flex: 1; height: 40px; padding: 0 14px;
+  background: rgba(0,0,0,0.2); border: 2px solid rgba(99,131,216,0.2);
+  border-radius: 14px; color: #fff; font-family: 'Open Sans', sans-serif;
+  font-size: 14px; font-weight: 600; letter-spacing: 2px;
+  outline: none; transition: all 0.15s;
+}
+.rs-code-input::placeholder { color: rgba(255,255,255,0.25); letter-spacing: 0.5px; font-weight: 400; }
+.rs-code-input:focus { border-color: var(--xr-selected); background: rgba(0,0,0,0.3); box-shadow: 0 0 0 3px rgba(133,165,245,0.1); }
+.rs-code-join-btn {
+  height: 40px; padding: 0 22px;
+  background: linear-gradient(135deg, var(--xr-hover), #3a5cc6); border: none; border-radius: 14px;
+  color: #fff; font-family: 'Open Sans', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.rs-code-join-btn:hover { background: linear-gradient(135deg, #2d4599, #4a6cd6); transform: scale(1.03); }
+/* Recent section */
+.rs-recent {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.rs-recent-header {
+  display: flex; align-items: center; gap: 10px; padding: 0 4px;
+}
+.rs-recent-label {
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.25);
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.rs-recent-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent); }
+.rs-recent-list {
+  display: flex; flex-direction: column; gap: 0;
+}
+.rs-recent-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border-radius: 16px;
+  background: transparent; cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.rs-recent-item + .rs-recent-item::before {
+  content: ''; position: absolute; top: 0; left: 52px; right: 12px;
+  height: 1px; background: rgba(255,255,255,0.06);
+}
+.rs-recent-item:hover { background: var(--xr-item-bg); box-shadow: inset 3px 0 0 var(--xr-selected); }
+.rs-recent-item:hover::before { display: none; }
+.rs-recent-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 12px; font-weight: 700; color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.08);
+}
+.rs-recent-avatar svg { width: 18px; height: 18px; fill: rgba(255,255,255,0.45); }
+.rs-recent-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rs-recent-name { font-size: 13px; font-weight: 600; color: #fff; }
+.rs-recent-meta { font-size: 11px; color: rgba(255,255,255,0.3); }
+.rs-recent-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.rs-recent-time { font-size: 11px; color: rgba(255,255,255,0.2); min-width: 56px; text-align: right; }
+.rs-recent-type {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(99,131,216,0.08);
+  display: flex; align-items: center; justify-content: center;
+}
+.rs-recent-type svg { width: 14px; height: 14px; fill: rgba(255,255,255,0.3); }
+.rs-recent-rejoin {
+  font-size: 10px; font-weight: 600; color: var(--xr-selected); opacity: 0;
+  transition: opacity 0.15s; white-space: nowrap;
+}
+.rs-recent-item:hover .rs-recent-rejoin { opacity: 1; }
 
 /* --- REMOTE CALL --- */
 #call-screen .xr-window { width: 1089px; }
@@ -1429,9 +1592,86 @@ body {
         <div class="top-info"><div class="info-col"><div class="battery"><span>98%</span><svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.34V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div><div class="time">3:21 PM</div></div></div>
         <div class="user-btn"><div class="gem"></div></div>
       </div>
-      <div class="xr-body" style="height:671px; display:flex; align-items:center; justify-content:center; gap:24px;">
-        <div class="xr-btn" style="width:238px; height:89px;" onclick="navigateTo('call')">Join call</div>
-        <div class="xr-btn" style="width:238px; height:89px;" onclick="navigateTo('call')">Create Meeting</div>
+      <div class="xr-body">
+        <div class="rs-content">
+          <!-- Status bar -->
+          <div class="rs-status-bar">
+            <div class="rs-status-dot"></div>
+            <span class="rs-status-text"><strong>3 experts</strong> available now</span>
+            <div class="rs-status-avatars">
+              <div class="rs-status-avatar" style="background:rgba(133,165,245,0.3);">LS</div>
+              <div class="rs-status-avatar" style="background:rgba(17,232,116,0.2);">MK</div>
+              <div class="rs-status-avatar" style="background:rgba(178,130,245,0.25);">RB</div>
+            </div>
+          </div>
+          <!-- Action cards -->
+          <div class="rs-actions">
+            <div class="rs-action-card rs-primary" onclick="navigateTo('call')">
+              <div class="rs-action-top">
+                <div class="rs-action-icon"><svg viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM19 12h2c0-4.97-4.03-9-9-9v2c3.87 0 7 3.13 7 7zm-4 0h2c0-2.76-2.24-5-5-5v2c1.66 0 3 1.34 3 3z"/></svg></div>
+                <span class="rs-action-title">Join Call</span>
+              </div>
+              <span class="rs-action-desc">Enter a meeting code to join an existing support session</span>
+              <div class="rs-code-row" onclick="event.stopPropagation()">
+                <input type="text" class="rs-code-input" placeholder="Meeting code..." maxlength="10">
+                <button class="rs-code-join-btn" onclick="navigateTo('call')">Join</button>
+              </div>
+            </div>
+            <div class="rs-action-card" onclick="navigateTo('call')">
+              <div class="rs-action-top">
+                <div class="rs-action-icon"><svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+                <span class="rs-action-title">Create Meeting</span>
+              </div>
+              <span class="rs-action-desc">Start a new session and invite participants to collaborate</span>
+              <button class="rs-create-btn" onclick="navigateTo('call')">
+                <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                Start Now
+              </button>
+              <span class="rs-action-hint">A shareable link will be generated</span>
+            </div>
+          </div>
+          <!-- Recent calls -->
+          <div class="rs-recent">
+            <div class="rs-recent-header">
+              <span class="rs-recent-label">Recent</span>
+              <div class="rs-recent-line"></div>
+            </div>
+            <div class="rs-recent-list">
+              <div class="rs-recent-item" onclick="navigateTo('call')">
+                <div class="rs-recent-avatar" style="background:rgba(133,165,245,0.2);">JS</div>
+                <div class="rs-recent-info"><div class="rs-recent-name">Jane S.</div><div class="rs-recent-meta">Service inspection · 12 min</div></div>
+                <div class="rs-recent-right">
+                  <span class="rs-recent-rejoin">Rejoin</span>
+                  <div class="rs-recent-type" title="Video call"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div>
+                  <span class="rs-recent-time">2h ago</span>
+                </div>
+              </div>
+              <div class="rs-recent-item" onclick="navigateTo('call')">
+                <div class="rs-recent-avatar" style="background:rgba(17,232,116,0.15);">JD</div>
+                <div class="rs-recent-info"><div class="rs-recent-name">John D.</div><div class="rs-recent-meta">Troubleshooting · 28 min</div></div>
+                <div class="rs-recent-right">
+                  <span class="rs-recent-rejoin">Rejoin</span>
+                  <div class="rs-recent-type" title="Audio call"><svg viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></svg></div>
+                  <span class="rs-recent-time">Yesterday</span>
+                </div>
+              </div>
+              <div class="rs-recent-item" onclick="navigateTo('call')">
+                <div class="rs-recent-avatar" style="background:rgba(178,130,245,0.2);">AM</div>
+                <div class="rs-recent-info"><div class="rs-recent-name">Alex M.</div><div class="rs-recent-meta">Calibration assist · 8 min</div></div>
+                <div class="rs-recent-right">
+                  <span class="rs-recent-rejoin">Rejoin</span>
+                  <div class="rs-recent-type" title="Video call"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div>
+                  <span class="rs-recent-time">Mar 15</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Voice hint -->
+          <div class="rs-voice-hint">
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+            Say "Join call" or "Create meeting" to start
+          </div>
+        </div>
       </div>
     </div>
   </div>
