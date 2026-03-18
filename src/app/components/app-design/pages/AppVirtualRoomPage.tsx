@@ -108,7 +108,7 @@ export function AppVirtualRoomPage() {
           </div>
           {canCreate && (
             <button
-              className="flex items-center gap-2 px-4 text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 px-4 text-white rounded-lg hover:brightness-110 transition-opacity"
               style={{ backgroundColor: '#2F80ED', height: '36px', fontWeight: 'var(--font-weight-semibold)', fontSize: '13px' }}
             >
               <Plus className="size-4" /> Create Room
@@ -282,7 +282,7 @@ export function AppVirtualRoomPage() {
             <div className="p-5 flex gap-3 shrink-0" style={{ borderTop: '1px solid #C2C9DB', paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))' }}>
               <button
                 onClick={() => setSelectedRoom(null)}
-                className="flex-1 flex items-center justify-center rounded-[var(--radius-button)] transition-colors hover:bg-secondary/80"
+                className="flex-1 flex items-center justify-center rounded-lg transition-colors hover:bg-secondary/80"
                 style={{
                   height: '44px',
                   backgroundColor: '#E9E9E9',
@@ -295,7 +295,7 @@ export function AppVirtualRoomPage() {
               </button>
               <button
                 onClick={() => navigate('/app/3d-viewer?mode=immersive&room=' + selectedRoom.id)}
-                className="flex-1 flex items-center justify-center gap-2 text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
+                className="flex-1 flex items-center justify-center gap-2 text-white rounded-lg hover:brightness-110 transition-opacity"
                 style={{
                   height: '44px',
                   backgroundColor: '#2F80ED',

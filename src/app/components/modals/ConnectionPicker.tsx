@@ -56,7 +56,7 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
     return (
       <div
         ref={pickerRef}
-        className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-80 max-w-[calc(100vw-32px)]"
+        className="fixed bg-card border border-border rounded-lg shadow-lg z-50 w-80 max-w-[calc(100vw-32px)]"
         style={{
           top: `${position.top}px`,
           left: `${Math.min(position.left, window.innerWidth - 336)}px`,
@@ -71,7 +71,7 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
             </h3>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-1 hover:bg-secondary rounded-lg transition-colors"
             >
               <X size={14} className="text-muted" />
             </button>
@@ -85,7 +85,7 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
               placeholder="Search digital twins..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 bg-secondary border border-border rounded-[var(--radius)] text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-9 pl-9 pr-3 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
               autoFocus
             />
           </div>
@@ -170,7 +170,7 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
     return (
       <div
         ref={pickerRef}
-        className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-96 max-w-[calc(100vw-32px)]"
+        className="fixed bg-card border border-border rounded-lg shadow-lg z-50 w-96 max-w-[calc(100vw-32px)]"
         style={{
           top: `${position.top}px`,
           left: `${Math.min(position.left, window.innerWidth - 400)}px`,
@@ -185,7 +185,7 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
             </h3>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-1 hover:bg-secondary rounded-lg transition-colors"
             >
               <X size={14} className="text-muted" />
             </button>
@@ -199,7 +199,7 @@ export function ConnectionPicker({ item, onClose, position }: ConnectionPickerPr
               placeholder="Search procedures..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 bg-secondary border border-border rounded-[var(--radius)] text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-9 pl-9 pr-3 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
               autoFocus
             />
           </div>

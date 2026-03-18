@@ -41,7 +41,7 @@ function QuickActionCard({ icon, title, description, onClick }: QuickActionProps
   return (
     <button
       onClick={onClick}
-      className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6 hover:border-primary transition-all hover:shadow-[var(--elevation-sm)] flex flex-col items-start text-left group"
+      className="bg-card border border-border rounded-xl p-4 sm:p-6 hover:border-primary/30 hover:shadow-lg transition-all flex flex-col items-start text-left group"
     >
       <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center mb-4 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/20 transition-all">
         {icon}
@@ -72,9 +72,9 @@ function RecentItem({ icon, title, subtitle, timestamp, onClick }: RecentItemPro
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors text-left group"
+      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-secondary/50 rounded-lg transition-colors text-left group"
     >
-      <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
@@ -102,14 +102,16 @@ interface StatCardProps {
 }
 
 function StatCard({ icon, value, label, trend, trendUp, accentColor }: StatCardProps) {
+  const trendColor = trendUp ? '#0a9e4a' : '#FF1F1F';
+  const trendBg = trendUp ? 'rgba(17,232,116,0.1)' : 'rgba(255,31,31,0.1)';
   return (
-    <div className="bg-card border border-border rounded-[var(--radius)] p-5 hover:border-primary/20 hover:shadow-md transition-all" style={{ boxShadow: 'var(--elevation-sm)' }}>
+    <div className="bg-card border border-border rounded-xl p-5 hover:border-primary/20 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${!accentColor ? 'bg-primary/10 text-primary' : ''}`} style={accentColor ? { background: `${accentColor}12`, color: accentColor } : undefined}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={accentColor ? { background: `${accentColor}12`, color: accentColor } : { background: 'rgba(47,128,237,0.1)', color: '#2F80ED' }}>
           {icon}
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-[var(--radius)] ${trendUp ? 'bg-accent/10 text-accent' : 'bg-destructive/10 text-destructive'}`}>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: trendBg, color: trendColor }}>
             <TrendingUp size={12} className={trendUp ? '' : 'rotate-180'} />
             <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>
               {trend}

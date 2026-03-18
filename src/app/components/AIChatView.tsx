@@ -1062,7 +1062,7 @@ export function AIChatView({
           
           {/* Modal */}
           <div
-            className="relative bg-card border border-border rounded-[var(--radius)] p-[24px] max-w-[400px] mx-[16px]"
+            className="relative bg-card border border-border rounded-lg p-[24px] max-w-[400px] mx-[16px]"
             style={{
               boxShadow: 'var(--elevation-lg)',
             }}
@@ -1095,7 +1095,7 @@ export function AIChatView({
             <div className="flex gap-[8px] justify-end">
               <button
                 onClick={cancelContextChange}
-                className="px-[16px] py-[8px] rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                className="px-[16px] py-[8px] rounded-lg hover:bg-secondary transition-colors"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
@@ -1105,7 +1105,7 @@ export function AIChatView({
               </button>
               <button
                 onClick={confirmContextChange}
-                className="px-[16px] py-[8px] rounded-[var(--radius)] bg-primary hover:opacity-90 transition-opacity"
+                className="px-[16px] py-[8px] rounded-lg bg-primary hover:brightness-110 transition-all"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--primary-foreground)',
@@ -1127,7 +1127,7 @@ export function AIChatView({
           
           {/* Modal */}
           <div
-            className="relative bg-card border border-border rounded-[var(--radius)] p-[24px] max-w-[400px] mx-[16px]"
+            className="relative bg-card border border-border rounded-lg p-[24px] max-w-[400px] mx-[16px]"
             style={{
               boxShadow: 'var(--elevation-lg)',
             }}
@@ -1160,7 +1160,7 @@ export function AIChatView({
             <div className="flex gap-[8px] justify-end">
               <button
                 onClick={cancelRevert}
-                className="px-[16px] py-[8px] rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                className="px-[16px] py-[8px] rounded-lg hover:bg-secondary transition-colors"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
@@ -1170,7 +1170,7 @@ export function AIChatView({
               </button>
               <button
                 onClick={confirmRevert}
-                className="px-[16px] py-[8px] rounded-[var(--radius)] bg-warning hover:opacity-90 transition-opacity"
+                className="px-[16px] py-[8px] rounded-lg bg-warning hover:brightness-110 transition-all"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'white',
@@ -1185,7 +1185,7 @@ export function AIChatView({
       )}
 
       {/* AI Chat Card */}
-      <div className="bg-card border border-border rounded-[var(--radius)] flex flex-1 overflow-hidden shadow-elevation-sm">
+      <div className="bg-card border border-border rounded-lg flex flex-1 overflow-hidden shadow-elevation-sm">
         {/* Chat History Sidebar */}
         {showChatHistory && (
           <div
@@ -1212,7 +1212,7 @@ export function AIChatView({
               {isMobile && (
                 <button
                   onClick={() => setShowChatHistory(false)}
-                  className="p-2.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                  className="p-2.5 hover:bg-secondary rounded-lg transition-colors"
                 >
                   <X size={18} style={{ color: 'var(--foreground)' }} />
                 </button>
@@ -1226,7 +1226,7 @@ export function AIChatView({
                   <button
                     key={chat.id}
                     onClick={() => handleSwitchChat(chat.id)}
-                    className={`w-full text-left px-[12px] py-[8px] rounded-[var(--radius)] transition-colors ${
+                    className={`w-full text-left px-[12px] py-[8px] rounded-lg transition-colors ${
                       currentChatId === chat.id
                         ? 'bg-primary/10'
                         : 'hover:bg-secondary/50'
@@ -1264,15 +1264,12 @@ export function AIChatView({
           {/* Header */}
           <div
             className="flex items-center justify-between px-[16px] py-[12px] border-b border-border shrink-0 flex-wrap gap-y-1"
-            style={{
-              fontFamily: 'var(--font-family)',
-            }}
           >
             <div className="flex items-center gap-[8px] min-w-0">
               {/* Toggle Chat History Button */}
               <button
                 onClick={() => setShowChatHistory(!showChatHistory)}
-                className={`${isMobile ? 'p-2.5' : 'p-[6px]'} hover:bg-secondary rounded-[var(--radius)] transition-colors`}
+                className={`${isMobile ? 'p-2.5' : 'p-[6px]'} hover:bg-secondary rounded-lg transition-colors`}
                 title={showChatHistory ? "Hide Chat History" : "Show Chat History"}
               >
                 <History size={20} style={{ color: 'var(--foreground)' }} />
@@ -1281,7 +1278,7 @@ export function AIChatView({
               {/* New Chat Button */}
               <button
                 onClick={handleNewChat}
-                className="p-[8px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors flex items-center justify-center"
+                className="p-[8px] rounded-lg border border-border hover:bg-secondary transition-colors flex items-center justify-center"
                 title="New Chat"
               >
                 <Plus size={20} style={{ color: 'var(--foreground)' }} />
@@ -1300,7 +1297,7 @@ export function AIChatView({
               <div className="relative" ref={headerMenuRef}>
                 <button
                   onClick={() => setShowHeaderMenu(!showHeaderMenu)}
-                  className={`${isMobile ? 'p-2.5' : 'p-[6px]'} hover:bg-secondary rounded-[var(--radius)] transition-colors`}
+                  className={`${isMobile ? 'p-2.5' : 'p-[6px]'} hover:bg-secondary rounded-lg transition-colors`}
                   title="More Options"
                 >
                   <MoreVertical size={18} style={{ color: 'var(--muted)' }} />
@@ -1314,7 +1311,7 @@ export function AIChatView({
                       onClick={() => setShowHeaderMenu(false)}
                     />
                     <div
-                      className="absolute right-0 top-[calc(100%+4px)] z-50 bg-card border border-border rounded-[var(--radius)] overflow-hidden"
+                      className="absolute right-0 top-[calc(100%+4px)] z-50 bg-card border border-border rounded-lg overflow-hidden"
                       style={{
                         width: '220px',
                         boxShadow: 'var(--elevation-md)',
@@ -1461,7 +1458,7 @@ export function AIChatView({
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className={`${isMobile ? 'p-3' : 'p-[6px]'} hover:bg-secondary rounded-[var(--radius)] transition-colors`}
+                className={`${isMobile ? 'p-3' : 'p-[6px]'} hover:bg-secondary rounded-lg transition-colors`}
               >
                 <IconClose />
               </button>
@@ -1476,7 +1473,7 @@ export function AIChatView({
                 {suggestedActions.map((action, index) => (
                   <button
                     key={index}
-                    className="px-[12px] py-[8px] bg-card border-[2px] border-primary text-primary rounded-[var(--radius-button)] hover:bg-primary/5 transition-colors"
+                    className="px-[12px] py-[8px] bg-card border-[2px] border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors"
                     style={{
                       fontSize: 'var(--text-sm)',
                     }}
@@ -1495,7 +1492,7 @@ export function AIChatView({
                 {msg.role === 'system' ? (
                   <div className="flex justify-center">
                     <div
-                      className="px-[12px] py-[6px] rounded-[var(--radius)] bg-secondary/30 max-w-[80%]"
+                      className="px-[12px] py-[6px] rounded-lg bg-secondary/30 max-w-[80%]"
                       style={{
                         fontSize: 'var(--text-sm)',
                         color: 'var(--muted)',
@@ -1515,7 +1512,7 @@ export function AIChatView({
                   >
                     <div className="flex flex-col max-w-[85%] relative" style={{ paddingBottom: !msg.error && editingMessageId !== msg.id ? (isMobile ? '32px' : '26px') : '0' }}>
                       <div
-                        className={`rounded-[var(--radius)] px-[14px] py-[12px] ${
+                        className={`rounded-lg px-[14px] py-[12px] ${
                           msg.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : msg.error
@@ -1529,7 +1526,7 @@ export function AIChatView({
                             {msg.attachments.map((file, fileIdx) => (
                               <div
                                 key={fileIdx}
-                                className="px-[8px] py-[4px] rounded-[var(--radius)] bg-background border border-border flex items-center gap-[6px]"
+                                className="px-[8px] py-[4px] rounded-lg bg-background border border-border flex items-center gap-[6px]"
                               >
                                 {file.preview ? (
                                   <img src={file.preview} alt="" className="w-[40px] h-[40px] object-cover rounded" />
@@ -1562,18 +1559,17 @@ export function AIChatView({
                             <textarea
                               value={editingMessageText}
                               onChange={(e) => setEditingMessageText(e.target.value)}
-                              className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                               style={{
                                 fontSize: 'var(--text-sm)',
-                                fontFamily: 'var(--font-family)',
-                                minHeight: '80px',
+                                                  minHeight: '80px',
                               }}
                               autoFocus
                             />
                             <div className="flex items-center gap-2 justify-end">
                               <button
                                 onClick={handleCancelEdit}
-                                className="px-3 py-1.5 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-xs"
+                                className="px-3 py-1.5 rounded-lg border border-border hover:bg-secondary transition-colors text-xs"
                                 style={{
                                   color: 'var(--foreground)',
                                   fontWeight: 'var(--font-weight-medium)',
@@ -1583,7 +1579,7 @@ export function AIChatView({
                               </button>
                               <button
                                 onClick={() => handleSaveEdit(msg.id)}
-                                className="px-3 py-1.5 rounded-[var(--radius)] bg-primary hover:opacity-90 transition-opacity text-xs flex items-center gap-1.5"
+                                className="px-3 py-1.5 rounded-lg bg-primary hover:brightness-110 transition-all text-xs flex items-center gap-1.5"
                                 style={{
                                   color: 'var(--primary-foreground)',
                                   fontWeight: 'var(--font-weight-bold)',
@@ -1613,7 +1609,7 @@ export function AIChatView({
                         {/* Action Card */}
                         {msg.action && !msg.reverted && (
                           <div 
-                            className="mt-[12px] rounded-[var(--radius)] border border-border bg-background/50 overflow-hidden"
+                            className="mt-[12px] rounded-lg border border-border bg-background/50 overflow-hidden"
                             style={{
                               boxShadow: 'var(--elevation-xs)',
                             }}
@@ -1711,7 +1707,7 @@ export function AIChatView({
 
                         {/* Reverted Indicator */}
                         {msg.reverted && msg.action && (
-                          <div className="mt-[12px] px-[12px] py-[8px] rounded-[var(--radius)] bg-muted/20 border border-muted flex items-center gap-[8px]">
+                          <div className="mt-[12px] px-[12px] py-[8px] rounded-lg bg-muted/20 border border-muted flex items-center gap-[8px]">
                             <Undo2 size={14} style={{ color: 'var(--muted)' }} />
                             <span
                               style={{
@@ -1748,7 +1744,7 @@ export function AIChatView({
                             
                             {/* Debug Details */}
                             {msg.errorDetails && expandedDebugMessageId === msg.id && (
-                              <div className="mt-[8px] bg-error/5 border border-error/20 rounded-[var(--radius)] p-[10px]">
+                              <div className="mt-[8px] bg-error/5 border border-error/20 rounded-lg p-[10px]">
                                 <div className="flex items-center justify-between mb-[6px]">
                                   <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-bold)', color: 'var(--error)' }}>
                                     Debug Information
@@ -1801,7 +1797,7 @@ export function AIChatView({
                             msg.action && !msg.reverted ? (
                               <button
                                 onClick={() => handleRevertAction(msg.id)}
-                                className="px-[8px] py-[4px] rounded-[var(--radius)] border border-warning bg-warning/10 hover:bg-warning/20 transition-colors flex items-center gap-[4px]"
+                                className="px-[8px] py-[4px] rounded-lg border border-warning bg-warning/10 hover:bg-warning/20 transition-colors flex items-center gap-[4px]"
                                 title="Revert this action"
                               >
                                 <Undo2 size={14} style={{ color: 'var(--warning)' }} />
@@ -1857,7 +1853,7 @@ export function AIChatView({
                       {msg.error && (
                         <button
                           onClick={() => handleRetryMessage(msg.id)}
-                          className="mt-[4px] px-[12px] py-[6px] rounded-[var(--radius)] border border-error hover:bg-error/10 transition-colors flex items-center gap-[6px] self-end"
+                          className="mt-[4px] px-[12px] py-[6px] rounded-lg border border-error hover:bg-error/10 transition-colors flex items-center gap-[6px] self-end"
                         >
                           <RotateCcw size={14} style={{ color: 'var(--error)' }} />
                           <span style={{ fontSize: 'var(--text-sm)', color: 'var(--error)' }}>
@@ -1874,7 +1870,7 @@ export function AIChatView({
             {/* Typing Indicator */}
             {isTyping && (
               <div className="flex justify-start">
-                <div className="rounded-[var(--radius)] px-[14px] py-[12px] bg-secondary/50 max-w-[85%]">
+                <div className="rounded-lg px-[14px] py-[12px] bg-secondary/50 max-w-[85%]">
                   <div className="flex items-center gap-[6px]">
                     <Loader2 size={14} className="animate-spin" style={{ color: 'var(--primary)' }} />
                     <span
@@ -1897,7 +1893,7 @@ export function AIChatView({
             {showScrollButton && (
               <button
                 onClick={scrollToBottom}
-                className="absolute bottom-[16px] right-[16px] p-[10px] rounded-full bg-primary shadow-elevation-md hover:opacity-90 transition-opacity"
+                className="absolute bottom-[16px] right-[16px] p-[10px] rounded-full bg-primary shadow-elevation-md hover:brightness-110 transition-all"
                 style={{
                   zIndex: 10,
                 }}
@@ -1912,7 +1908,7 @@ export function AIChatView({
             {/* Context Button */}
             <div className="mb-[8px] relative" ref={contextMenuRef}>
               <button
-                className="flex items-center gap-[6px] px-[10px] py-[6px] rounded-[var(--radius)] bg-primary/10 border border-primary hover:bg-primary/20 transition-colors w-full"
+                className="flex items-center gap-[6px] px-[10px] py-[6px] rounded-lg bg-primary/10 border border-primary hover:bg-primary/20 transition-colors w-full"
                 onClick={() => setShowContextMenu(!showContextMenu)}
                 style={{
                   fontSize: 'var(--text-sm)',
@@ -1947,7 +1943,7 @@ export function AIChatView({
                   className={`${
                     isMobile
                       ? 'fixed bottom-0 left-0 right-0 rounded-t-[16px]'
-                      : 'absolute bottom-full left-0 mb-[8px] w-full rounded-[var(--radius)]'
+                      : 'absolute bottom-full left-0 mb-[8px] w-full rounded-lg'
                   } bg-card border border-border shadow-elevation-lg z-50 overflow-hidden`}
                   style={{
                     maxHeight: isMobile ? '70vh' : '320px',
@@ -1966,7 +1962,7 @@ export function AIChatView({
 
                   {/* Search */}
                   <div className="px-[12px] py-[10px] border-b border-border">
-                    <div className="flex items-center gap-[8px] px-[10px] py-[6px] bg-secondary/30 rounded-[var(--radius)]">
+                    <div className="flex items-center gap-[8px] px-[10px] py-[6px] bg-secondary/30 rounded-lg">
                       <Search size={14} style={{ color: 'var(--muted)' }} />
                       <input
                         type="text"
@@ -2015,7 +2011,7 @@ export function AIChatView({
 
             {/* File Upload Error */}
             {fileUploadError && (
-              <div className="mb-[8px] px-[12px] py-[8px] rounded-[var(--radius)] bg-error/10 border border-error flex items-center gap-[8px]">
+              <div className="mb-[8px] px-[12px] py-[8px] rounded-lg bg-error/10 border border-error flex items-center gap-[8px]">
                 <AlertCircle size={14} style={{ color: 'var(--error)' }} />
                 <span style={{ fontSize: 'var(--text-sm)', color: 'var(--error)' }}>
                   {fileUploadError}
@@ -2035,7 +2031,7 @@ export function AIChatView({
                 {attachedFiles.map((file, idx) => (
                   <div
                     key={idx}
-                    className="px-[10px] py-[6px] rounded-[var(--radius)] bg-card border border-border flex items-center gap-[8px] relative group"
+                    className="px-[10px] py-[6px] rounded-lg bg-card border border-border flex items-center gap-[8px] relative group"
                   >
                     {file.preview ? (
                       <img src={file.preview} alt="" className="w-[40px] h-[40px] object-cover rounded" />
@@ -2072,7 +2068,7 @@ export function AIChatView({
 
             {/* Voice Recording Indicator */}
             {isRecording && (
-              <div className="mb-[8px] px-[12px] py-[8px] rounded-[var(--radius)] bg-error/10 border border-error flex items-center gap-[8px]">
+              <div className="mb-[8px] px-[12px] py-[8px] rounded-lg bg-error/10 border border-error flex items-center gap-[8px]">
                 <div className="flex items-center gap-[8px] flex-1">
                   <Mic size={16} style={{ color: 'var(--error)' }} className="animate-pulse" />
                   <span style={{ fontSize: 'var(--text-sm)', color: 'var(--error)', fontWeight: 'var(--font-weight-bold)' }}>
@@ -2084,7 +2080,7 @@ export function AIChatView({
                 </div>
                 <button
                   onClick={cancelRecording}
-                  className="px-[12px] py-[6px] rounded-[var(--radius)] hover:bg-error/20 transition-colors flex items-center gap-[6px]"
+                  className="px-[12px] py-[6px] rounded-lg hover:bg-error/20 transition-colors flex items-center gap-[6px]"
                 >
                   <X size={14} style={{ color: 'var(--error)' }} />
                   <span style={{ fontSize: 'var(--text-sm)', color: 'var(--error)' }}>
@@ -2095,7 +2091,7 @@ export function AIChatView({
             )}
 
             {/* Input Box */}
-            <div className="bg-card border border-border rounded-[var(--radius)] p-[10px]">
+            <div className="bg-card border border-border rounded-lg p-[10px]">
               <div className="flex gap-[8px]">
                 <textarea
                   ref={textareaRef}
@@ -2118,8 +2114,7 @@ export function AIChatView({
                     color: 'var(--foreground)',
                     minHeight: '50px',
                     maxHeight: '100px',
-                    fontFamily: 'var(--font-family)',
-                    alignSelf: 'flex-start',
+                          alignSelf: 'flex-start',
                   }}
                   rows={2}
                 />
@@ -2129,7 +2124,7 @@ export function AIChatView({
                   {/* File Attach Menu */}
                   <div className="relative" ref={fileMenuRef}>
                     <button
-                      className="p-[8px] hover:bg-secondary rounded-[var(--radius)] transition-colors shrink-0"
+                      className="p-[8px] hover:bg-secondary rounded-lg transition-colors shrink-0"
                       onClick={() => setShowFileMenu(!showFileMenu)}
                       title="Attach files"
                     >
@@ -2149,7 +2144,7 @@ export function AIChatView({
                         className={`${
                           isMobile
                             ? 'fixed bottom-0 left-0 right-0 rounded-t-[16px]'
-                            : 'absolute bottom-full mb-[8px] left-0 rounded-[var(--radius)] min-w-[200px]'
+                            : 'absolute bottom-full mb-[8px] left-0 rounded-lg min-w-[200px]'
                         } bg-card border border-border shadow-elevation-sm z-50 overflow-hidden`}
                         style={{
                           animation: isMobile ? 'slideUp 0.3s ease-out' : undefined,
@@ -2237,7 +2232,7 @@ export function AIChatView({
 
                   {/* Voice Recording Button */}
                   <button
-                    className={`p-[8px] rounded-[var(--radius)] transition-colors shrink-0 ${
+                    className={`p-[8px] rounded-lg transition-colors shrink-0 ${
                       isRecording ? 'bg-error/10' : 'hover:bg-secondary'
                     }`}
                     onClick={handleVoiceRecording}
@@ -2252,10 +2247,10 @@ export function AIChatView({
 
                   {/* Send Button */}
                   <button
-                    className={`p-[8px] rounded-[var(--radius)] transition-colors shrink-0 ${
+                    className={`p-[8px] rounded-lg transition-colors shrink-0 ${
                       isMessageEmpty 
                         ? 'opacity-50 cursor-not-allowed' 
-                        : 'bg-primary hover:opacity-90'
+                        : 'bg-primary hover:brightness-110'
                     }`}
                     onClick={() => handleSendMessage()}
                     disabled={isMessageEmpty}

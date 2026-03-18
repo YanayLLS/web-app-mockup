@@ -269,10 +269,9 @@ export function Sidebar({
             <div className="flex items-center gap-2 flex-1">
               <h2 
                 className="text-sidebar-foreground" 
-                style={{ 
+                style={{
                   fontWeight: 'var(--font-weight-bold)',
                   fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)'
                 }}
               >
                 Menu
@@ -283,7 +282,7 @@ export function Sidebar({
               {/* Search Button */}
               <button
                 onClick={() => setShowSearchField(!showSearchField)}
-                className={`flex items-center justify-center p-2 rounded-[var(--radius)] text-sidebar-foreground transition-all duration-200 ${
+                className={`flex items-center justify-center p-2 rounded-lg text-sidebar-foreground transition-all duration-200 ${
                   showSearchField ? 'bg-secondary opacity-100' : 'hover:bg-secondary'
                 } ${isHeaderHovered ? 'opacity-100' : 'opacity-0'}`}
                 title="Search menu"
@@ -296,7 +295,7 @@ export function Sidebar({
               {/* Minimize Button - Shows on hover */}
               <button
                 onClick={onToggleMinimized}
-                className={`flex items-center justify-center p-2 rounded-[var(--radius)] text-sidebar-foreground hover:bg-secondary transition-all duration-200 ${
+                className={`flex items-center justify-center p-2 rounded-lg text-sidebar-foreground hover:bg-secondary transition-all duration-200 ${
                   isHeaderHovered ? 'opacity-100' : 'opacity-0'
                 }`}
                 title="Minimize sidebar"
@@ -309,7 +308,7 @@ export function Sidebar({
         ) : (
           <button
             onClick={onToggleMinimized}
-            className="flex items-center justify-center p-2 rounded-[var(--radius)] text-sidebar-foreground hover:bg-secondary transition-all duration-200"
+            className="flex items-center justify-center p-2 rounded-lg text-sidebar-foreground hover:bg-secondary transition-all duration-200"
             title="Expand sidebar"
             aria-label="Expand sidebar"
           >
@@ -328,8 +327,8 @@ export function Sidebar({
               placeholder="Search menu items..."
               value={menuSearchQuery}
               onChange={(e) => setMenuSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-background border border-border rounded-[var(--radius)] text-foreground placeholder:text-muted outline-none focus:border-primary transition-colors"
-              style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+              className="w-full pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted outline-none focus:border-primary transition-colors"
+              style={{ fontSize: 'var(--text-sm)' }}
               aria-label="Search menu items"
               autoFocus
             />
@@ -345,8 +344,8 @@ export function Sidebar({
             {!isMinimized && (
               <button
                 onClick={onToggleWorkspaceManagement}
-                className="flex items-center gap-2 px-3 py-2 mb-4 text-sidebar-foreground hover:bg-secondary rounded-[var(--radius)] transition-all duration-200 hover:translate-x-[-2px]"
-                style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                className="flex items-center gap-2 px-3 py-2 mb-4 text-sidebar-foreground hover:bg-secondary rounded-lg transition-all duration-200 hover:translate-x-[-2px]"
+                style={{ fontSize: 'var(--text-sm)' }}
                 aria-label="Back to workspace"
                 aria-expanded={isWorkspaceManagement}
               >
@@ -361,7 +360,7 @@ export function Sidebar({
               {isMinimized && (
                 <button
                   onClick={onToggleMinimized}
-                  className="flex items-center justify-center w-full aspect-square rounded-[var(--radius)] text-sidebar-foreground hover:bg-secondary transition-all duration-200 hover:scale-105 mb-2"
+                  className="flex items-center justify-center w-full aspect-square rounded-lg text-sidebar-foreground hover:bg-secondary transition-all duration-200 hover:scale-105 mb-2"
                   title="Expand sidebar"
                   aria-label="Expand sidebar"
                 >
@@ -375,12 +374,12 @@ export function Sidebar({
                   <button
                     key={item.id}
                     onClick={() => onMenuItemSelect(item.id)}
-                    className={`flex items-center gap-3 rounded-[var(--radius)] transition-all duration-200 ${
+                    className={`flex items-center gap-3 rounded-lg transition-all duration-200 ${
                       isActive
                         ? 'bg-secondary text-sidebar-foreground shadow-sm'
                         : 'text-sidebar-foreground hover:bg-secondary hover:translate-x-[2px]'
                     } ${isMinimized ? 'justify-center w-full aspect-square' : 'px-3 py-2'}`}
-                    style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                    style={{ fontSize: 'var(--text-sm)' }}
                     title={isMinimized ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
@@ -408,16 +407,20 @@ export function Sidebar({
                   <button
                     key={item.id}
                     onClick={() => onMenuItemSelect(item.id)}
-                    className={`flex items-center gap-3 rounded-[var(--radius)] transition-all duration-200 relative ${
+                    className={`flex items-center gap-3 rounded-lg transition-all duration-200 relative ${
                       isActive
                         ? 'bg-secondary text-sidebar-foreground shadow-sm'
                         : 'text-sidebar-foreground hover:bg-secondary hover:translate-x-[2px]'
                     } ${isMinimized ? 'justify-center w-full aspect-square' : 'px-3 py-2'}`}
-                    style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                    style={{ fontSize: 'var(--text-sm)' }}
                     title={isMinimized ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <div className="shrink-0 w-5 flex items-center justify-center">
+                    {/* Active indicator bar */}
+                    {isActive && !isMinimized && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-primary rounded-r-full" />
+                    )}
+                    <div className={`shrink-0 w-5 flex items-center justify-center ${isActive ? 'text-primary' : ''}`}>
                       {getIcon(item.icon)}
                     </div>
                     {!isMinimized && (
@@ -425,8 +428,8 @@ export function Sidebar({
                         <span className="truncate">{item.label}</span>
                         {item.badge && (
                           <span
-                            className="ml-auto bg-primary text-white text-xs px-1.5 py-0.5 rounded-full"
-                            style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}
+                            className="ml-auto bg-primary text-white text-xs px-1.5 py-0.5 rounded-full animate-in fade-in zoom-in-50 duration-300"
+                            style={{ fontSize: 'var(--text-xs)', boxShadow: '0 0 8px rgba(47,128,237,0.4)' }}
                             aria-label={`${item.badge} unread notifications`}
                           >
                             {item.badge}
@@ -437,7 +440,7 @@ export function Sidebar({
                     {isMinimized && item.badge && (
                       <div
                         className="absolute -top-1 -right-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full"
-                        style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}
+                        style={{ fontSize: 'var(--text-xs)', boxShadow: '0 0 8px rgba(47,128,237,0.4)' }}
                         aria-label={`${item.badge} unread notifications`}
                       >
                         {item.badge}
@@ -451,13 +454,13 @@ export function Sidebar({
               {!isMinimized ? (
                 <>
                   <div className="flex items-center justify-between mt-6 mb-2 px-3">
-                    <span className="text-xs text-muted" style={{ fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-xs text-muted" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                       Projects
                     </span>
                     {canCreateNewProject && (
                       <button
                         onClick={() => setShowNewProjectModal(true)}
-                        className="text-muted hover:text-foreground hover:bg-secondary rounded-[var(--radius)] p-2 transition-all duration-200 hover:scale-110"
+                        className="text-muted hover:text-foreground hover:bg-secondary rounded-lg p-2 transition-all duration-200 hover:scale-110"
                         title="Create new project"
                         aria-label="Create new project"
                       >
@@ -477,14 +480,16 @@ export function Sidebar({
                           onProjectSelect(project.id);
                           setCurrentProject(project.id);
                         }}
-                        className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-[var(--radius)] transition-all duration-200 text-left ${
+                        className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg transition-all duration-200 text-left relative ${
                           isActive
                             ? 'bg-secondary text-sidebar-foreground shadow-sm'
                             : 'text-sidebar-foreground hover:bg-secondary hover:translate-x-[2px]'
                         }`}
-                        style={{ fontFamily: 'var(--font-family)' }}
                         aria-current={isActive ? 'page' : undefined}
                       >
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-3.5 rounded-r-full" style={{ backgroundColor: dotColor }} />
+                        )}
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: isActive ? dotColor : `${dotColor}60` }} />
                         {project.name}
                       </button>
@@ -495,7 +500,7 @@ export function Sidebar({
                 canAccessProjects && (
                   <button
                     onClick={() => onToggleSecondarySidebar(!isSecondarySidebarOpen)}
-                    className={`w-full aspect-square flex items-center justify-center rounded-[var(--radius)] transition-all duration-200 hover:scale-105 ${
+                    className={`w-full aspect-square flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-105 ${
                       isSecondarySidebarOpen || selectedProject
                         ? 'bg-secondary text-sidebar-foreground shadow-sm'
                         : 'text-sidebar-foreground hover:bg-secondary'

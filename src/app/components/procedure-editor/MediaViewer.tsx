@@ -193,7 +193,7 @@ export function MediaViewer({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, on
                       className="text-sm text-center"
                       style={{
                         color: dragActive ? 'var(--accent)' : 'var(--muted-foreground)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-normal)'
                       }}
                     >
@@ -203,7 +203,7 @@ export function MediaViewer({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, on
                       className="text-xs mt-1"
                       style={{
                         color: 'var(--muted-foreground)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-normal)'
                       }}
                     >
@@ -284,7 +284,7 @@ export function MediaViewer({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, on
               className="text-xs" 
               style={{ 
                 color: 'var(--destructive, #ef4444)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-normal)'
               }}
             >

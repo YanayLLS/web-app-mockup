@@ -70,7 +70,7 @@ export function ResizableColumnHeader({
         width: `${width}px`, 
         minWidth: `${width}px`, 
         maxWidth: `${width}px`,
-        fontFamily: 'var(--font-family)',
+        
         ...(sticky ? { 
           left: `${stickyLeft}px`,
         } : {}),

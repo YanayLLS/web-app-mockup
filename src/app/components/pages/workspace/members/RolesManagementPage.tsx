@@ -749,7 +749,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                               color: 'var(--foreground)',
                               borderColor: 'var(--border)',
                               borderRadius: 'var(--radius)',
-                              fontFamily: 'var(--font-family)',
+                              
                             }}
                             autoFocus
                           />
@@ -758,11 +758,11 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                               e.stopPropagation();
                               saveRename(role.id);
                             }}
-                            className="px-2 py-1 rounded text-xs hover:opacity-90"
+                            className="px-2 py-1 rounded text-xs hover:brightness-110"
                             style={{
                               backgroundColor: 'var(--primary)',
                               color: 'var(--primary-foreground)',
-                              fontFamily: 'var(--font-family)',
+                              
                               borderRadius: 'var(--radius)',
                             }}
                           >
@@ -777,7 +777,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                             style={{
                               backgroundColor: 'var(--secondary)',
                               color: 'var(--secondary-foreground)',
-                              fontFamily: 'var(--font-family)',
+                              
                               borderRadius: 'var(--radius)',
                             }}
                           >
@@ -798,14 +798,14 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                             color: 'var(--muted)',
                             borderColor: 'var(--border)',
                             borderRadius: 'var(--radius)',
-                            fontFamily: 'var(--font-family)',
+                            
                           }}
                         />
                       </div>
                     ) : (
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                          <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
                             {role.name}
                           </h3>
                           {isAdmin && (
@@ -822,7 +822,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                           )}
                         </div>
                         {role.description && (
-                          <p className="text-xs" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                          <p className="text-xs" style={{ color: 'var(--muted)' }}>
                             {role.description}
                           </p>
                         )}
@@ -834,7 +834,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                       style={{ cursor: 'pointer', borderRadius: 'var(--radius-sm)', marginLeft: '-8px' }}
                     >
                       <Users className="w-3.5 h-3.5" style={{ color: 'var(--muted)' }} />
-                      <span className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+                      <span className="text-sm" style={{ color: 'var(--muted)', fontSize: 'var(--text-sm)' }}>
                         {role.memberCount} member{role.memberCount !== 1 ? 's' : ''}
                       </span>
                     </button>
@@ -856,7 +856,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
                   {/* Training Permissions */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                    <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                       Training and Field
                     </label>
                     <div className="relative">
@@ -867,7 +867,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                           borderColor: role.permissions.training !== 'None' ? 'var(--primary)' : 'var(--border)',
                           backgroundColor: role.permissions.training !== 'None' ? 'var(--primary-background)' : 'var(--background)',
                           borderRadius: 'var(--radius)',
-                          fontFamily: 'var(--font-family)',
+                          
                           minHeight: '42px'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
@@ -880,7 +880,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                               role.permissions.training === 'None'
                                 ? 'var(--muted)'
                                 : 'var(--foreground)',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontSize: 'var(--text-sm)',
                           }}
                         >
@@ -914,14 +914,11 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                                       handlePermissionChange(role.id, 'training', perm.value)
                                     }
                                     className="w-full px-4 py-3 text-left hover:bg-secondary transition-colors"
-                                    style={{
-                                      fontFamily: 'var(--font-family)'
-                                    }}
                                   >
-                                    <p className="text-sm font-medium pr-8" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+                                    <p className="text-sm font-medium pr-8" style={{ color: 'var(--foreground)', fontSize: 'var(--text-sm)' }}>
                                       {perm.label}
                                     </p>
-                                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                                       {perm.description}
                                     </p>
                                   </button>
@@ -952,7 +949,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
 
                   {/* Content Permissions */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                    <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                       Content Creation
                     </label>
                     <div className="relative">
@@ -963,7 +960,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                           borderColor: role.permissions.content !== 'None' ? 'var(--primary)' : 'var(--border)',
                           backgroundColor: role.permissions.content !== 'None' ? 'var(--primary-background)' : 'var(--background)',
                           borderRadius: 'var(--radius)',
-                          fontFamily: 'var(--font-family)',
+                          
                           minHeight: '42px'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
@@ -976,7 +973,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                               role.permissions.content === 'None'
                                 ? 'var(--muted)'
                                 : 'var(--foreground)',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontSize: 'var(--text-sm)',
                           }}
                         >
@@ -1010,14 +1007,11 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                                       handlePermissionChange(role.id, 'content', perm.value)
                                     }
                                     className="w-full px-4 py-3 text-left hover:bg-secondary transition-colors"
-                                    style={{
-                                      fontFamily: 'var(--font-family)'
-                                    }}
                                   >
-                                    <p className="text-sm font-medium pr-8" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+                                    <p className="text-sm font-medium pr-8" style={{ color: 'var(--foreground)', fontSize: 'var(--text-sm)' }}>
                                       {perm.label}
                                     </p>
-                                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                                       {perm.description}
                                     </p>
                                   </button>
@@ -1048,7 +1042,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
 
                   {/* Administration Permissions */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                    <label className="text-xs font-medium" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                       Administration
                     </label>
                     <div className="relative">
@@ -1059,7 +1053,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                           borderColor: role.permissions.administration !== 'None' ? 'var(--primary)' : 'var(--border)',
                           backgroundColor: role.permissions.administration !== 'None' ? 'var(--primary-background)' : 'var(--background)',
                           borderRadius: 'var(--radius)',
-                          fontFamily: 'var(--font-family)',
+                          
                           minHeight: '42px'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
@@ -1072,7 +1066,7 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                               role.permissions.administration === 'None'
                                 ? 'var(--muted)'
                                 : 'var(--foreground)',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontSize: 'var(--text-sm)',
                           }}
                         >
@@ -1106,14 +1100,11 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                                       handlePermissionChange(role.id, 'administration', perm.value)
                                     }
                                     className="w-full px-4 py-3 text-left hover:bg-secondary transition-colors"
-                                    style={{
-                                      fontFamily: 'var(--font-family)'
-                                    }}
                                   >
-                                    <p className="text-sm font-medium pr-8" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+                                    <p className="text-sm font-medium pr-8" style={{ color: 'var(--foreground)', fontSize: 'var(--text-sm)' }}>
                                       {perm.label}
                                     </p>
-                                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                                       {perm.description}
                                     </p>
                                   </button>

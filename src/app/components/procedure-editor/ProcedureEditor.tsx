@@ -2189,7 +2189,7 @@ export function ProcedureEditor() {
                   <div>\n                    <p 
                       style={{
                         fontSize: 'var(--text-sm)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-bold)',
                         color: 'white',
                         margin: 0
@@ -2200,7 +2200,7 @@ export function ProcedureEditor() {
                     <p 
                       style={{
                         fontSize: 'var(--text-xs)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-normal)',
                         color: 'rgba(255, 255, 255, 0.9)',
                         margin: 0
@@ -2224,7 +2224,7 @@ export function ProcedureEditor() {
                       border: 'none',
                       cursor: 'pointer',
                       fontSize: 'var(--text-sm)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-medium)'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
@@ -2242,7 +2242,7 @@ export function ProcedureEditor() {
                       border: 'none',
                       cursor: 'pointer',
                       fontSize: 'var(--text-sm)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-bold)'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
@@ -2266,7 +2266,7 @@ export function ProcedureEditor() {
                   <p 
                     style={{
                       fontSize: 'var(--text-xs)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'white',
                       margin: '0 0 var(--spacing-xs) 0'
@@ -2281,7 +2281,7 @@ export function ProcedureEditor() {
                         className="rounded-full flex items-center"
                         style={{
                           fontSize: 'var(--text-xs)',
-                          fontFamily: 'var(--font-family)',
+                          
                           fontWeight: 'var(--font-weight-medium)',
                           backgroundColor: 'white',
                           color: 'var(--primary)',
@@ -2329,7 +2329,7 @@ export function ProcedureEditor() {
                   <p 
                     style={{
                       fontSize: 'var(--text-xs)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-normal)',
                       color: 'rgba(255, 255, 255, 0.8)',
                       margin: 0
@@ -2377,7 +2377,7 @@ export function ProcedureEditor() {
                     <p 
                       style={{
                         fontSize: 'var(--text-sm)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-bold)',
                         color: 'white',
                         margin: 0
@@ -2388,7 +2388,7 @@ export function ProcedureEditor() {
                     <p 
                       style={{
                         fontSize: 'var(--text-xs)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-normal)',
                         color: 'rgba(255, 255, 255, 0.9)',
                         margin: 0
@@ -2409,7 +2409,7 @@ export function ProcedureEditor() {
                       border: 'none',
                       cursor: 'pointer',
                       fontSize: 'var(--text-sm)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-medium)'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
@@ -2428,7 +2428,7 @@ export function ProcedureEditor() {
                       border: 'none',
                       cursor: tempArrowDirection ? 'pointer' : 'not-allowed',
                       fontSize: 'var(--text-sm)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-bold)',
                       opacity: tempArrowDirection ? 1 : 0.5
                     }}
@@ -2459,7 +2459,7 @@ export function ProcedureEditor() {
                   <p 
                     style={{
                       fontSize: 'var(--text-xs)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'white',
                       margin: '0 0 var(--spacing-xs) 0'
@@ -2470,7 +2470,7 @@ export function ProcedureEditor() {
                   <p 
                     style={{
                       fontSize: 'var(--text-xs)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-medium)',
                       color: 'rgba(255, 255, 255, 0.9)',
                       margin: 0,
@@ -2550,7 +2550,7 @@ export function ProcedureEditor() {
                       backgroundColor: 'rgba(255, 152, 0, 0.92)',
                       color: 'white',
                       fontSize: '12px',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 500,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                       zIndex: 20,
@@ -2573,7 +2573,7 @@ export function ProcedureEditor() {
                   >
                     <span style={{
                       fontSize: '10px',
-                      fontFamily: 'var(--font-family)',
+                      
                       color: 'rgba(255,255,255,0.5)',
                       fontStyle: 'italic',
                     }}>
@@ -2624,7 +2624,7 @@ export function ProcedureEditor() {
                   fontSize: '12px',
                   fontWeight: 'var(--font-weight-semibold)',
                   color: 'rgba(255, 255, 255, 0.9)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
                 title={activeConfigName}
               >
@@ -2666,7 +2666,7 @@ export function ProcedureEditor() {
                     <button
                       onClick={() => setShowSceneMoreMenu(false)}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
-                      style={{ fontFamily: 'var(--font-family)' }}
+                     
                     >
                       <Keyboard className="size-4 text-white/60" />
                       Hotkeys
@@ -2674,7 +2674,7 @@ export function ProcedureEditor() {
                     <button
                       onClick={() => setShowSceneMoreMenu(false)}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
-                      style={{ fontFamily: 'var(--font-family)' }}
+                     
                     >
                       <Glasses className="size-4 text-white/60" />
                       Activate VR
@@ -2683,7 +2683,7 @@ export function ProcedureEditor() {
                     <button
                       onClick={() => { handleRestart(); setShowSceneMoreMenu(false); }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
-                      style={{ fontFamily: 'var(--font-family)' }}
+                     
                     >
                       <RotateCcw className="size-4 text-white/60" />
                       Restart procedure
@@ -2691,7 +2691,7 @@ export function ProcedureEditor() {
                     <button
                       onClick={() => { handleOpenFlowEditor(); setShowSceneMoreMenu(false); }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
-                      style={{ fontFamily: 'var(--font-family)' }}
+                     
                     >
                       <ExternalLink className="size-4 text-white/60" />
                       Open procedure flow editor
@@ -3014,7 +3014,7 @@ export function ProcedureEditor() {
             </p>
             <button
               onClick={handleUndoDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-button hover:opacity-90 transition-opacity font-bold"
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-button hover:brightness-110 transition-opacity font-bold"
             >
               <Undo className="size-4" />
               Undo
@@ -3043,7 +3043,7 @@ export function ProcedureEditor() {
             </p>
             <button
               onClick={handleUndoPopupDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-button hover:opacity-90 transition-opacity font-bold"
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-button hover:brightness-110 transition-opacity font-bold"
             >
               <Undo className="size-4" />
               Undo

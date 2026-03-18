@@ -323,7 +323,7 @@ export function ProjectSettingsPage({
 
   return (
     <div className="flex-1 flex items-center justify-center bg-background p-8">
-      <div className="bg-card rounded-[var(--radius-lg)] shadow-elevation-sm w-full max-w-[600px] max-h-[90vh] overflow-auto">
+      <div className="bg-card rounded-xl shadow-elevation-sm w-full max-w-[600px] max-h-[90vh] overflow-auto">
         {/* Header */}
         <div className="p-6 border-b border-border">
           <div className="flex items-start justify-between mb-2">
@@ -353,12 +353,12 @@ export function ProjectSettingsPage({
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div>
             <h4 className="text-foreground mb-2">Owners</h4>
-            <div className="flex items-center justify-between px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card">
+            <div className="flex items-center justify-between px-3 py-2 border border-border rounded-xl bg-card">
               <MemberAvatarsRow
                 members={owners.map(m => ({
                   id: m.id,
@@ -384,7 +384,7 @@ export function ProjectSettingsPage({
             Description <span className="text-xs font-normal text-muted">(optional)</span>
           </h4>
           <textarea
-            className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            className="w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             rows={4}
             defaultValue="Introducing the Elitebook, a cutting-edge laptop designed for professionals who demand performance and elegance. With its sleek aluminum chassis and ultra-thin profile, the Elitebook combines style with functionality."
           />
@@ -400,14 +400,14 @@ export function ProjectSettingsPage({
             <div className="relative w-[160px]">
               <button
                 onClick={() => setShowPrivacyDropdown(!showPrivacyDropdown)}
-                className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card flex items-center justify-between hover:bg-secondary transition-colors"
+                className="w-full px-3 py-2 border border-border rounded-xl bg-card flex items-center justify-between hover:bg-secondary transition-colors"
               >
                 <span className="text-sm">{selectedPrivacy?.label}</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
 
               {showPrivacyDropdown && (
-                <div className="absolute z-20 mt-1 w-[280px] right-0 bg-card border-2 border-secondary rounded-[var(--radius-lg)] shadow-elevation-sm overflow-hidden p-4">
+                <div className="absolute z-20 mt-1 w-[280px] right-0 bg-card border-2 border-secondary rounded-xl shadow-elevation-sm overflow-hidden p-4">
                   {privacyOptions.map((option) => (
                     <button
                       key={option.value}
@@ -415,7 +415,7 @@ export function ProjectSettingsPage({
                         setPrivacy(option.value);
                         setShowPrivacyDropdown(false);
                       }}
-                      className="w-full text-left px-3 py-2 rounded-[var(--radius-lg)] hover:bg-secondary transition-colors mb-1"
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-secondary transition-colors mb-1"
                     >
                       <h4 className="text-sm text-foreground mb-1">{option.label}</h4>
                       <p className="text-xs text-foreground">{option.description}</p>
@@ -429,7 +429,7 @@ export function ProjectSettingsPage({
           {/* Share Project With - Only show if private */}
           {privacy === 'private' && (
             <div className="flex items-center justify-between p-4 border-t border-border">
-              <p className="text-xs text-foreground" style={{ fontFamily: 'var(--font-family)' }}>Share project with:</p>
+              <p className="text-xs text-foreground">Share project with:</p>
               <MemberAvatarsRow
                 members={sharedMembers.map(m => ({
                   id: m.id,
@@ -464,7 +464,7 @@ export function ProjectSettingsPage({
                 className="mb-1"
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-semibold)',
                 }}
@@ -474,7 +474,7 @@ export function ProjectSettingsPage({
               <p 
                 style={{
                   color: 'var(--muted)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   fontWeight: 'var(--font-weight-normal)',
                   lineHeight: '1.5',
@@ -488,10 +488,10 @@ export function ProjectSettingsPage({
             <div className="relative">
               <button
                 onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-                className="w-full px-4 py-3 border rounded-[var(--radius-lg)] bg-card flex items-center justify-between hover:bg-secondary transition-colors"
+                className="w-full px-4 py-3 border rounded-xl bg-card flex items-center justify-between hover:bg-secondary transition-colors"
                 style={{
                   borderColor: 'var(--border)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-normal)',
                   lineHeight: '1.5',
@@ -509,7 +509,7 @@ export function ProjectSettingsPage({
 
               {showRoleDropdown && (
                 <div
-                  className="absolute z-20 mt-1 w-full bg-card border rounded-[var(--radius-lg)] shadow-elevation-sm overflow-hidden"
+                  className="absolute z-20 mt-1 w-full bg-card border rounded-xl shadow-elevation-sm overflow-hidden"
                   style={{
                     borderColor: 'var(--border)',
                   }}
@@ -526,7 +526,7 @@ export function ProjectSettingsPage({
                         className="w-full px-4 py-3 hover:bg-secondary transition-colors border-b last:border-b-0 flex items-center justify-between"
                         style={{
                           borderColor: 'var(--border)',
-                          fontFamily: 'var(--font-family)',
+                          
                           fontSize: 'var(--text-base)',
                           fontWeight: 'var(--font-weight-normal)',
                           lineHeight: '1.5',
@@ -545,7 +545,7 @@ export function ProjectSettingsPage({
                           style={{
                             backgroundColor: 'var(--primary-background)',
                             color: 'var(--primary)',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontSize: 'var(--text-sm)',
                             fontWeight: 'var(--font-weight-semibold)',
                           }}
@@ -569,7 +569,7 @@ export function ProjectSettingsPage({
               <p className="text-xs text-foreground">Automatically connects to new procedures</p>
             </div>
             <div className="w-[250px]">
-              <div className="px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-card flex items-center justify-between">
+              <div className="px-3 py-2 border border-border rounded-xl bg-card flex items-center justify-between">
                 <span className="text-sm">Elitebook 840 G9</span>
                 <ChevronDown className="w-4 h-4" />
               </div>
@@ -586,7 +586,7 @@ export function ProjectSettingsPage({
               backgroundColor: 'var(--destructive)',
               color: 'var(--destructive-foreground)',
               borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
+              
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
@@ -600,7 +600,7 @@ export function ProjectSettingsPage({
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
               borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
+              
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}

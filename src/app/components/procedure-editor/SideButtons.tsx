@@ -39,7 +39,7 @@ export function SideButtons({ onEnterAR, onOpenPlacement, isARMode = false, isMo
             <span 
               style={{
                 fontSize: 'var(--text-sm)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'white'
               }}

@@ -9,6 +9,11 @@
   --text-h4: 14px;
   --text-base: 14px;
   --text-sm: 12px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
   --font-weight-bold: 700;
   --font-weight-semibold: 600;
   --font-weight-medium: 500;
@@ -22,6 +27,13 @@
   --spacing-lg: 16px;
   --spacing-xl: 24px;
   --spacing-2xl: 32px;
+  --spacing-0-5: 2px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-2-5: 10px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
 
   /* The default background color for the application. */
   --background: rgba(245, 245, 245, 1.00);
@@ -57,10 +69,10 @@
   --destructive-foreground: rgba(255, 255, 255, 1.00);
   /* The default border color for elements such as inputs, buttons, and other containers. */
   --border: rgba(233, 233, 233, 1.00);
-  /* The default background color for input fields once the text has been filled. Should be either transparent or match the input-background. */
+  /* The default border color for input fields once the text has been filled. */
   --input: rgba(194, 201, 219, 1.00);
   /* The default background color for input fields, text areas, and other input elements. */
-  --input-background: rgba(194, 201, 219, 1.00);
+  --input-background: rgba(255, 255, 255, 1.00);
   /* The color for focus rings, outlines, and other focus indicators. */
   --ring: rgba(46, 128, 237, 1.00);
   /* Text extra small */
@@ -69,6 +81,10 @@
   --primary-background: rgba(47, 128, 237, 0.1);
   /* Light background tint for destructive color */
   --destructive-background: rgba(217, 26, 26, 0.1);
+  /* Error color for error messages and states */
+  --error: rgba(255, 31, 31, 1.00);
+  /* Info color for informational messages */
+  --info: rgba(47, 128, 237, 1.00);
   /* Warning color for non-critical alerts */
   --warning: rgba(255, 193, 7, 1.00);
   /* Success color for positive actions and confirmations */
@@ -76,13 +92,13 @@
   /* Light background tint for success color */
   --success-background: rgba(17, 232, 116, 0.1);
   /* Shadow for small elevations, such as cards or modals. */
-  --elevation-sm: 1px 1px 10px 0px rgba(0,0,0,0.15);
+  --elevation-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   /* Shadow for medium elevations. */
-  --elevation-md: 2px 2px 15px 0px rgba(0,0,0,0.2);
+  --elevation-md: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
   /* Shadow for large elevations. */
-  --elevation-lg: 4px 4px 20px 0px rgba(0,0,0,0.25);
+  --elevation-lg: 0 12px 32px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.04);
   /* Shadow for extra large elevations. */
-  --elevation-xl: 6px 6px 30px 0px rgba(0,0,0,0.3);
+  --elevation-xl: 0 24px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.04);
   /* The color for chart elements, such as a bar or line in a chart. */
   --chart-1: rgba(47, 128, 237, 1.00);
   /* The color for another chart element, such as a bar or line in a chart. */
@@ -138,6 +154,8 @@
   --input: rgba(127, 127, 127, 1.00);
   --input-background: rgba(127, 127, 127, 1.00);
   --ring: rgba(46, 128, 237, 1.00);
+  --error: rgba(255, 31, 31, 1.00);
+  --info: rgba(47, 128, 237, 1.00);
   --warning: rgba(255, 193, 7, 1.00);
   --success: rgba(17, 232, 116, 1.00);
   --success-background: rgba(17, 232, 116, 0.1);
@@ -183,6 +201,8 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-error: var(--error);
+  --color-info: var(--info);
   --color-warning: var(--warning);
   --color-success: var(--success);
   --color-success-background: var(--success-background);
@@ -214,6 +234,15 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Smooth focus outlines globally */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 

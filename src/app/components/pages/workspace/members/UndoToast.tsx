@@ -104,7 +104,7 @@ export function UndoToast({ message, onUndo, onClose, duration = 10000, showUndo
           <p
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-base)',
             }}
           >
@@ -115,11 +115,11 @@ export function UndoToast({ message, onUndo, onClose, duration = 10000, showUndo
         {showUndo && (
           <button
             onClick={handleUndo}
-            className="flex-shrink-0 px-4 py-2 rounded-lg transition-all hover:opacity-90"
+            className="flex-shrink-0 px-4 py-2 rounded-lg transition-all hover:brightness-110"
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-bold)',
               borderRadius: 'var(--radius-button)',

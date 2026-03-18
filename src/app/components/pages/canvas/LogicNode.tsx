@@ -182,8 +182,7 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
           borderColor: selected ? 'var(--primary)' : colors.bg,
           backgroundColor: 'var(--card)',
           boxShadow: selected ? 'var(--elevation-lg)' : 'var(--elevation-sm)',
-          fontFamily: 'var(--font-family)',
-          overflow: 'visible'
+                    overflow: 'visible'
         }}
       >
         {/* Input Handle */}

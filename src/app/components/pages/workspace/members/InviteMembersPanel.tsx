@@ -356,12 +356,12 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     {currentStage === 3 && <Send className="w-5 h-5" style={{ color: 'var(--primary-foreground)' }} />}
                   </div>
                   <div>
-                    <h2 className="font-bold leading-tight" style={{ color: 'var(--foreground)', fontSize: 'var(--text-h2)', fontFamily: 'var(--font-family)' }}>
+                    <h2 className="font-bold leading-tight" style={{ color: 'var(--foreground)', fontSize: 'var(--text-h2)' }}>
                       {currentStage === 1 && 'Add members'}
                       {currentStage === 2 && 'Set permissions'}
                       {currentStage === 3 && 'Final review'}
                     </h2>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                       {currentStage === 1 && 'Enter emails or upload a file'}
                       {currentStage === 2 && 'Choose roles and groups'}
                       {currentStage === 3 && 'Review and send invites'}
@@ -412,7 +412,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   style={{
                     backgroundColor: currentStage >= 1 ? 'var(--primary)' : 'var(--secondary)',
                     color: currentStage >= 1 ? 'var(--primary-foreground)' : 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-semibold)'
                   }}
                 >
@@ -429,7 +429,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   style={{
                     backgroundColor: currentStage >= 2 ? 'var(--primary)' : 'var(--secondary)',
                     color: currentStage >= 2 ? 'var(--primary-foreground)' : 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-semibold)'
                   }}
                 >
@@ -445,7 +445,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 style={{
                   backgroundColor: currentStage >= 3 ? 'var(--primary)' : 'var(--secondary)',
                   color: currentStage >= 3 ? 'var(--primary-foreground)' : 'var(--muted)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-semibold)'
                 }}
               >
@@ -472,7 +472,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   className="text-xs" 
                   style={{ 
                     color: availableSeats === 0 ? 'var(--destructive)' : 'var(--muted)', 
-                    fontFamily: 'var(--font-family)'
+                    
                   }}
                 >
                   {availableSeats === 0 ? 'No seats available' : `${availableSeats} of ${totalSeats} seats available`}
@@ -481,7 +481,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
 
             {/* Email Input Section */}
             <div className="flex flex-col gap-2.5">
-              <label className="font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+              <label className="font-bold" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>
                 Email addresses
               </label>
               
@@ -515,7 +515,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                         }`
                       }}
                     >
-                      <span style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>{tag.email}</span>
+                      <span style={{ fontSize: 'var(--text-sm)' }}>{tag.email}</span>
                       <button
                         onClick={() => removeEmail(index)}
                         className="opacity-60 hover:opacity-100 transition-opacity"
@@ -534,7 +534,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     style={{ 
                       color: 'var(--foreground)',
                       fontSize: 'var(--text-base)',
-                      fontFamily: 'var(--font-family)'
+                      
                     }}
                     autoFocus
                   />
@@ -546,7 +546,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 {invalidEmails.length > 0 && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg animate-in slide-in-from-top-1" style={{ backgroundColor: 'var(--destructive-background)' }}>
                     <AlertCircle className="w-4 h-4" style={{ color: 'var(--destructive)' }} />
-                    <p className="text-sm font-medium" style={{ color: 'var(--destructive)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-sm font-medium" style={{ color: 'var(--destructive)' }}>
                       {invalidEmails.length} invalid email{invalidEmails.length !== 1 ? 's' : ''} - check format
                     </p>
                   </div>
@@ -554,7 +554,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 {duplicateEmails.length > 0 && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg animate-in slide-in-from-top-1" style={{ backgroundColor: 'rgba(255, 193, 7, 0.1)' }}>
                     <AlertCircle className="w-4 h-4" style={{ color: '#d97706' }} />
-                    <p className="text-sm font-medium" style={{ color: '#d97706', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-sm font-medium" style={{ color: '#d97706' }}>
                       {duplicateEmails.length} already in workspace
                     </p>
                   </div>
@@ -570,7 +570,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs transition-colors cursor-pointer"
                       style={{ 
                         color: 'var(--muted)',
-                        fontFamily: 'var(--font-family)'
+                        
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.color = 'var(--primary)';
@@ -595,7 +595,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     style={{ 
                       backgroundColor: 'var(--popover)',
                       color: 'var(--popover-foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                       borderRadius: 'var(--radius)',
                       border: '1px solid var(--border)',
@@ -614,7 +614,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
             <div className="flex flex-col gap-5">
               {/* Configure Permissions */}
               <div className="flex flex-col gap-2.5">
-                <label className="font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+                <label className="font-bold" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>
                   Role
                 </label>
                 <button
@@ -626,7 +626,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     borderColor: 'var(--border)'
                   }}
                 >
-                  <span className="font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+                  <span className="font-medium" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>
                     {getRolesDisplay()}
                   </span>
                   <ChevronDown className="w-5 h-5" style={{ color: 'var(--muted)' }} />
@@ -635,7 +635,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
 
               {/* Groups Section */}
               <div className="flex flex-col gap-2.5">
-                <label className="font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+                <label className="font-bold" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>
                   Groups <span className="text-xs font-normal ml-1" style={{ color: 'var(--muted)' }}>(optional)</span>
                 </label>
                 <button
@@ -669,7 +669,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   }}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium" style={{ color: selectedGroups.length === 0 ? 'var(--muted)' : 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+                    <span className="font-medium" style={{ color: selectedGroups.length === 0 ? 'var(--muted)' : 'var(--foreground)', fontSize: 'var(--text-base)' }}>
                       {selectedGroups.length === 0 ? 'Select groups' : `${selectedGroups.length} group${selectedGroups.length > 1 ? 's' : ''} selected`}
                     </span>
                     <ChevronDown className="w-5 h-5" style={{ color: 'var(--muted)' }} />
@@ -696,13 +696,13 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                         className="font-bold" 
                         style={{ 
                           color: 'var(--foreground)', 
-                          fontFamily: 'var(--font-family)',
+                          
                           fontSize: 'var(--text-base)'
                         }}
                       >
                         Inviting {emailTags.filter(tag => tag.status === 'valid').length} member{emailTags.filter(tag => tag.status === 'valid').length !== 1 ? 's' : ''}
                       </p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                      <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
                         Review before sending
                       </p>
                     </div>
@@ -712,12 +712,12 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-2">
-                      <p className="text-xs" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>Role:</p>
+                      <p className="text-xs" style={{ color: 'var(--muted)' }}>Role:</p>
                       <p 
                         className="text-sm font-medium" 
                         style={{ 
                           color: 'var(--foreground)', 
-                          fontFamily: 'var(--font-family)'
+                          
                         }}
                       >
                         {getRolesDisplay()}
@@ -725,7 +725,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     </div>
                     {selectedGroups.length > 0 && (
                       <div className="flex items-start gap-2">
-                        <p className="text-xs pt-1" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>Groups:</p>
+                        <p className="text-xs pt-1" style={{ color: 'var(--muted)' }}>Groups:</p>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedGroups.map((groupName) => {
                             const group = groups.find(g => g.name === groupName);
@@ -738,7 +738,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                                   backgroundColor: `${groupColor}20`,
                                   color: groupColor,
                                   border: `1px solid ${groupColor}`,
-                                  fontFamily: 'var(--font-family)',
+                                  
                                 }}
                               >
                                 <Users className="w-3 h-3" style={{ color: groupColor }} />
@@ -755,7 +755,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
 
               {/* Project Access */}
               <div className="flex flex-col gap-2.5">
-                <label className="font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+                <label className="font-bold" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>
                   Project Access <span className="text-xs font-normal ml-1" style={{ color: 'var(--muted)' }}>(optional)</span>
                 </label>
                 <button
@@ -766,7 +766,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     borderColor: 'var(--border)'
                   }}
                 >
-                  <span className="font-medium" style={{ color: selectedProjects.length > 0 || selectedGroups.length > 0 ? 'var(--foreground)' : 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)' }}>
+                  <span className="font-medium" style={{ color: selectedProjects.length > 0 || selectedGroups.length > 0 ? 'var(--foreground)' : 'var(--muted)', fontSize: 'var(--text-base)' }}>
                     {(() => {
                       // Get all projects from selected groups
                       const groupProjects = selectedGroups.flatMap(groupName => {
@@ -818,7 +818,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 style={{ 
                   backgroundColor: 'var(--secondary)',
                   color: 'var(--foreground)', 
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-semibold)'
                 }}
                 onMouseEnter={(e) => {
@@ -840,7 +840,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
               style={{ 
                 backgroundColor: 'var(--secondary)',
                 color: 'var(--foreground)', 
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-semibold)',
                 fontSize: 'var(--text-base)'
               }}
@@ -870,7 +870,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   boxShadow: '0 4px 12px rgba(47, 128, 237, 0.3)',
                   opacity: currentStage === 1 && emailTags.filter(tag => tag.status === 'valid').length === 0 ? 0.5 : 1
@@ -894,7 +894,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   boxShadow: '0 4px 12px rgba(47, 128, 237, 0.3)'
                 }}
@@ -1030,7 +1030,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   className="font-bold mb-1" 
                   style={{ 
                     color: 'var(--foreground)', 
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-lg)'
                   }}
                 >
@@ -1040,7 +1040,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                   className="text-sm" 
                   style={{ 
                     color: 'var(--muted)', 
-                    fontFamily: 'var(--font-family)'
+                    
                   }}
                 >
                   You only have {availableSeats} seat{availableSeats !== 1 ? 's' : ''} available. Remove some emails or contact support to add more seats.
@@ -1054,7 +1054,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                 }}
               >

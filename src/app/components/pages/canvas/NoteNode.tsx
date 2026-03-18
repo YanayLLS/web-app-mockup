@@ -55,8 +55,7 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
         minHeight: '160px',
         border: selected ? '2px solid var(--primary)' : '1px solid rgba(0,0,0,0.1)',
         boxShadow: selected ? 'var(--elevation-lg)' : 'var(--elevation-md)',
-        fontFamily: 'var(--font-family)',
-      }}
+              }}
     >
       {/* Header with icon and delete button */}
       <div className="flex items-center justify-between p-2 border-b border-black/10">
@@ -141,8 +140,7 @@ export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
           style={{
             color: '#000',
             minHeight: '100px',
-            fontFamily: 'var(--font-family)',
-            cursor: data.editingEnabled === false ? 'default' : undefined,
+                        cursor: data.editingEnabled === false ? 'default' : undefined,
           }}
         />
       </div>

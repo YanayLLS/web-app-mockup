@@ -243,7 +243,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
           <div>
             <h2 style={{ 
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-h2)',
               fontWeight: 'var(--font-weight-bold)',
             }}>
@@ -251,7 +251,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
             </h2>
             <p style={{ 
               color: 'var(--muted)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               marginTop: 'calc(var(--radius) * 0.25)',
             }}>
@@ -261,13 +261,13 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
           {isAdmin && (
             <button
               onClick={handleCreateGroup}
-              className="transition-opacity hover:opacity-90 flex items-center"
+              className="transition-opacity hover:brightness-110 flex items-center"
               style={{
                 padding: 'calc(var(--radius) * 0.8) calc(var(--radius) * 1.2)',
                 borderRadius: 'var(--radius-button)',
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 gap: 'calc(var(--radius) * 0.5)',
               }}
@@ -294,7 +294,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
         <div></div>
         <span style={{ 
           color: 'var(--foreground)',
-          fontFamily: 'var(--font-family)',
+          
           fontSize: 'var(--text-sm)',
           fontWeight: 'var(--font-weight-bold)',
         }}>
@@ -302,7 +302,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
         </span>
         <span style={{ 
           color: 'var(--foreground)',
-          fontFamily: 'var(--font-family)',
+          
           fontSize: 'var(--text-sm)',
           fontWeight: 'var(--font-weight-bold)',
         }}>
@@ -310,7 +310,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
         </span>
         <span style={{ 
           color: 'var(--foreground)',
-          fontFamily: 'var(--font-family)',
+          
           fontSize: 'var(--text-sm)',
           fontWeight: 'var(--font-weight-bold)',
         }}>
@@ -370,11 +370,11 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
                   />
                   <button
                     onClick={() => saveRename(group.id)}
-                    className="px-2 py-1 rounded text-xs hover:opacity-90"
+                    className="px-2 py-1 rounded text-xs hover:brightness-110"
                     style={{
                       backgroundColor: 'var(--primary)',
                       color: 'var(--primary-foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       borderRadius: 'var(--radius)',
                     }}
                   >
@@ -386,7 +386,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
                     style={{
                       backgroundColor: 'var(--secondary)',
                       color: 'var(--secondary-foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       borderRadius: 'var(--radius)',
                     }}
                   >
@@ -396,7 +396,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <p className="text-base font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-base font-medium" style={{ color: 'var(--foreground)' }}>
                       {group.name}
                     </p>
                     {isAdmin && (
@@ -409,7 +409,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
                       </button>
                     )}
                   </div>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                     {group.members.length} member{group.members.length !== 1 ? 's' : ''}
                   </p>
                 </>
@@ -432,7 +432,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
                 className="text-sm px-4 py-2 border transition-colors font-medium"
                 style={{ 
                   color: 'var(--foreground)', 
-                  fontFamily: 'var(--font-family)',
+                  
                   borderColor: 'var(--border)',
                   borderRadius: 'var(--radius-md)',
                 }}
@@ -442,7 +442,7 @@ export function GroupsManagementPage({ groups, onGroupsChange, publicFeatureEnab
                 {group.projects.length > 0 ? (
                   <AccessSummary {...getAccessCounts(group.projects)} />
                 ) : (
-                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>Add access</span>
+                  <span style={{ color: 'var(--muted)' }}>Add access</span>
                 )}
               </button>
             </div>

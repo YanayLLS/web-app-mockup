@@ -614,7 +614,7 @@ export function Viewer3D({
             style={{
               color: 'white',
               fontSize: 'var(--text-sm)',
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-normal)',
               margin: 0
             }}
@@ -642,7 +642,7 @@ export function Viewer3D({
                 <path d="M9 11l3 3L22 4" />
               </svg>
             </div>
-            <p style={{ color: 'white', fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)', margin: 0 }}>
+            <p style={{ color: 'white', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', margin: 0 }}>
               {validation.checkpoints.length} Checkpoint{validation.checkpoints.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -652,10 +652,10 @@ export function Viewer3D({
               return (
                 <div key={cp.id} className="rounded flex items-center" style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '4px 8px', gap: '6px' }}>
                   <span className="rounded-full shrink-0" style={{ width: '6px', height: '6px', backgroundColor: sevColor }} />
-                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-family)', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                  <span style={{ fontSize: '11px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                     {cp.label || cp.type}
                   </span>
-                  <span style={{ fontSize: '9px', fontFamily: 'var(--font-family)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     {cp.severity}
                   </span>
                 </div>

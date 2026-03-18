@@ -108,11 +108,11 @@ export function GroupContextMenu({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
               {isFilterMode ? 'Filter by Group' : 'Select Groups'}
             </h3>
             {isFilterMode && selectedGroups.length > 0 && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 {selectedGroups.length} group{selectedGroups.length > 1 ? 's' : ''} selected
               </p>
             )}
@@ -125,7 +125,7 @@ export function GroupContextMenu({
                   handleClose();
                 }}
                 className="text-xs hover:underline transition-colors"
-                style={{ color: 'var(--primary)', fontFamily: 'var(--font-family)' }}
+                style={{ color: 'var(--primary)' }}
               >
                 Manage Groups
               </button>
@@ -168,7 +168,7 @@ export function GroupContextMenu({
                 >
                   <Users className="w-2.5 h-2.5" style={{ color: group.color }} />
                 </div>
-                <span className="text-sm" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                <span className="text-sm" style={{ color: 'var(--foreground)' }}>
                   {group.name}
                 </span>
               </div>
@@ -178,7 +178,7 @@ export function GroupContextMenu({
 
         {/* Footer */}
         <div className="pt-2 border-t border-border">
-          <span className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+          <span className="text-sm" style={{ color: 'var(--muted)' }}>
             {selectedGroups.length} selected
           </span>
         </div>

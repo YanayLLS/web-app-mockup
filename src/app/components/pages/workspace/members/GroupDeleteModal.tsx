@@ -65,7 +65,7 @@ export function GroupDeleteModal({ groupName, memberCount, onConfirm, onCancel }
             </button>
             <button
               onClick={onConfirm}
-              className="px-5 py-2.5 text-sm rounded-lg bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity"
+              className="px-5 py-2.5 text-sm rounded-lg bg-destructive text-destructive-foreground hover:brightness-110 transition-opacity"
             >
               Delete Group
             </button>

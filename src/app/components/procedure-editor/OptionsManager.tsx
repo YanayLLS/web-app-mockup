@@ -194,7 +194,7 @@ export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAct
             <button
               onClick={handleAdd}
               disabled={!newAction.trim()}
-              className="bg-accent text-accent-foreground px-4 py-2 rounded-button hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2"
+              className="bg-accent text-accent-foreground px-4 py-2 rounded-button hover:brightness-110 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2"
               aria-label="Add multi choice option"
             >
               <Plus className="size-4" />
@@ -244,14 +244,14 @@ export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAct
                       />
                       <button
                         onClick={handleSaveEdit}
-                        className="p-1.5 bg-accent text-accent-foreground rounded hover:opacity-90"
+                        className="p-1.5 bg-accent text-accent-foreground rounded hover:brightness-110"
                         aria-label="Save edit"
                       >
                         <Plus className="size-4" />
                       </button>
                       <button
                         onClick={handleCancelEdit}
-                        className="p-1.5 bg-secondary text-secondary-foreground rounded hover:opacity-90"
+                        className="p-1.5 bg-secondary text-secondary-foreground rounded hover:brightness-110"
                         aria-label="Cancel edit"
                       >
                         <X className="size-4" />
@@ -296,7 +296,7 @@ export function OptionsManager({ actions, onAddAction, onEditAction, onRemoveAct
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-button hover:opacity-90 transition-opacity"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-button hover:brightness-110 transition-opacity"
           >
             Done
           </button>

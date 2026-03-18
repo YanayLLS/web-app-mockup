@@ -197,7 +197,7 @@ export function FilterBuilderModal({
             <h2
               style={{
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-lg)',
                 fontWeight: 'var(--font-weight-bold)',
               }}
@@ -208,7 +208,7 @@ export function FilterBuilderModal({
               className="mt-1"
               style={{
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
               }}
             >
@@ -236,7 +236,7 @@ export function FilterBuilderModal({
                       style={{
                         backgroundColor: 'var(--secondary)',
                         color: 'var(--foreground)',
-                        fontFamily: 'var(--font-family)',
+                        
                       }}
                     >
                       OR
@@ -258,7 +258,7 @@ export function FilterBuilderModal({
                       <span
                         style={{
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
+                          
                           fontSize: 'var(--text-sm)',
                           fontWeight: 'var(--font-weight-medium)',
                         }}
@@ -275,7 +275,7 @@ export function FilterBuilderModal({
                           borderColor: 'var(--border)',
                           backgroundColor: 'var(--card)',
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
+                          
                           borderRadius: 'var(--radius)',
                         }}
                       >
@@ -285,7 +285,7 @@ export function FilterBuilderModal({
                       <span
                         style={{
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
+                          
                           fontSize: 'var(--text-sm)',
                           fontWeight: 'var(--font-weight-medium)',
                         }}
@@ -317,7 +317,7 @@ export function FilterBuilderModal({
                               className="text-xs font-medium"
                               style={{
                                 color: 'var(--muted)',
-                                fontFamily: 'var(--font-family)',
+                                
                               }}
                             >
                               {group.scope === 'any' ? 'OR' : 'AND'}
@@ -341,7 +341,7 @@ export function FilterBuilderModal({
                               borderColor: 'var(--border)',
                               backgroundColor: 'var(--card)',
                               color: 'var(--foreground)',
-                              fontFamily: 'var(--font-family)',
+                              
                               borderRadius: 'var(--radius)',
                             }}
                           >
@@ -363,7 +363,7 @@ export function FilterBuilderModal({
                               borderColor: 'var(--border)',
                               backgroundColor: 'var(--card)',
                               color: 'var(--foreground)',
-                              fontFamily: 'var(--font-family)',
+                              
                               borderRadius: 'var(--radius)',
                             }}
                           >
@@ -381,7 +381,7 @@ export function FilterBuilderModal({
                                 borderColor: 'var(--border)',
                                 backgroundColor: 'var(--card)',
                                 color: Array.isArray(rule.value) && rule.value.length > 0 ? 'var(--foreground)' : 'var(--muted)',
-                                fontFamily: 'var(--font-family)',
+                                
                                 borderRadius: 'var(--radius)',
                               }}
                             >
@@ -401,7 +401,7 @@ export function FilterBuilderModal({
                                 borderColor: 'var(--border)',
                                 backgroundColor: 'var(--card)',
                                 color: 'var(--foreground)',
-                                fontFamily: 'var(--font-family)',
+                                
                                 borderRadius: 'var(--radius)',
                               }}
                             >
@@ -435,7 +435,7 @@ export function FilterBuilderModal({
                       style={{
                         borderColor: 'var(--border)',
                         color: 'var(--primary)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                       }}
                     >
@@ -454,7 +454,7 @@ export function FilterBuilderModal({
               style={{
                 borderColor: 'var(--border)',
                 color: 'var(--primary)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-medium)',
               }}
@@ -474,7 +474,7 @@ export function FilterBuilderModal({
             <span
               style={{
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
               }}
             >
@@ -486,7 +486,7 @@ export function FilterBuilderModal({
                 className="text-xs hover:underline"
                 style={{
                   color: 'var(--destructive)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
               >
                 Clear All
@@ -500,7 +500,7 @@ export function FilterBuilderModal({
               style={{
                 borderColor: 'var(--border)',
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 borderRadius: 'var(--radius)',
               }}
@@ -513,7 +513,7 @@ export function FilterBuilderModal({
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 borderRadius: 'var(--radius)',
               }}

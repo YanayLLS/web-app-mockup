@@ -103,7 +103,7 @@ export function AppProcedureDetailPage() {
         <div className="max-w-4xl mx-auto p-4 sm:p-6">
           {/* Language selector */}
           {showLanguageSelector && (
-            <div className="flex items-center gap-2 mb-4 p-3 bg-card rounded-[var(--radius)] border border-border">
+            <div className="flex items-center gap-2 mb-4 p-3 bg-card rounded-lg border border-border">
               <Globe className="size-4 text-muted" />
               <span className="text-sm text-foreground flex-1" style={{ fontWeight: 'var(--font-weight-medium)' }}>English</span>
               <ChevronDown className="size-4 text-muted" />
@@ -121,7 +121,7 @@ export function AppProcedureDetailPage() {
             <div className="flex-1 min-w-0">
               {/* Thumbnail */}
               {procedure.image && (
-                <div className="aspect-video rounded-[var(--radius)] overflow-hidden bg-secondary mb-4">
+                <div className="aspect-video rounded-lg overflow-hidden bg-secondary mb-4">
                   <img
                     src={procedure.image}
                     alt={procedure.name}
@@ -200,7 +200,7 @@ export function AppProcedureDetailPage() {
               {/* Run button */}
               <button
                 onClick={() => navigate(`/app/project/${projectId}/procedure/${procedureId}/launch`)}
-                className="w-full bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                className="w-full bg-primary text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '48px' }}
               >
                 <Play className="size-5" />
@@ -220,7 +220,7 @@ export function AppProcedureDetailPage() {
             {/* Right - Content creator area (desktop) — only for editors */}
             {showCreatorArea && canEdit && (
               <div className="lg:w-[300px] shrink-0">
-                <div className="bg-secondary/50 rounded-[var(--radius)] p-4 border border-border">
+                <div className="bg-secondary/50 rounded-lg p-4 border border-border">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs text-muted" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                       Content creator area
@@ -244,7 +244,7 @@ export function AppProcedureDetailPage() {
                     </div>
                   </div>
                   <button
-                    className="w-full py-2.5 bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors text-sm"
+                    className="w-full py-2.5 bg-primary text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors text-sm"
                     style={{ fontWeight: 'var(--font-weight-semibold)' }}
                   >
                     <Edit className="size-4" />

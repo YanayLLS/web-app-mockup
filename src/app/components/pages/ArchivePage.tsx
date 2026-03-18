@@ -43,7 +43,7 @@ export function ArchivePage() {
 
       {/* Search + Filter */}
       <div className="flex items-center gap-2 mb-5">
-        <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border rounded-[var(--radius)] focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+        <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border rounded-lg focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
           <Search size={14} className="text-muted shrink-0" />
           <input
             type="text"
@@ -56,7 +56,7 @@ export function ArchivePage() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-sm text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer"
+          className="px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer"
           style={{ fontWeight: 'var(--font-weight-medium)' }}
         >
           <option value="all">All Types</option>

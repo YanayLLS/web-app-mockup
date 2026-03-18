@@ -19,20 +19,25 @@ const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string; b
 
 function NotificationsSkeleton() {
   return (
-    <div className="p-6">
-      <div className="mb-5 animate-pulse">
-        <div className="h-5 bg-muted/30 rounded w-48 mb-2" />
-        <div className="h-3 bg-muted/30 rounded w-64" />
+    <div className="p-4 sm:p-6 max-w-3xl">
+      <div className="mb-5">
+        <div className="h-5 bg-muted/20 rounded-lg w-48 mb-2 animate-pulse" />
+        <div className="h-3 bg-muted/15 rounded-lg w-64 animate-pulse" style={{ animationDelay: '75ms' }} />
       </div>
       <div className="space-y-2">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-4 rounded-xl border border-border bg-background animate-pulse">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="p-3.5 rounded-xl border border-border/60 bg-card animate-pulse"
+            style={{ animationDelay: `${150 + i * 100}ms`, animationFillMode: 'backwards' }}
+          >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-muted/20 shrink-0" />
+              <div className="w-9 h-9 rounded-lg bg-muted/15 shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-muted/30 rounded w-3/4" />
-                <div className="h-3 bg-muted/30 rounded w-1/3" />
+                <div className="h-4 bg-muted/20 rounded-lg" style={{ width: `${75 - i * 8}%` }} />
+                <div className="h-3 bg-muted/15 rounded-lg w-1/4" />
               </div>
+              <div className="w-16 h-3 bg-muted/10 rounded-lg shrink-0" />
             </div>
           </div>
         ))}

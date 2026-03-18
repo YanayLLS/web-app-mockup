@@ -80,7 +80,7 @@ export function AppKnowledgeBasePage() {
     <div className="h-full flex flex-col overflow-y-auto p-4 sm:p-6" style={{ maxWidth: '100%' }}>
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <h1 style={{ fontSize: '22px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', margin: 0, fontFamily: 'var(--font-family)' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 'var(--font-weight-bold)', color: '#36415D', margin: 0 }}>
           Projects
         </h1>
         <div className="flex items-center gap-3">

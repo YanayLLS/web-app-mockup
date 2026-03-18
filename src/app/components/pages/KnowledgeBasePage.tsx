@@ -88,30 +88,34 @@ function KnowledgeBaseGridSkeleton() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header skeleton */}
-      <div className="shrink-0 border-b border-border bg-card">
+      <div className="shrink-0 border-b border-border/60 bg-card">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3 flex-1">
-            <div className="h-10 bg-muted/30 rounded-[var(--radius)] w-72 animate-pulse" />
+            <div className="h-10 bg-muted/15 rounded-lg w-72 animate-pulse" />
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-10 w-20 bg-muted/30 rounded-[var(--radius)] animate-pulse" />
-            <div className="h-10 w-20 bg-muted/30 rounded-[var(--radius)] animate-pulse" />
-            <div className="h-10 w-28 bg-muted/30 rounded-[var(--radius)] animate-pulse" />
+            <div className="h-10 w-20 bg-muted/15 rounded-lg animate-pulse" style={{ animationDelay: '50ms' }} />
+            <div className="h-10 w-20 bg-muted/15 rounded-lg animate-pulse" style={{ animationDelay: '100ms' }} />
+            <div className="h-10 w-28 bg-muted/15 rounded-lg animate-pulse" style={{ animationDelay: '150ms' }} />
           </div>
         </div>
       </div>
       {/* Grid skeleton */}
       <div className="flex-1 overflow-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-[var(--radius)] overflow-hidden animate-pulse">
-              <div className="h-32 bg-muted/30" />
-              <div className="p-3 space-y-2">
-                <div className="h-4 bg-muted/30 rounded w-3/4" />
-                <div className="h-3 bg-muted/30 rounded w-1/2" />
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div
+              key={i}
+              className="bg-card border border-border/60 rounded-xl overflow-hidden animate-pulse"
+              style={{ animationDelay: `${200 + i * 75}ms`, animationFillMode: 'backwards' }}
+            >
+              <div className="h-32 bg-gradient-to-br from-muted/15 to-muted/5" />
+              <div className="p-3.5 space-y-2.5">
+                <div className="h-4 bg-muted/20 rounded-lg w-3/4" />
+                <div className="h-3 bg-muted/15 rounded-lg w-1/2" />
                 <div className="flex items-center gap-2 pt-1">
-                  <div className="h-3 bg-muted/30 rounded w-16" />
-                  <div className="h-3 bg-muted/30 rounded w-20" />
+                  <div className="w-5 h-5 bg-muted/10 rounded-full" />
+                  <div className="h-3 bg-muted/10 rounded-lg w-20" />
                 </div>
               </div>
             </div>
@@ -137,7 +141,7 @@ function KnowledgeBaseEmptyState({ onCreateClick, canCreate }: { onCreateClick: 
       {canCreate && (
         <button
           onClick={onCreateClick}
-          className="flex items-center gap-2 h-10 px-6 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-2 h-10 px-6 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Create Your First Item</span>
@@ -1271,7 +1275,7 @@ function KnowledgeBaseContent() {
                     e.stopPropagation();
                     toggleFolder(item.id);
                   }}
-                  className="p-0.5 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                  className="p-0.5 hover:bg-secondary rounded-lg transition-colors"
                 >
                   {item.isExpanded ? (
                     <ChevronDown size={16} className="text-muted" />
@@ -1282,7 +1286,7 @@ function KnowledgeBaseContent() {
               )}
             </div>
 
-            <div className={`p-1.5 rounded-[var(--radius)] ${getItemTypeColor(item)} shrink-0 relative`}>
+            <div className={`p-1.5 rounded-lg ${getItemTypeColor(item)} shrink-0 relative`}>
               {getItemIcon(item)}
               {/* Multi-select badge */}
               {isDragging && selectedItems.has(item.id) && selectedItems.size > 1 && (
@@ -1307,7 +1311,7 @@ function KnowledgeBaseContent() {
                     }
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full h-7 px-2 bg-card border-2 border-primary rounded-[var(--radius)] text-sm text-foreground outline-none"
+                  className="w-full h-7 px-2 bg-card border-2 border-primary rounded-lg text-sm text-foreground outline-none"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 />
               ) : (
@@ -1431,7 +1435,7 @@ function KnowledgeBaseContent() {
                     setActiveItemMenu(item.id);
                   }
                 }}
-                className={`p-1.5 rounded-[var(--radius)] transition-all ${
+                className={`p-1.5 rounded-lg transition-all ${
                   isMenuOpen
                     ? 'opacity-100 bg-secondary'
                     : 'md:opacity-0 md:group-hover:opacity-100 hover:bg-secondary'
@@ -1482,7 +1486,7 @@ function KnowledgeBaseContent() {
       <button
         ref={ref}
         onClick={onClick}
-        className={`flex items-center gap-1 text-sm px-2 py-1 rounded-[var(--radius)] transition-colors ${
+        className={`flex items-center gap-1 text-sm px-2 py-1 rounded-lg transition-colors ${
           isOver
             ? 'bg-primary/20 text-primary ring-2 ring-primary/30'
             : isCurrent
@@ -1547,7 +1551,7 @@ function KnowledgeBaseContent() {
         ref={ref}
         key={item.id}
         onClick={handleCardClick}
-        className={`group relative bg-card border rounded-[var(--radius)] transition-all cursor-pointer ${
+        className={`group relative bg-card border rounded-lg transition-all cursor-pointer ${
           isDragging ? 'opacity-50' : ''
         } ${
           isOver ? 'ring-2 ring-primary border-primary' : ''
@@ -1581,7 +1585,7 @@ function KnowledgeBaseContent() {
               </>
             ) : (
               <div className={`w-full h-full flex items-center justify-center ${getItemTypeColor(item)} bg-opacity-10`}>
-                <div className={`p-5 rounded-[var(--radius)] ${getItemTypeColor(item)} transition-transform duration-300 group-hover:scale-110`}>
+                <div className={`p-5 rounded-lg ${getItemTypeColor(item)} transition-transform duration-300 group-hover:scale-110`}>
                   {getItemIcon(item)}
                 </div>
               </div>
@@ -1623,7 +1627,7 @@ function KnowledgeBaseContent() {
                   setActiveItemMenu(item.id);
                 }
               }}
-              className={`p-1.5 rounded-[var(--radius)] transition-all backdrop-blur-sm ${
+              className={`p-1.5 rounded-lg transition-all backdrop-blur-sm ${
                 isMenuOpen
                   ? 'opacity-100 bg-black/40'
                   : 'md:opacity-0 md:group-hover:opacity-100 bg-black/20 hover:bg-black/40'
@@ -1651,7 +1655,7 @@ function KnowledgeBaseContent() {
                 }
               }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full h-7 px-2 bg-card border-2 border-primary rounded-[var(--radius)] text-sm text-foreground outline-none"
+              className="w-full h-7 px-2 bg-card border-2 border-primary rounded-lg text-sm text-foreground outline-none"
               style={{ fontWeight: 'var(--font-weight-bold)' }}
             />
           ) : (
@@ -1814,7 +1818,7 @@ function KnowledgeBaseContent() {
                 placeholder="Search knowledge base..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-10 bg-secondary border border-border rounded-[var(--radius)] text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full h-10 pl-10 pr-10 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
               {searchQuery && (
                 <button
@@ -1848,7 +1852,7 @@ function KnowledgeBaseContent() {
             <div className="relative" ref={filterMenuRef}>
               <button
                 onClick={() => setShowFilterMenu(!showFilterMenu)}
-                className={`relative flex items-center gap-2 h-10 px-3 rounded-[var(--radius)] border transition-colors ${
+                className={`relative flex items-center gap-2 h-10 px-3 rounded-lg border transition-colors ${
                   selectedFilter !== 'all'
                     ? 'bg-primary/10 border-primary text-primary'
                     : 'bg-card border-border text-foreground hover:bg-secondary'
@@ -1863,7 +1867,7 @@ function KnowledgeBaseContent() {
 
               {showFilterMenu && (
                 <div 
-                  className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-10 overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-10 overflow-hidden"
                   style={{ boxShadow: 'var(--elevation-sm)' }}
                 >
                   {[
@@ -1897,13 +1901,13 @@ function KnowledgeBaseContent() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 bg-secondary rounded-[var(--radius)] p-1">
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
               <button
                 onClick={() => {
                   setViewMode('list');
                   setCurrentFolderId(null);
                 }}
-                className={`p-2 rounded-[var(--radius)] transition-all ${
+                className={`p-2 rounded-lg transition-all ${
                   viewMode === 'list' 
                     ? 'bg-card text-primary shadow-sm' 
                     : 'text-muted hover:text-foreground'
@@ -1917,7 +1921,7 @@ function KnowledgeBaseContent() {
                   setViewMode('grid');
                   setCurrentFolderId(null);
                 }}
-                className={`p-2 rounded-[var(--radius)] transition-all ${
+                className={`p-2 rounded-lg transition-all ${
                   viewMode === 'grid' 
                     ? 'bg-card text-primary shadow-sm' 
                     : 'text-muted hover:text-foreground'
@@ -1933,7 +1937,7 @@ function KnowledgeBaseContent() {
                 <div className="w-px h-6 bg-border" />
 
                 {/* Import Button */}
-                <button className="flex items-center gap-2 h-10 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors">
+                <button className="flex items-center gap-2 h-10 px-4 rounded-lg border border-border text-foreground hover:bg-secondary transition-colors">
                   <Upload size={16} />
                   <span className="text-sm">Import</span>
                 </button>
@@ -1942,7 +1946,7 @@ function KnowledgeBaseContent() {
                 <div className="relative" ref={createMenuRef}>
               <button
                 onClick={() => setShowCreateMenu(!showCreateMenu)}
-                className="flex items-center gap-2 h-10 px-4 rounded-[var(--radius)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="flex items-center gap-2 h-10 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 <Plus size={16} />
                 <span className="text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Create</span>
@@ -1950,7 +1954,7 @@ function KnowledgeBaseContent() {
 
               {showCreateMenu && (
                 <div 
-                  className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-32px)] bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden"
                   style={{ boxShadow: 'var(--elevation-sm)' }}
                 >
                   <div className="p-2">
@@ -2091,7 +2095,7 @@ function KnowledgeBaseContent() {
                       setShowAddColumnMenu(true);
                     }
                   }}
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors group/addcol"
+                  className="p-1.5 hover:bg-secondary rounded-lg transition-colors group/addcol"
                   title="Customize columns"
                 >
                   <Plus size={14} className="text-muted group-hover/addcol:text-foreground transition-colors" />
@@ -2208,7 +2212,7 @@ function KnowledgeBaseContent() {
       {showAddColumnMenu && addColumnMenuPos && (
         <div
           ref={addColumnMenuRef}
-          className="fixed w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 overflow-hidden"
+          className="fixed w-48 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden"
           style={{ top: `${addColumnMenuPos.top}px`, right: `${addColumnMenuPos.right}px`, boxShadow: 'var(--elevation-sm)' }}
         >
           <div className="p-2 border-b border-border">
@@ -2235,7 +2239,7 @@ function KnowledgeBaseContent() {
         return (
           <div
             ref={itemMenuRef}
-            className="fixed w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50"
+            className="fixed w-48 bg-card border border-border rounded-lg shadow-lg z-50"
             style={{ top: `${itemMenuPos.top}px`, right: `${itemMenuPos.right}px`, boxShadow: 'var(--elevation-sm)' }}
           >
             <button
@@ -2323,7 +2327,7 @@ function KnowledgeBaseContent() {
       {/* Multi-Selection Bottom Overlay */}
       {selectedItems.size > 0 && !canvasProcedure && (
         <div 
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-[var(--radius)] px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-6 flex-wrap max-w-[calc(100vw-32px)]"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-6 flex-wrap max-w-[calc(100vw-32px)]"
           style={{ boxShadow: 'var(--elevation-sm)' }}
         >
           <div className="flex items-center gap-4">
@@ -2347,14 +2351,14 @@ function KnowledgeBaseContent() {
           <div className="w-px h-8 bg-border" />
 
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors">
+            <button className="flex items-center gap-2 h-9 px-4 rounded-lg border border-border text-foreground hover:bg-secondary transition-colors">
               <Download size={16} />
               <span className="text-sm">Download</span>
             </button>
             {hasAccess(currentRole, 'duplicate-content') && (
               <button
                 onClick={duplicateSelectedItems}
-                className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-border text-foreground hover:bg-secondary transition-colors"
+                className="flex items-center gap-2 h-9 px-4 rounded-lg border border-border text-foreground hover:bg-secondary transition-colors"
               >
                 <Copy size={16} />
                 <span className="text-sm">Duplicate</span>
@@ -2363,7 +2367,7 @@ function KnowledgeBaseContent() {
             {canDelete && (
               <button
                 onClick={deleteSelectedItems}
-                className="flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
+                className="flex items-center gap-2 h-9 px-4 rounded-lg border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <Trash2 size={16} />
                 <span className="text-sm">Delete</span>
@@ -2530,7 +2534,7 @@ function KnowledgeBaseContent() {
         return (
           <div
             ref={digitalTwinConnectionMenuRef}
-            className="fixed bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 w-80 max-w-[calc(100vw-32px)]"
+            className="fixed bg-card border border-border rounded-lg shadow-lg z-50 w-80 max-w-[calc(100vw-32px)]"
             style={{
               top: `${digitalTwinConnectionMenu.position.top}px`,
               left: `${digitalTwinConnectionMenu.position.left}px`,
@@ -2553,7 +2557,7 @@ function KnowledgeBaseContent() {
                   placeholder="Search procedures..."
                   value={procedureSearchQuery}
                   onChange={(e) => setProcedureSearchQuery(e.target.value)}
-                  className="w-full h-8 pl-9 pr-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full h-8 pl-9 pr-3 bg-secondary border border-border rounded-lg text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -2619,7 +2623,7 @@ function KnowledgeBaseContent() {
           }}
         >
           {/* Close button */}
-          <button onClick={() => { setShowDigitalTwinModal(false); setDtImportFiles([]); }} className="absolute top-6 right-6 p-2 rounded-[var(--radius)] hover:bg-secondary transition-colors" aria-label="Close"><X size={20} className="text-muted" /></button>
+          <button onClick={() => { setShowDigitalTwinModal(false); setDtImportFiles([]); }} className="absolute top-6 right-6 p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="Close"><X size={20} className="text-muted" /></button>
           {/* Hidden file input */}
           <input
             ref={dtFileInputRef}
@@ -2655,7 +2659,7 @@ function KnowledgeBaseContent() {
                       }}
                     >
                       <File size={20} style={{ color: 'var(--muted)' }} />
-                      <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted)', marginTop: 2, fontFamily: 'var(--font-family)' }}>{ext}</span>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted)', marginTop: 2 }}>{ext}</span>
                     </div>
                   ))}
                 </div>
@@ -2664,7 +2668,6 @@ function KnowledgeBaseContent() {
                 <p style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--muted-foreground)',
-                  fontFamily: 'var(--font-family)',
                   textAlign: 'center',
                   marginBottom: 12,
                   lineHeight: 1.5,
@@ -2677,7 +2680,6 @@ function KnowledgeBaseContent() {
                 <p style={{
                   fontSize: 'var(--text-base)',
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
                   textAlign: 'center',
                 }}>
                   Drop your file here or{' '}
@@ -2702,8 +2704,7 @@ function KnowledgeBaseContent() {
                         backgroundColor: 'var(--input)',
                         borderRadius: 25,
                         fontSize: 'var(--text-sm)',
-                        fontFamily: 'var(--font-family)',
-                        color: 'var(--foreground)',
+                              color: 'var(--foreground)',
                       }}
                     >
                       <span style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
@@ -2722,7 +2723,6 @@ function KnowledgeBaseContent() {
                 <p style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
                   textAlign: 'center',
                 }}>
                   Drop more files or{' '}
@@ -2745,7 +2745,7 @@ function KnowledgeBaseContent() {
                 setShowDigitalTwinModal(false);
                 setDtImportFiles([]);
               }}
-              className="px-6 py-2.5 text-sm font-bold text-destructive hover:text-destructive/70 transition-colors rounded-[var(--radius)]"
+              className="px-6 py-2.5 text-sm font-bold text-destructive hover:text-destructive/70 transition-colors rounded-lg"
             >
               Cancel
             </button>
@@ -2773,7 +2773,7 @@ function KnowledgeBaseContent() {
                 openDigitalTwinModal(newItem);
                 showToast(`Digital twin "${fileName}" created successfully`, 'success');
               }}
-              className={`px-6 py-2.5 text-sm font-bold text-primary-foreground transition-colors rounded-[var(--radius)] ${dtImportFiles.length > 0 ? 'bg-primary hover:bg-primary/80 cursor-pointer' : 'bg-muted cursor-default'}`}
+              className={`px-6 py-2.5 text-sm font-bold text-primary-foreground transition-colors rounded-lg ${dtImportFiles.length > 0 ? 'bg-primary hover:bg-primary/80 cursor-pointer' : 'bg-muted cursor-default'}`}
             >
               Create
             </button>
@@ -2787,7 +2787,7 @@ function KnowledgeBaseContent() {
           onClick={() => openMediaPreview(null)}
         >
           <div
-            className="bg-card border border-border rounded-[var(--radius)] w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+            className="bg-card border border-border rounded-lg w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
             style={{ boxShadow: 'var(--elevation-lg)' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -2798,7 +2798,7 @@ function KnowledgeBaseContent() {
                   {getItemIcon(previewMedia)}
                 </div>
                 <div>
-                  <h3 className="text-foreground" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                  <h3 className="text-foreground" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
                     {previewMedia.name}
                   </h3>
                   <span className="text-muted" style={{ fontSize: 'var(--text-xs)' }}>
@@ -2808,7 +2808,7 @@ function KnowledgeBaseContent() {
               </div>
               <button
                 onClick={() => openMediaPreview(null)}
-                className="p-2 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                className="p-2 rounded-lg hover:bg-secondary transition-colors"
               >
                 <X size={18} className="text-muted" />
               </button>
@@ -2858,7 +2858,7 @@ function KnowledgeBaseContent() {
                   </div>
                 )
               ) : (
-                <div className="w-full max-w-lg bg-card border border-border rounded-[var(--radius)] overflow-hidden">
+                <div className="w-full max-w-lg bg-card border border-border rounded-lg overflow-hidden">
                   {previewMedia.thumbnail && (
                     <div className="w-full bg-secondary/30 overflow-hidden" style={{ maxHeight: '280px' }}>
                       <img src={previewMedia.thumbnail} alt={previewMedia.name} className="w-full h-full object-cover" />

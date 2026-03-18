@@ -46,7 +46,7 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
         <div
-          className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border overflow-hidden flex flex-col"
+          className="pointer-events-auto bg-card rounded-lg shadow-elevation-lg border border-border overflow-hidden flex flex-col"
           style={{ width: '560px', maxWidth: '100%', maxHeight: '90vh' }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -184,14 +184,14 @@ export function AppScheduleMeetingModal({ isOpen, onClose }: AppScheduleMeetingM
           <div className="p-4 border-t border-border flex items-center justify-end gap-2 shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
             <button
               onClick={onClose}
-              className="px-5 text-sm text-foreground bg-secondary rounded-[var(--radius-button)] hover:bg-secondary/80 transition-colors"
+              className="px-5 text-sm text-foreground bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
               style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '44px' }}
             >
               Cancel
             </button>
             <button
               disabled={!canSchedule}
-              className={`px-5 text-sm rounded-[var(--radius-button)] transition-colors ${canSchedule ? 'text-white bg-primary hover:bg-primary/90' : 'text-muted bg-muted/30 cursor-not-allowed'}`}
+              className={`px-5 text-sm rounded-lg transition-colors ${canSchedule ? 'text-white bg-primary hover:bg-primary/90' : 'text-muted bg-muted/30 cursor-not-allowed'}`}
               style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '44px' }}
               title={!canSchedule ? 'You do not have permission to schedule meetings' : undefined}
             >

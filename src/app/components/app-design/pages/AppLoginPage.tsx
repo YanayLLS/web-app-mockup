@@ -28,10 +28,10 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#36415D', fontFamily: 'var(--font-family)' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#36415D' }}>
       {/* Main login card */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-sm bg-card rounded-[var(--radius)] p-5 sm:p-8" style={{ boxShadow: 'var(--elevation-lg)', maxWidth: 'min(384px, calc(100vw - 32px))' }}>
+        <div className="w-full max-w-sm bg-card rounded-lg p-5 sm:p-8" style={{ boxShadow: 'var(--elevation-lg)', maxWidth: 'min(384px, calc(100vw - 32px))' }}>
           {/* Back button + Title */}
           <div className="flex items-center gap-3 mb-6">
             <button className="p-2 text-muted hover:text-foreground rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Go back">
@@ -82,7 +82,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
           {/* Login button */}
           <button
             onClick={handleLogin}
-            className="w-full py-3 min-h-[48px] bg-primary text-white rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors"
+            className="w-full py-3 min-h-[48px] bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
             style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Login
@@ -122,7 +122,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
       {showErrorDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-6" onClick={() => setShowErrorDialog(null)}>
           <div
-            className="w-full bg-card rounded-[var(--radius)] p-6 text-center"
+            className="w-full bg-card rounded-lg p-6 text-center"
             style={{ boxShadow: 'var(--elevation-lg)', maxWidth: 'min(320px, calc(100vw - 32px))' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -134,7 +134,7 @@ export function AppLoginPage({ onLogin }: AppLoginPageProps) {
             </p>
             <button
               onClick={() => setShowErrorDialog(null)}
-              className="px-8 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] hover:bg-primary/90 transition-colors text-sm"
+              className="px-8 py-2.5 min-h-[44px] bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm"
               style={{ fontWeight: 'var(--font-weight-semibold)' }}
             >
               OK

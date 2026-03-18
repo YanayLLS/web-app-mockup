@@ -209,7 +209,7 @@ export function AppProjectKBPage() {
           {canCreate && (
             <button
               onClick={() => setShowCreateDialog(true)}
-              className="flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+              className="flex items-center gap-1.5 hover:brightness-110 transition-opacity"
               style={{
                 color: 'white',
                 backgroundColor: '#2F80ED',
@@ -687,7 +687,7 @@ export function AppProjectKBPage() {
           <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setShowCreateDialog(false)} />
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
             <div
-              className="bg-card rounded-[var(--radius)] shadow-elevation-lg w-full max-w-md pointer-events-auto p-6"
+              className="bg-card rounded-lg shadow-elevation-lg w-full max-w-md pointer-events-auto p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-foreground mb-4" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-h4)' }}>
@@ -703,7 +703,7 @@ export function AppProjectKBPage() {
                   value={newProcName}
                   onChange={(e) => setNewProcName(e.target.value)}
                   placeholder="Enter flow name..."
-                  className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none placeholder:text-muted focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2.5 bg-card rounded-lg text-sm text-foreground border border-border outline-none placeholder:text-muted focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
@@ -715,7 +715,7 @@ export function AppProjectKBPage() {
                   <select
                     value={newProcTwin}
                     onChange={(e) => setNewProcTwin(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-primary focus:border-transparent pr-8"
+                    className="w-full px-3 py-2.5 bg-card rounded-lg text-sm text-foreground border border-border outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-primary focus:border-transparent pr-8"
                   >
                     <option value="">None</option>
                     <option value="Main Engine Assembly">Main Engine Assembly</option>
@@ -729,14 +729,14 @@ export function AppProjectKBPage() {
               <div className="flex items-center justify-end gap-3">
                 <button
                   onClick={() => { setShowCreateDialog(false); setNewProcName(''); setNewProcTwin(''); }}
-                  className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-[var(--radius-button)] text-sm hover:bg-destructive/90 transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-lg text-sm hover:bg-destructive/90 transition-colors"
                   style={{ fontWeight: 'var(--font-weight-semibold)' }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => { setShowCreateDialog(false); setNewProcName(''); setNewProcTwin(''); }}
-                  className="px-5 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors"
                   style={{ fontWeight: 'var(--font-weight-semibold)' }}
                 >
                   Create

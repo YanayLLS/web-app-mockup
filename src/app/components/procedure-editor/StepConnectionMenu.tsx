@@ -90,7 +90,7 @@ export function StepConnectionMenu({
           <h3 
             className="font-bold text-sm"
             style={{ 
-              fontFamily: 'var(--font-family)',
+              
               color: 'var(--foreground)'
             }}
           >
@@ -99,7 +99,7 @@ export function StepConnectionMenu({
           <p 
             className="text-xs mt-1"
             style={{ 
-              fontFamily: 'var(--font-family)',
+              
               color: 'var(--muted-foreground)'
             }}
           >
@@ -126,7 +126,7 @@ export function StepConnectionMenu({
               placeholder="Search steps..."
               className="flex-1 text-sm bg-transparent outline-none"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 color: 'var(--foreground)'
               }}
             />
@@ -143,7 +143,7 @@ export function StepConnectionMenu({
               onClick={handleDisconnect}
               className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] rounded-lg hover:bg-secondary/50 transition-colors text-left"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 color: 'var(--foreground)'
               }}
             >
@@ -164,7 +164,7 @@ export function StepConnectionMenu({
             <div 
               className="px-4 py-8 text-center text-sm"
               style={{ 
-                fontFamily: 'var(--font-family)',
+                
                 color: 'var(--muted-foreground)'
               }}
             >
@@ -183,9 +183,6 @@ export function StepConnectionMenu({
                     className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] hover:bg-secondary/50 transition-colors text-left ${
                       isConnected ? 'bg-accent/10' : ''
                     }`}
-                    style={{
-                      fontFamily: 'var(--font-family)'
-                    }}
                   >
                     <div 
                       className="flex items-center justify-center rounded-full size-8 shrink-0 text-xs font-bold"

@@ -426,7 +426,7 @@ export function Tutorial({ onClose }: TutorialProps) {
               )}
               <button
                 onClick={handleNext}
-                className="flex items-center gap-1 px-4 py-1.5 bg-primary text-primary-foreground rounded-button hover:opacity-90 transition-opacity"
+                className="flex items-center gap-1 px-4 py-1.5 bg-primary text-primary-foreground rounded-button hover:brightness-110 transition-opacity"
                 aria-label={currentStep === tutorialSteps.length - 1 ? 'Finish tutorial' : 'Next step'}
               >
                 {currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next'}

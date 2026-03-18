@@ -136,7 +136,7 @@ export function PermissionsModal({ roleName, rolePermissions, onClose }: Permiss
                 className="font-bold" 
                 style={{ 
                   color: 'var(--foreground)', 
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-h3)'
                 }}
               >
@@ -146,7 +146,7 @@ export function PermissionsModal({ roleName, rolePermissions, onClose }: Permiss
                 className="text-sm mt-0.5" 
                 style={{ 
                   color: 'var(--muted)', 
-                  fontFamily: 'var(--font-family)' 
+                   
                 }}
               >
                 {enabledCount} enabled · {disabledCount} disabled
@@ -198,7 +198,7 @@ export function PermissionsModal({ roleName, rolePermissions, onClose }: Permiss
                     className="text-sm"
                     style={{ 
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: isEnabled ? 'var(--font-weight-semibold)' : 'var(--font-weight-normal)',
                     }}
                   >
@@ -221,7 +221,7 @@ export function PermissionsModal({ roleName, rolePermissions, onClose }: Permiss
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-semibold)',
             }}
           >

@@ -7,50 +7,18 @@ interface StatCardProps {
   iconColor?: string;
 }
 
-export function StatCard({ icon: Icon, label, value, iconColor }: StatCardProps) {
+export function StatCard({ icon: Icon, label, value, iconColor = '#2F80ED' }: StatCardProps) {
   return (
-    <div
-      className="flex items-center gap-4 p-6 rounded-lg"
-      style={{
-        backgroundColor: 'var(--card)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
-      }}
-    >
+    <div className="flex items-center gap-4 p-5 bg-card border border-border rounded-xl hover:border-primary/20 hover:shadow-md transition-all">
       <div
-        className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
-        style={{
-          backgroundColor: iconColor || 'var(--primary)',
-          opacity: 0.1,
-        }}
+        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
+        style={{ backgroundColor: `${iconColor}12` }}
       >
-        <Icon
-          className="w-6 h-6"
-          style={{
-            color: iconColor || 'var(--primary)',
-          }}
-        />
+        <Icon size={20} style={{ color: iconColor }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p
-          className="text-sm"
-          style={{
-            color: 'var(--muted)',
-            fontFamily: 'var(--font-family)',
-            fontSize: 'var(--text-sm)',
-          }}
-        >
-          {label}
-        </p>
-        <p
-          className="mt-1"
-          style={{
-            color: 'var(--foreground)',
-            fontFamily: 'var(--font-family)',
-            fontSize: 'var(--text-h2)',
-            fontWeight: 'var(--font-weight-bold)',
-          }}
-        >
+        <p className="text-xs text-muted mb-0.5">{label}</p>
+        <p className="text-2xl text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
           {value}
         </p>
       </div>

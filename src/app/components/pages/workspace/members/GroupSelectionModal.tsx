@@ -77,15 +77,15 @@ export function GroupSelectionModal({
                 <Users className="w-5 h-5" style={{ color: 'var(--primary)' }} />
               </div>
               <div>
-                <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
                   {isBatchMode ? 'Update Groups' : 'Select Groups'}
                 </h3>
                 {isBatchMode ? (
-                  <p className="text-sm mt-1" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                  <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
                     Updating {selectedMembersCount} member{selectedMembersCount > 1 ? 's' : ''}
                   </p>
                 ) : (
-                  <p className="text-sm mt-1" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                  <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
                     Add to groups (optional)
                   </p>
                 )}
@@ -99,7 +99,7 @@ export function GroupSelectionModal({
                     onClose();
                   }}
                   className="text-xs hover:underline transition-colors whitespace-nowrap"
-                  style={{ color: 'var(--primary)', fontFamily: 'var(--font-family)' }}
+                  style={{ color: 'var(--primary)' }}
                 >
                   Manage Groups
                 </button>
@@ -119,7 +119,7 @@ export function GroupSelectionModal({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 text-sm rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-ring"
-              style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+              style={{ color: 'var(--foreground)' }}
             />
           </div>
 
@@ -140,7 +140,7 @@ export function GroupSelectionModal({
                     >
                       <Users className="w-3 h-3" style={{ color: group.color }} />
                     </div>
-                    <span className="text-sm font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                       {group.name}
                     </span>
                   </div>
@@ -148,7 +148,7 @@ export function GroupSelectionModal({
               ))
             ) : (
               <div className="text-center py-8">
-                <p className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                <p className="text-sm" style={{ color: 'var(--muted)' }}>
                   No groups found
                 </p>
               </div>
@@ -167,28 +167,28 @@ export function GroupSelectionModal({
                   checked={overrideMode} 
                   onChange={(e) => { e.stopPropagation(); setOverrideMode(!overrideMode); }} 
                 />
-                <span className="text-xs" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                <span className="text-xs" style={{ color: 'var(--foreground)' }}>
                   Override existing groups (replace instead of add)
                 </span>
               </button>
             )}
             
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-medium" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+              <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>
                 {selectedGroups.length} selected
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={onClose}
                   className="px-5 py-2.5 text-sm rounded-lg border border-border hover:bg-secondary transition-colors"
-                  style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+                  style={{ color: 'var(--foreground)' }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-5 py-2.5 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-                  style={{ fontFamily: 'var(--font-family)' }}
+                  className="px-5 py-2.5 text-sm rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity"
+                 
                 >
                   Save
                 </button>

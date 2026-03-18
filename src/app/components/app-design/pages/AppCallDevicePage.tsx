@@ -49,7 +49,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
         <div
-          className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border overflow-hidden"
+          className="pointer-events-auto bg-card rounded-lg shadow-elevation-lg border border-border overflow-hidden"
           style={{ width: '420px', maxWidth: '100%' }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -166,7 +166,7 @@ export function AppCallDeviceModal({ isOpen, onClose }: AppCallDeviceModalProps)
             <button
               onClick={handleCall}
               disabled={!canStartCall}
-              className={`w-full rounded-[var(--radius-button)] flex items-center justify-center gap-2 transition-colors ${canStartCall ? 'bg-primary text-white hover:bg-primary/90' : 'bg-muted/30 text-muted cursor-not-allowed'}`}
+              className={`w-full rounded-lg flex items-center justify-center gap-2 transition-colors ${canStartCall ? 'bg-primary text-white hover:bg-primary/90' : 'bg-muted/30 text-muted cursor-not-allowed'}`}
               style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '44px' }}
               title={!canStartCall ? 'You do not have permission to start calls' : undefined}
             >

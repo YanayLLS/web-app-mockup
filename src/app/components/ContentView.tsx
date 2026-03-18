@@ -11,7 +11,7 @@ export function ContentView({ icon, title, children, hideHeader = false }: Conte
   return (
     <div className="flex-1 bg-background overflow-hidden min-w-0">
       <div className="p-1 md:p-2 h-full">
-        <div className="bg-card rounded-[var(--radius)] border border-border h-full overflow-hidden flex flex-col">
+        <div className="bg-card rounded-lg border border-border h-full overflow-hidden flex flex-col">
           {/* Header */}
           {!hideHeader && (
             <div className="px-3 md:px-5 py-3 md:py-3.5 shrink-0 border-b border-border">

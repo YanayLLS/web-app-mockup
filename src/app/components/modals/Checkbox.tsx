@@ -13,18 +13,21 @@ export function Checkbox({ checked, onChange, indeterminate, disabled }: Checkbo
   return (
     <div
       onClick={disabled ? undefined : onChange}
-      className="w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
-      style={{
-        borderColor: isActive ? 'var(--primary)' : 'var(--border)',
-        backgroundColor: isActive ? 'var(--primary)' : 'transparent',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.5 : 1,
-      }}
+      className={`w-4 h-4 rounded border flex items-center justify-center transition-all shrink-0 ${
+        isActive
+          ? 'bg-primary border-primary'
+          : 'border-border hover:border-primary/40'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      role="checkbox"
+      aria-checked={indeterminate ? 'mixed' : checked}
+      aria-disabled={disabled}
+      tabIndex={disabled ? -1 : 0}
+      onKeyDown={!disabled ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(e as any); } } : undefined}
     >
       {indeterminate ? (
-        <Minus className="w-3 h-3" style={{ color: 'var(--primary-foreground)' }} />
+        <Minus className="w-3 h-3 text-primary-foreground" />
       ) : checked ? (
-        <Check className="w-3 h-3" style={{ color: 'var(--primary-foreground)' }} />
+        <Check className="w-3 h-3 text-primary-foreground" />
       ) : null}
     </div>
   );

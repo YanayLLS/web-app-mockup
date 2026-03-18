@@ -62,19 +62,21 @@ export function useAppPopup(): AppPopupAPI {
 
 // ── Icon helper ────────────────────────────────────────────────────────
 
+const variantConfig: Record<PopupVariant, { icon: typeof Info; color: string; bg: string }> = {
+  info: { icon: Info, color: '#2F80ED', bg: 'rgba(47,128,237,0.1)' },
+  success: { icon: CheckCircle2, color: '#0a9e4a', bg: 'rgba(17,232,116,0.1)' },
+  warning: { icon: AlertTriangle, color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+  error: { icon: XCircle, color: '#FF1F1F', bg: 'rgba(255,31,31,0.1)' },
+};
+
 function VariantIcon({ variant }: { variant?: PopupVariant }) {
-  const size = 20;
-  switch (variant) {
-    case 'success':
-      return <CheckCircle2 size={size} className="text-[#11E874] shrink-0" />;
-    case 'warning':
-      return <AlertTriangle size={size} className="text-[#F5A623] shrink-0" />;
-    case 'error':
-      return <XCircle size={size} className="text-[#FF1F1F] shrink-0" />;
-    case 'info':
-    default:
-      return <Info size={size} className="text-[#2F80ED] shrink-0" />;
-  }
+  const cfg = variantConfig[variant || 'info'];
+  const Icon = cfg.icon;
+  return (
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: cfg.bg }}>
+      <Icon size={18} style={{ color: cfg.color }} />
+    </div>
+  );
 }
 
 // ── Provider ───────────────────────────────────────────────────────────
@@ -165,13 +167,13 @@ export function AppPopupProvider({ children }: { children: ReactNode }) {
       >
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-[#36415D]">
+            <AlertDialogTitle className="flex items-center gap-3 text-foreground">
               {current?.type !== 'prompt' && (
                 <VariantIcon variant={(current?.options as AlertOptions)?.variant} />
               )}
               {getTitle()}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#36415D]/80 text-sm whitespace-pre-wrap">
+            <AlertDialogDescription className="text-foreground/80 text-sm whitespace-pre-wrap leading-relaxed">
               {current?.message}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -190,7 +192,7 @@ export function AppPopupProvider({ children }: { children: ReactNode }) {
                     close(promptValue || null);
                   }
                 }}
-                className="border-[#C2C9DB] focus-visible:border-[#2E80ED]"
+                className="border-border focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/10"
               />
             </div>
           )}
@@ -200,7 +202,7 @@ export function AppPopupProvider({ children }: { children: ReactNode }) {
             {current?.type === 'alert' && (
               <AlertDialogAction
                 onClick={() => close(undefined)}
-                className="bg-[#2F80ED] hover:bg-[#82B3F4] active:bg-[#5999F1] text-white"
+                className="bg-primary hover:brightness-110 hover:shadow-md hover:shadow-primary/20 active:brightness-95 text-white transition-all"
               >
                 {(current.options as AlertOptions).okLabel || 'OK'}
               </AlertDialogAction>
@@ -211,7 +213,7 @@ export function AppPopupProvider({ children }: { children: ReactNode }) {
               <>
                 <AlertDialogCancel
                   onClick={() => close(false)}
-                  className="text-[#36415D] border-[#C2C9DB]"
+                  className="text-foreground border-border hover:bg-secondary hover:border-primary/20 transition-all"
                 >
                   {(current.options as ConfirmOptions).cancelLabel || 'Cancel'}
                 </AlertDialogCancel>
@@ -219,8 +221,8 @@ export function AppPopupProvider({ children }: { children: ReactNode }) {
                   onClick={() => close(true)}
                   className={
                     (current.options as ConfirmOptions).destructive
-                      ? 'bg-[#FF1F1F] hover:bg-[#FF7979] active:bg-[#FF4C4C] text-white'
-                      : 'bg-[#2F80ED] hover:bg-[#82B3F4] active:bg-[#5999F1] text-white'
+                      ? 'bg-destructive hover:brightness-110 hover:shadow-md hover:shadow-destructive/20 active:brightness-95 text-white transition-all'
+                      : 'bg-primary hover:brightness-110 hover:shadow-md hover:shadow-primary/20 active:brightness-95 text-white transition-all'
                   }
                 >
                   {(current.options as ConfirmOptions).confirmLabel || 'Confirm'}
@@ -233,13 +235,13 @@ export function AppPopupProvider({ children }: { children: ReactNode }) {
               <>
                 <AlertDialogCancel
                   onClick={() => close(null)}
-                  className="text-[#36415D] border-[#C2C9DB]"
+                  className="text-foreground border-border hover:bg-secondary hover:border-primary/20 transition-all"
                 >
                   {(current.options as PromptOptions).cancelLabel || 'Cancel'}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => close(promptValue || null)}
-                  className="bg-[#2F80ED] hover:bg-[#82B3F4] active:bg-[#5999F1] text-white"
+                  className="bg-primary hover:brightness-110 hover:shadow-md hover:shadow-primary/20 active:brightness-95 text-white transition-all"
                 >
                   {(current.options as PromptOptions).confirmLabel || 'OK'}
                 </AlertDialogAction>

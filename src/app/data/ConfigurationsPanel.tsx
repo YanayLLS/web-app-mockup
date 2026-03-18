@@ -30,7 +30,7 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
       <div
         className="flex items-center gap-3 px-5 py-3 rounded-[10px] shadow-elevation-lg bg-white"
         style={{
-          fontFamily: 'var(--font-family)',
+          
           fontSize: '13px',
           fontWeight: 500,
           color: '#36415D',
@@ -95,25 +95,25 @@ function ConfirmDialog({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontFamily: 'var(--font-family)', fontSize: '16px', fontWeight: 600, color: '#36415D', marginBottom: '8px' }}>
+        <h3 style={{  fontSize: '16px', fontWeight: 600, color: '#36415D', marginBottom: '8px' }}>
           {title}
         </h3>
-        <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#868D9E', marginBottom: '24px', lineHeight: 1.6 }}>
+        <p style={{  fontSize: '13px', color: '#868D9E', marginBottom: '24px', lineHeight: 1.6 }}>
           {message}
         </p>
         <div className="flex justify-end" style={{ gap: '10px' }}>
           <button
             onClick={onCancel}
             className="px-5 py-2.5 rounded-[8px] hover:bg-[#F5F5F5] active:scale-[0.97] transition-all min-h-[40px]"
-            style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#36415D', border: '1px solid #C2C9DB' }}
+            style={{  fontSize: '13px', fontWeight: 500, color: '#36415D', border: '1px solid #C2C9DB' }}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-5 py-2.5 rounded-[8px] text-white hover:opacity-90 active:scale-[0.97] transition-all min-h-[40px]"
+            className="px-5 py-2.5 rounded-[8px] text-white hover:brightness-110 active:scale-[0.97] transition-all min-h-[40px]"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
               fontWeight: 600,
               backgroundColor: confirmColor,
@@ -230,7 +230,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
               onClick={(e) => e.stopPropagation()}
               className="w-full bg-white border outline-none px-1.5 py-0.5"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '12px',
                 color: '#36415D',
                 borderColor: '#2E80ED',
@@ -242,7 +242,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
             <span
               className="truncate block"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '12px',
                 fontWeight: isActive ? 600 : 500,
                 color: config.isEnabled ? '#36415D' : '#7F7F7F',
@@ -262,7 +262,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
           <span
             className="flex-shrink-0"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '9px',
               fontWeight: 600,
               color: '#2F80ED',
@@ -325,7 +325,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                   <div style={{ padding: '4px' }}>
                     <button
                       className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                      style={{  fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowMenu(false);
@@ -338,7 +338,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                     </button>
                     <button
                       className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                      style={{  fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onDuplicate();
@@ -350,7 +350,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                     </button>
                     <button
                       className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                      style={{  fontSize: '12px', color: '#36415D' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowMenu(false);
@@ -364,7 +364,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                     <div className="relative">
                       <button
                         className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
-                        style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                        style={{  fontSize: '12px', color: '#36415D' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowMoveSubmenu(!showMoveSubmenu);
@@ -383,7 +383,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                             {config.folderId && (
                               <button
                                 className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
-                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
+                                style={{  fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onMoveToFolder(undefined);
@@ -398,7 +398,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                               <button
                                 key={folder.id}
                                 className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
-                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}
+                                style={{  fontSize: '11px', color: '#36415D' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onMoveToFolder(folder.id);
@@ -413,7 +413,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                             {folders.filter((f) => f.id !== config.folderId).length === 0 && !config.folderId && (
                               <span
                                 className="block px-3 py-2"
-                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', fontStyle: 'italic' }}
+                                style={{  fontSize: '11px', color: '#C2C9DB', fontStyle: 'italic' }}
                               >
                                 No folders yet
                               </span>
@@ -425,7 +425,7 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                     <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '3px 8px' }} />
                     <button
                       className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#FF1F1F]/8 transition-colors text-left min-h-[32px]"
-                      style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#FF1F1F' }}
+                      style={{  fontSize: '12px', color: '#FF1F1F' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete();
@@ -514,7 +514,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
             onClick={(e) => e.stopPropagation()}
             className="flex-1 min-w-0 bg-white border outline-none px-1.5 py-0.5"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '12px',
               color: '#36415D',
               borderColor: '#2E80ED',
@@ -526,7 +526,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
           <span
             className="flex-1 min-w-0 truncate"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '12px',
               fontWeight: 600,
               color: '#36415D',
@@ -543,7 +543,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
         <span
           className="flex-shrink-0"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontSize: '10px',
             fontWeight: 600,
             color: '#868D9E',
@@ -587,7 +587,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
                 <div style={{ padding: '4px' }}>
                   <button
                     className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
-                    style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}
+                    style={{  fontSize: '12px', color: '#36415D' }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowMenu(false);
@@ -600,7 +600,7 @@ function FolderItem({ folder, configCount, isExpanded, onToggleExpand, onRename,
                   <div style={{ height: '1px', backgroundColor: '#E9E9E9', margin: '3px 8px' }} />
                   <button
                     className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#FF1F1F]/8 transition-colors text-left min-h-[32px]"
-                    style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#FF1F1F' }}
+                    style={{  fontSize: '12px', color: '#FF1F1F' }}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete();
@@ -678,10 +678,10 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           }}
         >
           <Shield className="size-3.5 shrink-0" style={{ color: '#2F80ED' }} />
-          <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#2F80ED', fontWeight: 600 }}>
+          <span style={{  fontSize: '11px', color: '#2F80ED', fontWeight: 600 }}>
             Default Configuration
           </span>
-          <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', marginLeft: 'auto' }}>
+          <span style={{  fontSize: '11px', color: '#868D9E', marginLeft: 'auto' }}>
             Always pre-selected
           </span>
         </div>
@@ -704,11 +704,11 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               flexShrink: 0,
             }}
           />
-          <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: config.isEnabled ? '#36415D' : '#868D9E', fontWeight: 600 }}>
+          <span style={{  fontSize: '11px', color: config.isEnabled ? '#36415D' : '#868D9E', fontWeight: 600 }}>
             {config.isEnabled ? 'Enabled' : 'Disabled'}
           </span>
           {config.tags.length > 0 && (
-            <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', marginLeft: 'auto' }}>
+            <span style={{  fontSize: '11px', color: '#C2C9DB', marginLeft: 'auto' }}>
               {config.tags[0]}
             </span>
           )}
@@ -718,7 +718,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
       {/* ── Identity Section ── */}
       <div style={{ marginBottom: '16px' }}>
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+          style={{  fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Name
         </label>
@@ -728,7 +728,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           placeholder="Configuration name..."
           className="w-full bg-white border outline-none mb-3 min-h-[36px] focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all placeholder:text-[#C2C9DB]"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontSize: '13px',
             fontWeight: 500,
             color: '#36415D',
@@ -739,7 +739,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
         />
 
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+          style={{  fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Description
         </label>
@@ -750,7 +750,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           rows={3}
           className="w-full bg-white border outline-none resize-none focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all placeholder:text-[#C2C9DB]"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontSize: '13px',
             color: '#36415D',
             borderColor: '#C2C9DB',
@@ -764,7 +764,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
       {/* ── Tags Section ── */}
       <div style={{ marginBottom: '16px' }}>
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '6px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+          style={{  fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '6px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Tags
         </label>
@@ -774,7 +774,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               key={tag}
               className="flex items-center group/tag hover:bg-[#D9E0F0] transition-colors"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '11px',
                 fontWeight: 500,
                 color: '#36415D',
@@ -796,7 +796,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             </span>
           ))}
           {config.tags.length === 0 && (
-            <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB' }}>
+            <span style={{  fontSize: '11px', color: '#C2C9DB' }}>
               No tags yet — add one below
             </span>
           )}
@@ -812,7 +812,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             data-demo="configurations-tag-input"
             className="flex-1 bg-white border outline-none min-h-[32px] focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '12px',
               color: '#36415D',
               borderColor: '#C2C9DB',
@@ -823,9 +823,9 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           <button
             onClick={handleAddTag}
             disabled={!tagInput.trim()}
-            className="px-3 rounded-[8px] hover:opacity-90 active:scale-[0.95] transition-all min-h-[32px] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+            className="px-3 rounded-[8px] hover:brightness-110 active:scale-[0.95] transition-all min-h-[32px] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '12px',
               fontWeight: 600,
               color: 'white',
@@ -843,7 +843,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
       {/* ── 3D Scene Actions ── */}
       <div style={{ marginBottom: '16px' }}>
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+          style={{  fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Scene State
         </label>
@@ -864,11 +864,11 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Eye className="size-3.5" style={{ color: '#2F80ED' }} />
-                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', fontWeight: 600, color: '#2F80ED' }}>
+                  <span style={{  fontSize: '12px', fontWeight: 600, color: '#2F80ED' }}>
                     State Captured
                   </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#868D9E' }}>
+                <span style={{  fontSize: '10px', color: '#868D9E' }}>
                   {total} parts
                 </span>
               </div>
@@ -896,13 +896,13 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#11E874' }} />
-                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}>
+                  <span style={{  fontSize: '11px', color: '#36415D' }}>
                     <strong style={{ fontWeight: 600 }}>{visibleCount}</strong> visible
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#E9E9E9' }} />
-                  <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E' }}>
+                  <span style={{  fontSize: '11px', color: '#868D9E' }}>
                     <strong style={{ fontWeight: 600 }}>{hiddenCount}</strong> hidden
                   </span>
                 </div>
@@ -916,7 +916,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           data-demo="configurations-set-from-view"
           className="w-full flex items-center justify-center gap-2.5 rounded-[10px] mb-3 hover:shadow-[0_4px_16px_rgba(47,128,237,0.3)] active:scale-[0.97] transition-all min-h-[42px]"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontSize: '13px',
             fontWeight: 600,
             color: 'white',
@@ -943,14 +943,14 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
                 border: '1px solid rgba(47,128,237,0.1)',
               }}
             >
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#2F80ED', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+              <span style={{  fontSize: '11px', color: '#2F80ED', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
                 Parts selected — choose action:
               </span>
               <div className="flex" style={{ gap: '6px' }}>
                 <button
                   className="flex-1 flex items-center justify-center gap-1.5 rounded-[8px] hover:bg-white active:scale-[0.97] transition-all min-h-[34px] border"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: '12px',
                     fontWeight: 600,
                     color: '#2F80ED',
@@ -966,7 +966,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
                 <button
                   className="flex-1 flex items-center justify-center gap-1.5 rounded-[8px] hover:bg-white active:scale-[0.97] transition-all min-h-[34px] border"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: '12px',
                     fontWeight: 600,
                     color: '#FF1F1F',
@@ -1005,7 +1005,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               >
                 <Eye className="size-3.5" style={{ color: '#C2C9DB' }} />
               </div>
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', flex: 1, lineHeight: 1.4 }}>
+              <span style={{  fontSize: '11px', color: '#868D9E', flex: 1, lineHeight: 1.4 }}>
                 Select parts in the 3D view to add or remove them.
               </span>
             </div>
@@ -1015,7 +1015,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             onClick={() => setHasSelectedParts((v) => !v)}
             className="flex items-center justify-center gap-1 rounded-[8px] hover:opacity-80 transition-opacity"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '10px',
               color: '#C2C9DB',
               background: 'none',
@@ -1035,7 +1035,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
       {/* ── Settings Section ── */}
       <div style={{ marginBottom: '16px' }}>
         <label
-          style={{ fontFamily: 'var(--font-family)', fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
+          style={{  fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}
         >
           Settings
         </label>
@@ -1057,10 +1057,10 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
               style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
             <div className="flex-1">
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', color: '#36415D', fontWeight: 500, display: 'block' }}>
+              <span style={{  fontSize: '13px', color: '#36415D', fontWeight: 500, display: 'block' }}>
                 {config.isEnabled ? 'Enabled' : 'Disabled'}
               </span>
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E' }}>
+              <span style={{  fontSize: '11px', color: '#868D9E' }}>
                 {config.isEnabled ? 'Visible to permitted roles' : 'Hidden from all users'}
               </span>
             </div>
@@ -1090,12 +1090,12 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
           >
             <div className="flex items-center" style={{ gap: '6px' }}>
               <Shield className="size-3.5" style={{ color: '#2F80ED' }} />
-              <span style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#36415D' }}>
+              <span style={{  fontSize: '13px', fontWeight: 500, color: '#36415D' }}>
                 Permissions
               </span>
               <span
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: '10px',
                   fontWeight: 600,
                   color: '#2F80ED',
@@ -1136,7 +1136,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
                         className="accent-[#2F80ED] flex-shrink-0"
                         style={{ width: '14px', height: '14px' }}
                       />
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: '12px', color: '#36415D' }}>
+                      <span style={{  fontSize: '12px', color: '#36415D' }}>
                         {role.label}
                       </span>
                     </label>
@@ -1151,7 +1151,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
       {/* ── Footer ── */}
       <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E9E9E9 15%, #E9E9E9 85%, transparent 100%)', margin: '0 -16px 12px' }} />
       <div className="flex items-center justify-between">
-        <p style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', margin: 0 }}>
+        <p style={{  fontSize: '11px', color: '#C2C9DB', margin: 0 }}>
           {new Date(config.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </p>
         {!config.isDefault && (
@@ -1159,7 +1159,7 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             onClick={() => onShowToast('Use the context menu in the list to delete')}
             className="flex items-center gap-1.5 hover:bg-[#FF1F1F]/6 active:scale-[0.97] transition-all rounded-[6px]"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '11px',
               fontWeight: 500,
               color: '#C2C9DB',
@@ -1552,7 +1552,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 style={{
                   borderRadius: '8px',
                   padding: '8px 12px 8px 32px',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: '13px',
                   color: '#36415D',
                   borderColor: '#C2C9DB',
@@ -1568,7 +1568,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
               data-demo="configurations-create"
               className="flex-1 flex items-center justify-center gap-2 rounded-[8px] hover:shadow-[0_2px_8px_rgba(47,128,237,0.25)] active:scale-[0.98] transition-all min-h-[36px]"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '12px',
                 fontWeight: 600,
                 color: 'white',
@@ -1583,7 +1583,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
               onClick={handleCreateFolder}
               className="flex items-center justify-center gap-1.5 rounded-[8px] border hover:bg-[#E9E9E9]/50 active:scale-[0.97] transition-all min-h-[36px]"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '12px',
                 fontWeight: 500,
                 color: '#36415D',
@@ -1599,7 +1599,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 onClick={handleToggleSelectAll}
                 className="flex items-center justify-center rounded-[8px] border hover:bg-[#E9E9E9]/50 active:scale-[0.97] transition-all min-h-[36px]"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: '10px',
                   fontWeight: 600,
                   color: allSelected ? '#2F80ED' : '#868D9E',
@@ -1736,10 +1736,10 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                   <Sliders className="size-5" style={{ color: '#C2C9DB' }} />
                 </div>
                 <div className="text-center">
-                  <p style={{ fontFamily: 'var(--font-family)', fontSize: '13px', fontWeight: 500, color: '#868D9E', margin: '0 0 4px' }}>
+                  <p style={{  fontSize: '13px', fontWeight: 500, color: '#868D9E', margin: '0 0 4px' }}>
                     {searchQuery ? 'No configurations match your search' : 'No configurations yet'}
                   </p>
-                  <p style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#C2C9DB', margin: 0 }}>
+                  <p style={{  fontSize: '11px', color: '#C2C9DB', margin: 0 }}>
                     {searchQuery ? 'Try a different search term' : 'Create a configuration to get started'}
                   </p>
                 </div>
@@ -1761,7 +1761,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 <span
                   className="flex-shrink-0"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: '11px',
                     fontWeight: 600,
                     color: '#2F80ED',
@@ -1785,7 +1785,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                       }}
                       className="flex items-center gap-1 rounded-[6px] border hover:bg-white active:scale-[0.97] transition-all min-h-[28px]"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: '11px',
                         fontWeight: 500,
                         color: '#36415D',
@@ -1811,7 +1811,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                           <div style={{ padding: '4px' }}>
                             <button
                               className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
-                              style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
+                              style={{  fontSize: '11px', color: '#868D9E', fontStyle: 'italic' }}
                               onClick={() => handleBulkMoveToFolder(undefined)}
                             >
                               No folder (root)
@@ -1820,7 +1820,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                               <button
                                 key={folder.id}
                                 className="flex items-center gap-2 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[30px]"
-                                style={{ fontFamily: 'var(--font-family)', fontSize: '11px', color: '#36415D' }}
+                                style={{  fontSize: '11px', color: '#36415D' }}
                                 onClick={() => handleBulkMoveToFolder(folder.id)}
                               >
                                 <FolderOpen className="size-3" style={{ color: '#868D9E' }} />
@@ -1836,7 +1836,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                     onClick={handleBulkToggleEnabled}
                     className="flex items-center gap-1 rounded-[6px] border hover:bg-white active:scale-[0.97] transition-all min-h-[28px]"
                     style={{
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: '11px',
                       fontWeight: 500,
                       color: '#36415D',
@@ -1863,9 +1863,9 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                   </button>
                   <button
                     onClick={handleBulkDelete}
-                    className="flex items-center gap-1 rounded-[6px] hover:opacity-90 active:scale-[0.97] transition-all min-h-[28px]"
+                    className="flex items-center gap-1 rounded-[6px] hover:brightness-110 active:scale-[0.97] transition-all min-h-[28px]"
                     style={{
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: '11px',
                       fontWeight: 600,
                       color: 'white',
@@ -1897,7 +1897,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 data-demo="configurations-import"
                 className="flex-1 flex items-center justify-center gap-2 rounded-[8px] border hover:bg-[#E9E9E9]/40 active:scale-[0.97] transition-all min-h-[36px]"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: '12px',
                   fontWeight: 500,
                   color: '#36415D',
@@ -1913,7 +1913,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 data-demo="configurations-export"
                 className="flex-1 flex items-center justify-center gap-2 rounded-[8px] border hover:bg-[#E9E9E9]/40 active:scale-[0.97] transition-all min-h-[36px]"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: '12px',
                   fontWeight: 500,
                   color: '#36415D',
@@ -1925,7 +1925,7 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                 Export
               </button>
             </div>
-            <p style={{ fontFamily: 'var(--font-family)', fontSize: '10px', color: '#C2C9DB', textAlign: 'center', margin: 0 }}>
+            <p style={{  fontSize: '10px', color: '#C2C9DB', textAlign: 'center', margin: 0 }}>
               Excel — parts catalog with config visibility columns
             </p>
           </div>

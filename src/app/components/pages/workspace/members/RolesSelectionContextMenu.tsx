@@ -387,11 +387,11 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
               {isBatchMode ? 'Update Roles' : 'Assign Roles'}
             </h3>
             {isBatchMode && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 Updating {selectedMembersCount} member{selectedMembersCount > 1 ? 's' : ''}
               </p>
             )}
@@ -417,7 +417,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
           <button
             onClick={() => setShowTemplates(true)}
             className="flex-1 px-2 py-1.5 border border-border rounded-lg hover:bg-secondary transition-colors text-xs flex items-center justify-center gap-1"
-            style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}
+            style={{ color: 'var(--foreground)', fontWeight: 'var(--font-weight-bold)' }}
           >
             <Save className="w-3 h-3" />
             Use Template
@@ -425,7 +425,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
           <button
             onClick={() => setShowSaveTemplate(!showSaveTemplate)}
             className="flex-1 px-2 py-1.5 border border-border rounded-lg hover:bg-secondary transition-colors text-xs flex items-center justify-center gap-1"
-            style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)' }}
+            style={{ color: 'var(--foreground)', fontWeight: 'var(--font-weight-bold)' }}
           >
             <Plus className="w-3 h-3" />
             Save Template
@@ -452,7 +452,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
             />
             <button
               onClick={handleSaveAsTemplate}
-              className="px-2 py-1 bg-primary text-primary-foreground rounded text-xs hover:opacity-90"
+              className="px-2 py-1 bg-primary text-primary-foreground rounded text-xs hover:brightness-110"
             >
               Save
             </button>
@@ -578,7 +578,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
               className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs hover:bg-secondary rounded-lg transition-colors"
               style={{ 
                 color: 'var(--primary)', 
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >
@@ -596,7 +596,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
               className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs hover:bg-primary-background rounded-lg transition-colors"
               style={{ 
                 color: 'var(--primary)', 
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-semibold)',
               }}
             >
@@ -613,7 +613,7 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
             className="px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-secondary transition-colors"
             style={{ 
               color: 'var(--foreground)', 
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-bold)',
             }}
           >
@@ -621,9 +621,9 @@ export function RolesSelectionContextMenu({ currentRoles, onClose, onSave, onTog
           </button>
           <button
             onClick={() => onSave(roles)}
-            className="px-3 py-1.5 text-xs rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            className="px-3 py-1.5 text-xs rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity"
             style={{ 
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-bold)',
             }}
           >

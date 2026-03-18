@@ -206,7 +206,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 id="popup-manager-title" className="text-card-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+          <h3 id="popup-manager-title" className="text-card-foreground">
             Popup Manager
           </h3>
           <button 
@@ -223,9 +223,9 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
           <button
             onClick={handleAddPopup}
             disabled={popups.length >= 10}
-            className="bg-accent text-accent-foreground px-4 py-2 rounded-button hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2"
+            className="bg-accent text-accent-foreground px-4 py-2 rounded-button hover:brightness-110 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2"
             aria-label="Add new popup"
-            style={{ fontFamily: 'var(--font-family)' }}
+           
           >
             <Plus className="size-4" />
             Add Popup
@@ -234,7 +234,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive rounded flex items-start gap-2" role="alert">
               <AlertCircle className="size-4 text-destructive flex-shrink-0 mt-0.5" />
-              <p className="text-destructive text-sm" style={{ fontFamily: 'var(--font-family)' }}>{error}</p>
+              <p className="text-destructive text-sm">{error}</p>
             </div>
           )}
         </div>
@@ -243,8 +243,8 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
         <div className="flex-1 overflow-y-auto p-4">
           {popups.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted" style={{ fontFamily: 'var(--font-family)' }}>No popups yet</p>
-              <p className="text-muted text-sm mt-1" style={{ fontFamily: 'var(--font-family)' }}>Add popups to display additional information</p>
+              <p className="text-muted">No popups yet</p>
+              <p className="text-muted text-sm mt-1">Add popups to display additional information</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -266,7 +266,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                         placeholder="Popup title..."
                         maxLength={MAX_TITLE_LENGTH}
                         className="w-full bg-card border border-border rounded px-3 py-2 text-card-foreground outline-none focus:ring-2 focus:ring-ring"
-                        style={{ fontFamily: 'var(--font-family)' }}
+                       
                       />
                       <textarea
                         value={editDescription}
@@ -279,20 +279,20 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                         maxLength={MAX_DESCRIPTION_LENGTH}
                         rows={3}
                         className="w-full bg-card border border-border rounded px-3 py-2 text-card-foreground outline-none focus:ring-2 focus:ring-ring resize-none"
-                        style={{ fontFamily: 'var(--font-family)' }}
+                       
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={handleSaveEdit}
-                          className="px-3 py-1.5 bg-accent text-accent-foreground rounded hover:opacity-90 text-sm font-bold"
-                          style={{ fontFamily: 'var(--font-family)' }}
+                          className="px-3 py-1.5 bg-accent text-accent-foreground rounded hover:brightness-110 text-sm font-bold"
+                         
                         >
                           Save
                         </button>
                         <button
                           onClick={handleCancelEdit}
-                          className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded hover:opacity-90 text-sm"
-                          style={{ fontFamily: 'var(--font-family)' }}
+                          className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded hover:brightness-110 text-sm"
+                         
                         >
                           Cancel
                         </button>
@@ -302,11 +302,11 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-card-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+                          <h4 className="font-bold text-card-foreground">
                             {popup.title || 'Untitled Popup'}
                           </h4>
                           {popup.description && (
-                            <p className="text-muted text-sm mt-1" style={{ fontFamily: 'var(--font-family)' }}>
+                            <p className="text-muted text-sm mt-1">
                               {popup.description}
                             </p>
                           )}
@@ -337,7 +337,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                                     minWidth: '200px'
                                   }}
                                 >
-                                  <p className="text-card-foreground font-bold text-sm mb-3" style={{ fontFamily: 'var(--font-family)' }}>
+                                  <p className="text-card-foreground font-bold text-sm mb-3">
                                     Choose Color
                                   </p>
                                   <div className="grid grid-cols-4 gap-2">
@@ -389,7 +389,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                       {/* Media Files */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-bold text-card-foreground" style={{ fontFamily: 'var(--font-family)' }}>
+                          <p className="text-sm font-bold text-card-foreground">
                             Media Files ({popup.mediaFiles.length}/5)
                           </p>
                           <label className="cursor-pointer">
@@ -402,7 +402,7 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
                               className="hidden"
                               disabled={popup.mediaFiles.length >= 5}
                             />
-                            <span className="flex items-center gap-1 px-3 py-1 bg-accent text-accent-foreground rounded text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
+                            <span className="flex items-center gap-1 px-3 py-1 bg-accent text-accent-foreground rounded text-sm hover:brightness-110 transition-opacity disabled:opacity-50">
                               <Upload className="size-3" />
                               Upload
                             </span>
@@ -442,13 +442,13 @@ export function PopupManager({ popups, onAddPopup, onUpdatePopup, onRemovePopup,
 
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-border">
-          <p className="text-muted text-sm" style={{ fontFamily: 'var(--font-family)' }}>
+          <p className="text-muted text-sm">
             {popups.length} / 10 popups
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-button hover:opacity-90 transition-opacity"
-            style={{ fontFamily: 'var(--font-family)' }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-button hover:brightness-110 transition-opacity"
+           
           >
             Done
           </button>

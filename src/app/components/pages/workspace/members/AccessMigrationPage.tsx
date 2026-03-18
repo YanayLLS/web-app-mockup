@@ -230,16 +230,16 @@ export function AccessMigrationPage() {
       <div className="border-b border-border bg-card px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-h2)', fontWeight: 'var(--font-weight-bold)', lineHeight: '1.5', color: 'var(--foreground)' }}>
+            <h2 style={{  fontSize: 'var(--text-h2)', fontWeight: 'var(--font-weight-bold)', lineHeight: '1.5', color: 'var(--foreground)' }}>
               Access System Migration
             </h2>
-            <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-normal)', lineHeight: '1.5', color: 'var(--muted)', marginTop: '4px' }}>
+            <p style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-normal)', lineHeight: '1.5', color: 'var(--muted)', marginTop: '4px' }}>
               Roles are preserved, groups created to maintain exact content access
             </p>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--primary-background)', border: '1px solid var(--primary)' }}>
             <AlertCircle className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-            <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary)' }}>
+            <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary)' }}>
               Migration Preview
             </span>
           </div>
@@ -251,10 +251,10 @@ export function AccessMigrationPage() {
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 mt-0.5" style={{ color: 'var(--info)' }} />
           <div>
-            <h3 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--info)', marginBottom: '4px' }}>
+            <h3 style={{  fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--info)', marginBottom: '4px' }}>
               Migration Strategy
             </h3>
-            <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--foreground)', lineHeight: '1.6' }}>
+            <p style={{  fontSize: 'var(--text-sm)', color: 'var(--foreground)', lineHeight: '1.6' }}>
               Analyzing {stats.totalUsers} users across {stats.totalProjects} projects with {stats.totalItems} total items. Creating {stats.totalGroups} groups to preserve exact access patterns while maintaining role assignments.
             </p>
           </div>
@@ -270,7 +270,7 @@ export function AccessMigrationPage() {
             style={{
               backgroundColor: selectedView === 'overview' ? 'var(--primary)' : 'transparent',
               color: selectedView === 'overview' ? 'var(--primary-foreground)' : 'var(--muted)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-semibold)',
             }}
@@ -283,7 +283,7 @@ export function AccessMigrationPage() {
             style={{
               backgroundColor: selectedView === 'users' ? 'var(--primary)' : 'transparent',
               color: selectedView === 'users' ? 'var(--primary-foreground)' : 'var(--muted)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-semibold)',
             }}
@@ -296,7 +296,7 @@ export function AccessMigrationPage() {
             style={{
               backgroundColor: selectedView === 'groups' ? 'var(--primary)' : 'transparent',
               color: selectedView === 'groups' ? 'var(--primary-foreground)' : 'var(--muted)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-semibold)',
             }}
@@ -318,10 +318,10 @@ export function AccessMigrationPage() {
                     <Users className="w-6 h-6" style={{ color: 'var(--primary)' }} />
                   </div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                    <div style={{  fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                       {stats.totalUsers}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                    <div style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
                       Total Users
                     </div>
                   </div>
@@ -334,10 +334,10 @@ export function AccessMigrationPage() {
                     <Folder className="w-6 h-6" style={{ color: 'var(--success)' }} />
                   </div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                    <div style={{  fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                       {stats.totalProjects}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                    <div style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
                       Projects
                     </div>
                   </div>
@@ -350,10 +350,10 @@ export function AccessMigrationPage() {
                     <FileText className="w-6 h-6" style={{ color: 'var(--warning)' }} />
                   </div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                    <div style={{  fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                       {stats.totalItems}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                    <div style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
                       Total Items
                     </div>
                   </div>
@@ -364,61 +364,61 @@ export function AccessMigrationPage() {
             {/* Migration Results */}
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div className="p-6 rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <h3 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-h4)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '16px' }}>
+                <h3 style={{  fontSize: 'var(--text-h4)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '16px' }}>
                   Migration Results
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--primary-background)' }}>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--primary)' }}>
+                    <div style={{  fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--primary)' }}>
                       {stats.totalGroups}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)', marginTop: '4px' }}>
+                    <div style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)', marginTop: '4px' }}>
                       Groups Created
                     </div>
                   </div>
                   <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--success-background)' }}>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--success)' }}>
+                    <div style={{  fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--success)' }}>
                       100%
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)', marginTop: '4px' }}>
+                    <div style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)', marginTop: '4px' }}>
                       Access Preserved
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: 'var(--secondary)' }}>
-                  <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)', marginBottom: '8px' }}>
+                  <div style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)', marginBottom: '8px' }}>
                     Group Size Distribution
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                         Single user
                       </span>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                         {stats.groupSizeDistribution.single} groups
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                         2-5 users
                       </span>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                         {stats.groupSizeDistribution.small} groups
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                         6-20 users
                       </span>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                         {stats.groupSizeDistribution.medium} groups
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                         20+ users
                       </span>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                         {stats.groupSizeDistribution.large} groups
                       </span>
                     </div>
@@ -427,45 +427,45 @@ export function AccessMigrationPage() {
               </div>
 
               <div className="p-6 rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <h3 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-h4)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '16px' }}>
+                <h3 style={{  fontSize: 'var(--text-h4)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '16px' }}>
                   How It Works
                 </h3>
                 <div className="flex flex-col gap-4">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>1</span>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>1</span>
                     </div>
                     <div>
-                      <h4 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '4px' }}>
+                      <h4 style={{  fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '4px' }}>
                         Analyze Access Patterns
                       </h4>
-                      <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)', lineHeight: '1.5' }}>
+                      <p style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)', lineHeight: '1.5' }}>
                         Identify unique combinations of role + project access + item-level permissions
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>2</span>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>2</span>
                     </div>
                     <div>
-                      <h4 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '4px' }}>
+                      <h4 style={{  fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '4px' }}>
                         Create Groups
                       </h4>
-                      <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)', lineHeight: '1.5' }}>
+                      <p style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)', lineHeight: '1.5' }}>
                         One group per unique access pattern to preserve exact item visibility
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>3</span>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>3</span>
                     </div>
                     <div>
-                      <h4 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '4px' }}>
+                      <h4 style={{  fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '4px' }}>
                         Assign Members
                       </h4>
-                      <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)', lineHeight: '1.5' }}>
+                      <p style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)', lineHeight: '1.5' }}>
                         Users maintain their roles and join groups matching their access
                       </p>
                     </div>
@@ -476,7 +476,7 @@ export function AccessMigrationPage() {
 
             {/* Projects Overview */}
             <div className="p-6 rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <h3 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-h4)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '16px' }}>
+              <h3 style={{  fontSize: 'var(--text-h4)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '16px' }}>
                 Projects & Items
               </h3>
               <div className="grid grid-cols-4 gap-3">
@@ -488,11 +488,11 @@ export function AccessMigrationPage() {
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <Folder className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                      <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--foreground)' }}>
+                      <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--foreground)' }}>
                         {project.name}
                       </span>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)', color: 'var(--muted)' }}>
+                    <div style={{  fontSize: 'var(--text-xs)', color: 'var(--muted)' }}>
                       {project.itemCount} items
                     </div>
                   </div>
@@ -504,7 +504,7 @@ export function AccessMigrationPage() {
 
         {selectedView === 'users' && (
           <div className="max-w-5xl mx-auto">
-            <h3 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '24px' }}>
+            <h3 style={{  fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '24px' }}>
               Role Distribution
             </h3>
             <div className="grid grid-cols-2 gap-6">
@@ -523,15 +523,15 @@ export function AccessMigrationPage() {
                         <Crown className="w-5 h-5" style={{ color }} />
                       </div>
                       <div>
-                        <h4 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                        <h4 style={{  fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                           {role}
                         </h4>
-                        <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                        <p style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
                           {count} users ({Math.round((count / stats.totalUsers) * 100)}%)
                         </p>
                       </div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color }}>
+                    <div style={{  fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-weight-bold)', color }}>
                       {count}
                     </div>
                   </div>
@@ -553,12 +553,12 @@ export function AccessMigrationPage() {
         {selectedView === 'groups' && (
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+              <h3 style={{  fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                 Groups Created ({roleSetGroups.length})
               </h3>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--secondary)' }}>
                 <Info className="w-4 h-4" style={{ color: 'var(--muted)' }} />
-                <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
+                <span style={{  fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                   Each group preserves exact project and item access
                 </span>
               </div>
@@ -586,10 +586,10 @@ export function AccessMigrationPage() {
                           <Users className="w-5 h-5" style={{ color: roleColors[group.role] }} />
                         </div>
                         <div>
-                          <h4 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                          <h4 style={{  fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                             {group.name}
                           </h4>
-                          <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                          <p style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
                             {group.description}
                           </p>
                         </div>
@@ -599,7 +599,7 @@ export function AccessMigrationPage() {
                         <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <h5 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '8px' }}>
+                              <h5 style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '8px' }}>
                                 Projects Access ({group.projects.length})
                               </h5>
                               <div className="flex flex-wrap gap-2">
@@ -609,7 +609,7 @@ export function AccessMigrationPage() {
                                     <div
                                       key={projectId}
                                       className="px-2 py-1 rounded text-xs flex items-center gap-1"
-                                      style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+                                      style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}
                                     >
                                       <Folder className="w-3 h-3" />
                                       {project.name}
@@ -617,21 +617,21 @@ export function AccessMigrationPage() {
                                   ) : null;
                                 })}
                                 {group.projects.length > 10 && (
-                                  <div className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'var(--secondary)', color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                                  <div className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'var(--secondary)', color: 'var(--muted)' }}>
                                     +{group.projects.length - 10} more
                                   </div>
                                 )}
                               </div>
                             </div>
                             <div>
-                              <h5 style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '8px' }}>
+                              <h5 style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', marginBottom: '8px' }}>
                                 Item-Level Access
                               </h5>
                               <div className="flex flex-col gap-2">
                                 {Object.entries(group.itemPermissions).slice(0, 5).map(([projectId, items]) => {
                                   const project = projects.find(p => p.id === projectId);
                                   return project ? (
-                                    <div key={projectId} style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)', color: 'var(--muted)' }}>
+                                    <div key={projectId} style={{  fontSize: 'var(--text-xs)', color: 'var(--muted)' }}>
                                       {project.name}: {items.length}/{project.itemCount} items
                                     </div>
                                   ) : null;
@@ -649,12 +649,12 @@ export function AccessMigrationPage() {
                         style={{ backgroundColor: `${roleColors[group.role]}20`, border: `1px solid ${roleColors[group.role]}` }}
                       >
                         <Crown className="w-4 h-4" style={{ color: roleColors[group.role] }} />
-                        <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)', color: roleColors[group.role] }}>
+                        <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)', color: roleColors[group.role] }}>
                           {group.role}
                         </span>
                       </div>
                       <div className="px-3 py-1 rounded" style={{ backgroundColor: 'var(--secondary)' }}>
-                        <span style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
+                        <span style={{  fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)' }}>
                           {group.members} {group.members === 1 ? 'member' : 'members'}
                         </span>
                       </div>
@@ -664,7 +664,7 @@ export function AccessMigrationPage() {
               ))}
               {roleSetGroups.length > 50 && (
                 <div className="p-4 text-center rounded-lg" style={{ backgroundColor: 'var(--secondary)' }}>
-                  <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                  <p style={{  fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
                     Showing 50 of {roleSetGroups.length} groups
                   </p>
                 </div>

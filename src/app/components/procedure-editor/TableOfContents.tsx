@@ -181,7 +181,7 @@ const DraggableStep = ({
             className="flex-1 bg-transparent border-none outline-none"
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '12px'
             }}
             placeholder="Step name"
@@ -255,7 +255,7 @@ const DraggableStep = ({
               className="text-xs font-bold rounded px-1"
               style={{ 
                 color: textColor,
-                fontFamily: 'var(--font-family)',
+                
                 opacity: 0.6
               }}
             >
@@ -278,7 +278,7 @@ const DraggableStep = ({
             className="leading-[0] text-xs text-center whitespace-nowrap"
             style={{ 
               color: numberTextColor,
-              fontFamily: 'var(--font-family)'
+              
             }}
           >
             {visibleStep.displayNumber ?? index + 1}
@@ -290,12 +290,12 @@ const DraggableStep = ({
           className="flex flex-[1_0_0] flex-col justify-center leading-[0] min-h-px min-w-px relative text-left"
           style={{ 
             color: textColor,
-            fontFamily: 'var(--font-family)'
+            
           }}
         >
           <p 
             className={`leading-normal text-xs whitespace-pre-wrap line-clamp-2 ${state === 'selected' ? 'font-bold' : ''}`}
-            style={{ fontFamily: 'var(--font-family)' }}
+           
           >
             {getStepTitle(step, index)}
           </p>
@@ -541,7 +541,7 @@ const DraggableOption = ({
             className="leading-[0] text-xs text-center whitespace-nowrap"
             style={{
               color: optionNumberTextColor,
-              fontFamily: 'var(--font-family)'
+              
             }}
           >
             {getOptionLabel(actionIndex)}
@@ -566,7 +566,7 @@ const DraggableOption = ({
             background: 'var(--background)',
             border: '1px solid var(--primary)',
             color: 'var(--foreground)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: '12px'
           }}
           placeholder="Option name"
@@ -657,7 +657,7 @@ const DraggableOption = ({
               className="leading-[0] text-xs text-center whitespace-nowrap"
               style={{
                 color: optionNumberTextColor,
-                fontFamily: 'var(--font-family)'
+                
               }}
             >
               {getOptionLabel(actionIndex)}
@@ -669,12 +669,12 @@ const DraggableOption = ({
             className="flex flex-[1_0_0] flex-col justify-center leading-[0] min-h-px min-w-px relative text-left"
             style={{
               color: optionTextColor,
-              fontFamily: 'var(--font-family)'
+              
             }}
           >
             <p
               className={`leading-normal text-xs whitespace-pre-wrap line-clamp-2 ${isOptionSelected ? 'font-bold' : ''}`}
-              style={{ fontFamily: 'var(--font-family)' }}
+             
             >
               {action.label}
             </p>
@@ -1052,7 +1052,7 @@ function TableOfContentsContent({
       >
         <h4 style={{ 
           color: 'var(--foreground)',
-          fontFamily: 'var(--font-family)',
+          
           fontSize: '14px',
           fontWeight: 600,
           lineHeight: '1.2'
@@ -1209,7 +1209,7 @@ function TableOfContentsContent({
                 background: 'transparent',
                 border: '2px dashed var(--border)',
                 color: 'var(--muted-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '13px',
                 fontWeight: 500,
                 borderRadius: 'var(--radius-md)'
@@ -1254,7 +1254,7 @@ function TableOfContentsContent({
           <span
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
             }}
           >
@@ -1266,7 +1266,7 @@ function TableOfContentsContent({
             style={{
               background: 'var(--primary)',
               color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
               fontWeight: 600,
             }}
@@ -1291,7 +1291,7 @@ function TableOfContentsContent({
           <span
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
             }}
           >
@@ -1303,7 +1303,7 @@ function TableOfContentsContent({
             style={{
               background: 'var(--primary)',
               color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
               fontWeight: 600,
             }}
@@ -1328,7 +1328,7 @@ function TableOfContentsContent({
           <span
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
             }}
           >
@@ -1340,7 +1340,7 @@ function TableOfContentsContent({
             style={{
               background: 'var(--primary)',
               color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: '13px',
               fontWeight: 600,
             }}

@@ -730,7 +730,7 @@ function CustomDropdown({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-9 px-3 py-2 bg-card border border-border rounded-[var(--radius)] text-xs text-foreground hover:bg-secondary transition-colors flex items-center justify-between"
+        className="w-full h-9 px-3 py-2 bg-card border border-border rounded-lg text-xs text-foreground hover:bg-secondary transition-colors flex items-center justify-between"
       >
         <span>{selectedLabel}</span>
         <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -743,7 +743,7 @@ function CustomDropdown({
             onClick={() => setIsOpen(false)}
           />
           <div 
-            className="absolute top-full mt-1 w-full bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 max-h-60 overflow-auto"
+            className="absolute top-full mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-20 max-h-60 overflow-auto"
             style={{ boxShadow: 'var(--elevation-sm)' }}
           >
             {options.map((option) => (
@@ -800,7 +800,7 @@ function FullscreenMediaViewer({
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 bg-card/90 hover:bg-card rounded-[var(--radius)] transition-colors"
+        className="absolute top-4 right-4 p-2 bg-card/90 hover:bg-card rounded-lg transition-colors"
       >
         <X size={24} className="text-foreground" />
       </button>
@@ -842,7 +842,7 @@ function SessionDetailsModal({
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
         <div 
-          className="bg-card border border-border rounded-[var(--radius)] shadow-lg max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+          className="bg-card border border-border rounded-lg shadow-lg max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
           style={{ boxShadow: 'var(--elevation-lg)' }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -863,7 +863,7 @@ function SessionDetailsModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-1 hover:bg-secondary rounded-lg transition-colors"
             >
               <X size={20} className="text-muted" />
             </button>
@@ -883,7 +883,7 @@ function SessionDetailsModal({
                       <button
                         key={step.id}
                         onClick={() => setCurrentStepIndex(index)}
-                        className={`w-full text-left p-3 rounded-[var(--radius)] transition-colors ${
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
                           currentStepIndex === index 
                             ? 'bg-primary/10 border border-primary/20' 
                             : 'bg-card border border-border hover:bg-secondary'
@@ -935,14 +935,14 @@ function SessionDetailsModal({
                       <button
                         onClick={() => setCurrentStepIndex(Math.max(0, currentStepIndex - 1))}
                         disabled={currentStepIndex === 0}
-                        className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 hover:bg-secondary rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <ChevronLeft size={18} className="text-foreground" />
                       </button>
                       <button
                         onClick={() => setCurrentStepIndex(Math.min(session.procedureSteps.length - 1, currentStepIndex + 1))}
                         disabled={currentStepIndex === session.procedureSteps.length - 1}
-                        className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 hover:bg-secondary rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <ChevronRight size={18} className="text-foreground" />
                       </button>
@@ -951,7 +951,7 @@ function SessionDetailsModal({
 
                   {/* Step Timing */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                    <div className="bg-secondary/50 rounded-[var(--radius)] p-3">
+                    <div className="bg-secondary/50 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Clock size={14} className="text-muted" />
                         <span className="text-xs text-muted">Start Time</span>
@@ -960,7 +960,7 @@ function SessionDetailsModal({
                         {currentStep.startTime}
                       </p>
                     </div>
-                    <div className="bg-secondary/50 rounded-[var(--radius)] p-3">
+                    <div className="bg-secondary/50 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Clock size={14} className="text-muted" />
                         <span className="text-xs text-muted">End Time</span>
@@ -969,7 +969,7 @@ function SessionDetailsModal({
                         {currentStep.endTime}
                       </p>
                     </div>
-                    <div className="bg-secondary/50 rounded-[var(--radius)] p-3">
+                    <div className="bg-secondary/50 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Activity size={14} className="text-muted" />
                         <span className="text-xs text-muted">Duration</span>
@@ -982,7 +982,7 @@ function SessionDetailsModal({
 
                   {/* Step Images */}
                   {currentStep.images && currentStep.images.length > 0 && (
-                    <div className="border border-border rounded-[var(--radius)] p-4">
+                    <div className="border border-border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <ImageIcon size={16} className="text-muted" />
                         <h4 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
@@ -993,7 +993,7 @@ function SessionDetailsModal({
                         {currentStep.images.map((image, index) => (
                           <div 
                             key={index}
-                            className="relative aspect-video bg-secondary rounded-[var(--radius)] overflow-hidden border border-border group cursor-pointer"
+                            className="relative aspect-video bg-secondary rounded-lg overflow-hidden border border-border group cursor-pointer"
                             onClick={() => setFullscreenMedia(image)}
                           >
                             <img 
@@ -1012,7 +1012,7 @@ function SessionDetailsModal({
 
                   {/* User Uploaded Media */}
                   {currentStep.userMedia && currentStep.userMedia.length > 0 && (
-                    <div className="border border-border rounded-[var(--radius)] p-4">
+                    <div className="border border-border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Video size={16} className="text-muted" />
                         <h4 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
@@ -1023,7 +1023,7 @@ function SessionDetailsModal({
                         {currentStep.userMedia.map((media, index) => (
                           <div key={index} className="space-y-2">
                             <div 
-                              className="relative aspect-video bg-secondary rounded-[var(--radius)] overflow-hidden border border-border group cursor-pointer"
+                              className="relative aspect-video bg-secondary rounded-lg overflow-hidden border border-border group cursor-pointer"
                               onClick={() => setFullscreenMedia(media.fullUrl)}
                             >
                               <img 
@@ -1051,7 +1051,7 @@ function SessionDetailsModal({
 
                   {/* No Media Message */}
                   {!currentStep.images && !currentStep.userMedia && (
-                    <div className="border border-border rounded-[var(--radius)] p-8 text-center">
+                    <div className="border border-border rounded-lg p-8 text-center">
                       <FileText size={32} className="text-muted mx-auto mb-2" />
                       <p className="text-sm text-muted">No media attached to this step</p>
                     </div>
@@ -1087,7 +1087,7 @@ function SessionDetailsModal({
                 </div>
               </div>
               {session.hasRecording && (
-                <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-[var(--radius)] text-xs hover:bg-primary/90 transition-colors">
+                <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-xs hover:bg-primary/90 transition-colors">
                   <Video size={14} />
                   <span>View Full Recording</span>
                 </button>
@@ -1115,8 +1115,8 @@ function AnalyticsSkeleton() {
       <div className="shrink-0 px-6 py-5 flex items-center justify-between">
         <div className="h-6 bg-muted/30 rounded w-28 animate-pulse" />
         <div className="flex items-center gap-3">
-          <div className="h-10 w-36 bg-muted/30 rounded-[var(--radius)] animate-pulse" />
-          <div className="h-10 w-32 bg-muted/30 rounded-[var(--radius)] animate-pulse" />
+          <div className="h-10 w-36 bg-muted/30 rounded-lg animate-pulse" />
+          <div className="h-10 w-32 bg-muted/30 rounded-lg animate-pulse" />
         </div>
       </div>
 
@@ -1166,17 +1166,17 @@ function AnalyticsSkeleton() {
         </div>
 
         {/* Table skeleton */}
-        <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden animate-pulse">
+        <div className="bg-card border border-border rounded-lg overflow-hidden animate-pulse">
           <div className="flex items-center justify-between px-5 py-4">
             <div className="h-4 bg-muted/30 rounded w-36" />
             <div className="flex items-center gap-2">
-              <div className="h-9 w-48 bg-muted/30 rounded-[var(--radius)]" />
-              <div className="h-9 w-28 bg-muted/30 rounded-[var(--radius)]" />
+              <div className="h-9 w-48 bg-muted/30 rounded-lg" />
+              <div className="h-9 w-28 bg-muted/30 rounded-lg" />
             </div>
           </div>
           <div className="px-5 space-y-3 pb-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-10 bg-muted/20 rounded-[var(--radius)]" />
+              <div key={i} className="h-10 bg-muted/20 rounded-lg" />
             ))}
           </div>
         </div>
@@ -1498,10 +1498,10 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
                 Views &amp; Completions
               </span>
             </div>
-            <div className="flex bg-secondary rounded-[var(--radius)] p-0.5">
+            <div className="flex bg-secondary rounded-lg p-0.5">
               <button
                 onClick={() => setChartMode('aggregate')}
-                className={`px-3 py-1.5 text-[11px] rounded-[var(--radius)] transition-colors ${
+                className={`px-3 py-1.5 text-[11px] rounded-lg transition-colors ${
                   chartMode === 'aggregate'
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted hover:text-foreground'
@@ -1512,7 +1512,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
               </button>
               <button
                 onClick={() => setChartMode('individual')}
-                className={`px-3 py-1.5 text-[11px] rounded-[var(--radius)] transition-colors ${
+                className={`px-3 py-1.5 text-[11px] rounded-lg transition-colors ${
                   chartMode === 'individual'
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted hover:text-foreground'
@@ -1874,7 +1874,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         {/* ===== TEAM PERFORMANCE & CONTENT HEALTH ROW ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
           {/* User Performance */}
-          <div className="bg-card border border-border rounded-[var(--radius)]">
+          <div className="bg-card border border-border rounded-lg">
             <div className="flex items-center gap-2 p-5 pb-0 mb-3">
               <Users size={15} className="text-muted" />
               <h2 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>User Performance</h2>
@@ -1948,7 +1948,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
           </div>
 
           {/* Content Health */}
-          <div className="bg-card border border-border rounded-[var(--radius)]">
+          <div className="bg-card border border-border rounded-lg">
             <div className="flex items-center gap-2 p-5 pb-0 mb-3">
               <AlertCircle size={15} className="text-muted" />
               <h2 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>Content Health</h2>
@@ -1997,7 +1997,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         </div>
 
         {/* ===== SESSION DETAILS TABLE ===== */}
-        <div className="bg-card border border-border rounded-[var(--radius)]">
+        <div className="bg-card border border-border rounded-lg">
           <div className="p-5 border-b border-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
@@ -2011,7 +2011,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
                     placeholder="Search sessions..."
                     value={sessionSearchQuery}
                     onChange={(e) => setSessionSearchQuery(e.target.value)}
-                    className="w-full sm:w-64 h-9 pl-9 pr-3 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full sm:w-64 h-9 pl-9 pr-3 bg-secondary border border-border rounded-lg text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -2197,7 +2197,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="p-1.5 rounded-[var(--radius)] hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft size={16} className="text-foreground" />
                 </button>
@@ -2205,7 +2205,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 rounded-[var(--radius)] text-xs transition-colors ${
+                    className={`w-8 h-8 rounded-lg text-xs transition-colors ${
                       currentPage === page
                         ? 'bg-primary text-white'
                         : 'text-foreground hover:bg-secondary'
@@ -2218,7 +2218,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-[var(--radius)] hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronRight size={16} className="text-foreground" />
                 </button>

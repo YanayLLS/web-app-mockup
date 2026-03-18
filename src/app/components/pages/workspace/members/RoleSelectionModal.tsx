@@ -138,7 +138,7 @@ export function RoleSelectionModal({
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity"
           >
             Save
           </button>

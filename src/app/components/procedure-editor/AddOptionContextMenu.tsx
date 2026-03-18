@@ -94,7 +94,7 @@ const DraggableOptionItem = ({
             onKeyDown={onKeyDown}
             className="flex-1 px-2 py-1 rounded text-sm border"
             style={{
-              fontFamily: 'var(--font-family)',
+              
               background: 'var(--background)',
               borderColor: 'var(--border)',
               color: 'var(--foreground)'
@@ -130,7 +130,7 @@ const DraggableOptionItem = ({
           <div 
             className="flex-1 text-sm"
             style={{ 
-              fontFamily: 'var(--font-family)',
+              
               color: 'var(--foreground)'
             }}
           >
@@ -307,7 +307,7 @@ function OptionsContextMenuContent({
           <h3 
             className="font-bold text-sm"
             style={{ 
-              fontFamily: 'var(--font-family)',
+              
               color: 'var(--foreground)'
             }}
           >
@@ -316,7 +316,7 @@ function OptionsContextMenuContent({
           <p 
             className="text-xs mt-1"
             style={{ 
-              fontFamily: 'var(--font-family)',
+              
               color: 'var(--muted-foreground)'
             }}
           >
@@ -342,7 +342,7 @@ function OptionsContextMenuContent({
               placeholder="New option..."
               className="flex-1 px-3 py-2 rounded-lg text-sm border"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 background: 'var(--background)',
                 borderColor: 'var(--border)',
                 color: 'var(--foreground)'
@@ -369,7 +369,7 @@ function OptionsContextMenuContent({
               style={{
                 background: 'var(--destructive)',
                 color: 'white',
-                fontFamily: 'var(--font-family)'
+                
               }}
             >
               <AlertCircle className="size-3 mt-0.5 shrink-0" />
@@ -389,7 +389,7 @@ function OptionsContextMenuContent({
             <div 
               className="px-4 py-8 text-center text-sm"
               style={{ 
-                fontFamily: 'var(--font-family)',
+                
                 color: 'var(--muted-foreground)'
               }}
             >

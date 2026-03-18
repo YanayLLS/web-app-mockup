@@ -153,7 +153,6 @@ export function MemberAvatar({
         backgroundColor: 'var(--color-popover, #1a1a2e)',
         color: 'var(--color-popover-foreground, #fff)',
         fontSize: 'var(--text-xs)',
-        fontFamily: 'var(--font-family)',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       }}
     >
@@ -185,7 +184,6 @@ export function MemberAvatar({
             backgroundColor: imageUrl ? 'transparent' : color,
             borderColor: border ? 'var(--color-card, #fff)' : undefined,
             fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-family)',
           }}
           role={isClickable ? 'button' : undefined}
           tabIndex={isClickable ? 0 : undefined}
@@ -224,8 +222,7 @@ export function MemberAvatar({
             style={{
               backgroundColor: 'var(--color-destructive, #FF1F1F)',
               color: 'white',
-              fontFamily: 'var(--font-family)',
-            }}
+              }}
             title={`Remove ${name}`}
             aria-label={`Remove ${name}`}
           >

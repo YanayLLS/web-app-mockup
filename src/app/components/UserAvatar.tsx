@@ -109,11 +109,10 @@ export function UserAvatar({
           className={`${sizeClasses[size]} flex items-center justify-center text-white flex-shrink-0 rounded-full overflow-hidden relative ${
             editable ? 'cursor-pointer group' : ''
           }`}
-          style={{ 
-            fontSize: fontSizes[size], 
-            fontWeight: 'var(--font-weight-bold)', 
-            fontFamily: 'var(--font-family)',
-            background: avatarUrl ? 'transparent' : 'linear-gradient(to bottom right, var(--color-primary), var(--color-accent))'
+          style={{
+            fontSize: fontSizes[size],
+            fontWeight: 'var(--font-weight-bold)',
+            background: avatarUrl ? 'transparent' : 'linear-gradient(135deg, var(--color-primary), #004FFF)'
           }}
         >
           {editable && (
@@ -137,10 +136,10 @@ export function UserAvatar({
         </div>
         
         {showOnlineStatus && (
-          <div 
-            className={`absolute -bottom-0.5 -right-0.5 ${statusSizes[size]} bg-green-500 rounded-full border-2`}
-            style={{ borderColor: 'var(--color-background)' }}
-          ></div>
+          <div
+            className={`absolute -bottom-0.5 -right-0.5 ${statusSizes[size]} rounded-full border-2`}
+            style={{ backgroundColor: '#11E874', borderColor: 'var(--color-background)', boxShadow: '0 0 6px rgba(17,232,116,0.4)' }}
+          />
         )}
       </div>
 
@@ -148,36 +147,38 @@ export function UserAvatar({
       {editable && showContextMenu && (
         <div
           ref={contextMenuRef}
-          className="fixed bg-card border border-border rounded-[var(--radius)] py-1 z-[100]"
+          className="fixed bg-card border border-border rounded-xl py-1 z-[100]"
           style={{
-            boxShadow: 'var(--elevation-lg)',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
             left: `${contextMenuPosition.x}px`,
             top: `${contextMenuPosition.y}px`,
-            minWidth: '160px',
+            minWidth: '176px',
             maxWidth: 'calc(100vw - 32px)',
           }}
         >
-          <button
-            onClick={handleUploadClick}
-            className="w-full px-3 py-2.5 min-h-[44px] text-left hover:bg-secondary transition-colors flex items-center gap-2"
-          >
-            <Upload size={16} style={{ color: 'var(--color-foreground)' }} />
-            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-foreground)', fontFamily: 'var(--font-family)' }}>
-              Upload Avatar
-            </span>
-          </button>
-          
-          {avatarUrl && (
+          <div className="p-1">
             <button
-              onClick={handleRemoveAvatar}
-              className="w-full px-3 py-2.5 min-h-[44px] text-left hover:bg-destructive/10 transition-colors flex items-center gap-2"
+              onClick={handleUploadClick}
+              className="w-full px-3 py-2.5 min-h-[44px] text-left hover:bg-secondary rounded-lg transition-colors flex items-center gap-2.5"
             >
-              <Trash2 size={16} style={{ color: 'var(--color-destructive)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-destructive)', fontFamily: 'var(--font-family)' }}>
-                Remove Avatar
+              <Upload size={15} className="text-foreground" />
+              <span className="text-sm text-foreground">
+                Upload Avatar
               </span>
             </button>
-          )}
+
+            {avatarUrl && (
+              <button
+                onClick={handleRemoveAvatar}
+                className="w-full px-3 py-2.5 min-h-[44px] text-left hover:bg-destructive/8 rounded-lg transition-colors flex items-center gap-2.5"
+              >
+                <Trash2 size={15} className="text-destructive" />
+                <span className="text-sm text-destructive">
+                  Remove Avatar
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       )}
 

@@ -171,10 +171,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
   return (
     <div className="flex-1 flex items-center justify-center bg-background p-8">
       <div 
-        className="bg-card rounded-[var(--radius-lg)] shadow-elevation-sm w-full max-w-[560px]"
-        style={{
-          fontFamily: 'var(--font-family)',
-        }}
+        className="bg-card rounded-xl shadow-elevation-sm w-full max-w-[560px]"
       >
         {/* Header */}
         <div className="p-5 border-b border-border">
@@ -184,7 +181,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                 className="mb-1"
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-lg)',
                   fontWeight: 'var(--font-weight-bold)',
                 }}
@@ -195,7 +192,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                 className="text-xs"
                 style={{
                   color: 'var(--muted)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
               >
                 Configure folder properties and access
@@ -218,7 +215,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
             className="block mb-1.5 text-xs"
             style={{
               color: 'var(--muted)',
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-bold)',
             }}
           >
@@ -228,10 +225,10 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
             type="text"
             value={folderName}
             onChange={(e) => setFolderName(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-white focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-ring"
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
             }}
           />
@@ -244,13 +241,13 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
               className="text-xs"
               style={{
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >
               PRIVACY
             </label>
-            <div className="flex items-center gap-1 p-1 bg-secondary rounded-[var(--radius-lg)]">
+            <div className="flex items-center gap-1 p-1 bg-secondary rounded-xl">
               <button
                 onClick={() => handleTogglePrivacy(false)}
                 disabled={!publicFeatureEnabled}
@@ -259,7 +256,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                 }`}
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                   opacity: !publicFeatureEnabled ? 0.4 : 1,
                   cursor: !publicFeatureEnabled ? 'not-allowed' : 'pointer',
@@ -274,7 +271,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                 }`}
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                 }}
               >
@@ -288,7 +285,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
             <div>
               {/* Private State Header */}
               <div 
-                className="p-3 rounded-[var(--radius-lg)] flex items-start gap-3"
+                className="p-3 rounded-xl flex items-start gap-3"
                 style={{ 
                   backgroundColor: 'rgba(255, 165, 0, 0.08)',
                   border: '1px solid rgba(255, 165, 0, 0.2)',
@@ -307,7 +304,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                     className="font-bold mb-0.5"
                     style={{
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                     }}
                   >
@@ -317,7 +314,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                     className="text-xs leading-relaxed"
                     style={{
                       color: 'var(--muted)',
-                      fontFamily: 'var(--font-family)',
+                      
                     }}
                   >
                     Only invited members can access this folder
@@ -331,7 +328,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                   className="text-xs"
                   style={{
                     color: 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -365,7 +362,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
             <div>
               {/* Public State */}
               <div 
-                className="p-3 rounded-[var(--radius-lg)] flex items-start gap-3"
+                className="p-3 rounded-xl flex items-start gap-3"
                 style={{ 
                   backgroundColor: 'rgba(47, 128, 237, 0.08)',
                   border: '1px solid rgba(47, 128, 237, 0.2)',
@@ -385,7 +382,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                     className="font-bold mb-0.5"
                     style={{
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                     }}
                   >
@@ -395,7 +392,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
                     className="text-xs leading-relaxed"
                     style={{
                       color: 'var(--muted)',
-                      fontFamily: 'var(--font-family)',
+                      
                     }}
                   >
                     All members with project access can view and interact with this folder
@@ -415,7 +412,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
               backgroundColor: 'var(--destructive)',
               color: 'var(--destructive-foreground)',
               borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-xs)',
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
@@ -430,7 +427,7 @@ export function FolderSettingsPage({ onClose, groups, publicFeatureEnabled }: Fo
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
               borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-xs)',
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}

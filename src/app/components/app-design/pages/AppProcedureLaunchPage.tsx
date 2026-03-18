@@ -56,14 +56,14 @@ export function AppProcedureLaunchPage() {
 
         <div className="w-full space-y-3" style={{ maxWidth: 'min(384px, calc(100vw - 32px))' }}>
           <button
-            className="w-full py-3.5 min-h-[48px] border-2 border-primary text-primary rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+            className="w-full py-3.5 min-h-[48px] border-2 border-primary text-primary rounded-lg flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
             style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Run in 2D
           </button>
 
           <button
-            className="w-full py-3.5 min-h-[48px] bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+            className="w-full py-3.5 min-h-[48px] bg-primary text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
             style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Run in 3D
@@ -111,7 +111,7 @@ export function AppProcedureLaunchPage() {
                   setLaunchState('loading');
                   setTimeout(() => setLaunchState('error'), 2000);
                 }}
-                className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
+                className="px-6 py-2.5 min-h-[44px] bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 Try again

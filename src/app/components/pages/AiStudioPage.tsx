@@ -564,9 +564,6 @@ export function AiStudioPage() {
   return (
     <div
       className="flex flex-col h-full bg-background overflow-hidden"
-      style={{
-        fontFamily: 'var(--font-family)',
-      }}
     >
       {/* AI Usage Bar */}
       <div className="shrink-0 bg-card border-b border-border px-[16px] py-[12px]">
@@ -584,7 +581,7 @@ export function AiStudioPage() {
             </div>
             <div className="flex items-center gap-[8px]">
               <button
-                className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+                className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-lg border border-border hover:bg-secondary transition-colors"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--muted)',
@@ -596,7 +593,7 @@ export function AiStudioPage() {
                 <span>-10%</span>
               </button>
               <button
-                className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+                className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-lg border border-border hover:bg-secondary transition-colors"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--muted)',
@@ -740,7 +737,6 @@ export function AiStudioPage() {
                   fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-semibold)',
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
                   marginBottom: '4px',
                 }}
               >
@@ -750,7 +746,6 @@ export function AiStudioPage() {
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
                   lineHeight: '1.5',
                 }}
               >
@@ -758,7 +753,7 @@ export function AiStudioPage() {
               </div>
             </div>
             <button
-              className="shrink-0 p-1 hover:bg-primary/20 rounded-[var(--radius)] transition-colors"
+              className="shrink-0 p-1 hover:bg-primary/20 rounded-lg transition-colors"
               onClick={() => setShowInfoBanner(false)}
               title="Dismiss"
             >
@@ -769,11 +764,11 @@ export function AiStudioPage() {
       )}
 
       {/* Search and Actions Bar */}
-      <div className="shrink-0 rounded-[var(--radius)] px-[9px] py-[8px] relative" style={{ backgroundColor: 'white' }}>
+      <div className="shrink-0 rounded-lg px-[9px] py-[8px] relative" style={{ backgroundColor: 'white' }}>
         <div className="flex items-center gap-[10px] flex-wrap">
           {/* Search */}
           <div
-            className="relative flex items-center justify-between px-[12px] h-[32px] rounded-[var(--radius)] border border-border"
+            className="relative flex items-center justify-between px-[12px] h-[32px] rounded-lg border border-border"
             style={{
               backgroundColor: 'var(--input-background)',
               width: '100%',
@@ -798,7 +793,7 @@ export function AiStudioPage() {
           {/* Filter Button */}
           <div className="relative">
             <button
-              className={`flex items-center h-[30px] px-[6px] py-[6px] rounded-[var(--radius)] gap-[4px] transition-colors ${
+              className={`flex items-center h-[30px] px-[6px] py-[6px] rounded-lg gap-[4px] transition-colors ${
                 showFilterMenu || selectedLocations.size > 0 ? 'bg-primary/10' : 'hover:bg-secondary'
               }`}
               onClick={() => setShowFilterMenu(!showFilterMenu)}
@@ -818,7 +813,7 @@ export function AiStudioPage() {
             {showFilterMenu && (
               <div
                 ref={filterMenuRef}
-                className="absolute top-[38px] left-0 z-50 bg-card p-[15px] rounded-[var(--radius)] gap-[6px] flex flex-col"
+                className="absolute top-[38px] left-0 z-50 bg-card p-[15px] rounded-lg gap-[6px] flex flex-col"
                 style={{
                   width: '436px',
                   maxWidth: 'calc(100vw - 32px)',
@@ -863,7 +858,7 @@ export function AiStudioPage() {
                   </div>
                   <div className="relative">
                     <button
-                      className="h-[30px] px-[6px] rounded-[var(--radius)] border border-border flex items-center justify-between"
+                      className="h-[30px] px-[6px] rounded-lg border border-border flex items-center justify-between"
                       style={{
                         width: '100%',
                         maxWidth: '252px',
@@ -882,7 +877,7 @@ export function AiStudioPage() {
                     {showLocationSelect && (
                       <div
                         ref={locationSelectRef}
-                        className="absolute top-[36px] right-0 z-50 bg-card p-[12px] rounded-[var(--radius)] flex flex-col gap-[6px]"
+                        className="absolute top-[36px] right-0 z-50 bg-card p-[12px] rounded-lg flex flex-col gap-[6px]"
                         style={{
                           width: '280px',
                           maxWidth: 'calc(100vw - 32px)',
@@ -892,7 +887,7 @@ export function AiStudioPage() {
                       >
                         {/* Search */}
                         <div
-                          className="flex items-center gap-[4px] px-[8px] py-[4px] rounded-[var(--radius)] border border-primary"
+                          className="flex items-center gap-[4px] px-[8px] py-[4px] rounded-lg border border-primary"
                           style={{
                             backgroundColor: 'var(--input-background)',
                             height: '35px',
@@ -962,7 +957,7 @@ export function AiStudioPage() {
             onMouseLeave={() => setShowUploadTooltip(false)}
           >
             <button
-              className={`flex items-center gap-[6px] justify-center h-[30px] px-[12px] py-[8px] rounded-[var(--radius-button)] transition-opacity ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
+              className={`flex items-center gap-[6px] justify-center h-[30px] px-[12px] py-[8px] rounded-lg transition-opacity ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110'}`}
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
@@ -979,7 +974,7 @@ export function AiStudioPage() {
             {/* Tooltip */}
             {showUploadTooltip && (
               <div 
-                className="absolute bottom-full right-0 mb-2 px-3 py-2 rounded-[var(--radius)] border border-border pointer-events-none z-50"
+                className="absolute bottom-full right-0 mb-2 px-3 py-2 rounded-lg border border-border pointer-events-none z-50"
                 style={{
                   backgroundColor: 'var(--card)',
                   boxShadow: 'var(--elevation-md)',
@@ -998,8 +993,7 @@ export function AiStudioPage() {
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-semibold)',
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
-                    }}
+                        }}
                   >
                     Upload Knowledge Sources
                   </div>
@@ -1008,8 +1002,7 @@ export function AiStudioPage() {
                   style={{
                     fontSize: 'var(--text-sm)',
                     color: 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
-                    lineHeight: '1.4',
+                      lineHeight: '1.4',
                   }}
                 >
                   Files you upload will be added to your knowledge base. Enable them in the table to make them accessible to your AI agent in chat conversations.
@@ -1294,7 +1287,7 @@ export function AiStudioPage() {
                 </div>
 
                 {/* Roles */}
-                <div className="flex items-center h-[26px] p-[4px] rounded-[var(--radius)]" style={{ width: `${columnWidths.roles}px` }}>
+                <div className="flex items-center h-[26px] p-[4px] rounded-lg" style={{ width: `${columnWidths.roles}px` }}>
                   <span
                     className="overflow-hidden text-ellipsis whitespace-nowrap px-2 py-0.5 rounded-md"
                     style={{
@@ -1357,7 +1350,7 @@ export function AiStudioPage() {
       {selectedIds.size > 0 && (
         <div className="shrink-0 py-[12px] px-[16px] border-t border-border bg-card max-w-[calc(100vw-32px)]">
           <div className="flex items-center justify-center gap-[12px] flex-wrap">
-            <div className="flex items-center gap-[8px] px-[12px] py-[6px] rounded-[var(--radius)] border border-border bg-background">
+            <div className="flex items-center gap-[8px] px-[12px] py-[6px] rounded-lg border border-border bg-background">
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
                 {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''} selected
               </span>
@@ -1372,7 +1365,7 @@ export function AiStudioPage() {
             </div>
 
             <button
-              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
+              className={`px-[12px] py-[6px] rounded-lg border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
               onClick={canEditAiStudio ? () => console.log('Specify roles for selected') : undefined}
               disabled={!canEditAiStudio}
@@ -1381,7 +1374,7 @@ export function AiStudioPage() {
             </button>
 
             <button
-              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
+              className={`px-[12px] py-[6px] rounded-lg border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
               onClick={canEditAiStudio ? bulkEnable : undefined}
               disabled={!canEditAiStudio}
@@ -1390,7 +1383,7 @@ export function AiStudioPage() {
             </button>
 
             <button
-              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
+              className={`px-[12px] py-[6px] rounded-lg border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
               onClick={canEditAiStudio ? bulkDisable : undefined}
               disabled={!canEditAiStudio}
@@ -1399,7 +1392,7 @@ export function AiStudioPage() {
             </button>
 
             <button
-              className={`px-[12px] py-[6px] rounded-[var(--radius)] border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
+              className={`px-[12px] py-[6px] rounded-lg border border-border transition-colors ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
               style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}
               onClick={canEditAiStudio ? bulkExpose : undefined}
               disabled={!canEditAiStudio}
@@ -1408,7 +1401,7 @@ export function AiStudioPage() {
             </button>
 
             <button
-              className={`w-[32px] h-[32px] rounded-[var(--radius)] border border-border transition-colors flex items-center justify-center ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-destructive/10'}`}
+              className={`w-[32px] h-[32px] rounded-lg border border-border transition-colors flex items-center justify-center ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-destructive/10'}`}
               onClick={canEditAiStudio ? bulkDelete : undefined}
               disabled={!canEditAiStudio}
             >
@@ -1422,7 +1415,7 @@ export function AiStudioPage() {
       <div className="shrink-0 h-[60px] flex items-center justify-between px-[16px] border-t border-border bg-card">
         {canEditAiStudio ? (
           <button
-            className="px-[16px] py-[8px] rounded-[var(--radius)] hover:bg-secondary transition-colors"
+            className="px-[16px] py-[8px] rounded-lg hover:bg-secondary transition-colors"
             style={{ fontSize: 'var(--text-base)', color: 'var(--foreground)' }}
             onClick={handleDiscard}
           >
@@ -1434,7 +1427,7 @@ export function AiStudioPage() {
 
         <div className="flex items-center gap-[12px]">
           <button
-            className="px-[16px] py-[8px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+            className="px-[16px] py-[8px] rounded-lg border border-border hover:bg-secondary transition-colors"
             style={{ fontSize: 'var(--text-base)', color: 'var(--foreground)' }}
             onClick={handleTest}
             title="Open test chat to interact with your AI agent using enabled knowledge sources"
@@ -1444,7 +1437,7 @@ export function AiStudioPage() {
 
           {canEditAiStudio && (
             <button
-              className="px-[16px] py-[8px] rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+              className="px-[16px] py-[8px] rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
@@ -1463,7 +1456,7 @@ export function AiStudioPage() {
       {showPublishModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-[16px]">
           <div
-            className="bg-card rounded-[var(--radius)] p-[24px] flex flex-col gap-[20px] w-full max-w-[480px]"
+            className="bg-card rounded-lg p-[24px] flex flex-col gap-[20px] w-full max-w-[480px]"
             style={{
               boxShadow: 'var(--elevation-lg)',
             }}
@@ -1489,7 +1482,7 @@ export function AiStudioPage() {
               
               {/* Summary */}
               <div
-                className="p-[12px] rounded-[var(--radius)] border border-border bg-background"
+                className="p-[12px] rounded-lg border border-border bg-background"
               >
                 <div className="flex flex-col gap-[8px]">
                   <div className="flex justify-between" style={{ fontSize: 'var(--text-sm)' }}>
@@ -1516,14 +1509,14 @@ export function AiStudioPage() {
 
             <div className="flex items-center justify-end gap-[12px]">
               <button
-                className="px-[16px] py-[8px] rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                className="px-[16px] py-[8px] rounded-lg hover:bg-secondary transition-colors"
                 style={{ fontSize: 'var(--text-base)', color: 'var(--foreground)' }}
                 onClick={() => setShowPublishModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-[16px] py-[8px] rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                className="px-[16px] py-[8px] rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
@@ -1542,7 +1535,7 @@ export function AiStudioPage() {
       {showTestChat && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-[20px]">
           <div
-            className="bg-card rounded-[var(--radius)] overflow-hidden w-full max-w-[500px] max-h-[90vh]"
+            className="bg-card rounded-lg overflow-hidden w-full max-w-[500px] max-h-[90vh]"
             style={{
               height: '700px',
               border: '1px solid #2F80ED',
@@ -1560,8 +1553,7 @@ export function AiStudioPage() {
                     fontSize: '18px',
                     fontWeight: 'var(--font-weight-bold)',
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
-                  }}
+                    }}
                 >
                   Test Agent
                 </div>
@@ -1575,7 +1567,7 @@ export function AiStudioPage() {
               </div>
               <div className="flex-1 flex justify-end">
                 <button
-                  className="w-[32px] h-[32px] flex items-center justify-center hover:opacity-70 transition-opacity rounded-[var(--radius)] hover:bg-secondary"
+                  className="w-[32px] h-[32px] flex items-center justify-center hover:opacity-70 transition-opacity rounded-lg hover:bg-secondary"
                   onClick={() => setShowTestChat(false)}
                 >
                   <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
@@ -1587,7 +1579,7 @@ export function AiStudioPage() {
 
             {/* Test Disclaimer */}
             {showTestDisclaimer && (
-              <div className="mx-[16px] mt-[16px] bg-accent/10 border border-accent/30 rounded-[var(--radius)] p-[12px] flex items-start gap-[12px] shrink-0">
+              <div className="mx-[16px] mt-[16px] bg-accent/10 border border-accent/30 rounded-lg p-[12px] flex items-start gap-[12px] shrink-0">
                 <Info size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
                 <div className="flex-1">
                   <p
@@ -1596,8 +1588,7 @@ export function AiStudioPage() {
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-semibold)',
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
-                    }}
+                        }}
                   >
                     Test Mode
                   </p>
@@ -1605,14 +1596,13 @@ export function AiStudioPage() {
                     style={{
                       fontSize: 'var(--text-sm)',
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
-                    }}
+                        }}
                   >
                     The AI has access to all enabled knowledge sources from the table. Files you attach will be added to the conversation context. This is test mode — no changes are saved to your workspace.
                   </p>
                 </div>
                 <button
-                  className="w-[24px] h-[24px] flex items-center justify-center hover:opacity-70 shrink-0 rounded-[var(--radius)] hover:bg-secondary"
+                  className="w-[24px] h-[24px] flex items-center justify-center hover:opacity-70 shrink-0 rounded-lg hover:bg-secondary"
                   onClick={() => setShowTestDisclaimer(false)}
                 >
                   <X size={16} style={{ color: 'var(--foreground)' }} />
@@ -1640,8 +1630,7 @@ export function AiStudioPage() {
                         fontSize: 'var(--text-h3)',
                         fontWeight: 'var(--font-weight-bold)',
                         color: 'var(--foreground)',
-                        fontFamily: 'var(--font-family)',
-                      }}
+                            }}
                     >
                       Test Your AI Agent
                     </div>
@@ -1650,20 +1639,18 @@ export function AiStudioPage() {
                       style={{
                         fontSize: 'var(--text-sm)',
                         color: 'var(--muted)',
-                        fontFamily: 'var(--font-family)',
-                        lineHeight: '1.5',
+                              lineHeight: '1.5',
                       }}
                     >
                       Ask questions to test how your AI agent responds. You can attach files from your knowledge sources using the paperclip icon. Enabled files in your knowledge base are automatically available to the AI.
                     </div>
-                    <div className="flex flex-col gap-2 items-start text-left bg-secondary/30 rounded-[var(--radius)] p-4">
+                    <div className="flex flex-col gap-2 items-start text-left bg-secondary/30 rounded-lg p-4">
                       <div
                         style={{
                           fontSize: 'var(--text-sm)',
                           fontWeight: 'var(--font-weight-semibold)',
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
-                        }}
+                                }}
                       >
                         Try asking:
                       </div>
@@ -1671,8 +1658,7 @@ export function AiStudioPage() {
                         style={{
                           fontSize: 'var(--text-sm)',
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
-                        }}
+                                }}
                       >
                         • "How many knowledge sources are enabled?"
                       </div>
@@ -1680,8 +1666,7 @@ export function AiStudioPage() {
                         style={{
                           fontSize: 'var(--text-sm)',
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
-                        }}
+                                }}
                       >
                         • "What files do you have access to?"
                       </div>
@@ -1689,8 +1674,7 @@ export function AiStudioPage() {
                         style={{
                           fontSize: 'var(--text-sm)',
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
-                        }}
+                                }}
                       >
                         • "Tell me about the report file"
                       </div>
@@ -1708,7 +1692,7 @@ export function AiStudioPage() {
                 >
                   {msg.role === 'system' ? (
                     <div
-                      className="px-[16px] py-[8px] rounded-[var(--radius)] bg-secondary/30 max-w-[80%]"
+                      className="px-[16px] py-[8px] rounded-lg bg-secondary/30 max-w-[80%]"
                       style={{
                         fontSize: 'var(--text-sm)',
                         color: 'var(--muted)',
@@ -1719,7 +1703,7 @@ export function AiStudioPage() {
                     </div>
                   ) : (
                     <div
-                      className={`p-[14px] rounded-[var(--radius)] ${
+                      className={`p-[14px] rounded-lg ${
                         msg.role === 'user'
                           ? 'bg-primary/10 ml-[60px]'
                           : 'bg-secondary/50 mr-[60px]'
@@ -1751,7 +1735,7 @@ export function AiStudioPage() {
                           {msg.attachments.map((file, fileIdx) => (
                             <div
                               key={fileIdx}
-                              className="px-[8px] py-[4px] rounded-[var(--radius)] bg-background border border-border flex items-center gap-[6px]"
+                              className="px-[8px] py-[4px] rounded-lg bg-background border border-border flex items-center gap-[6px]"
                               style={{ fontSize: 'var(--text-sm)' }}
                             >
                               <Paperclip size={12} style={{ color: 'var(--muted)' }} />
@@ -1778,7 +1762,7 @@ export function AiStudioPage() {
               {/* Typing Indicator */}
               {isTyping && (
                 <div className="mb-[16px] mr-[60px]">
-                  <div className="p-[14px] rounded-[var(--radius)] bg-secondary/50">
+                  <div className="p-[14px] rounded-lg bg-secondary/50">
                     <div className="flex items-center gap-[8px] mb-[6px]">
                       <span
                         style={{
@@ -1811,7 +1795,7 @@ export function AiStudioPage() {
                   {attachedFiles.map((file, idx) => (
                     <div
                       key={idx}
-                      className="px-[10px] py-[6px] rounded-[var(--radius)] bg-secondary border border-border flex items-center gap-[8px]"
+                      className="px-[10px] py-[6px] rounded-lg bg-secondary border border-border flex items-center gap-[8px]"
                       style={{ fontSize: 'var(--text-sm)' }}
                     >
                       <Paperclip size={14} style={{ color: 'var(--foreground)' }} />
@@ -1828,7 +1812,7 @@ export function AiStudioPage() {
               )}
 
               <div
-                className="rounded-[var(--radius)] border-[2px]"
+                className="rounded-lg border-[2px]"
                 style={{
                   borderColor: 'var(--primary)',
                   backgroundColor: 'var(--input-background)',
@@ -1878,14 +1862,14 @@ export function AiStudioPage() {
                       onChange={handleFileSelect}
                     />
                     <button
-                      className="w-[36px] h-[36px] rounded-[var(--radius)] flex items-center justify-center hover:bg-secondary transition-colors shrink-0"
+                      className="w-[36px] h-[36px] rounded-lg flex items-center justify-center hover:bg-secondary transition-colors shrink-0"
                       onClick={handleAttachFile}
                       title="Attach files"
                     >
                       <Paperclip size={18} style={{ color: 'var(--foreground)' }} />
                     </button>
                     <button
-                      className="w-[36px] h-[36px] rounded-[var(--radius)] flex items-center justify-center hover:bg-primary/10 transition-colors shrink-0"
+                      className="w-[36px] h-[36px] rounded-lg flex items-center justify-center hover:bg-primary/10 transition-colors shrink-0"
                       style={{ backgroundColor: chatMessage.trim() || attachedFiles.length > 0 ? 'var(--primary)' : 'transparent' }}
                       onClick={handleSendMessage}
                       disabled={!chatMessage.trim() && attachedFiles.length === 0}

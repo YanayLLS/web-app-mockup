@@ -93,7 +93,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
         <div
-          className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border overflow-hidden"
+          className="pointer-events-auto bg-card rounded-lg shadow-elevation-lg border border-border overflow-hidden"
           style={{ width: '440px', maxWidth: '100%' }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -173,7 +173,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                     <select
                       value={selectedAudio}
                       onChange={(e) => setSelectedAudio(e.target.value)}
-                      className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2.5 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer min-h-[44px]"
+                      className="w-full appearance-none bg-card border border-border rounded-lg px-3 py-2.5 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer min-h-[44px]"
                     >
                       {audioDevices.map((d) => (
                         <option key={d.deviceId} value={d.deviceId}>{d.label}</option>
@@ -193,7 +193,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
                     <select
                       value={selectedVideo}
                       onChange={(e) => setSelectedVideo(e.target.value)}
-                      className="w-full appearance-none bg-card border border-border rounded-[var(--radius)] px-3 py-2.5 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer min-h-[44px]"
+                      className="w-full appearance-none bg-card border border-border rounded-lg px-3 py-2.5 pr-8 text-sm text-foreground outline-none focus:border-primary transition-colors cursor-pointer min-h-[44px]"
                     >
                       {videoDevices.map((d) => (
                         <option key={d.deviceId} value={d.deviceId}>{d.label}</option>
@@ -208,7 +208,7 @@ export function AppMeetingJoinModal({ isOpen, onClose }: AppMeetingJoinModalProp
               <button
                 onClick={handleJoin}
                 disabled={code.length < 6 || status === 'loading'}
-                className="w-full py-3 min-h-[48px] bg-primary text-white rounded-[var(--radius-button)] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 min-h-[48px] bg-primary text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 {status === 'loading' ? (

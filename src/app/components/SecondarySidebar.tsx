@@ -30,7 +30,7 @@ export function SecondarySidebar({
   const canCreateNewProject = hasAccess(currentRole, 'project-create');
 
   return (
-    <div className="h-full flex flex-col bg-sidebar" role="navigation" aria-label="Project navigation" style={{ fontFamily: 'var(--font-family)' }}>
+    <div className="h-full flex flex-col bg-sidebar" role="navigation" aria-label="Project navigation">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h3 className="text-foreground" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
@@ -38,7 +38,7 @@ export function SecondarySidebar({
         </h3>
         <button
           onClick={onClose}
-          className="text-muted hover:text-foreground transition-colors p-1 hover:bg-secondary rounded-[var(--radius)]"
+          className="text-muted hover:text-foreground transition-colors p-1 hover:bg-secondary rounded-lg"
           aria-label="Close project navigation"
         >
           <ChevronLeft size={20} />
@@ -58,12 +58,12 @@ export function SecondarySidebar({
                   setCurrentProject(project.id);
                   onClose();
                 }}
-                className={`w-full flex items-center px-3 py-2 rounded-[var(--radius)] transition-all duration-200 text-left ${
+                className={`w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 text-left ${
                   isActive
                     ? 'bg-secondary text-foreground shadow-sm'
                     : 'text-foreground hover:bg-secondary hover:translate-x-[2px]'
                 }`}
-                style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                style={{ fontSize: 'var(--text-sm)' }}
               >
                 {project.name}
               </button>
@@ -80,8 +80,8 @@ export function SecondarySidebar({
               onClose();
               setShowNewProjectModal(true);
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-all duration-200 hover:scale-105" 
-            style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all duration-200"
+            style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}
           >
             <div className="w-4 h-4">
               <IconAdd />

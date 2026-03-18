@@ -140,7 +140,7 @@ function ProcedureListModal({ isOpen, onClose, itemName, procedures }: Procedure
         onClick={onClose}
       />
 
-      <div role="dialog" aria-modal="true" aria-labelledby="procedure-list-title" className="relative w-full max-w-md bg-card border border-border rounded-[var(--radius)] shadow-2xl m-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="procedure-list-title" className="relative w-full max-w-md bg-card border border-border rounded-lg shadow-2xl m-4">
         <div className="border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -149,7 +149,7 @@ function ProcedureListModal({ isOpen, onClose, itemName, procedures }: Procedure
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Close"
             >
               <X size={20} className="text-muted" />
@@ -165,7 +165,7 @@ function ProcedureListModal({ isOpen, onClose, itemName, procedures }: Procedure
               {procedures.map((proc, index) => (
                 <button
                   key={index}
-                  className="w-full flex items-center justify-between p-3 bg-secondary hover:bg-secondary/80 rounded-[var(--radius)] transition-colors text-left"
+                  className="w-full flex items-center justify-between p-3 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors text-left"
                 >
                   <span className="text-sm text-foreground">{proc}</span>
                   <ExternalLink size={14} className="text-muted" />
@@ -178,7 +178,7 @@ function ProcedureListModal({ isOpen, onClose, itemName, procedures }: Procedure
         <div className="border-t border-border px-6 py-4 flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+            className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
           >
             Close
           </button>
@@ -209,13 +209,13 @@ function CreateFolderModal({ isOpen, onClose, parentFolderId, onCreateFolder }: 
         onClick={onClose}
       />
       
-      <div role="dialog" aria-modal="true" aria-labelledby="create-folder-title" className="relative w-full max-w-md bg-card border border-border rounded-[var(--radius)] shadow-2xl m-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="create-folder-title" className="relative w-full max-w-md bg-card border border-border rounded-lg shadow-2xl m-4">
         <div className="border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <h3 id="create-folder-title" style={{ fontWeight: 'var(--font-weight-bold)' }}>Create New Folder</h3>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Close"
             >
               <X size={20} className="text-muted" />
@@ -233,7 +233,7 @@ function CreateFolderModal({ isOpen, onClose, parentFolderId, onCreateFolder }: 
             onChange={(e) => setFolderName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             placeholder="Enter folder name"
-            className="w-full h-10 px-3 bg-card border border-border rounded-[var(--radius)] text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/50"
+            className="w-full h-10 px-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
             autoFocus
           />
         </div>
@@ -241,14 +241,14 @@ function CreateFolderModal({ isOpen, onClose, parentFolderId, onCreateFolder }: 
         <div className="border-t border-border px-6 py-4 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+            className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={!folderName.trim()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             Create Folder
@@ -279,13 +279,13 @@ function RenameModal({ isOpen, onClose, currentName, onRename, itemType }: Renam
         onClick={onClose}
       />
       
-      <div role="dialog" aria-modal="true" aria-labelledby="rename-modal-title" className="relative w-full max-w-md bg-card border border-border rounded-[var(--radius)] shadow-2xl m-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="rename-modal-title" className="relative w-full max-w-md bg-card border border-border rounded-lg shadow-2xl m-4">
         <div className="border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <h3 id="rename-modal-title" style={{ fontWeight: 'var(--font-weight-bold)' }}>Rename {itemType === 'file' ? 'File' : 'Folder'}</h3>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Close"
             >
               <X size={20} className="text-muted" />
@@ -302,7 +302,7 @@ function RenameModal({ isOpen, onClose, currentName, onRename, itemType }: Renam
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleRename()}
-            className="w-full h-10 px-3 bg-card border border-border rounded-[var(--radius)] text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/50"
+            className="w-full h-10 px-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
             autoFocus
           />
         </div>
@@ -310,14 +310,14 @@ function RenameModal({ isOpen, onClose, currentName, onRename, itemType }: Renam
         <div className="border-t border-border px-6 py-4 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+            className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleRename}
             disabled={!newName.trim() || newName === currentName}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             Rename
@@ -339,7 +339,7 @@ function DeleteConfirmModal({ isOpen, onClose, itemName, usedInProcedures, onCon
         onClick={onClose}
       />
       
-      <div role="alertdialog" aria-modal="true" aria-labelledby="delete-item-title" className="relative w-full max-w-md bg-card border border-border rounded-[var(--radius)] shadow-2xl m-4">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="delete-item-title" className="relative w-full max-w-md bg-card border border-border rounded-lg shadow-2xl m-4">
         <div className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -351,7 +351,7 @@ function DeleteConfirmModal({ isOpen, onClose, itemName, usedInProcedures, onCon
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Close"
             >
               <X size={20} className="text-muted" />
@@ -365,7 +365,7 @@ function DeleteConfirmModal({ isOpen, onClose, itemName, usedInProcedures, onCon
           </p>
           
           {usedInProcedures.length > 0 && (
-            <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-[var(--radius)]">
+            <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
               <p className="text-sm mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 ⚠️ This item is used in {usedInProcedures.length} flow{usedInProcedures.length !== 1 ? 's' : ''}:
               </p>
@@ -381,7 +381,7 @@ function DeleteConfirmModal({ isOpen, onClose, itemName, usedInProcedures, onCon
         <div className="border-t border-border px-6 py-4 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+            className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
           >
             Cancel
           </button>
@@ -390,7 +390,7 @@ function DeleteConfirmModal({ isOpen, onClose, itemName, usedInProcedures, onCon
               onConfirm();
               onClose();
             }}
-            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             Delete
@@ -463,7 +463,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
         onClick={onClose}
       />
       
-      <div role="dialog" aria-modal="true" aria-labelledby="replace-item-title" className="relative w-full max-w-2xl bg-card border border-border rounded-[var(--radius)] shadow-2xl m-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="replace-item-title" className="relative w-full max-w-2xl bg-card border border-border rounded-lg shadow-2xl m-4">
         <div className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -475,7 +475,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Close"
             >
               <X size={20} className="text-muted" />
@@ -485,7 +485,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
 
         <div className="p-6">
           {usedInProcedures.length > 0 && (
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-[var(--radius)] mb-4">
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg mb-4">
               <p className="text-sm mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 ℹ️ This item is used in {usedInProcedures.length} flow{usedInProcedures.length !== 1 ? 's' : ''}:
               </p>
@@ -534,7 +534,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search compatible items..."
-                    className="w-full h-10 pl-10 pr-4 bg-card border border-border rounded-[var(--radius)] text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/50"
+                    className="w-full h-10 pl-10 pr-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
               </div>
@@ -550,7 +550,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
                     <button
                       key={item.id}
                       onClick={() => setSelectedItemId(item.id)}
-                      className={`w-full p-4 border rounded-[var(--radius)] text-left transition-all ${
+                      className={`w-full p-4 border rounded-lg text-left transition-all ${
                         selectedItemId === item.id
                           ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                           : 'border-border hover:border-primary/50 hover:bg-secondary'
@@ -583,7 +583,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
               <label className="block mb-2 text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 Upload new file
               </label>
-              <div className="border-2 border-dashed border-border hover:border-primary/50 rounded-[var(--radius)] p-6 text-center transition-colors">
+              <div className="border-2 border-dashed border-border hover:border-primary/50 rounded-lg p-6 text-center transition-colors">
                 <Upload size={32} className="mx-auto mb-3 text-muted" />
                 <p className="text-sm mb-3">Click to select a file</p>
                 <input
@@ -595,7 +595,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
                 />
                 <label
                   htmlFor="replace-file-upload"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
                 >
                   <Plus size={16} />
                   Select File
@@ -603,7 +603,7 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
               </div>
               
               {selectedFiles.length > 0 && (
-                <div className="mt-4 p-3 bg-secondary rounded-[var(--radius)]">
+                <div className="mt-4 p-3 bg-secondary rounded-lg">
                   <div className="flex items-center gap-3">
                     <File size={16} className="text-muted" />
                     <div className="flex-1 min-w-0">
@@ -627,14 +627,14 @@ function ReplaceModal({ isOpen, onClose, currentItem, usedInProcedures, allItems
         <div className="border-t border-border px-6 py-4 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+            className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={showUpload ? handleUpload : handleReplace}
             disabled={showUpload ? selectedFiles.length === 0 : !selectedItemId}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             Replace Item
@@ -702,13 +702,13 @@ function UploadModal({ isOpen, onClose, currentFolderId, onUpload }: UploadModal
         onClick={onClose}
       />
       
-      <div role="dialog" aria-modal="true" aria-labelledby="upload-media-title" className="relative w-full max-w-2xl bg-card border border-border rounded-[var(--radius)] shadow-2xl m-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="upload-media-title" className="relative w-full max-w-2xl bg-card border border-border rounded-lg shadow-2xl m-4">
         <div className="border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <h3 id="upload-media-title" style={{ fontWeight: 'var(--font-weight-bold)' }}>Upload Media</h3>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Close"
             >
               <X size={20} className="text-muted" />
@@ -721,7 +721,7 @@ function UploadModal({ isOpen, onClose, currentFolderId, onUpload }: UploadModal
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-[var(--radius)] p-8 text-center transition-colors ${
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               isDragging
                 ? 'border-primary bg-primary/5'
                 : 'border-border hover:border-primary/50'
@@ -743,7 +743,7 @@ function UploadModal({ isOpen, onClose, currentFolderId, onUpload }: UploadModal
             />
             <label
               htmlFor="file-upload"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
             >
               <Plus size={16} />
               Select Files
@@ -759,7 +759,7 @@ function UploadModal({ isOpen, onClose, currentFolderId, onUpload }: UploadModal
                 {selectedFiles.map((file, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-secondary rounded-[var(--radius)]"
+                    className="flex items-center justify-between p-3 bg-secondary rounded-lg"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <File size={16} className="text-muted shrink-0" />
@@ -785,14 +785,14 @@ function UploadModal({ isOpen, onClose, currentFolderId, onUpload }: UploadModal
         <div className="border-t border-border px-6 py-4 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+            className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleUpload}
             disabled={selectedFiles.length === 0}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
@@ -839,7 +839,7 @@ function DraggableMediaItem({
     return (
       <div
         ref={drag}
-        className={`group relative bg-card border rounded-[var(--radius)] overflow-hidden hover:border-primary/50 hover:shadow-md transition-all cursor-pointer ${
+        className={`group relative bg-card border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all cursor-pointer ${
           isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-border'
         } ${isDragging ? 'opacity-50' : ''}`}
       >
@@ -1008,7 +1008,7 @@ function FolderItemComponent({
       <div
         ref={drop}
         onClick={() => onSelect(folder.id)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-[var(--radius)] cursor-pointer transition-colors ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
           isSelected
             ? 'bg-primary text-primary-foreground'
             : isOver
@@ -1564,7 +1564,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
           onClick={onClose}
         />
 
-        <div role="dialog" aria-modal="true" aria-labelledby="media-library-title" className="relative w-full max-w-[95vw] h-[90vh] max-h-[calc(100vh-32px)] bg-card border border-border rounded-[var(--radius)] shadow-2xl flex flex-col m-4">
+        <div role="dialog" aria-modal="true" aria-labelledby="media-library-title" className="relative w-full max-w-[95vw] h-[90vh] max-h-[calc(100vh-32px)] bg-card border border-border rounded-lg shadow-2xl flex flex-col m-4">
           {/* Selection Mode Banner */}
           {selectionMode && (
             <div className="shrink-0 bg-primary/10 border-b border-primary/20 px-6 py-3 flex items-center justify-between">
@@ -1628,7 +1628,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                  className="p-2 hover:bg-secondary rounded-lg transition-colors"
                   aria-label="Close media library"
                 >
                   <X size={20} className="text-muted" />
@@ -1648,7 +1648,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                     placeholder="Search media files..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-10 pl-10 pr-4 bg-card border border-border rounded-[var(--radius)] text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/50"
+                    className="w-full h-10 pl-10 pr-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
 
@@ -1656,7 +1656,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                 <div className="relative">
                   <button
                     onClick={() => setShowFilterMenu(!showFilterMenu)}
-                    className="flex items-center gap-2 px-4 h-10 bg-secondary border border-border rounded-[var(--radius)] text-foreground hover:bg-secondary/80 transition-colors"
+                    className="flex items-center gap-2 px-4 h-10 bg-secondary border border-border rounded-lg text-foreground hover:bg-secondary/80 transition-colors"
                     aria-haspopup="listbox"
                     aria-expanded={showFilterMenu}
                   >
@@ -1671,7 +1671,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                         className="fixed inset-0 z-10"
                         onClick={() => setShowFilterMenu(false)}
                       />
-                      <div className="absolute top-full mt-2 right-0 w-56 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 py-1">
+                      <div className="absolute top-full mt-2 right-0 w-56 max-w-[calc(100vw-32px)] bg-card border border-border rounded-lg shadow-lg z-20 py-1">
                         {filterOptions.map((option) => (
                           <button
                             key={option.id}
@@ -1698,7 +1698,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                 </div>
 
                 {/* View Mode Toggle */}
-                <div className="flex items-center border border-border rounded-[var(--radius)] bg-secondary">
+                <div className="flex items-center border border-border rounded-lg bg-secondary">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 transition-colors ${
@@ -1731,7 +1731,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
                 {canCreate && (
                   <button
                     onClick={() => setIsUploadModalOpen(true)}
-                    className="flex items-center gap-2 px-4 h-10 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-4 h-10 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   >
                     <Upload size={16} />
@@ -1932,7 +1932,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
               <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
                 {/* Thumbnail Preview */}
                 {(selectedItemForDetails.type === 'image' || selectedItemForDetails.type === 'video') && (
-                  <div className="mb-4 rounded-[var(--radius)] overflow-hidden border border-border">
+                  <div className="mb-4 rounded-lg overflow-hidden border border-border">
                     <img 
                       src={generateThumbnail(selectedItemForDetails)} 
                       alt={selectedItemForDetails.name} 
@@ -2023,7 +2023,7 @@ function MediaLibraryContent({ isOpen, onClose, selectionMode = false, onSelectI
             onClick={() => setOptionsMenu(null)}
           />
           <div
-            className="fixed z-[60] w-48 bg-card border border-border rounded-[var(--radius)] shadow-lg py-1"
+            className="fixed z-[60] w-48 bg-card border border-border rounded-lg shadow-lg py-1"
             style={{
               left: `${optionsMenu.x}px`,
               top: `${optionsMenu.y}px`,

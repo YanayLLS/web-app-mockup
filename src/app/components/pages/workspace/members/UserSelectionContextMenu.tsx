@@ -206,7 +206,7 @@ export function UserSelectionContextMenu({ onClose, onSelect, showGroups = true 
             <button
               onClick={handleSave}
               disabled={totalSelected === 0}
-              className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add Selected
             </button>

@@ -22,7 +22,7 @@ export function StaticQRCodesPage() {
   const totalScans = qrCodes.reduce((sum, qr) => sum + qr.scans, 0);
 
   return (
-    <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
+    <div className="flex flex-col h-full bg-background">
       <div className="border-b border-border/60 bg-card px-4 sm:px-6 py-5">
         <div className="flex items-center justify-between">
           <div>

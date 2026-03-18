@@ -18,12 +18,11 @@ export function MediaLibraryModal({ onClose, onSelect, isMobile }: MediaLibraryM
         className={`${
           isMobile
             ? 'absolute bottom-0 left-0 right-0 rounded-t-[16px] max-h-[85vh]'
-            : 'relative w-full max-w-[800px] max-h-[80vh] rounded-[var(--radius)]'
+            : 'relative w-full max-w-[800px] max-h-[80vh] rounded-lg'
         } bg-card border border-border flex flex-col shadow-elevation-md`}
         onClick={(e) => e.stopPropagation()}
         style={{
           animation: isMobile ? 'slideUp 0.3s ease-out' : undefined,
-          fontFamily: 'var(--font-family)',
         }}
       >
         {/* Mobile sheet handle */}
@@ -39,7 +38,6 @@ export function MediaLibraryModal({ onClose, onSelect, isMobile }: MediaLibraryM
         {/* Header */}
         <div
           className="flex items-center justify-between px-[20px] py-[16px] border-b border-border shrink-0"
-          style={{ fontFamily: 'var(--font-family)' }}
         >
           <h3
             style={{
@@ -52,7 +50,7 @@ export function MediaLibraryModal({ onClose, onSelect, isMobile }: MediaLibraryM
           </h3>
           <button
             onClick={onClose}
-            className="p-[6px] hover:bg-secondary rounded-[var(--radius)] transition-colors"
+            className="p-[6px] hover:bg-secondary rounded-lg transition-colors"
           >
             <X size={20} style={{ color: 'var(--foreground)' }} />
           </button>
@@ -72,7 +70,7 @@ export function MediaLibraryModal({ onClose, onSelect, isMobile }: MediaLibraryM
             ].map((file, idx) => (
               <button
                 key={idx}
-                className="aspect-square rounded-[var(--radius)] border-2 border-border hover:border-primary transition-colors p-[16px] flex flex-col items-center justify-center gap-[8px] bg-secondary/30"
+                className="aspect-square rounded-lg border-2 border-border hover:border-primary transition-colors p-[16px] flex flex-col items-center justify-center gap-[8px] bg-secondary/30"
                 onClick={() => onSelect([file])}
               >
                 <Paperclip size={isMobile ? 28 : 32} style={{ color: 'var(--muted)' }} />
@@ -94,7 +92,7 @@ export function MediaLibraryModal({ onClose, onSelect, isMobile }: MediaLibraryM
         <div className={`px-[20px] ${isMobile ? 'py-[20px] pb-[32px]' : 'py-[16px]'} border-t border-border shrink-0`}>
           <button
             onClick={onClose}
-            className="w-full px-[16px] py-[12px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+            className="w-full px-[16px] py-[12px] rounded-lg border border-border hover:bg-secondary transition-colors"
             style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-bold)',

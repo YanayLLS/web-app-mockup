@@ -146,7 +146,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
             id="publish-title"
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-h3)',
               fontWeight: 'var(--font-weight-bold)'
             }}
@@ -164,7 +164,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
         </div>
 
         {/* Body */}
-        <div className="px-4 sm:px-6 py-6" style={{ fontFamily: 'var(--font-family)' }}>
+        <div className="px-4 sm:px-6 py-6">
           <p 
             className="mb-4 leading-relaxed"
             style={{
@@ -212,7 +212,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
                     backgroundColor: 'var(--input-background)',
                     borderColor: 'var(--ring)',
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-base)'
                   }}
                   aria-describedby={error ? 'version-error' : 'version-help'}
@@ -236,7 +236,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
                       style={{
                         color: 'var(--destructive-foreground)',
                         fontSize: 'var(--text-sm)',
-                        fontFamily: 'var(--font-family)'
+                        
                       }}
                     >
                       {error}
@@ -249,7 +249,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
                     style={{
                       color: 'var(--muted-foreground)',
                       fontSize: 'var(--text-xs)',
-                      fontFamily: 'var(--font-family)'
+                      
                     }}
                   >
                     Format: 1.0 or 1.2.3 (major.minor or major.minor.patch)
@@ -264,7 +264,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
                   style={{
                     backgroundColor: 'var(--secondary)',
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-lg)',
                     fontWeight: 'var(--font-weight-bold)'
                   }}
@@ -311,7 +311,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
                 backgroundColor: 'var(--input-background)',
                 borderColor: 'var(--border)',
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 lineHeight: '1.5'
               }}
@@ -327,7 +327,7 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
               style={{
                 color: 'var(--muted-foreground)',
                 fontSize: 'var(--text-xs)',
-                fontFamily: 'var(--font-family)'
+                
               }}
             >
               Optional: Add release notes or changelog
@@ -346,11 +346,11 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
         >
           <button
             onClick={onClose}
-            className="px-4 py-2 min-h-[44px] rounded-button transition-opacity hover:opacity-90"
+            className="px-4 py-2 min-h-[44px] rounded-button transition-opacity hover:brightness-110"
             style={{
               backgroundColor: 'var(--secondary)',
               color: 'var(--secondary-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-base)'
             }}
           >
@@ -358,11 +358,11 @@ export function PublishModal({ onClose, onPublish, currentVersion }: PublishModa
           </button>
           <button
             onClick={handlePublish}
-            className="px-4 py-2 min-h-[44px] rounded-button transition-opacity hover:opacity-90"
+            className="px-4 py-2 min-h-[44px] rounded-button transition-opacity hover:brightness-110"
             style={{
               backgroundColor: 'var(--accent)',
               color: 'var(--accent-foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-base)',
               fontWeight: 'var(--font-weight-bold)'
             }}

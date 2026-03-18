@@ -57,7 +57,7 @@ export function AppReportIssueDialog({ isOpen, onClose }: AppReportIssueDialogPr
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-lg mx-4 bg-card rounded-[var(--radius)] shadow-elevation-lg overflow-hidden">
+      <div className="relative w-full max-w-lg mx-4 bg-card rounded-lg shadow-elevation-lg overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
           <h2 className="text-foreground" style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}>
@@ -83,7 +83,7 @@ export function AppReportIssueDialog({ isOpen, onClose }: AppReportIssueDialogPr
               placeholder="Brief summary of the issue"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full h-10 px-3 rounded-[var(--radius)] text-sm bg-background border border-border outline-none text-foreground placeholder:text-muted focus:border-primary transition-colors"
+              className="w-full h-10 px-3 rounded-lg text-sm bg-background border border-border outline-none text-foreground placeholder:text-muted focus:border-primary transition-colors"
             />
           </div>
 
@@ -97,7 +97,7 @@ export function AppReportIssueDialog({ isOpen, onClose }: AppReportIssueDialogPr
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2.5 rounded-[var(--radius)] text-sm bg-background border border-border outline-none text-foreground placeholder:text-muted focus:border-primary transition-colors resize-none"
+              className="w-full px-3 py-2.5 rounded-lg text-sm bg-background border border-border outline-none text-foreground placeholder:text-muted focus:border-primary transition-colors resize-none"
             />
           </div>
 
@@ -111,7 +111,7 @@ export function AppReportIssueDialog({ isOpen, onClose }: AppReportIssueDialogPr
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center cursor-pointer transition-colors
+              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
                 ${isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-secondary/50'}`}
             >
               <Upload className="size-8 text-muted mx-auto mb-2" />

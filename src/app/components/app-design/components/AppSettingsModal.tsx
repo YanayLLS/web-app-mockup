@@ -168,7 +168,7 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
                   <InfoRow>SDK version d07db3a9 from Tue Nov 9 20:15:00 2021 +0200</InfoRow>
 
                   <button
-                    className="w-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
+                    className="w-full flex items-center justify-center text-white hover:brightness-110 transition-opacity"
                     style={{ marginTop: '16px', padding: '10px', backgroundColor: '#2F80ED', borderRadius: '25px', fontSize: '12px' }}
                   >
                     Clear cache
@@ -359,13 +359,13 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
                       <div style={{ fontSize: '12px', color: '#7F7F7F' }}>yanay@fls-ltd.com</div>
                     </div>
                     <button
-                      className="hover:opacity-90 transition-opacity"
+                      className="hover:brightness-110 transition-opacity"
                       style={{ padding: '6px 16px', backgroundColor: '#2F80ED', color: 'white', borderRadius: '25px', fontSize: '12px', fontWeight: 'var(--font-weight-medium)' }}
                     >
                       Manage
                     </button>
                     <button
-                      className="hover:opacity-90 transition-opacity"
+                      className="hover:brightness-110 transition-opacity"
                       style={{ padding: '6px 16px', backgroundColor: '#FF1F1F', color: 'white', borderRadius: '25px', fontSize: '12px', fontWeight: 'var(--font-weight-medium)' }}
                     >
                       Logout
@@ -398,7 +398,7 @@ export function AppSettingsModal({ onClose }: AppSettingsModalProps) {
                       <div key={ws} className="flex items-center justify-between" style={{ padding: '8px 0' }}>
                         <span style={{ fontSize: '14px', fontWeight: 'var(--font-weight-bold)', color: '#36415D' }}>{ws}</span>
                         <button
-                          className="hover:opacity-90 transition-opacity"
+                          className="hover:brightness-110 transition-opacity"
                           style={{
                             padding: '6px 20px',
                             backgroundColor: '#2F80ED',

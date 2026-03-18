@@ -62,7 +62,7 @@ export function MemberSelectionModal({
     <div className="flex flex-col gap-1 max-h-[320px] overflow-y-auto">
       {filteredMembers.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>
             No members found
           </p>
         </div>
@@ -72,9 +72,6 @@ export function MemberSelectionModal({
             key={member.id}
             onClick={() => toggleMember(member.id)}
             className="flex items-center gap-3 p-3 hover:bg-secondary transition-all rounded-lg border border-transparent"
-            style={{
-              fontFamily: 'var(--font-family)',
-            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = 'var(--primary)';
               e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
@@ -93,17 +90,17 @@ export function MemberSelectionModal({
               showTooltip={false}
             />
             <div className="flex-1 text-left min-w-0">
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                 {member.name}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <p className="text-xs truncate" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>
                   {member.email}
                 </p>
                 {member.role && (
                   <>
                     <span style={{ color: 'var(--muted)' }}>•</span>
-                    <p className="text-xs whitespace-nowrap" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-xs whitespace-nowrap" style={{ color: 'var(--muted)' }}>
                       {member.role}
                     </p>
                   </>
@@ -114,7 +111,7 @@ export function MemberSelectionModal({
               {member.status === 'invited' && (
                 <div
                   className="px-2.5 py-1 rounded text-xs"
-                  style={{ backgroundColor: 'var(--secondary)', color: 'var(--muted)', fontFamily: 'var(--font-family)' }}
+                  style={{ backgroundColor: 'var(--secondary)', color: 'var(--muted)' }}
                 >
                   Invited
                 </div>
@@ -148,7 +145,7 @@ export function MemberSelectionModal({
         <div className="p-5 flex flex-col gap-3">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h3 className="font-medium" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)', fontFamily: 'var(--font-family)' }}>Add Members</h3>
+            <h3 className="font-medium" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>Add Members</h3>
             <button onClick={onClose} className="p-1.5 hover:bg-secondary rounded transition-colors">
               <X className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             </button>
@@ -163,7 +160,7 @@ export function MemberSelectionModal({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search or enter email..."
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-border bg-white focus:outline-none focus:border-ring transition-colors"
-              style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+              style={{ color: 'var(--foreground)' }}
             />
           </div>
 
@@ -172,22 +169,22 @@ export function MemberSelectionModal({
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-3 border-t border-border">
-            <span className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+            <span className="text-sm" style={{ color: 'var(--muted)' }}>
               {selectedMembers.length} selected
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={onClose}
                 className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-secondary transition-colors"
-                style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+                style={{ color: 'var(--foreground)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={selectedMembers.length === 0}
-                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ fontFamily: 'var(--font-family)' }}
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+               
               >
                 Add Members
               </button>
@@ -207,7 +204,7 @@ export function MemberSelectionModal({
         <div className="p-5 flex flex-col gap-3">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h3 className="font-medium" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)', fontFamily: 'var(--font-family)' }}>Add Members</h3>
+            <h3 className="font-medium" style={{ color: 'var(--foreground)', fontSize: 'var(--text-base)' }}>Add Members</h3>
             <button onClick={onClose} className="p-1.5 hover:bg-secondary rounded transition-colors">
               <X className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             </button>
@@ -222,7 +219,7 @@ export function MemberSelectionModal({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search or enter email..."
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-border bg-white focus:outline-none focus:border-ring transition-colors"
-              style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+              style={{ color: 'var(--foreground)' }}
             />
           </div>
 
@@ -231,22 +228,22 @@ export function MemberSelectionModal({
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-3 border-t border-border">
-            <span className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+            <span className="text-sm" style={{ color: 'var(--muted)' }}>
               {selectedMembers.length} selected
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={onClose}
                 className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-secondary transition-colors"
-                style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}
+                style={{ color: 'var(--foreground)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={selectedMembers.length === 0}
-                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ fontFamily: 'var(--font-family)' }}
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+               
               >
                 Add Members
               </button>

@@ -341,7 +341,7 @@ function TreeNode({
           style={{ 
             backgroundColor: 'var(--primary-background)', 
             fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-family)',
+            
           }}
         >
           {part}
@@ -365,7 +365,7 @@ function TreeNode({
           style={{ 
             backgroundColor: 'var(--primary-background)', 
             color: 'var(--primary)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-xs)',
             fontWeight: 'var(--font-weight-bold)',
             paddingLeft: 'var(--spacing-1)',
@@ -393,7 +393,7 @@ function TreeNode({
           style={{ 
             backgroundColor: 'var(--secondary)', 
             color: 'var(--foreground)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-xs)',
             paddingLeft: 'var(--spacing-1)',
             paddingRight: 'var(--spacing-1)',
@@ -424,7 +424,7 @@ function TreeNode({
           style={{ 
             backgroundColor: 'var(--secondary)', 
             color: 'var(--foreground)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-xs)',
             paddingLeft: 'var(--spacing-1)',
             paddingRight: 'var(--spacing-1)',
@@ -446,7 +446,7 @@ function TreeNode({
           style={{ 
             backgroundColor: 'var(--secondary)', 
             color: 'var(--muted)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-xs)',
             paddingLeft: 'var(--spacing-1)',
             paddingRight: 'var(--spacing-1)',
@@ -471,7 +471,7 @@ function TreeNode({
           style={{ 
             backgroundColor: 'var(--secondary)', 
             color: 'var(--muted)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-xs)',
             paddingLeft: 'var(--spacing-1)',
             paddingRight: 'var(--spacing-1)',
@@ -535,7 +535,7 @@ function TreeNode({
           className="flex-1"
           style={{ 
             color: (isLocked || isPublic) ? 'var(--muted)' : 'var(--foreground)',
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-base)',
           }}
         >
@@ -903,7 +903,7 @@ export function ProjectAccessModal({
               <h3 
                 style={{ 
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-bold)',
                 }}
@@ -911,7 +911,7 @@ export function ProjectAccessModal({
                 {isFilterMode ? 'Filter by Access' : 'Select Access'}
               </h3>
               {isFilterMode && directAccessIds.length > 0 && (
-                <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                   {directAccessIds.length} project{directAccessIds.length > 1 ? 's' : ''} selected
                 </p>
               )}
@@ -935,7 +935,7 @@ export function ProjectAccessModal({
                 <p 
                   style={{ 
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 >
@@ -959,7 +959,7 @@ export function ProjectAccessModal({
                 <p 
                   style={{ 
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 >
@@ -988,7 +988,7 @@ export function ProjectAccessModal({
               className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-white"
               style={{ 
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 borderRadius: 'var(--radius)',
               }}
@@ -1002,7 +1002,7 @@ export function ProjectAccessModal({
               className="px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors text-left"
               style={{ 
                 color: 'var(--primary)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 borderRadius: 'var(--radius)',
               }}
@@ -1050,7 +1050,7 @@ export function ProjectAccessModal({
                   className="mb-1"
                   style={{ 
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-base)',
                     fontWeight: 'var(--font-weight-bold)',
                   }}
@@ -1061,7 +1061,7 @@ export function ProjectAccessModal({
                   className="text-center"
                   style={{ 
                     color: 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 >
@@ -1077,7 +1077,7 @@ export function ProjectAccessModal({
               <span 
                 style={{ 
                   color: 'var(--muted)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                 }}
               >
@@ -1088,7 +1088,7 @@ export function ProjectAccessModal({
                 <span 
                   style={{ 
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-base)',
                     fontWeight: 'var(--font-weight-bold)',
                   }}
@@ -1098,7 +1098,7 @@ export function ProjectAccessModal({
                 {(added.length > 0 || removed.length > 0) && (
                   <span 
                     style={{ 
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                     }}
                   >
@@ -1115,7 +1115,7 @@ export function ProjectAccessModal({
                 className="px-4 py-2 rounded-lg border border-border hover:bg-secondary transition-colors"
                 style={{ 
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   borderRadius: 'var(--radius)',
                 }}
@@ -1125,9 +1125,9 @@ export function ProjectAccessModal({
               {!isOwnerOrAdmin && (
                 <button
                   onClick={handleSave}
-                  className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                  className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-opacity"
                   style={{ 
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-base)',
                     borderRadius: 'var(--radius)',
                   }}

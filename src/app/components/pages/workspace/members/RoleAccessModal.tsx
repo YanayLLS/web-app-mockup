@@ -214,7 +214,7 @@ export function RoleAccessModal({
     return (
       <div key={node.id}>
         <div
-          className="flex items-center gap-2 py-2 px-2 rounded-[var(--radius-md)] hover:bg-secondary/50 transition-colors"
+          className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-secondary/50 transition-colors"
           style={{ marginLeft: `${depth * 24}px` }}
         >
           {isFolder && (
@@ -245,7 +245,7 @@ export function RoleAccessModal({
             <span
               style={{
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
               }}
             >
@@ -286,7 +286,7 @@ export function RoleAccessModal({
               <h3
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-bold)',
                 }}
@@ -297,7 +297,7 @@ export function RoleAccessModal({
                 className="text-xs mt-1"
                 style={{
                   color: 'var(--muted-foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
               >
                 {projectName} • {accessible}/{total} items accessible
@@ -321,7 +321,7 @@ export function RoleAccessModal({
               <p
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                 }}
               >
@@ -341,7 +341,7 @@ export function RoleAccessModal({
               className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-white"
               style={{
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 borderRadius: 'var(--radius)',
               }}
@@ -355,7 +355,7 @@ export function RoleAccessModal({
               className="px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors text-left"
               style={{
                 color: 'var(--primary)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
               }}
             >
@@ -367,7 +367,7 @@ export function RoleAccessModal({
               className="px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors text-left"
               style={{
                 color: 'var(--primary)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
               }}
             >
@@ -386,7 +386,7 @@ export function RoleAccessModal({
                 className="text-center py-8"
                 style={{
                   color: 'var(--muted-foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
               >
                 No items match your search
@@ -400,7 +400,7 @@ export function RoleAccessModal({
               onClick={onClose}
               className="px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 color: 'var(--foreground)',
               }}
@@ -413,7 +413,7 @@ export function RoleAccessModal({
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 borderRadius: 'var(--radius)',
               }}

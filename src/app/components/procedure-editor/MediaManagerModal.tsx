@@ -118,7 +118,7 @@ function DraggableMediaItem({
               style={{
                 backgroundColor: 'rgba(0, 0, 0, 0.6)',
                 color: 'white',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-xs)',
                 gap: 'var(--spacing-xs)'
               }}
@@ -138,7 +138,7 @@ function DraggableMediaItem({
               style={{
                 backgroundColor: 'rgba(0, 0, 0, 0.6)',
                 color: 'white',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-xs)',
                 gap: 'var(--spacing-xs)'
               }}
@@ -169,7 +169,7 @@ function DraggableMediaItem({
               rows={2}
               className="w-full px-2 py-1.5 rounded outline-none resize-none border-2"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 backgroundColor: 'var(--background)',
                 color: 'var(--foreground)',
@@ -180,7 +180,7 @@ function DraggableMediaItem({
             <div className="flex items-center justify-between">
               <span
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-xs)',
                   color: 'var(--muted-foreground)'
                 }}
@@ -192,7 +192,7 @@ function DraggableMediaItem({
                   onClick={handleCancelCaption}
                   className="px-2 py-1 rounded text-sm transition-opacity hover:opacity-80"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     backgroundColor: 'var(--secondary)',
                     color: 'var(--foreground)'
                   }}
@@ -203,7 +203,7 @@ function DraggableMediaItem({
                   onClick={handleSaveCaption}
                   className="px-2 py-1 rounded text-sm transition-opacity hover:opacity-80"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-bold)',
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)'
@@ -223,7 +223,7 @@ function DraggableMediaItem({
               <p
                 className="line-clamp-2"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)'
                 }}
@@ -234,7 +234,7 @@ function DraggableMediaItem({
               <div
                 className="flex items-center opacity-50"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   color: 'var(--muted-foreground)',
                   gap: 'var(--spacing-xs)'
@@ -252,7 +252,7 @@ function DraggableMediaItem({
       <div
         className="px-3 pb-2 truncate"
         style={{
-          fontFamily: 'var(--font-family)',
+          
           fontSize: 'var(--text-xs)',
           color: 'var(--muted-foreground)'
         }}
@@ -369,7 +369,7 @@ export function MediaManagerModal({
           <div>
             <h3
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-h3)',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'var(--foreground)'
@@ -379,7 +379,7 @@ export function MediaManagerModal({
             </h3>
             <p
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 color: 'var(--muted-foreground)',
                 marginTop: 'var(--spacing-xs)'
@@ -418,7 +418,7 @@ export function MediaManagerModal({
               <X className="size-4" />
               <span
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   fontWeight: 'var(--font-weight-bold)'
                 }}
@@ -456,7 +456,7 @@ export function MediaManagerModal({
               <div>
                 <p
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-lg)',
                     fontWeight: 'var(--font-weight-bold)',
                     color: 'var(--foreground)'
@@ -466,7 +466,7 @@ export function MediaManagerModal({
                 </p>
                 <p
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                     color: 'var(--muted-foreground)',
                     marginTop: 'var(--spacing-xs)'
@@ -518,7 +518,7 @@ export function MediaManagerModal({
               style={{
                 backgroundColor: 'var(--accent)',
                 color: 'var(--accent-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 fontWeight: 'var(--font-weight-bold)',
                 gap: 'var(--spacing-sm)',
@@ -538,7 +538,7 @@ export function MediaManagerModal({
               style={{
                 backgroundColor: 'var(--secondary)',
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)'
               }}
             >
@@ -550,7 +550,7 @@ export function MediaManagerModal({
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 fontWeight: 'var(--font-weight-bold)'
               }}

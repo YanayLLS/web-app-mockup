@@ -61,7 +61,7 @@ export function RequestSeatsModal({ onClose, availableSeats, totalSeats }: Reque
         <h3
           className="mb-2"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-h3)',
             fontWeight: 'var(--font-weight-bold)',
             color: 'var(--foreground)',
@@ -74,7 +74,7 @@ export function RequestSeatsModal({ onClose, availableSeats, totalSeats }: Reque
         <p
           className="mb-6"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontSize: 'var(--text-base)',
             color: 'var(--muted)',
             lineHeight: '1.5',
@@ -98,7 +98,7 @@ export function RequestSeatsModal({ onClose, availableSeats, totalSeats }: Reque
         >
           <p
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               color: 'var(--foreground)',
               lineHeight: '1.5',
@@ -122,7 +122,7 @@ export function RequestSeatsModal({ onClose, availableSeats, totalSeats }: Reque
               backgroundColor: 'var(--secondary)',
               color: 'var(--secondary-foreground)',
               borderRadius: 'var(--radius)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-base)',
               fontWeight: 'var(--font-weight-semibold)',
             }}
@@ -142,7 +142,7 @@ export function RequestSeatsModal({ onClose, availableSeats, totalSeats }: Reque
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
               borderRadius: 'var(--radius)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-base)',
               fontWeight: 'var(--font-weight-semibold)',
             }}

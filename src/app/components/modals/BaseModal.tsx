@@ -55,14 +55,14 @@ export function BaseModal({
 
   return (
     <div
-      className={`fixed inset-0 ${opacityClass} ${blurClass} flex items-center justify-center ${className}`}
+      className={`fixed inset-0 ${opacityClass} ${blurClass} flex items-center justify-center ${className} animate-in fade-in duration-150`}
       style={{ zIndex }}
       onClick={handleBackdropClick}
       role="presentation"
     >
       <div
         ref={contentRef}
-        className="max-h-[calc(100vh-32px)] max-w-[calc(100vw-32px)] overflow-auto"
+        className="max-h-[calc(100vh-32px)] max-w-[calc(100vw-32px)] overflow-auto animate-in fade-in zoom-in-95 duration-200"
       >
         {children}
       </div>

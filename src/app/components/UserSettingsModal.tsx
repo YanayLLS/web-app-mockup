@@ -118,15 +118,15 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-[var(--radius)] w-full max-w-[calc(100vw-32px)] sm:max-w-5xl max-h-[90vh] flex flex-col" style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}>
+      <div className="bg-background rounded-lg w-full max-w-[calc(100vw-32px)] sm:max-w-5xl max-h-[90vh] flex flex-col" style={{ boxShadow: 'var(--elevation-lg)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border">
-          <h2 className="text-foreground" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+          <h2 className="text-foreground" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
             Account Settings
           </h2>
           <button
             onClick={onClose}
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-[var(--radius)] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg transition-colors"
           >
             <X size={20} className="text-muted" />
           </button>
@@ -174,7 +174,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
             <div className="max-w-3xl">
               {/* Personal Info Section */}
               <div ref={personalInfoRef} className="scroll-mt-6 pb-8 border-b border-border">
-                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
                   Update Personal Info
                 </h3>
 
@@ -188,93 +188,90 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                         initials="YD"
                       />
                       <div>
-                        <p className="text-foreground mb-1" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                        <p className="text-foreground mb-1" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
                           Yanay D
                         </p>
-                        <p className="text-muted" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                        <p className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>
                           {email}
                         </p>
                       </div>
                     </div>
-                    <p className="text-muted ml-20" style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-muted ml-20" style={{ fontSize: 'var(--text-xs)' }}>
                       Click avatar to upload or remove
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                      <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)' }}>
                         First Name
                       </label>
                       <input
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary transition-colors text-[16px] sm:text-[length:var(--text-sm)]"
-                        style={{ fontFamily: 'var(--font-family)' }}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground outline-none focus:border-primary transition-colors text-[16px] sm:text-[length:var(--text-sm)]"
                       />
                     </div>
                     <div>
-                      <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                      <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)' }}>
                         Last Name
                       </label>
                       <input
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 text-foreground outline-none focus:border-primary transition-colors text-[16px] sm:text-[length:var(--text-sm)]"
-                        style={{ fontFamily: 'var(--font-family)' }}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground outline-none focus:border-primary transition-colors text-[16px] sm:text-[length:var(--text-sm)]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                    <label className="block text-muted mb-2" style={{ fontSize: 'var(--text-sm)' }}>
                       Email
                     </label>
                     <input
                       type="email"
                       value={email}
                       disabled
-                      className="w-full bg-secondary border border-border rounded-[var(--radius)] px-3 py-2 text-muted outline-none cursor-not-allowed text-[16px] sm:text-[length:var(--text-sm)]"
-                      style={{ fontFamily: 'var(--font-family)' }}
+                      className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-muted outline-none cursor-not-allowed text-[16px] sm:text-[length:var(--text-sm)]"
                     />
                   </div>
 
                   {/* 3D Avatar Section */}
-                  <div className="bg-secondary border border-border rounded-[var(--radius)] p-4">
-                    <h4 className="text-foreground mb-2" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                  <div className="bg-secondary border border-border rounded-lg p-4">
+                    <h4 className="text-foreground mb-2" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
                       3D Avatar Settings
                     </h4>
-                    <p className="text-muted mb-4" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-muted mb-4" style={{ fontSize: 'var(--text-sm)' }}>
                       Configure your 3D avatar for immersive experiences like the Immersive Room, where you can interact with content in a virtual environment.
                     </p>
                     
                     <div className="space-y-4">
                       {/* Hand Preference */}
                       <div>
-                        <label className="block text-foreground mb-2" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}>
+                        <label className="block text-foreground mb-2" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}>
                           Dominant Hand
                         </label>
-                        <p className="text-muted mb-3" style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}>
+                        <p className="text-muted mb-3" style={{ fontSize: 'var(--text-xs)' }}>
                           Select which hand you prefer to use for interactions in VR/XR experiences
                         </p>
                         <div className="flex gap-3">
                           <button
                             onClick={() => setSelectedHand('left')}
-                            className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-[var(--radius)] border transition-colors ${
+                            className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-lg border transition-colors ${
                               selectedHand === 'left' ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border hover:border-primary'
                             }`}
-                            style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                            style={{ fontSize: 'var(--text-sm)' }}
                           >
                             Left Hand
                           </button>
                           <button
                             onClick={() => setSelectedHand('right')}
-                            className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-[var(--radius)] border transition-colors ${
+                            className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-lg border transition-colors ${
                               selectedHand === 'right' ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border hover:border-primary'
                             }`}
-                            style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                            style={{ fontSize: 'var(--text-sm)' }}
                           >
                             Right Hand
                           </button>
@@ -283,13 +280,13 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
                       {/* Features using 3D Avatar */}
                       <div className="pt-3 border-t border-border">
-                        <p className="text-muted mb-2" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}>
+                        <p className="text-muted mb-2" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-medium)' }}>
                           Used in:
                         </p>
                         <ul className="space-y-1">
                           <li className="flex items-start gap-2">
                             <span className="text-primary mt-0.5">•</span>
-                            <span className="text-muted" style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}>
+                            <span className="text-muted" style={{ fontSize: 'var(--text-xs)' }}>
                               <span style={{ fontWeight: 'var(--font-weight-medium)' }}>Immersive Room:</span> Collaborative virtual workspace for training and content interaction
                             </span>
                           </li>
@@ -306,15 +303,15 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
               {/* Password Section */}
               <div ref={passwordRef} className="scroll-mt-6 pt-8 pb-8 border-b border-border">
-                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
                   Update Password
                 </h3>
 
-                <div className="bg-secondary border border-border rounded-[var(--radius)] p-4 mb-4">
-                  <p className="text-foreground mb-2" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                <div className="bg-secondary border border-border rounded-lg p-4 mb-4">
+                  <p className="text-foreground mb-2" style={{ fontSize: 'var(--text-sm)' }}>
                     We'll send you a password reset link to your email address.
                   </p>
-                  <p className="text-muted" style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}>
+                  <p className="text-muted" style={{ fontSize: 'var(--text-xs)' }}>
                     Email: {email}
                   </p>
                 </div>
@@ -331,7 +328,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
               {/* Language Section */}
               <div ref={languageRef} className="scroll-mt-6 pt-8 pb-8 border-b border-border">
-                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
                   Preferred viewing language
                 </h3>
 
@@ -340,8 +337,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full bg-background border border-border rounded-[var(--radius)] px-3 py-2 pr-10 text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer min-h-[44px] text-[16px] sm:text-[length:var(--text-sm)]"
-                      style={{ fontFamily: 'var(--font-family)' }}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 pr-10 text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer min-h-[44px] text-[16px] sm:text-[length:var(--text-sm)]"
                     >
                       <option value="EN-US">EN-US</option>
                       <option value="EN-GB">EN-GB</option>
@@ -360,7 +356,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                         onChange={(e) => setSendAnonymousData(e.target.checked)}
                         className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
                       />
-                      <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                      <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                         Allow sending of anonymous performance data
                       </span>
                     </label>
@@ -372,7 +368,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
                         onChange={(e) => setShowHelpButton(!e.target.checked)}
                         className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
                       />
-                      <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                      <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                         Disable help button
                       </span>
                     </label>
@@ -382,7 +378,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
               {/* Active Sign-ins Section */}
               <div ref={activeSigninsRef} className="scroll-mt-6 pt-8 pb-8 border-b border-border">
-                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
                   Active sign-ins
                 </h3>
 
@@ -423,7 +419,7 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
               {/* Workspaces Section */}
               <div ref={workspacesRef} className="scroll-mt-6 pt-8 pb-8 border-b border-border">
-                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
                   Workspaces list
                 </h3>
 
@@ -490,12 +486,12 @@ export function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
 
               {/* Close Account Section - At the bottom */}
               <div ref={closeAccountRef} className="scroll-mt-6 pt-8 pb-6">
-                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                <h3 className="text-foreground mb-6" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-weight-bold)' }}>
                   Close Account
                 </h3>
 
-                <div className="bg-secondary border border-border rounded-[var(--radius)] p-4 mb-4">
-                  <p className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                <div className="bg-secondary border border-border rounded-lg p-4 mb-4">
+                  <p className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                     To close your account, first delete or transfer all of the projects you own. If you have any Premium Plans, you'll need to cancel them too.
                   </p>
                 </div>

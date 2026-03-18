@@ -174,10 +174,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
   return (
     <div className="flex-1 flex items-center justify-center bg-background p-8">
       <div 
-        className="bg-card rounded-[var(--radius-lg)] shadow-elevation-sm w-full max-w-[560px] max-h-[85vh] overflow-auto"
-        style={{
-          fontFamily: 'var(--font-family)',
-        }}
+        className="bg-card rounded-xl shadow-elevation-sm w-full max-w-[560px] max-h-[85vh] overflow-auto"
       >
         {/* Header */}
         <div className="p-5 border-b border-border">
@@ -187,7 +184,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                 className="mb-1"
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-lg)',
                   fontWeight: 'var(--font-weight-bold)',
                 }}
@@ -198,7 +195,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                 className="text-xs"
                 style={{
                   color: 'var(--muted)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
               >
                 Configure item properties and access
@@ -220,7 +217,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
           <div className="flex gap-4">
             {/* Cover Image */}
             <div className="flex-shrink-0">
-              <div className="w-24 h-24 bg-secondary rounded-[var(--radius-lg)] flex items-center justify-center border border-border overflow-hidden">
+              <div className="w-24 h-24 bg-secondary rounded-xl flex items-center justify-center border border-border overflow-hidden">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1759668358660-0d06064f0f84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsYXB0b3AlMjBjb21wdXRlcnxlbnwxfHx8fDE3Njk3MDc2Njd8MA&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="Cover"
@@ -236,7 +233,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                   className="block mb-1.5 text-xs"
                   style={{
                     color: 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -246,10 +243,10 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                   type="text"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-white focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full px-3 py-2 border border-border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-ring"
                   style={{
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 />
@@ -260,7 +257,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                   className="block mb-1.5 text-xs"
                   style={{
                     color: 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -269,11 +266,11 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-white focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  className="w-full px-3 py-2 border border-border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                   rows={3}
                   style={{
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 />
@@ -289,7 +286,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
               className="text-xs"
               style={{
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >
@@ -301,7 +298,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                 background: 'linear-gradient(90deg, #2F80ED 0%, #004fff 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >
@@ -312,11 +309,11 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
             value={aiInstructions}
             onChange={(e) => setAiInstructions(e.target.value)}
             placeholder="Add custom instructions for AI..."
-            className="w-full px-3 py-2 border border-border rounded-[var(--radius-lg)] bg-white focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            className="w-full px-3 py-2 border border-border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             rows={3}
             style={{
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
             }}
           />
@@ -329,13 +326,13 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
               className="text-xs"
               style={{
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >
               PRIVACY
             </label>
-            <div className="flex items-center gap-1 p-1 bg-secondary rounded-[var(--radius-lg)]">
+            <div className="flex items-center gap-1 p-1 bg-secondary rounded-xl">
               <button
                 onClick={() => handleTogglePrivacy(false)}
                 disabled={!publicFeatureEnabled}
@@ -344,7 +341,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                 }`}
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                   opacity: !publicFeatureEnabled ? 0.4 : 1,
                   cursor: !publicFeatureEnabled ? 'not-allowed' : 'pointer',
@@ -359,7 +356,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                 }`}
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                 }}
               >
@@ -373,7 +370,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
             <div>
               {/* Private State Header */}
               <div 
-                className="p-3 rounded-[var(--radius-lg)] flex items-start gap-3"
+                className="p-3 rounded-xl flex items-start gap-3"
                 style={{ 
                   backgroundColor: 'rgba(255, 165, 0, 0.08)',
                   border: '1px solid rgba(255, 165, 0, 0.2)',
@@ -392,7 +389,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                     className="font-bold mb-0.5"
                     style={{
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                     }}
                   >
@@ -402,7 +399,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                     className="text-xs leading-relaxed"
                     style={{
                       color: 'var(--muted)',
-                      fontFamily: 'var(--font-family)',
+                      
                     }}
                   >
                     Only invited members can access this item
@@ -416,7 +413,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                   className="text-xs"
                   style={{
                     color: 'var(--muted)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -450,7 +447,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
             <div>
               {/* Public State */}
               <div 
-                className="p-3 rounded-[var(--radius-lg)] flex items-start gap-3"
+                className="p-3 rounded-xl flex items-start gap-3"
                 style={{ 
                   backgroundColor: 'rgba(47, 128, 237, 0.08)',
                   border: '1px solid rgba(47, 128, 237, 0.2)',
@@ -470,7 +467,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                     className="font-bold mb-0.5"
                     style={{
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                     }}
                   >
@@ -480,7 +477,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
                     className="text-xs leading-relaxed"
                     style={{
                       color: 'var(--muted)',
-                      fontFamily: 'var(--font-family)',
+                      
                     }}
                   >
                     All members with project access can view and interact with this item
@@ -498,7 +495,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
               className="text-xs"
               style={{
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >
@@ -506,10 +503,10 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
             </label>
             <div className="flex items-center gap-2">
               <button 
-                className="px-3 py-1.5 bg-secondary rounded-[var(--radius-lg)] hover:bg-secondary/80 transition-colors text-xs"
+                className="px-3 py-1.5 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors text-xs"
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                 }}
               >
@@ -517,10 +514,10 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
               </button>
               <div className="w-[150px]">
                 <div 
-                  className="px-3 py-1.5 border border-border rounded-[var(--radius-lg)] bg-white flex items-center justify-between cursor-pointer"
+                  className="px-3 py-1.5 border border-border rounded-xl bg-white flex items-center justify-between cursor-pointer"
                   style={{
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 >
@@ -541,7 +538,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
               backgroundColor: 'var(--destructive)',
               color: 'var(--destructive-foreground)',
               borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-xs)',
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
@@ -556,7 +553,7 @@ export function ItemSettingsPage({ onClose, groups, publicFeatureEnabled }: Item
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
               borderRadius: 'var(--radius-lg)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-xs)',
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}

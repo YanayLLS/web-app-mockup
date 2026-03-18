@@ -196,7 +196,7 @@ export function Header({
                 pointerEvents: 'none',
                 fontSize: '10px',
                 fontWeight: 600,
-                fontFamily: 'var(--font-family)',
+                
                 color: 'white',
                 lineHeight: 1
               }}
@@ -225,7 +225,7 @@ export function Header({
           onClick={onOpenPublish}
           className="relative px-4 py-2 min-h-[44px] rounded-button bg-accent text-accent-foreground hover:bg-accent/80 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shadow-sm hover:shadow-lg group"
           style={{
-            fontFamily: 'var(--font-family)',
+            
             fontWeight: 600,
             fontSize: '13px'
           }}
@@ -262,7 +262,7 @@ export function Header({
                 className="flex flex-col gap-1 px-3 py-3 min-h-[44px] rounded-md hover:bg-accent hover:text-accent-foreground text-left w-full transition-all group"
                 style={{
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: '13px'
                 }}
                 role="menuitem"
@@ -278,7 +278,7 @@ export function Header({
                     fontSize: '11px',
                     opacity: 0.7,
                     paddingLeft: '22px',
-                    fontFamily: 'var(--font-family)'
+                    
                   }}>
                     Save current digital twin state
                   </span>
@@ -291,7 +291,7 @@ export function Header({
                   className="flex items-center gap-2 px-3 py-3 min-h-[44px] rounded-md hover:bg-destructive/10 hover:text-destructive text-left w-full transition-all group"
                   style={{
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: '13px'
                   }}
                   role="menuitem"
@@ -317,7 +317,7 @@ export function Header({
           >
             <AlertCircle className="size-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
             <p className="flex-1 leading-tight" style={{
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 600,
               color: 'var(--foreground)'
             }}>
@@ -325,9 +325,9 @@ export function Header({
             </p>
             <button
               onClick={handleUndoClearTwinState}
-              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-button hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-button hover:brightness-110 transition-opacity"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 600,
                 fontSize: '13px'
               }}

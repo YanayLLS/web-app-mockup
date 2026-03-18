@@ -20,13 +20,7 @@ export function AccessSummary({ projectCount = 0, folderCount = 0, itemCount = 0
   const text = parts.length > 0 ? parts.join(', ') : 'No access';
 
   return (
-    <span
-      className="text-xs"
-      style={{
-        color: 'var(--muted)',
-        fontFamily: 'var(--font-family)',
-      }}
-    >
+    <span className="text-xs text-muted">
       {text}
     </span>
   );

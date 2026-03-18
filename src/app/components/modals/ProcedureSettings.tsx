@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Info } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronRight, Info, Settings, Sparkles } from 'lucide-react';
 
 interface SettingOption {
   id: string;
@@ -51,91 +51,76 @@ export function ProcedureSettings({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[var(--radius)]">
+    <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
       {/* Header */}
       <button
         onClick={onToggleExpand}
-        className="w-full flex items-center gap-2 px-3 py-2.5 min-h-[44px] hover:bg-secondary/50 transition-colors"
+        className="w-full flex items-center gap-2.5 px-4 py-3 min-h-[44px] hover:bg-secondary/50 transition-colors"
         aria-expanded={isExpanded}
       >
-        {isExpanded ? (
-          <ChevronDown size={12} className="text-muted" aria-hidden="true" />
-        ) : (
-          <ChevronRight size={12} className="text-muted" aria-hidden="true" />
-        )}
-        <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+        <Settings size={15} className="text-primary shrink-0" />
+        <span className="text-sm text-foreground flex-1 text-left" style={{ fontWeight: 'var(--font-weight-bold)' }}>
           Settings
         </span>
+        <ChevronDown size={14} className={`text-muted transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
       </button>
 
       {/* Content */}
       {isExpanded && (
-        <div className="px-3 pb-3 space-y-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-border/40">
           {localSettings.map((group, groupIndex) => (
-            <div key={group.id}>
+            <div key={group.id} className={groupIndex === 0 ? 'pt-3' : ''}>
               {/* Group Title */}
               {group.title && (
-                <p className="text-xs text-muted mb-2 px-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-2 px-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   {group.title}
                 </p>
               )}
 
               {/* Options */}
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {group.options.map(option => (
-                  <div key={option.id} className="flex items-center gap-2 min-h-[44px]">
-                    <button
-                      onClick={() => handleToggle(group.id, option.id)}
-                      className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center shrink-0 ${
-                        option.checked
-                          ? 'bg-primary border-primary'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      {option.checked && (
-                        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-                          <path
-                            d="M1 5.5L4 8.5L11 1.5"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                    <div className="flex items-center gap-1.5 flex-1">
-                      <span className="text-xs text-foreground">{option.label}</span>
-                      {option.tooltip && (
-                        <div className="group/tooltip relative">
-                          <Info size={12} className="text-muted hover:text-foreground transition-colors cursor-help" />
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-foreground text-background text-[10px] rounded whitespace-nowrap hidden md:block md:opacity-0 md:group-hover/tooltip:opacity-100 pointer-events-none transition-opacity">
-                            {option.tooltip}
-                          </div>
+                  <label
+                    key={option.id}
+                    className="flex items-center gap-2.5 min-h-[44px] px-2 py-1 rounded-lg hover:bg-secondary/30 transition-colors cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={option.checked}
+                      onChange={() => handleToggle(group.id, option.id)}
+                      className="w-4 h-4 rounded border-border accent-[#2F80ED] cursor-pointer shrink-0"
+                    />
+                    <span className="text-xs text-foreground flex-1">{option.label}</span>
+                    {option.tooltip && (
+                      <div className="group/tooltip relative shrink-0">
+                        <Info size={12} className="text-muted hover:text-foreground transition-colors cursor-help" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-foreground text-background text-[10px] rounded-lg whitespace-nowrap hidden md:block md:opacity-0 md:group-hover/tooltip:opacity-100 pointer-events-none transition-opacity" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                          {option.tooltip}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    )}
+                  </label>
                 ))}
               </div>
 
               {/* Divider */}
               {groupIndex < localSettings.length - 1 && (
-                <div className="h-px bg-border my-3" />
+                <div className="h-px bg-border/50 my-3" />
               )}
             </div>
           ))}
 
           {/* AI Instructions */}
-          <div className="pt-2">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-baseline gap-1.5">
+          <div className="pt-2 border-t border-border/40">
+            <div className="flex items-center justify-between mb-2.5 pt-1">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-primary" />
                 <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   AI Instructions
                 </span>
-                <span className="text-xs text-muted">(optional)</span>
+                <span className="text-[10px] text-muted">(optional)</span>
               </div>
-              <button className="text-xs bg-clip-text text-transparent bg-gradient-to-r from-[#2F80ED] to-[#004fff] hover:opacity-80 transition-opacity" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              <button className="text-xs bg-clip-text text-transparent bg-gradient-to-r from-[#2F80ED] to-[#004fff] hover:brightness-125 transition-all px-2 py-1 rounded-md hover:bg-primary/5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                 Summarize with AI
               </button>
             </div>
@@ -145,8 +130,8 @@ export function ProcedureSettings({
                 setLocalAI(e.target.value);
                 onAIInstructionsChange?.(e.target.value);
               }}
-              placeholder="Meet the ProBook, an innovative laptop crafted for professionals who seek both power and sophistication. Its sleek metal design..."
-              className="w-full h-24 px-3 py-2 bg-secondary border border-border rounded-[var(--radius)] text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              placeholder="Meet the ProBook, an innovative laptop crafted for professionals who seek both power and sophistication..."
+              className="w-full h-24 px-3 py-2.5 bg-card border border-border rounded-lg text-xs text-foreground placeholder:text-muted outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
             />
           </div>
         </div>

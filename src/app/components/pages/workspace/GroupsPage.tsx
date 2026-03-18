@@ -100,7 +100,7 @@ export function GroupsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="border-b border-border/60 bg-card px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
@@ -160,42 +160,9 @@ export function GroupsPage() {
               }}
             >
               <div />
-              <span
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                Name
-              </span>
-              <span
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                Members
-              </span>
-              <span
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                Access
-              </span>
+              <span className="text-[10px] text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>Name</span>
+              <span className="text-[10px] text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>Members</span>
+              <span className="text-[10px] text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>Access</span>
               <div />
             </div>
 
@@ -204,12 +171,10 @@ export function GroupsPage() {
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="group grid items-center px-4 py-3.5 rounded-xl hover:shadow-sm transition-all"
+                  className="group grid items-center px-4 py-3.5 rounded-xl bg-card border border-border hover:border-primary/20 hover:shadow-sm transition-all"
                   style={{
                     gridTemplateColumns: '40px 1fr 240px 280px 50px',
                     gap: '12px',
-                    backgroundColor: 'var(--card)',
-                    border: '1px solid var(--border)',
                   }}
                 >
                   {/* Icon */}
@@ -230,38 +195,24 @@ export function GroupsPage() {
                         onChange={(e) => setRenameValue(e.target.value)}
                         onBlur={handleFinishRename}
                         onKeyDown={handleRenameKeyDown}
-                        className="px-2 py-1 border rounded-[var(--radius)] w-full max-w-[200px] focus:outline-none"
-                        style={{
-                          fontSize: 'var(--text-sm)',
-                          fontFamily: 'var(--font-family)',
-                          fontWeight: 'var(--font-weight-bold)',
-                          color: 'var(--foreground)',
-                          backgroundColor: 'var(--background)',
-                          borderColor: 'var(--primary)',
-                          boxShadow: '0 0 0 2px var(--primary-background)',
-                        }}
+                        className="px-2 py-1 border border-primary bg-card rounded-lg w-full max-w-[200px] outline-none text-sm text-foreground focus:ring-2 focus:ring-primary/10"
+                        style={{ fontWeight: 'var(--font-weight-bold)' }}
                       />
                     ) : (
                       <>
                         <span
-                          className="truncate cursor-pointer"
+                          className="truncate cursor-pointer text-sm text-foreground"
                           onClick={() => handleStartRename(group)}
-                          style={{
-                            fontSize: 'var(--text-sm)',
-                            fontWeight: 'var(--font-weight-bold)',
-                            fontFamily: 'var(--font-family)',
-                            color: 'var(--foreground)',
-                          }}
+                          style={{ fontWeight: 'var(--font-weight-bold)' }}
                         >
                           {group.name}
                         </span>
                         <button
                           onClick={() => handleStartRename(group)}
-                          className="p-1 rounded-[var(--radius)] hover:bg-secondary transition-colors md:opacity-0 md:group-hover:opacity-100"
-                          style={{ flexShrink: 0 }}
+                          className="p-1 rounded-lg hover:bg-secondary transition-colors md:opacity-0 md:group-hover:opacity-100 shrink-0"
                           title="Rename group"
                         >
-                          <Edit2 size={13} style={{ color: 'var(--muted)' }} />
+                          <Edit2 size={13} className="text-muted" />
                         </button>
                       </>
                     )}
@@ -269,14 +220,7 @@ export function GroupsPage() {
 
                   {/* Members */}
                   <div className="flex items-center gap-3">
-                    <span
-                      style={{
-                        fontSize: 'var(--text-sm)',
-                        fontFamily: 'var(--font-family)',
-                        color: 'var(--muted)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                    <span className="text-sm text-muted whitespace-nowrap">
                       {group.members.length} member{group.members.length !== 1 ? 's' : ''}
                     </span>
                     <MemberAvatarsRow
@@ -292,24 +236,13 @@ export function GroupsPage() {
                   {/* Access */}
                   <div className="flex items-center">
                     <button
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius)] hover:bg-secondary transition-colors"
-                      style={{
-                        border: '1px solid var(--border)',
-                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border hover:bg-secondary hover:border-primary/20 transition-all"
                       title="Manage access"
                     >
                       {group.projects.length > 0 ? (
                         <AccessSummary projectCount={group.projects.length} />
                       ) : (
-                        <span
-                          style={{
-                            color: 'var(--muted)',
-                            fontFamily: 'var(--font-family)',
-                            fontSize: 'var(--text-xs)',
-                          }}
-                        >
-                          Add access
-                        </span>
+                        <span className="text-xs text-muted">Add access</span>
                       )}
                     </button>
                   </div>

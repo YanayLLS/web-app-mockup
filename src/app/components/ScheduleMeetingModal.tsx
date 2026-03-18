@@ -60,6 +60,7 @@ export interface Person {
   initial: string;
   color: string;
   role?: string;
+  subWorkspace?: string;
 }
 
 export interface Meeting {
@@ -310,7 +311,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Start Date/Time */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-[var(--radius)]">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-lg">
                     <Calendar size={14} className="text-muted" />
                     <span className="text-muted" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}>
                       Start
@@ -320,19 +321,19 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                    className="w-full bg-card border border-border focus:border-primary rounded-lg px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
                   />
                   <input
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                    className="w-full bg-card border border-border focus:border-primary rounded-lg px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
                   />
                 </div>
 
                 {/* End Date/Time */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-[var(--radius)]">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-lg">
                     <Clock size={14} className="text-muted" />
                     <span className="text-muted" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}>
                       End
@@ -342,13 +343,13 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                    className="w-full bg-card border border-border focus:border-primary rounded-lg px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
                   />
                   <input
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                    className="w-full bg-card border border-border focus:border-primary rounded-lg px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
                   />
                 </div>
               </div>
@@ -362,7 +363,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
               <button
                 type="button"
                 onClick={() => setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
-                className="w-full bg-card border border-border hover:border-primary/50 focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground text-left flex items-center gap-3 outline-none transition-colors"
+                className="w-full bg-card border border-border hover:border-primary/50 focus:border-primary rounded-lg px-4 py-3 text-foreground text-left flex items-center gap-3 outline-none transition-colors"
               >
                 <Globe size={18} className="text-primary" />
                 <div className="flex-1 min-w-0">
@@ -380,11 +381,11 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
 
               {isTimezoneDropdownOpen && (
                 <div
-                  className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50 max-w-[calc(100vw-32px)]"
+                  className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg overflow-hidden z-50 max-w-[calc(100vw-32px)]"
                   style={{ boxShadow: 'var(--elevation-md)' }}
                 >
                   <div className="p-3 border-b border-border bg-secondary/20">
-                    <div className="bg-card border border-border focus-within:border-primary rounded-[var(--radius)] flex items-center gap-2 px-3 py-2 transition-colors">
+                    <div className="bg-card border border-border focus-within:border-primary rounded-lg flex items-center gap-2 px-3 py-2 transition-colors">
                       <IconSearch />
                       <input
                         type="text"
@@ -480,7 +481,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
 
               {/* Search input with dropdown */}
               <div className="relative" ref={participantSearchRef}>
-                <div className="bg-card border border-border focus-within:border-primary rounded-[var(--radius)] flex items-center gap-2 px-4 py-3 transition-colors">
+                <div className="bg-card border border-border focus-within:border-primary rounded-lg flex items-center gap-2 px-4 py-3 transition-colors">
                   <IconSearch />
                   <input
                     ref={participantInputRef}
@@ -507,7 +508,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                 {/* Dropdown results */}
                 {isParticipantDropdownOpen && (searchQuery.trim().length > 0) && (
                   <div
-                    className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                    className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg overflow-hidden z-50"
                     style={{ boxShadow: 'var(--elevation-md)' }}
                   >
                     <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
@@ -604,7 +605,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                 type="text"
                 value={meetingPassword}
                 onChange={(e) => setMeetingPassword(e.target.value)}
-                className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                className="w-full bg-card border border-border focus:border-primary rounded-lg px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
                 placeholder="Set a password for participants to join"
               />
               <div className="mt-2 text-muted" style={{ fontSize: 'var(--text-sm)' }}>

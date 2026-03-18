@@ -41,7 +41,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
         >
           <h2 
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-lg)',
               fontWeight: 'var(--font-weight-bold)',
               color: 'var(--foreground)',
@@ -84,7 +84,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
           >
             <label 
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'var(--foreground)',
@@ -101,7 +101,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
                 borderColor: 'var(--border)',
                 backgroundColor: 'var(--background)',
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 borderRadius: 'var(--radius)',
               }}
@@ -126,7 +126,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
           >
             <label 
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'var(--foreground)',
@@ -143,7 +143,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
                 borderColor: 'var(--border)',
                 backgroundColor: 'var(--background)',
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-base)',
                 borderRadius: 'var(--radius)',
               }}
@@ -171,7 +171,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
             <div className="flex justify-between">
               <span 
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   color: 'var(--muted)',
                 }}
@@ -180,7 +180,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
               </span>
               <span 
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
                   fontWeight: 'var(--font-weight-medium)',
@@ -192,7 +192,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
             <div className="flex justify-between">
               <span 
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   color: 'var(--muted)',
                 }}
@@ -201,7 +201,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
               </span>
               <span 
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
                   fontWeight: 'var(--font-weight-medium)',
@@ -227,7 +227,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
             className="rounded-lg transition-colors"
             style={{
               padding: 'var(--spacing-2) var(--spacing-4)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--foreground)',
@@ -251,7 +251,7 @@ export function ProjectItemSettingsModal({ node, onClose }: ProjectItemSettingsM
             className="rounded-lg transition-colors"
             style={{
               padding: 'var(--spacing-2) var(--spacing-4)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--primary-foreground)',

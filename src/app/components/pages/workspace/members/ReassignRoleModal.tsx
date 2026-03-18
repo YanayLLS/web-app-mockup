@@ -65,10 +65,10 @@ export function ReassignRoleModal({
           style={{ borderColor: 'var(--border)' }}
         >
           <div>
-            <h2 className="text-lg font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
               Reassign Members from "{roleName}"
             </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
               Select members and assign them to a new role
             </p>
           </div>
@@ -85,7 +85,7 @@ export function ReassignRoleModal({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {/* New Role Selection */}
           <div className="mb-6">
-            <label className="text-sm font-medium mb-2 block" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+            <label className="text-sm font-medium mb-2 block" style={{ color: 'var(--foreground)' }}>
               New Role
             </label>
             <div className="relative">
@@ -97,7 +97,7 @@ export function ReassignRoleModal({
                   borderRadius: 'var(--radius)',
                   backgroundColor: 'var(--background)',
                   color: 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                 }}
               >
                 <span>{selectedRole || 'Select a role'}</span>
@@ -134,7 +134,7 @@ export function ReassignRoleModal({
                         className="w-full px-4 py-2.5 text-left hover:bg-secondary transition-colors"
                         style={{ 
                           color: 'var(--foreground)',
-                          fontFamily: 'var(--font-family)',
+                          
                           backgroundColor: selectedRole === role ? 'var(--secondary)' : 'transparent',
                         }}
                       >
@@ -150,13 +150,13 @@ export function ReassignRoleModal({
           {/* Members List */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+              <label className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                 Select Members ({selectedMembers.length} of {members.length})
               </label>
               <button
                 onClick={handleSelectAll}
                 className="text-sm hover:opacity-70 transition-opacity"
-                style={{ color: 'var(--primary)', fontFamily: 'var(--font-family)' }}
+                style={{ color: 'var(--primary)' }}
               >
                 {selectedMembers.length === members.length ? 'Deselect All' : 'Select All'}
               </button>
@@ -188,10 +188,10 @@ export function ReassignRoleModal({
                     showTooltip={false}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                       {member.name}
                     </p>
-                    <p className="text-xs truncate" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>
                       {member.email}
                     </p>
                   </div>
@@ -206,7 +206,7 @@ export function ReassignRoleModal({
           className="px-6 py-4 border-t flex items-center justify-between"
           style={{ borderColor: 'var(--border)' }}
         >
-          <p className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>
             {selectedMembers.length === 0 ? 'Select at least one member' : 
              selectedMembers.length === members.length ? 'All members selected' :
              `${members.length - selectedMembers.length} member${members.length - selectedMembers.length > 1 ? 's' : ''} will keep current role`}
@@ -217,7 +217,7 @@ export function ReassignRoleModal({
               className="px-5 py-2.5 text-sm rounded-lg border hover:bg-secondary transition-colors"
               style={{ 
                 color: 'var(--foreground)', 
-                fontFamily: 'var(--font-family)',
+                
                 borderColor: 'var(--border)',
                 borderRadius: 'var(--radius)',
               }}
@@ -231,7 +231,7 @@ export function ReassignRoleModal({
               style={{ 
                 backgroundColor: selectedMembers.length === 0 || !selectedRole ? 'var(--muted)' : 'var(--primary)',
                 color: selectedMembers.length === 0 || !selectedRole ? 'var(--muted-foreground)' : 'var(--primary-foreground)',
-                fontFamily: 'var(--font-family)',
+                
                 borderRadius: 'var(--radius)',
                 opacity: selectedMembers.length === 0 || !selectedRole ? '0.5' : '1',
                 cursor: selectedMembers.length === 0 || !selectedRole ? 'not-allowed' : 'pointer',

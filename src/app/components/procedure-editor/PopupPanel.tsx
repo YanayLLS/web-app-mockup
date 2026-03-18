@@ -258,7 +258,7 @@ export function PopupPanel({
                   }}
                   className="px-2 py-1 rounded bg-white/90 border-2 outline-none"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-h3)',
                     fontWeight: 'var(--font-weight-bold)',
                     color: 'var(--foreground)',
@@ -273,7 +273,7 @@ export function PopupPanel({
                   onClick={() => editingEnabled && setIsEditingTitle(true)}
                   className={editingEnabled ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-h3)',
                     fontWeight: 'var(--font-weight-bold)',
                     color: 'var(--foreground)'
@@ -285,7 +285,7 @@ export function PopupPanel({
               {popups.length > 1 && !isEditingTitle && (
                 <p
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                     color: 'var(--muted-foreground)'
                   }}
@@ -347,7 +347,7 @@ export function PopupPanel({
                     <label
                       className="block text-muted-foreground mb-2"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         fontWeight: 'var(--font-weight-bold)'
                       }}
@@ -369,7 +369,7 @@ export function PopupPanel({
                       }}
                       className="w-full px-3 py-2 rounded-lg bg-input-background border-2 outline-none resize-none"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         color: 'var(--foreground)',
                         borderColor: 'var(--ring)',
@@ -389,7 +389,7 @@ export function PopupPanel({
                     <p
                       className="whitespace-pre-wrap text-card-foreground"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         lineHeight: '1.6'
                       }}
@@ -412,7 +412,7 @@ export function PopupPanel({
                     <label
                       className="text-muted-foreground"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         fontWeight: 'var(--font-weight-bold)'
                       }}
@@ -427,7 +427,7 @@ export function PopupPanel({
                           style={{
                             backgroundColor: 'var(--secondary)',
                             color: 'var(--foreground)',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontSize: 'var(--text-sm)',
                             fontWeight: 'var(--font-weight-bold)',
                             gap: 'var(--spacing-xs)'
@@ -451,7 +451,7 @@ export function PopupPanel({
                             style={{
                               backgroundColor: 'var(--accent)',
                               color: 'var(--accent-foreground)',
-                              fontFamily: 'var(--font-family)',
+                              
                               fontSize: 'var(--text-sm)',
                               fontWeight: 'var(--font-weight-bold)',
                               gap: 'var(--spacing-xs)'
@@ -530,7 +530,7 @@ export function PopupPanel({
                         <div 
                           className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/70"
                           style={{
-                            fontFamily: 'var(--font-family)',
+                            
                             fontSize: 'var(--text-sm)',
                             color: 'white'
                           }}
@@ -546,7 +546,7 @@ export function PopupPanel({
                     <p
                       className="mt-2 px-3 py-2 rounded-lg"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         color: 'var(--foreground)',
                         backgroundColor: 'var(--secondary)',
@@ -566,7 +566,7 @@ export function PopupPanel({
                     <label
                       className="block text-muted-foreground"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         fontWeight: 'var(--font-weight-bold)'
                       }}
@@ -592,7 +592,7 @@ export function PopupPanel({
                       }}
                       className="px-3 py-2 rounded-lg bg-input-background border-2 outline-none"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-base)',
                         color: 'var(--foreground)',
                         borderColor: 'var(--ring)'
@@ -615,7 +615,7 @@ export function PopupPanel({
                     style={{
                       backgroundColor: 'var(--primary)',
                       color: 'var(--primary-foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-base)',
                       fontWeight: 'var(--font-weight-bold)'
                     }}
@@ -662,7 +662,7 @@ export function PopupPanel({
                     />
                     <span
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         color: 'var(--foreground)'
                       }}
@@ -678,7 +678,7 @@ export function PopupPanel({
                     <label
                       className="block mb-2"
                       style={{
-                        fontFamily: 'var(--font-family)',
+                        
                         fontSize: 'var(--text-sm)',
                         fontWeight: 'var(--font-weight-bold)',
                         color: 'var(--foreground)'
@@ -706,7 +706,7 @@ export function PopupPanel({
                               border: 'none',
                               cursor: 'pointer',
                               fontSize: 'var(--text-xs)',
-                              fontFamily: 'var(--font-family)',
+                              
                               fontWeight: isActive ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)',
                               borderRadius: '0'
                             }}
@@ -768,7 +768,7 @@ export function PopupPanel({
                     disabled={currentPopupIndex === 0}
                     className="flex items-center px-4 py-2 min-h-[44px] rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'var(--foreground)',
@@ -793,7 +793,7 @@ export function PopupPanel({
                     disabled={currentPopupIndex === popups.length - 1}
                     className="flex items-center px-4 py-2 min-h-[44px] rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'var(--foreground)',
@@ -833,7 +833,7 @@ export function PopupPanel({
                 style={{
                   backgroundColor: 'var(--secondary)',
                   color: 'var(--secondary-foreground)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   fontWeight: 'var(--font-weight-normal)',
                   gap: 'var(--spacing-xs)'
@@ -876,7 +876,7 @@ export function PopupPanel({
               <p
                 className="text-card-foreground mb-3"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-sm)',
                   fontWeight: 'var(--font-weight-bold)'
                 }}
@@ -934,7 +934,7 @@ export function PopupPanel({
               }}
             >
               <AlertCircle className="size-5 flex-shrink-0" />
-              <p style={{ fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>{error}</p>
+              <p style={{  fontSize: 'var(--text-sm)' }}>{error}</p>
             </div>
           </motion.div>
         )}

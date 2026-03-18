@@ -196,7 +196,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                     </svg>
                   </div>
                 </div>
-                <h3 id="settings-title" className="text-card-foreground" style={{ fontFamily: 'var(--font-family)' }}>Flow Settings</h3>
+                <h3 id="settings-title" className="text-card-foreground">Flow Settings</h3>
               </div>
               
               <div className="flex items-center gap-2">
@@ -222,12 +222,12 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h4 className="text-card-foreground font-bold" style={{ fontFamily: 'var(--font-family)' }}>Basic Information</h4>
+                  <h4 className="text-card-foreground font-bold">Basic Information</h4>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <label htmlFor="procedure-title" className="block text-card-foreground font-bold mb-1" style={{ fontFamily: 'var(--font-family)' }}>
+                  <label htmlFor="procedure-title" className="block text-card-foreground font-bold mb-1">
                     Flow Title
                   </label>
                   <input
@@ -247,17 +247,17 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                     }}
                     maxLength={MAX_TITLE_LENGTH}
                     className="w-full bg-white border border-border rounded-lg text-card-foreground outline-none focus:ring-2 focus:ring-ring transition-shadow"
-                    style={{ padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)', fontFamily: 'var(--font-family)' }}
+                    style={{ padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)' }}
                     placeholder="Enter flow title"
                   />
-                  <p className="text-muted text-xs mt-0.5" style={{ fontFamily: 'var(--font-family)' }}>
+                  <p className="text-muted text-xs mt-0.5">
                     {title.length} / {MAX_TITLE_LENGTH} characters
                   </p>
                 </div>
 
                 {/* Thumbnail and Description */}
                 <div>
-                  <label className="block text-card-foreground font-bold mb-1" style={{ fontFamily: 'var(--font-family)' }}>
+                  <label className="block text-card-foreground font-bold mb-1">
                     Thumbnail & Description
                   </label>
                   
@@ -265,7 +265,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                     <div className="mb-2 bg-destructive/10 border border-destructive rounded-lg flex items-start gap-2" style={{ padding: 'var(--spacing-xs, 6px)' }}>
                       <AlertCircle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-destructive font-bold text-sm" style={{ fontFamily: 'var(--font-family)' }}>{uploadError}</p>
+                        <p className="text-destructive font-bold text-sm">{uploadError}</p>
                       </div>
                       <button
                         onClick={() => setUploadError(null)}
@@ -298,14 +298,14 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                         ) : (
                           <>
                             <ImageIcon className="size-8 text-muted group-hover:text-primary transition-colors" />
-                            <span className="text-xs text-muted group-hover:text-primary transition-colors font-bold" style={{ fontFamily: 'var(--font-family)' }}>Upload thumbnail</span>
+                            <span className="text-xs text-muted group-hover:text-primary transition-colors font-bold">Upload thumbnail</span>
                           </>
                         )}
                       </button>
                       {thumbnailUrl && (
                         <button
                           onClick={handleRemoveThumbnail}
-                          className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 hover:opacity-90 shadow-elevation-sm"
+                          className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 hover:brightness-110 shadow-elevation-sm"
                           aria-label="Remove thumbnail"
                         >
                           <X className="size-3.5" />
@@ -321,10 +321,10 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                         maxLength={MAX_DESCRIPTION_LENGTH}
                         placeholder="Write a brief description of this flow..."
                         className="w-full h-full bg-white border border-border rounded-lg text-card-foreground outline-none focus:ring-2 focus:ring-ring resize-none transition-shadow min-h-[100px]"
-                        style={{ padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)', fontFamily: 'var(--font-family)' }}
+                        style={{ padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)' }}
                         aria-label="Flow description"
                       />
-                      <p className="text-muted text-xs mt-0.5" style={{ fontFamily: 'var(--font-family)' }}>
+                      <p className="text-muted text-xs mt-0.5">
                         {description.length} / {MAX_DESCRIPTION_LENGTH} characters
                       </p>
                     </div>
@@ -341,13 +341,13 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
-                  <h4 className="text-card-foreground font-bold" style={{ fontFamily: 'var(--font-family)' }}>Flow Settings</h4>
+                  <h4 className="text-card-foreground font-bold">Flow Settings</h4>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Logics Column */}
                   <div className="space-y-1">
-                    <h5 className="text-card-foreground font-bold mb-1.5 text-sm" style={{ fontFamily: 'var(--font-family)' }}>Logics</h5>
+                    <h5 className="text-card-foreground font-bold mb-1.5 text-sm">Logics</h5>
                     
                     <SettingOption
                       title="Enable 2D"
@@ -377,7 +377,7 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
 
                   {/* Text to Speech Column */}
                   <div className="space-y-1">
-                    <h5 className="text-card-foreground font-bold mb-1.5 text-sm" style={{ fontFamily: 'var(--font-family)' }}>Text to Speech</h5>
+                    <h5 className="text-card-foreground font-bold mb-1.5 text-sm">Text to Speech</h5>
                     
                     <SettingOption
                       title="Read headers"
@@ -410,10 +410,10 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-card-foreground font-bold" style={{ fontFamily: 'var(--font-family)' }}>AI Instructions</h4>
-                    <p className="text-muted text-xs" style={{ fontFamily: 'var(--font-family)' }}>Optional context for AI-assisted features</p>
+                    <h4 className="text-card-foreground font-bold">AI Instructions</h4>
+                    <p className="text-muted text-xs">Optional context for AI-assisted features</p>
                   </div>
-                  <button className="text-primary hover:underline font-bold text-sm" style={{ fontFamily: 'var(--font-family)' }}>
+                  <button className="text-primary hover:underline font-bold text-sm">
                     Summarize with AI
                   </button>
                 </div>
@@ -424,11 +424,11 @@ export function SettingsModal({ onClose, procedureTitle, onProcedureTitleChange 
                   onChange={(e) => setAiInstructions(e.target.value.slice(0, MAX_AI_LENGTH))}
                   maxLength={MAX_AI_LENGTH}
                   className="w-full bg-white border border-border rounded-lg text-card-foreground leading-relaxed outline-none focus:ring-2 focus:ring-ring resize-none transition-shadow"
-                  style={{ padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)', fontFamily: 'var(--font-family)' }}
+                  style={{ padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)' }}
                   rows={4}
                   placeholder="Provide context and instructions for AI features..."
                 />
-                <p className="text-muted text-xs" style={{ fontFamily: 'var(--font-family)' }}>
+                <p className="text-muted text-xs">
                   {aiInstructions.length} / {MAX_AI_LENGTH} characters
                 </p>
               </div>
@@ -470,8 +470,8 @@ function SettingOption({ title, description, checked, onToggle }: SettingOptionP
       
       {/* Text Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-card-foreground font-bold text-sm mb-0.5" style={{ fontFamily: 'var(--font-family)' }}>{title}</p>
-        <p className="text-muted text-xs leading-relaxed" style={{ fontFamily: 'var(--font-family)' }}>{description}</p>
+        <p className="text-card-foreground font-bold text-sm mb-0.5">{title}</p>
+        <p className="text-muted text-xs leading-relaxed">{description}</p>
       </div>
     </button>
   );

@@ -1,3 +1,5 @@
+import { Construction } from 'lucide-react';
+
 interface GenericPageProps {
   title: string;
   description: string;
@@ -5,25 +7,38 @@ interface GenericPageProps {
 
 export function GenericPage({ title, description }: GenericPageProps) {
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <h3 className="text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted">{description}</p>
-      </div>
-
-      <div className="p-8 bg-background border border-border rounded-[var(--radius)] flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 bg-secondary/30 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-muted" fill="none" viewBox="0 0 24 24">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
-            <path d="M8 8H16M8 12H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+    <div className="flex flex-col items-center justify-center h-full p-6">
+      <div className="flex flex-col items-center text-center max-w-md">
+        {/* Icon */}
+        <div
+          className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(47,128,237,0.1), rgba(47,128,237,0.04))',
+            border: '1px solid rgba(47,128,237,0.1)',
+            boxShadow: '0 8px 32px rgba(47,128,237,0.08)',
+          }}
+        >
+          <Construction size={32} className="text-primary/50" />
         </div>
-        <p className="text-sm text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+
+        {/* Title */}
+        <h3 className="text-foreground mb-2 text-lg" style={{ fontWeight: 'var(--font-weight-bold)' }}>
           {title}
-        </p>
-        <p className="text-xs text-muted max-w-md">
+        </h3>
+
+        {/* Description */}
+        <p className="text-sm text-muted leading-relaxed mb-6 max-w-[320px]">
           {description}
         </p>
+
+        {/* Decorative dots */}
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+        </div>
       </div>
     </div>
   );

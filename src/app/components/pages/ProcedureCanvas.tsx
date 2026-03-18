@@ -945,7 +945,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   }, [nodes, setNodes, setCenter]);
 
   return (
-    <div className="w-full h-full flex flex-col relative" style={{ fontFamily: 'var(--font-family)', backgroundColor: 'var(--background)' }}>
+    <div className="w-full h-full flex flex-col relative bg-background">
       {/* Top Bar */}
       <div 
         className="h-auto min-h-[56px] border-b flex items-center flex-wrap px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 relative z-10 py-2"
@@ -1258,7 +1258,6 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
             style={{
               backgroundColor: 'var(--card)',
               boxShadow: 'var(--elevation-lg)',
-              fontFamily: 'var(--font-family)'
             }}
             onClick={(e) => e.stopPropagation()}
           >

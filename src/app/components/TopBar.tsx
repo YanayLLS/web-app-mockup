@@ -227,7 +227,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           {isMobile && onMenuClick && (
             <button
               onClick={onMenuClick}
-              className="p-2.5 -ml-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+              className="p-2.5 -ml-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label="Open menu"
             >
               <IconMenu />
@@ -240,14 +240,13 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               <button
                 ref={workspaceButtonRef}
                 onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
-                className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius)] hover:bg-secondary transition-all duration-200"
-                style={{ fontFamily: 'var(--font-family)' }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-all duration-200"
                 aria-label="Workspace management"
                 aria-expanded={showWorkspaceMenu}
                 aria-haspopup="true"
               >
                 {currentWorkspace.id === 'frontline' ? (
-                  <div className="w-6 h-6 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {wsSettings.logoUrl ? (
                       <img src={wsSettings.logoUrl} alt="" className="w-full h-full object-contain" />
                     ) : (
@@ -258,12 +257,12 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                   </div>
                 ) : (
                   <div
-                    className={`w-6 h-6 rounded-[var(--radius)] flex items-center justify-center flex-shrink-0 ${
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       currentWorkspace.color === 'primary' ? 'bg-primary/20 text-primary' :
                       currentWorkspace.color === 'accent' ? 'bg-accent/20 text-accent' :
                       'bg-secondary text-foreground'
                     }`}
-                    style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+                    style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-bold)' }}
                   >
                     {currentWorkspace.initials}
                   </div>
@@ -271,7 +270,6 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                 <span className="text-sidebar-foreground truncate max-w-[160px]" style={{
                   fontWeight: 'var(--font-weight-bold)',
                   fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)'
                 }}>
                   {currentWorkspace.id === 'frontline' ? wsSettings.name : currentWorkspace.name}
                 </span>
@@ -282,14 +280,14 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               {showWorkspaceMenu && (
                 <div 
                   ref={workspaceMenuRef}
-                  className="absolute top-full left-0 mt-2 w-80 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] z-50"
-                  style={{ boxShadow: 'var(--elevation-lg)', fontFamily: 'var(--font-family)' }}
+                  className="absolute top-full left-0 mt-2 w-80 max-w-[calc(100vw-32px)] bg-card border border-border rounded-lg z-50"
+                  style={{ boxShadow: 'var(--elevation-lg)' }}
                 >
                   {/* Workspace Header */}
                   <div className="p-4 border-b border-border">
                     <div className="flex items-center gap-3 mb-3">
                       {currentWorkspace.id === 'frontline' ? (
-                        <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center p-2 overflow-hidden">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center p-2 overflow-hidden">
                           {wsSettings.logoUrl ? (
                             <img src={wsSettings.logoUrl} alt="" className="w-full h-full object-contain" />
                           ) : (
@@ -300,21 +298,21 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                         </div>
                       ) : (
                         <div
-                          className={`w-10 h-10 rounded-[var(--radius)] flex items-center justify-center ${
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                             currentWorkspace.color === 'primary' ? 'bg-primary/20 text-primary' :
                             currentWorkspace.color === 'accent' ? 'bg-accent/20 text-accent' :
                             'bg-secondary text-foreground'
                           }`}
-                          style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+                          style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}
                         >
                           {currentWorkspace.initials}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-foreground truncate" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                        <h3 className="text-foreground truncate" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
                           {currentWorkspace.id === 'frontline' ? wsSettings.name : currentWorkspace.name}
                         </h3>
-                        <p className="text-muted truncate" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                        <p className="text-muted truncate" style={{ fontSize: 'var(--text-sm)' }}>
                           23 members • Business Plus
                         </p>
                       </div>
@@ -324,10 +322,10 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     {canAccessWorkspaceManagement && (
                       <button
                         onClick={handleWorkspaceManagementClick}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-[var(--radius)] transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
                       >
                         <SettingsIcon size={16} style={{ color: 'var(--color-foreground)' }} />
-                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)', fontFamily: 'var(--font-family)' }}>
+                        <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}>
                           Workspace Settings
                         </span>
                       </button>
@@ -343,8 +341,8 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                         placeholder="Search workspaces..."
                         value={workspaceSearchQuery}
                         onChange={(e) => setWorkspaceSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-[var(--radius)] text-foreground placeholder:text-muted outline-none focus:border-primary transition-colors"
-                        style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}
+                        className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted outline-none focus:border-primary transition-colors"
+                        style={{ fontSize: 'var(--text-sm)' }}
                       />
                     </div>
                   </div>
@@ -356,19 +354,19 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                         <button
                           key={workspace.id}
                           onClick={() => handleWorkspaceSwitch(workspace)}
-                          className="w-full flex items-center gap-3 px-3 py-2 rounded-[var(--radius)] hover:bg-secondary transition-all duration-200 hover:translate-x-[2px]"
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary transition-all duration-200 hover:translate-x-[2px]"
                         >
                           <div 
-                            className={`w-8 h-8 rounded-[var(--radius)] flex items-center justify-center flex-shrink-0 ${
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                               workspace.color === 'primary' ? 'bg-primary/20 text-primary' :
                               workspace.color === 'accent' ? 'bg-accent/20 text-accent' :
                               'bg-secondary text-foreground'
                             }`}
-                            style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}
+                            style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-bold)' }}
                           >
                             {workspace.initials}
                           </div>
-                          <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                          <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                             {workspace.name}
                           </span>
                           {workspace.id === currentWorkspace.id && (
@@ -379,7 +377,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                         </button>
                       ))}
                       {filteredWorkspaces.length === 0 && (
-                        <div className="px-3 py-4 text-center text-muted" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                        <div className="px-3 py-4 text-center text-muted" style={{ fontSize: 'var(--text-sm)' }}>
                           No workspaces found
                         </div>
                       )}
@@ -397,18 +395,21 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           {!isMobile && (
             <button
               onClick={() => onOpenSearch?.()}
-              className="flex items-center gap-2 bg-background border border-input rounded-full px-3 py-1 w-full max-w-[720px] min-w-[200px] transition-all hover:border-primary/50 hover:shadow-sm"
+              className="group flex items-center gap-2.5 bg-secondary/30 border border-border rounded-full px-3.5 py-1.5 w-full max-w-[720px] min-w-[200px] transition-all hover:border-primary/40 hover:bg-secondary/50 hover:shadow-sm"
               aria-label="Open search"
             >
-              <IconSearch />
-              <span className="flex-1 text-left text-xs text-muted">Search</span>
+              <Search size={14} className="text-muted shrink-0" />
+              <span className="flex-1 text-left text-xs text-muted">Search pages, projects, knowledge base...</span>
+              <kbd className="hidden lg:flex items-center px-1.5 py-0.5 rounded text-[10px] border border-border/60 text-muted/60 bg-background">
+                Ctrl+K
+              </kbd>
               {canAccessAiChat && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onToggleChat(); }}
-                  className="group flex items-center gap-1.5 flex-shrink-0 p-1 rounded-full hover:bg-secondary transition-colors"
+                  className="group/ai flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-full hover:bg-primary/5 transition-all"
                   aria-label="AI chat"
                 >
-                  <span className="text-xs text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap select-none">Ask AI</span>
+                  <span className="text-xs text-primary/70 opacity-0 group-hover/ai:opacity-100 transition-opacity whitespace-nowrap select-none" style={{ fontWeight: 'var(--font-weight-medium)' }}>Ask AI</span>
                   <IconAi />
                 </button>
               )}
@@ -418,7 +419,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
           {/* Search Icon - Mobile */}
           {isMobile && (
             <button
-              className="p-2.5 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+              className="p-2.5 rounded-lg hover:bg-secondary transition-colors"
               aria-label="Search"
             >
               <Search size={20} />
@@ -429,9 +430,9 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         {/* Right side - Install App and User Avatar */}
         <div className="flex-1 flex items-center justify-end gap-3">
           {!isMobile && (
-            <button className="flex items-center gap-1.5 text-primary hover:bg-primary/5 px-2.5 py-1.5 rounded-lg transition-all">
+            <button className="flex items-center gap-1.5 text-primary hover:bg-primary/8 px-2.5 py-1.5 rounded-lg transition-all border border-transparent hover:border-primary/15">
               <IconDownload />
-              <span className="text-xs" style={{ fontWeight: 'var(--font-weight-medium)' }}>Install App</span>
+              <span className="text-xs" style={{ fontWeight: 'var(--font-weight-semibold)' }}>Install App</span>
             </button>
           )}
 
@@ -439,7 +440,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
             <button
               ref={userButtonRef}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="cursor-pointer p-1.5 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+              className="cursor-pointer p-1.5 rounded-lg hover:bg-secondary transition-colors"
               aria-label="User settings"
               aria-expanded={isUserMenuOpen}
               aria-haspopup="true"
@@ -455,7 +456,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
             {isUserMenuOpen && (
               <div
                 ref={userMenuRef}
-                className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] py-1 z-50"
+                className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-32px)] bg-card border border-border rounded-lg py-1 z-50"
                 style={{ boxShadow: 'var(--elevation-lg)' }}
               >
                 {/* User Info */}
@@ -468,19 +469,19 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                       initials="YD"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-foreground truncate" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
+                      <p className="text-foreground truncate" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-bold)' }}>
                         Yanay D
                       </p>
-                      <p className="text-muted truncate" style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)' }}>
+                      <p className="text-muted truncate" style={{ fontSize: 'var(--text-xs)' }}>
                         yanay@lls-ltd.com
                       </p>
                     </div>
                   </div>
                   
                   {/* Current Role Badge */}
-                  <div className="px-2 py-1 bg-primary/10 border border-primary/20 rounded-[var(--radius)] inline-flex items-center gap-1.5">
+                  <div className="px-2 py-1 bg-primary/10 border border-primary/20 rounded-lg inline-flex items-center gap-1.5">
                     <IconBriefcase />
-                    <span className="text-primary" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-semibold)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-primary" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-semibold)' }}>
                       {roleInfo.label}
                     </span>
                   </div>
@@ -493,7 +494,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     className="w-full px-4 py-2.5 text-left hover:bg-secondary transition-colors flex items-center gap-3"
                   >
                     <IconSettings />
-                    <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                       Account Settings
                     </span>
                   </button>
@@ -502,7 +503,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     className="w-full px-4 py-2.5 text-left hover:bg-secondary transition-colors flex items-center gap-3"
                   >
                     <IconXR />
-                    <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                       Login with XR
                     </span>
                   </button>
@@ -515,7 +516,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     className="w-full px-4 py-2.5 text-left hover:bg-secondary transition-colors flex items-center gap-3"
                   >
                     <IconSwitch />
-                    <span className="text-foreground" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-foreground" style={{ fontSize: 'var(--text-sm)' }}>
                       Switch Role (Debug)
                     </span>
                   </button>
@@ -528,7 +529,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     className="w-full px-4 py-2.5 text-left hover:bg-destructive/10 transition-colors flex items-center gap-3"
                   >
                     <IconLogout />
-                    <span className="text-destructive" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
+                    <span className="text-destructive" style={{ fontSize: 'var(--text-sm)' }}>
                       Logout
                     </span>
                   </button>
@@ -555,7 +556,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
       {showRoleSwitcher && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div 
-            className="bg-card border border-border rounded-[var(--radius-lg)] w-full max-w-2xl max-h-[80vh] max-h-[80dvh] overflow-hidden"
+            className="bg-card border border-border rounded-xl w-full max-w-2xl max-h-[80vh] max-h-[80dvh] overflow-hidden"
             style={{ boxShadow: 'var(--elevation-lg)' }}
           >
             {/* Header */}
@@ -566,8 +567,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                   style={{ 
                     fontSize: 'var(--text-lg)', 
                     fontWeight: 'var(--font-weight-bold)',
-                    fontFamily: 'var(--font-family)'
-                  }}
+                    }}
                 >
                   Switch Role (Debug Mode)
                 </h2>
@@ -575,15 +575,14 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                   className="text-muted mt-1"
                   style={{ 
                     fontSize: 'var(--text-sm)',
-                    fontFamily: 'var(--font-family)'
-                  }}
+                    }}
                 >
                   Select a role to view the application from that perspective
                 </p>
               </div>
               <button
                 onClick={() => setShowRoleSwitcher(false)}
-                className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors"
               >
                 <svg className="block size-5" fill="none" viewBox="0 0 20 20">
                   <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -602,7 +601,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     <button
                       key={roleKey}
                       onClick={() => handleRoleChange(roleKey)}
-                      className={`p-4 border-2 rounded-[var(--radius)] text-left transition-all ${
+                      className={`p-4 border-2 rounded-lg text-left transition-all ${
                         isActive
                           ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-primary/50 bg-background'
@@ -614,8 +613,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                           style={{ 
                             fontSize: 'var(--text-base)',
                             fontWeight: 'var(--font-weight-bold)',
-                            fontFamily: 'var(--font-family)'
-                          }}
+                                    }}
                         >
                           {role.label}
                         </h3>
@@ -631,8 +629,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                         className="text-muted"
                         style={{ 
                           fontSize: 'var(--text-sm)',
-                          fontFamily: 'var(--font-family)'
-                        }}
+                                }}
                       >
                         {role.description}
                       </p>
@@ -642,9 +639,9 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               </div>
 
               {/* Current Selection Info */}
-              <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-[var(--radius)]">
+              <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-primary/10 rounded-[var(--radius)] text-primary shrink-0">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0">
                     <IconBriefcase />
                   </div>
                   <div>
@@ -653,8 +650,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                       style={{ 
                         fontSize: 'var(--text-sm)',
                         fontWeight: 'var(--font-weight-semibold)',
-                        fontFamily: 'var(--font-family)'
-                      }}
+                            }}
                     >
                       Currently viewing as: {roleInfo.label}
                     </p>
@@ -662,8 +658,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                       className="text-muted"
                       style={{ 
                         fontSize: 'var(--text-sm)',
-                        fontFamily: 'var(--font-family)'
-                      }}
+                            }}
                     >
                       The sidebar menu and available features will adjust based on the selected role's permissions.
                     </p>
@@ -678,7 +673,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
       {/* OLD Account Settings Modal - REMOVE */}
       {false && showAccountSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card border border-border rounded-[var(--radius)] w-full max-w-2xl max-h-[90vh] overflow-auto">
+          <div className="bg-card border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
             {/* Header */}
             <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">
               <h2 className="text-lg text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
@@ -686,7 +681,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               </h2>
               <button
                 onClick={() => setShowAccountSettings(false)}
-                className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors"
               >
                 <svg className="block size-5" fill="none" viewBox="0 0 20 20">
                   <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -709,7 +704,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     <input
                       type="text"
                       defaultValue="Walter White"
-                      className="w-full bg-input-background border border-border focus:border-primary rounded-[var(--radius)] px-3 py-2 text-sm text-foreground outline-none transition-colors"
+                      className="w-full bg-input-background border border-border focus:border-primary rounded-lg px-3 py-2 text-sm text-foreground outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -719,7 +714,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     <input
                       type="email"
                       defaultValue="walter@workspace.com"
-                      className="w-full bg-input-background border border-border focus:border-primary rounded-[var(--radius)] px-3 py-2 text-sm text-foreground outline-none transition-colors"
+                      className="w-full bg-input-background border border-border focus:border-primary rounded-lg px-3 py-2 text-sm text-foreground outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -730,7 +725,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                       type="text"
                       defaultValue="Administrator"
                       disabled
-                      className="w-full bg-secondary border border-border rounded-[var(--radius)] px-3 py-2 text-sm text-muted outline-none"
+                      className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-muted outline-none"
                     />
                   </div>
                 </div>
@@ -740,7 +735,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                 <button
                   onClick={() => setShowAccountSettings(false)}
-                  className="px-4 py-2 border border-border text-foreground rounded-[var(--radius)] text-sm hover:bg-secondary transition-colors"
+                  className="px-4 py-2 border border-border text-foreground rounded-lg text-sm hover:bg-secondary transition-colors"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
                   Cancel

@@ -95,7 +95,7 @@ export function ContextMenu({
           alignItems: 'center',
           borderRadius: 'var(--radius)',
           fontSize: 'var(--text-sm)',
-          fontFamily: 'var(--font-family)',
+          
           fontWeight: 'var(--font-weight-normal)',
           color: 'var(--foreground)',
           backgroundColor: 'transparent'
@@ -122,7 +122,7 @@ export function ContextMenu({
           alignItems: 'center',
           borderRadius: 'var(--radius)',
           fontSize: 'var(--text-sm)',
-          fontFamily: 'var(--font-family)',
+          
           fontWeight: 'var(--font-weight-normal)',
           color: 'var(--foreground)',
           backgroundColor: 'transparent'
@@ -149,7 +149,7 @@ export function ContextMenu({
           alignItems: 'center',
           borderRadius: 'var(--radius)',
           fontSize: 'var(--text-sm)',
-          fontFamily: 'var(--font-family)',
+          
           fontWeight: 'var(--font-weight-normal)',
           color: 'var(--foreground)',
           backgroundColor: 'transparent'

@@ -46,7 +46,7 @@ export function SaveIndicator({ isSaving, lastSaved }: SaveIndicatorProps) {
             <span
               className="text-muted-foreground"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-normal)'
               }}
@@ -73,7 +73,7 @@ export function SaveIndicator({ isSaving, lastSaved }: SaveIndicatorProps) {
             <span
               className="text-muted-foreground"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-normal)'
               }}

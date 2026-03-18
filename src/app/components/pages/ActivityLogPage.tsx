@@ -220,7 +220,7 @@ export function ActivityLogPage() {
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-2 px-3 h-9 bg-secondary border border-border rounded-[var(--radius)] text-sm text-foreground hover:bg-secondary/80 transition-colors"
+                className="flex items-center gap-2 px-3 h-9 bg-secondary border border-border rounded-lg text-sm text-foreground hover:bg-secondary/80 transition-colors"
               >
                 <X size={14} />
                 Clear filters
@@ -228,7 +228,7 @@ export function ActivityLogPage() {
             )}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 h-9 border rounded-[var(--radius)] text-sm transition-colors ${
+              className={`flex items-center gap-2 px-3 h-9 border rounded-lg text-sm transition-colors ${
                 showFilters || hasActiveFilters
                   ? 'bg-primary/10 border-primary/30 text-primary'
                   : 'bg-secondary border-border text-foreground hover:bg-secondary/80'
@@ -250,7 +250,7 @@ export function ActivityLogPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="flex items-center gap-2 px-3 h-10 bg-secondary/30 border border-border rounded-[var(--radius)] focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+        <div className="flex items-center gap-2 px-3 h-10 bg-secondary/30 border border-border rounded-lg focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
           <Search size={15} className="text-muted shrink-0" />
           <input
             type="text"
@@ -312,7 +312,7 @@ export function ActivityLogPage() {
                   {uniqueUsers.map(user => (
                     <label
                       key={user}
-                      className="flex items-center gap-3 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary cursor-pointer transition-colors group"
+                      className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-secondary cursor-pointer transition-colors group"
                     >
                       <div className="relative">
                         <input
@@ -340,7 +340,7 @@ export function ActivityLogPage() {
                   {allActions.map(action => (
                     <label
                       key={action}
-                      className="flex items-center gap-3 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary cursor-pointer transition-colors group"
+                      className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-secondary cursor-pointer transition-colors group"
                     >
                       <input
                         type="checkbox"
@@ -368,7 +368,7 @@ export function ActivityLogPage() {
                   {allCategories.map(category => (
                     <label
                       key={category}
-                      className="flex items-center gap-3 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary cursor-pointer transition-colors group"
+                      className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-secondary cursor-pointer transition-colors group"
                     >
                       <input
                         type="checkbox"
@@ -434,7 +434,7 @@ export function ActivityLogPage() {
                       )}
 
                       {/* Activity Item */}
-                      <div className="group flex gap-3 sm:gap-4 p-3 sm:p-4 bg-card border border-border rounded-[var(--radius)] hover:border-primary/30 hover:shadow-sm transition-all">
+                      <div className="group flex gap-3 sm:gap-4 p-3 sm:p-4 bg-card border border-border rounded-lg hover:border-primary/30 hover:shadow-sm transition-all">
                         {/* User Avatar */}
                         <MemberAvatar name={log.user} size="2xl" />
 

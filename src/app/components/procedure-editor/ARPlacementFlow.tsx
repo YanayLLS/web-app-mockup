@@ -112,7 +112,7 @@ export function ARPlacementFlow({
             gap: 'var(--spacing-xs)',
             color: 'white',
             fontSize: 'var(--text-base)',
-            fontFamily: 'var(--font-family)',
+            
             fontWeight: 'var(--font-weight-bold)',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             padding: 'var(--spacing-sm) var(--spacing-md)',
@@ -199,7 +199,7 @@ function MethodSelectionScreen({
         style={{ 
           fontSize: 'var(--text-h2)',
           fontWeight: 'var(--font-weight-bold)',
-          fontFamily: 'var(--font-family)',
+          
           color: 'var(--foreground)',
           margin: 0,
           textAlign: 'center'
@@ -243,7 +243,7 @@ function MethodSelectionScreen({
             borderRadius: 'var(--radius)',
             fontSize: 'var(--text-base)',
             fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-family)',
+            
             color: 'var(--foreground)',
             cursor: 'pointer'
           }}
@@ -295,7 +295,7 @@ function MethodOption({
           style={{
             fontSize: 'var(--text-h3)',
             fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-family)',
+            
             color: 'var(--foreground)'
           }}
         >
@@ -305,7 +305,7 @@ function MethodOption({
           style={{
             fontSize: 'var(--text-base)',
             fontWeight: 'var(--font-weight-normal)',
-            fontFamily: 'var(--font-family)',
+            
             color: 'var(--muted-foreground)'
           }}
         >
@@ -358,7 +358,7 @@ function TargetSelectionScreen({
           style={{ 
             fontSize: 'var(--text-h2)',
             fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-family)',
+            
             color: 'var(--foreground)',
             margin: 0,
             marginBottom: 'var(--spacing-sm)',
@@ -371,7 +371,7 @@ function TargetSelectionScreen({
           style={{
             fontSize: 'var(--text-base)',
             fontWeight: 'var(--font-weight-normal)',
-            fontFamily: 'var(--font-family)',
+            
             color: 'var(--muted-foreground)',
             margin: 0,
             textAlign: 'center'
@@ -407,7 +407,7 @@ function TargetSelectionScreen({
                 borderRadius: 'var(--radius)',
                 textAlign: 'center',
                 fontSize: 'var(--text-base)',
-                fontFamily: 'var(--font-family)',
+                
                 color: 'var(--muted-foreground)',
                 boxShadow: 'var(--elevation-sm)'
               }}
@@ -423,7 +423,7 @@ function TargetSelectionScreen({
                   <div 
                     style={{
                       fontSize: 'var(--text-sm)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontWeight: 'var(--font-weight-bold)',
                       color: 'var(--muted-foreground)',
                       paddingLeft: 'var(--spacing-md)'
@@ -444,7 +444,7 @@ function TargetSelectionScreen({
                         border: selectedTarget?.id === subTarget.id ? '2px solid var(--primary)' : '2px solid var(--border)',
                         borderRadius: 'var(--radius)',
                         fontSize: 'var(--text-base)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-bold)',
                         display: 'flex',
                         alignItems: 'center',
@@ -498,7 +498,7 @@ function TargetSelectionScreen({
                         border: selectedTarget?.id === target.id ? '2px solid var(--primary)' : '2px solid var(--border)',
                         borderRadius: 'var(--radius)',
                         fontSize: 'var(--text-lg)',
-                        fontFamily: 'var(--font-family)',
+                        
                         fontWeight: 'var(--font-weight-bold)',
                         boxShadow: 'var(--elevation-md)',
                         display: 'flex',
@@ -554,7 +554,7 @@ function TargetSelectionScreen({
           border: 'none',
           borderRadius: 'var(--radius-button)',
           fontSize: 'var(--text-lg)',
-          fontFamily: 'var(--font-family)',
+          
           fontWeight: 'var(--font-weight-bold)',
           cursor: selectedTarget ? 'pointer' : 'not-allowed',
           boxShadow: 'var(--elevation-md)'
@@ -643,7 +643,7 @@ function ObjectAlignmentScreen({
               style={{
                 fontSize: 'var(--text-base)',
                 fontWeight: 'var(--font-weight-bold)',
-                fontFamily: 'var(--font-family)',
+                
                 color: 'white',
                 textAlign: 'center',
                 margin: 0
@@ -659,7 +659,7 @@ function ObjectAlignmentScreen({
                   style={{
                     fontSize: 'var(--text-sm)',
                     fontWeight: 'var(--font-weight-normal)',
-                    fontFamily: 'var(--font-family)',
+                    
                     color: 'white'
                   }}
                 >
@@ -669,7 +669,7 @@ function ObjectAlignmentScreen({
                   style={{
                     fontSize: 'var(--text-sm)',
                     fontWeight: 'var(--font-weight-bold)',
-                    fontFamily: 'var(--font-family)',
+                    
                     color: 'white'
                   }}
                 >
@@ -714,7 +714,7 @@ function ObjectAlignmentScreen({
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   borderRadius: 'var(--radius-button)',
                   fontSize: 'var(--text-base)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                   cursor: 'pointer'
                 }}
@@ -734,7 +734,7 @@ function ObjectAlignmentScreen({
                   border: 'none',
                   borderRadius: 'var(--radius-button)',
                   fontSize: 'var(--text-base)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                   boxShadow: 'var(--elevation-md)',
                   cursor: 'pointer'
@@ -837,7 +837,7 @@ function QRScanningScreen({
               style={{
                 fontSize: 'var(--text-base)',
                 fontWeight: 'var(--font-weight-bold)',
-                fontFamily: 'var(--font-family)',
+                
                 color: 'white',
                 textAlign: 'center',
                 margin: 0
@@ -857,7 +857,7 @@ function QRScanningScreen({
                 border: 'none',
                 borderRadius: 'var(--radius-button)',
                 fontSize: 'var(--text-base)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
                 boxShadow: 'var(--elevation-md)'
               }}
@@ -937,7 +937,7 @@ function ManualPlacementScreen({
               style={{
                 fontSize: 'var(--text-base)',
                 fontWeight: 'var(--font-weight-bold)',
-                fontFamily: 'var(--font-family)',
+                
                 color: 'white',
                 textAlign: 'center',
                 margin: 0
@@ -960,7 +960,7 @@ function ManualPlacementScreen({
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   borderRadius: 'var(--radius-button)',
                   fontSize: 'var(--text-base)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                   cursor: 'pointer'
                 }}
@@ -980,7 +980,7 @@ function ManualPlacementScreen({
                   border: 'none',
                   borderRadius: 'var(--radius-button)',
                   fontSize: 'var(--text-base)',
-                  fontFamily: 'var(--font-family)',
+                  
                   fontWeight: 'var(--font-weight-bold)',
                   boxShadow: 'var(--elevation-md)',
                   cursor: 'pointer'
@@ -1034,7 +1034,7 @@ function CorrectionScreen({
               style={{
                 padding: 'var(--spacing-md)',
                 fontSize: 'var(--text-sm)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'white'
               }}
@@ -1066,7 +1066,7 @@ function CorrectionScreen({
                 style={{ 
                   fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-bold)',
-                  fontFamily: 'var(--font-family)',
+                  
                   color: 'white',
                   margin: 0,
                   marginBottom: 'var(--spacing-xs)',
@@ -1079,7 +1079,7 @@ function CorrectionScreen({
                 style={{
                   fontSize: 'var(--text-sm)',
                   fontWeight: 'var(--font-weight-normal)',
-                  fontFamily: 'var(--font-family)',
+                  
                   color: 'rgba(255, 255, 255, 0.7)',
                   margin: 0,
                   textAlign: 'center'
@@ -1100,7 +1100,7 @@ function CorrectionScreen({
                 border: 'none',
                 borderRadius: 'var(--radius-button)',
                 fontSize: 'var(--text-base)',
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
                 boxShadow: 'var(--elevation-md)'
               }}

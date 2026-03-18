@@ -50,7 +50,7 @@ export function DeleteConfirmModal({
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 text-sm rounded-lg bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity"
+            className="px-4 py-2 text-sm rounded-lg bg-destructive text-destructive-foreground hover:brightness-110 transition-opacity"
           >
             {confirmText}
           </button>

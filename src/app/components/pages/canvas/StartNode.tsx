@@ -17,8 +17,7 @@ export function StartNode({ data, selected }: NodeProps<StartNodeData>) {
           borderColor: selected ? 'var(--primary)' : 'var(--border)',
           borderRadius: 'var(--radius)',
           boxShadow: selected ? 'var(--elevation-lg)' : 'var(--elevation-sm)',
-          fontFamily: 'var(--font-family)',
-          backgroundColor: 'var(--card)',
+                    backgroundColor: 'var(--card)',
         }}
       >
         {/* Node color bar */}

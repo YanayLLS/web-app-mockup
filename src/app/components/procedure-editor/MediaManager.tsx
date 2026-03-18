@@ -331,7 +331,7 @@ function MediaManagerContent({ mediaFiles, onAddMediaFiles, onRemoveMediaFile, o
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-button hover:opacity-90 transition-opacity"
+            className="px-4 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-button hover:brightness-110 transition-opacity"
           >
             Done
           </button>

@@ -148,7 +148,7 @@ export function AppNotificationsPage() {
               <MoreVertical className="size-5" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border z-10 py-1">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-card rounded-lg shadow-elevation-lg border border-border z-10 py-1">
                 <button
                   onClick={markAllRead}
                   className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
@@ -319,14 +319,14 @@ export function AppNotificationsPage() {
             <div className="px-4 space-y-1" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
               <button
                 onClick={markAllRead}
-                className="w-full px-4 py-3.5 text-left text-sm text-foreground hover:bg-secondary rounded-[var(--radius)] flex items-center gap-3 transition-colors"
+                className="w-full px-4 py-3.5 text-left text-sm text-foreground hover:bg-secondary rounded-lg flex items-center gap-3 transition-colors"
               >
                 <CheckCheck className="size-5 text-muted" />
                 <span style={{ fontWeight: 'var(--font-weight-medium)' }}>Mark all as read</span>
               </button>
               <button
                 onClick={deleteAll}
-                className="w-full px-4 py-3.5 text-left text-sm text-destructive hover:bg-destructive/10 rounded-[var(--radius)] flex items-center gap-3 transition-colors"
+                className="w-full px-4 py-3.5 text-left text-sm text-destructive hover:bg-destructive/10 rounded-lg flex items-center gap-3 transition-colors"
               >
                 <Trash2 className="size-5" />
                 <span style={{ fontWeight: 'var(--font-weight-medium)' }}>Delete all</span>

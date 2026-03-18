@@ -175,8 +175,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
           borderColor: selected ? 'var(--primary)' : 'var(--border)',
           backgroundColor: 'var(--card)',
           boxShadow: selected ? 'var(--elevation-lg)' : 'var(--elevation-sm)',
-          fontFamily: 'var(--font-family)',
-        }}
+                  }}
       >
         {/* Input Handle — outer touch area is 44px via ::after */}
         <Handle

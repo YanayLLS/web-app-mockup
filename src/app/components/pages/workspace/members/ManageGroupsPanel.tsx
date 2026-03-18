@@ -39,7 +39,7 @@ export function ManageGroupsPanel({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-[var(--radius-lg)] shadow-elevation-sm w-full max-w-[400px]">
+      <div className="bg-card rounded-xl shadow-elevation-sm w-full max-w-[400px]">
         <div className="p-6 flex flex-col gap-4">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -53,7 +53,7 @@ export function ManageGroupsPanel({
           </div>
 
           {/* Member Info */}
-          <div className="p-3 bg-secondary rounded-[var(--radius-lg)]">
+          <div className="p-3 bg-secondary rounded-xl">
             <p className="text-sm text-secondary-foreground">
               Managing groups for: <span className="font-bold">{memberName}</span>
             </p>
@@ -62,7 +62,7 @@ export function ManageGroupsPanel({
           {/* Groups List */}
           <div className="flex flex-col gap-2">
             <p className="text-xs text-muted">Select groups to assign this member to:</p>
-            <div className="max-h-[300px] overflow-auto border border-border rounded-[var(--radius-lg)] p-2">
+            <div className="max-h-[300px] overflow-auto border border-border rounded-xl p-2">
               {availableGroups.map((group) => (
                 <label
                   key={group.name}
@@ -88,7 +88,7 @@ export function ManageGroupsPanel({
 
           {/* Selected Groups Summary */}
           {selectedGroups.length > 0 && (
-            <div className="p-3 bg-accent/10 rounded-[var(--radius-lg)]">
+            <div className="p-3 bg-accent/10 rounded-xl">
               <p className="text-xs text-foreground mb-2">Selected groups ({selectedGroups.length}):</p>
               <div className="flex flex-wrap gap-1">
                 {selectedGroups.map((group) => (
@@ -113,13 +113,13 @@ export function ManageGroupsPanel({
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-[var(--radius-button)] hover:bg-secondary transition-colors"
+              className="px-4 py-2 border border-border rounded-lg hover:bg-secondary transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-button)] hover:opacity-90 transition-opacity"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:brightness-110 transition-opacity"
             >
               Save Changes
             </button>

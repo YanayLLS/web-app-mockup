@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
 } from '../ui/dropdown-menu';
 import { ScheduleMeetingModal, type Person, type Meeting } from '../ScheduleMeetingModal';
-import { Paperclip, FileText, Folder, Phone, PhoneOff, Video, Calendar, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Paperclip, FileText, Folder, Phone, PhoneOff, Video, Calendar, Clock, AlertTriangle, RefreshCw, ShieldX, ArrowLeft } from 'lucide-react';
 import { useProject } from '../../contexts/ProjectContext';
 import { useActiveCall } from '../../contexts/ActiveCallContext';
 import { getUrlParam, setUrlParam } from '../../utils/urlParams';
@@ -328,14 +328,13 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
   return (
     <div
       ref={menuRef}
-      className="absolute right-0 z-50 bg-card rounded-[var(--radius)] border border-border overflow-hidden flex flex-col"
+      className="absolute right-0 z-50 bg-card rounded-lg border border-border overflow-hidden flex flex-col"
       style={{
         top: 'calc(100% + 8px)',
         boxShadow: 'var(--elevation-lg)',
         width: '420px',
         maxWidth: 'calc(100vw - 32px)',
         maxHeight: 'calc(100vh - 32px)',
-        fontFamily: 'var(--font-family)',
       }}
     >
       {/* Header */}
@@ -344,7 +343,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
       >
         <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 rounded-[var(--radius)] flex items-center justify-center"
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
             style={{ backgroundColor: 'var(--primary)/10' }}
           >
             <Video size={20} style={{ color: 'var(--primary)' }} />
@@ -354,7 +353,6 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
             style={{ 
               fontWeight: 'var(--font-weight-bold)',
               fontSize: 'var(--text-h3)',
-              fontFamily: 'var(--font-family)',
             }}
           >
             Create Meeting
@@ -362,7 +360,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
         </div>
         <button 
           onClick={onClose} 
-          className="w-8 h-8 flex items-center justify-center hover:bg-secondary rounded-[var(--radius)] transition-colors"
+          className="w-8 h-8 flex items-center justify-center hover:bg-secondary rounded-lg transition-colors"
           aria-label="Close"
         >
           <svg className="block size-[10px]" fill="none" preserveAspectRatio="none" viewBox="0 0 8.4 8.4">
@@ -380,7 +378,6 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
             style={{ 
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-semibold)',
-              fontFamily: 'var(--font-family)',
             }}
           >
             Meeting Title
@@ -390,10 +387,9 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
             placeholder="Meeting with Host Name"
             value={meetingTitle}
             onChange={(e) => onMeetingTitleChange(e.target.value)}
-            className="w-full bg-input-background border border-border rounded-[var(--radius)] px-3 py-2.5 text-foreground outline-none placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            className="w-full bg-input-background border border-border rounded-lg px-3 py-2.5 text-foreground outline-none placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             style={{ 
               fontSize: 'var(--text-base)',
-              fontFamily: 'var(--font-family)',
             }}
           />
         </div>
@@ -404,10 +400,10 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
           {canScheduleMeeting && (
           <button
             onClick={onScheduleForLater}
-            className="w-full flex items-center gap-3 px-4 py-3.5 bg-secondary hover:bg-secondary/80 rounded-[var(--radius)] transition-colors group"
+            className="w-full flex items-center gap-3 px-4 py-3.5 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors group"
           >
             <div
-              className="w-10 h-10 flex items-center justify-center rounded-[var(--radius)] bg-card border border-border group-hover:border-primary/30 transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-card border border-border group-hover:border-primary/30 transition-colors"
             >
               <Calendar size={18} style={{ color: 'var(--foreground)' }} />
             </div>
@@ -417,8 +413,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
                 style={{
                   fontWeight: 'var(--font-weight-semibold)',
                   fontSize: 'var(--text-base)',
-                  fontFamily: 'var(--font-family)',
-                }}
+                    }}
               >
                 Schedule for Later
               </div>
@@ -426,8 +421,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
                 className="text-muted"
                 style={{
                   fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)',
-                }}
+                    }}
               >
                 Pick a date and time to schedule
               </div>
@@ -439,11 +433,11 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
           {canStartCall && (
           <button
             onClick={onStartNow}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[var(--radius)] hover:opacity-90 transition-opacity group"
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg hover:brightness-110 transition-all group"
             style={{ backgroundColor: 'var(--primary)' }}
           >
             <div
-              className="w-10 h-10 flex items-center justify-center rounded-[var(--radius)]"
+              className="w-10 h-10 flex items-center justify-center rounded-lg"
               style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
             >
               <Video size={18} style={{ color: 'var(--primary-foreground)' }} />
@@ -453,8 +447,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
                 style={{
                   fontWeight: 'var(--font-weight-semibold)',
                   fontSize: 'var(--text-base)',
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--primary-foreground)',
+                      color: 'var(--primary-foreground)',
                 }}
               >
                 Start Meeting Now
@@ -462,8 +455,7 @@ function CreateMeetingMenu({ isOpen, onClose, onScheduleForLater, onStartNow, bu
               <div
                 style={{
                   fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--primary-foreground)',
+                      color: 'var(--primary-foreground)',
                   opacity: 0.8,
                 }}
               >
@@ -609,7 +601,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
     <div className="h-full flex flex-col bg-background">
       <div className="h-[72px] bg-card border-b border-border flex items-center justify-between px-3 md:px-6 shrink-0">
         <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-          <div className="p-2 bg-primary/10 rounded-[var(--radius)] shrink-0">
+          <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <IconVideo />
           </div>
           <div className="min-w-0 flex-1">
@@ -648,7 +640,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
         </div>
         <button
           onClick={onCancel}
-          className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors shrink-0"
+          className="p-2 hover:bg-secondary rounded-lg transition-colors shrink-0"
           title="Cancel"
         >
           <svg className="block size-5" fill="none" viewBox="0 0 20 20">
@@ -942,6 +934,7 @@ export function RemoteSupportPage({
 
     // Waiting room state
   const [inWaitingRoom, setInWaitingRoom] = useState(false);
+  const [admissionDenied, setAdmissionDenied] = useState(false);
   const [waitingParticipants, setWaitingParticipants] = useState<Array<{
     id: string;
     name: string;
@@ -1778,11 +1771,13 @@ export function RemoteSupportPage({
         const newParticipant: CallParticipant = {
           id: `device-${inviteDeviceId}`,
           name: `Device ${inviteDeviceId}`,
+          initial: 'D',
+          color: '#868D9E',
+          status: 'connected',
           audioEnabled: true,
           videoEnabled: true,
-          handRaised: false,
-          isSpeaking: false,
-          isPresenting: false
+          mutedByHost: false,
+          spotlightedForEveryone: false,
         };
         setCallParticipants(prev => [...prev, newParticipant]);
         toast.success(`Device ${inviteDeviceId} joined the call`);
@@ -1842,18 +1837,24 @@ export function RemoteSupportPage({
 
     setShowPreJoin(false);
 
-    // If meeting requires admission and user is joining (not creating), show waiting room
-    if (currentMeeting?.requireAdmission && !isCreateMode) {
+    // If meeting requires admission (per-meeting toggle OR workspace-level setting) and user is joining (not creating), show waiting room
+    if ((currentMeeting?.requireAdmission || wsSettings.requireApproval) && !isCreateMode) {
       pendingJoinSettingsRef.current = settings;
       setInWaitingRoom(true);
       // Start video for waiting room preview
       await startLocalVideo(settings.videoDeviceId || undefined, settings.audioDeviceId || undefined);
-      // Simulate host admitting after 4 seconds
+      // Simulate host response after 4 seconds — admit most of the time, deny occasionally
       setTimeout(() => {
-        setInWaitingRoom(false);
-        pendingJoinSettingsRef.current = null;
-        enterCall(settings);
-        toast.success('The host has admitted you to the meeting');
+        if (Math.random() < 0.3) {
+          // Simulate denial
+          setAdmissionDenied(true);
+          stopLocalVideo();
+        } else {
+          setInWaitingRoom(false);
+          pendingJoinSettingsRef.current = null;
+          enterCall(settings);
+          toast.success('The host has admitted you to the meeting');
+        }
       }, 4000);
       return;
     }
@@ -1863,11 +1864,21 @@ export function RemoteSupportPage({
 
   const handleLeaveWaitingRoom = () => {
     setInWaitingRoom(false);
+    setAdmissionDenied(false);
     pendingJoinSettingsRef.current = null;
     stopLocalVideo();
     setCurrentMeeting(null);
     setShowPreJoin(false);
     toast('You left the waiting room');
+  };
+
+  const handleReturnToLobbyAfterDenied = () => {
+    setAdmissionDenied(false);
+    setInWaitingRoom(false);
+    pendingJoinSettingsRef.current = null;
+    stopLocalVideo();
+    setCurrentMeeting(null);
+    setShowPreJoin(false);
   };
 
   const handleLeaveCall = () => {
@@ -2528,7 +2539,7 @@ export function RemoteSupportPage({
     );
   }
 
-  // Waiting Room View
+  // Waiting Room View (includes denied state)
   if (inWaitingRoom && currentMeeting) {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-[#3a2f4d] relative">
@@ -2541,73 +2552,104 @@ export function RemoteSupportPage({
             {currentMeeting.title}
           </h2>
 
-          {/* Camera preview */}
-          <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 mb-6 relative">
-            {!isVideoOff && localStream ? (
-              <video
-                ref={(video) => { if (video && localStream) video.srcObject = localStream; }}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover mirror"
-                style={{ transform: 'scaleX(-1)' }}
-              />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="size-20 rounded-full bg-primary/20 flex items-center justify-center mb-3">
-                  <span className="text-2xl text-white" style={{ fontWeight: 'var(--font-weight-bold)' }}>ME</span>
+          {admissionDenied ? (
+            <>
+              {/* Denied icon */}
+              <div className="size-20 rounded-full bg-destructive/20 border-2 border-destructive/40 flex items-center justify-center mb-6">
+                <ShieldX size={36} className="text-destructive" />
+              </div>
+
+              {/* Denied message */}
+              <div className="flex flex-col items-center mb-8">
+                <p className="text-white text-base text-center mb-2" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
+                  The host has denied your request to join
+                </p>
+                <p className="text-white/50 text-sm text-center">
+                  You were not admitted to this meeting. Contact the host if you believe this was a mistake.
+                </p>
+              </div>
+
+              {/* Return to Lobby button */}
+              <button
+                onClick={handleReturnToLobbyAfterDenied}
+                className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+                style={{ fontWeight: 'var(--font-weight-semibold)' }}
+              >
+                <ArrowLeft size={16} />
+                Return to Lobby
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Camera preview */}
+              <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 mb-6 relative">
+                {!isVideoOff && localStream ? (
+                  <video
+                    ref={(video) => { if (video && localStream) video.srcObject = localStream; }}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover mirror"
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <div className="size-20 rounded-full bg-primary/20 flex items-center justify-center mb-3">
+                      <span className="text-2xl text-white" style={{ fontWeight: 'var(--font-weight-bold)' }}>ME</span>
+                    </div>
+                    <span className="text-white/50 text-sm">Camera is off</span>
+                  </div>
+                )}
+                {/* Mic/Video toggles */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setIsMuted(!isMuted);
+                      if (localStream) {
+                        localStream.getAudioTracks().forEach(track => { track.enabled = isMuted; });
+                      }
+                    }}
+                    className={`p-2.5 rounded-full transition-colors ${isMuted ? 'bg-destructive text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                  >
+                    {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
+                  </button>
+                  <button
+                    onClick={() => setIsVideoOff(!isVideoOff)}
+                    className={`p-2.5 rounded-full transition-colors ${isVideoOff ? 'bg-destructive text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                  >
+                    {isVideoOff ? <IconVideoOff /> : <IconVideo />}
+                  </button>
                 </div>
-                <span className="text-white/50 text-sm">Camera is off</span>
               </div>
-            )}
-            {/* Mic/Video toggles */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setIsMuted(!isMuted);
-                  if (localStream) {
-                    localStream.getAudioTracks().forEach(track => { track.enabled = isMuted; });
-                  }
-                }}
-                className={`p-2.5 rounded-full transition-colors ${isMuted ? 'bg-destructive text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
-              >
-                {isMuted ? <IconMicrophoneOff /> : <IconMicrophone />}
-              </button>
-              <button
-                onClick={() => setIsVideoOff(!isVideoOff)}
-                className={`p-2.5 rounded-full transition-colors ${isVideoOff ? 'bg-destructive text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
-              >
-                {isVideoOff ? <IconVideoOff /> : <IconVideo />}
-              </button>
-            </div>
-          </div>
 
-          {/* Waiting message */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex gap-1">
-                <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              {/* Waiting message */}
+              <div className="flex flex-col items-center mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex gap-1">
+                    <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="size-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+                <p className="text-white/80 text-sm text-center" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                  Waiting for the host to let you in...
+                </p>
+                <p className="text-white/40 text-xs mt-2 text-center">
+                  You'll join automatically once the host admits you
+                </p>
               </div>
-            </div>
-            <p className="text-white/80 text-sm text-center" style={{ fontWeight: 'var(--font-weight-medium)' }}>
-              Waiting for the host to let you in...
-            </p>
-            <p className="text-white/40 text-xs mt-2 text-center">
-              You'll join automatically once the host admits you
-            </p>
-          </div>
 
-          {/* Leave button */}
-          <button
-            onClick={handleLeaveWaitingRoom}
-            className="px-6 py-2.5 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors border border-white/10 flex items-center gap-2"
-            style={{ fontWeight: 'var(--font-weight-semibold)' }}
-          >
-            <PhoneOff size={16} />
-            Leave
-          </button>
+              {/* Leave button */}
+              <button
+                onClick={handleLeaveWaitingRoom}
+                className="px-6 py-2.5 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors border border-white/10 flex items-center gap-2"
+                style={{ fontWeight: 'var(--font-weight-semibold)' }}
+              >
+                <PhoneOff size={16} />
+                Leave
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -2637,7 +2679,7 @@ export function RemoteSupportPage({
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5">
                     <div className="size-1.5 rounded-full bg-[#11E874] animate-pulse" />
-                    <span className="text-[11px] text-muted tabular-nums" style={{ fontFamily: 'var(--font-family)' }}>
+                    <span className="text-[11px] text-muted tabular-nums" >
                       {Math.floor(callDuration / 3600) > 0 && `${Math.floor(callDuration / 3600)}:`}
                       {String(Math.floor((callDuration % 3600) / 60)).padStart(2, '0')}:
                       {String(callDuration % 60).padStart(2, '0')}
@@ -2687,7 +2729,7 @@ export function RemoteSupportPage({
             <div className="relative hidden md:block">
               <button
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="flex flex-col items-center gap-1 px-4 py-2 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+                className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
               >
                 <IconMore />
                 <span className="text-xs text-foreground">More</span>
@@ -2696,7 +2738,7 @@ export function RemoteSupportPage({
               {showMoreMenu && (
                 <div 
                   ref={moreMenuRef}
-                  className="absolute top-full mt-1 right-0 w-56 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                  className="absolute top-full mt-1 right-0 w-56 bg-card border border-border rounded-lg overflow-hidden z-50"
                   style={{ boxShadow: 'var(--elevation-sm)' }}
                 >
                   {/* Share Screen - shown in menu on smaller screens */}
@@ -2758,7 +2800,7 @@ export function RemoteSupportPage({
 
             <button
               onClick={() => setShowInviteModal(true)}
-              className="hidden md:flex flex-col items-center gap-1 px-4 py-2 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+              className="hidden md:flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
             >
               <IconInvite />
               <span className="text-xs text-foreground">Invite</span>
@@ -2766,7 +2808,7 @@ export function RemoteSupportPage({
 
             <button
               onClick={() => setShowPeoplePanel(!showPeoplePanel)}
-              className={`flex flex-col items-center gap-1 px-2 md:px-4 py-2 rounded-[var(--radius)] transition-colors relative ${
+              className={`flex flex-col items-center gap-1 px-2 md:px-4 py-2 rounded-lg transition-colors relative ${
                 showPeoplePanel ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
               }`}
             >
@@ -2790,7 +2832,7 @@ export function RemoteSupportPage({
                   setUnreadMessagesCount(0);
                 }
               }}
-              className={`flex flex-col items-center gap-1 px-2 md:px-4 py-2 rounded-[var(--radius)] transition-colors relative ${
+              className={`flex flex-col items-center gap-1 px-2 md:px-4 py-2 rounded-lg transition-colors relative ${
                 showChatPanel ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
               }`}
             >
@@ -2808,7 +2850,7 @@ export function RemoteSupportPage({
 
             <button
               onClick={handleToggleScreenShare}
-              className={`hidden xl:flex flex-col items-center gap-1 px-4 py-2 rounded-[var(--radius)] transition-colors ${
+              className={`hidden xl:flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
                 isScreenSharing ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
               }`}
             >
@@ -2848,7 +2890,7 @@ export function RemoteSupportPage({
               {showCaptionsMenu && (
                 <div 
                   ref={captionsMenuRef}
-                  className="absolute top-full mt-2 left-0 w-72 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                  className="absolute top-full mt-2 left-0 w-72 bg-card border border-border rounded-lg overflow-hidden z-50"
                   style={{ boxShadow: 'var(--elevation-lg)' }}
                 >
                   <div className="px-4 py-3 border-b border-border bg-secondary/30">
@@ -2856,15 +2898,13 @@ export function RemoteSupportPage({
                       className="text-sm text-foreground" 
                       style={{ 
                         fontWeight: 'var(--font-weight-bold)',
-                        fontFamily: 'var(--font-family)'
                       }}
                     >
                       Caption Language
                     </div>
                     <div 
                       className="text-xs text-muted mt-0.5"
-                      style={{ fontFamily: 'var(--font-family)' }}
-                    >
+                                         >
                       Choose language for live transcription
                     </div>
                   </div>
@@ -2951,15 +2991,13 @@ export function RemoteSupportPage({
                                 className="text-sm text-foreground"
                                 style={{ 
                                   fontWeight: isSelected ? 'var(--font-weight-semibold)' : 'var(--font-weight-medium)',
-                                  fontFamily: 'var(--font-family)'
-                                }}
+                                          }}
                               >
                                 {language.label}
                               </div>
                               <div 
                                 className="text-xs text-muted"
-                                style={{ fontFamily: 'var(--font-family)' }}
-                              >
+                                                             >
                                 {language.region}
                               </div>
                             </div>
@@ -2981,7 +3019,7 @@ export function RemoteSupportPage({
 
             <button
               onClick={handleToggleFullscreen}
-              className="hidden md:flex flex-col items-center gap-1 px-4 py-2 rounded-[var(--radius)] hover:bg-secondary transition-colors text-foreground"
+              className="hidden md:flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-secondary transition-colors text-foreground"
               title="Toggle fullscreen"
             >
               {isCallFullscreen ? (
@@ -3026,7 +3064,7 @@ export function RemoteSupportPage({
               {showAudioDeviceMenu && (
                 <div 
                   ref={audioDeviceMenuRef}
-                  className="absolute top-full mt-2 left-0 w-80 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                  className="absolute top-full mt-2 left-0 w-80 bg-card border border-border rounded-lg overflow-hidden z-50"
                   style={{ boxShadow: 'var(--elevation-md)' }}
                 >
                   {/* Speaker Section */}
@@ -3038,7 +3076,7 @@ export function RemoteSupportPage({
                       {audioOutputDevices.length > 0 ? audioOutputDevices.map((device) => (
                         <label
                           key={device.deviceId}
-                          className="flex items-center gap-3 cursor-pointer group p-2 -mx-2 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                          className="flex items-center gap-3 cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-secondary/50 transition-colors"
                         >
                           <input
                             type="radio"
@@ -3086,7 +3124,7 @@ export function RemoteSupportPage({
                       {audioDevices.length > 0 ? audioDevices.map((device) => (
                         <label
                           key={device.deviceId}
-                          className="flex items-center gap-3 cursor-pointer group p-2 -mx-2 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                          className="flex items-center gap-3 cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-secondary/50 transition-colors"
                         >
                           <input
                             type="radio"
@@ -3132,7 +3170,7 @@ export function RemoteSupportPage({
 
                   {/* Spatial Audio & Noise Suppression */}
                   <div className="px-4 py-3.5 border-b border-border space-y-3">
-                    <label className="flex items-center justify-between cursor-pointer group p-2 -mx-2 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors">
+                    <label className="flex items-center justify-between cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-secondary/50 transition-colors">
                       <span className="text-sm text-foreground">
                         Spatial audio
                       </span>
@@ -3150,7 +3188,7 @@ export function RemoteSupportPage({
                       </button>
                     </label>
                     
-                    <label className="flex items-center justify-between cursor-pointer group p-2 -mx-2 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors">
+                    <label className="flex items-center justify-between cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-secondary/50 transition-colors">
                       <span className="text-sm text-foreground">
                         Noise suppression
                       </span>
@@ -3200,7 +3238,7 @@ export function RemoteSupportPage({
               {showVideoDeviceMenu && (
                 <div 
                   ref={videoDeviceMenuRef}
-                  className="absolute top-full mt-2 left-0 w-80 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                  className="absolute top-full mt-2 left-0 w-80 bg-card border border-border rounded-lg overflow-hidden z-50"
                   style={{ boxShadow: 'var(--elevation-sm)' }}
                 >
                   <div className="px-4 py-3">
@@ -3211,7 +3249,7 @@ export function RemoteSupportPage({
                       {videoDevices.length > 0 ? videoDevices.map((device) => (
                         <label
                           key={device.deviceId}
-                          className="flex items-center gap-3 px-3 py-2.5 cursor-pointer group hover:bg-secondary/50 rounded-[var(--radius)] transition-colors"
+                          className="flex items-center gap-3 px-3 py-2.5 cursor-pointer group hover:bg-secondary/50 rounded-lg transition-colors"
                         >
                           <input
                             type="radio"
@@ -3282,7 +3320,7 @@ export function RemoteSupportPage({
                 {/* People button */}
                 <button
                   onClick={() => setShowPeoplePanel(!showPeoplePanel)}
-                  className={`p-2.5 rounded-[var(--radius)] transition-colors ${
+                  className={`p-2.5 rounded-lg transition-colors ${
                     showPeoplePanel ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
                   }`}
                   title="People"
@@ -3294,7 +3332,7 @@ export function RemoteSupportPage({
                 <div className="relative">
                   <button
                     onClick={() => setShowMoreMenu(!showMoreMenu)}
-                    className="p-2.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-foreground"
+                    className="p-2.5 hover:bg-secondary rounded-lg transition-colors text-foreground"
                     title="More options"
                   >
                     <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3308,7 +3346,7 @@ export function RemoteSupportPage({
                   {showMoreMenu && (
                     <div 
                       ref={moreMenuRef}
-                      className="absolute top-full mt-1 right-0 w-56 bg-card border border-border rounded-[var(--radius)] overflow-hidden z-50"
+                      className="absolute top-full mt-1 right-0 w-56 bg-card border border-border rounded-lg overflow-hidden z-50"
                       style={{ boxShadow: 'var(--elevation-sm)' }}
                     >
                       <button
@@ -3411,7 +3449,7 @@ export function RemoteSupportPage({
                 </div>
                 <button
                   onClick={() => setShowPeoplePanel(false)}
-                  className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  className="p-2 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
                   <svg className="block size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -3421,7 +3459,7 @@ export function RemoteSupportPage({
 
               {/* Search */}
               <div className="px-3 py-2.5 border-b border-border shrink-0">
-                <div className="bg-secondary/30 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+                <div className="bg-secondary/30 border border-border rounded-lg px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
                   <IconSearch />
                   <input
                     type="text"
@@ -3471,7 +3509,7 @@ export function RemoteSupportPage({
                     {!collapsedSections['waiting'] && (
                       <div className="space-y-0.5 px-2 pb-2">
                         {waitingParticipants.map((wp) => (
-                          <div key={wp.id} className="flex items-center gap-2.5 px-2 py-2 rounded-[var(--radius)] bg-amber-50 border border-amber-200/50">
+                          <div key={wp.id} className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-amber-50 border border-amber-200/50">
                             <div className="relative shrink-0">
                               <MemberAvatar name={wp.name} size="sm" color={wp.color} initials={wp.initial} />
                               <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-amber-400 border border-white" />
@@ -3531,7 +3569,7 @@ export function RemoteSupportPage({
                           key={participant.id}
                           onMouseEnter={() => setHoveredParticipantId(participant.id)}
                           onMouseLeave={() => setHoveredParticipantId(null)}
-                          className="group flex items-center gap-3 px-2.5 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors min-h-[42px] relative"
+                          className="group flex items-center gap-3 px-2.5 py-2 hover:bg-secondary/50 rounded-lg transition-colors min-h-[42px] relative"
                         >
                           <div className="relative shrink-0">
                             <MemberAvatar name={participant.name} size="md" color={participant.color} initials={participant.initial} />
@@ -3561,7 +3599,7 @@ export function RemoteSupportPage({
                           {/* Context menu button - always visible on mobile, hover-visible on desktop */}
                           <div className={`relative shrink-0 transition-opacity md:opacity-0 md:group-hover:opacity-100 ${hoveredParticipantId === participant.id || openMenuParticipantId === participant.id ? 'md:opacity-100' : ''}`}>
                               <button
-                                className="p-1 hover:bg-card rounded-[var(--radius)] transition-colors"
+                                className="p-1 hover:bg-card rounded-lg transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setOpenMenuParticipantId(openMenuParticipantId === participant.id ? null : participant.id);
@@ -3581,7 +3619,7 @@ export function RemoteSupportPage({
 
                                   {/* Menu */}
                                   <div
-                                    className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-[var(--radius)] shadow-lg z-50 py-1"
+                                    className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-lg shadow-lg z-50 py-1"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     {/* Show different options based on whether I'm the host and if this is me */}
@@ -3737,7 +3775,7 @@ export function RemoteSupportPage({
                         .map((person) => (
                           <div
                             key={person.id}
-                            className="flex items-center gap-3 px-2.5 py-2 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors group min-h-[42px]"
+                            className="flex items-center gap-3 px-2.5 py-2 hover:bg-secondary/50 rounded-lg transition-colors group min-h-[42px]"
                           >
                             <div className="relative shrink-0">
                               <MemberAvatar name={person.name} size="md" color={person.color} initials={person.initial} />
@@ -3750,7 +3788,7 @@ export function RemoteSupportPage({
                             </div>
                             <button
                               onClick={() => handleInviteParticipant(person)}
-                              className="text-xs px-2.5 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0"
+                              className="text-xs px-2.5 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0"
                               style={{ fontWeight: 'var(--font-weight-semibold)' }}
                             >
                               Add
@@ -3786,7 +3824,7 @@ export function RemoteSupportPage({
                           ref={drawingContainerRef}
                           className={`${
                             isMobile ? 'w-full flex-1 max-h-full' : videoLayout === 'sidebar' ? 'flex-1 aspect-video' : 'w-full max-w-[1400px] aspect-video'
-                          } bg-[#2a2438] rounded-[var(--radius)] overflow-hidden shadow-2xl relative group transition-all ${
+                          } bg-[#2a2438] rounded-lg overflow-hidden shadow-2xl relative group transition-all ${
                             speakingParticipants.has(spotlightedParticipant.id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border border-white/10'
                           }`}
                         >
@@ -3874,7 +3912,7 @@ export function RemoteSupportPage({
                                   handleUnfreezeFrame();
                                 }
                               }}
-                              className={`px-2 py-1.5 backdrop-blur-sm rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border ${
+                              className={`px-2 py-1.5 backdrop-blur-sm rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border ${
                                 isDrawingMode
                                   ? 'bg-primary text-white border-primary'
                                   : 'bg-white/90 hover:bg-white text-black border-white/20'
@@ -3905,7 +3943,7 @@ export function RemoteSupportPage({
                                       );
                                     }
                                   }}
-                                  className={`px-2 py-1.5 backdrop-blur-sm rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border text-black ${
+                                  className={`px-2 py-1.5 backdrop-blur-sm rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border text-black ${
                                     spotlightedParticipant?.spotlightedForEveryone
                                       ? 'bg-primary text-primary-foreground border-primary'
                                       : 'bg-white/90 hover:bg-white border-white/20'
@@ -3928,7 +3966,7 @@ export function RemoteSupportPage({
                                     );
                                     handleUnfreezeFrame();
                                   }}
-                                  className="px-2 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-[var(--radius)] transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border border-white/20 text-black"
+                                  className="px-2 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2 border border-white/20 text-black"
                                   title="Exit spotlight"
                                 >
                                   <IconUnspotlight />
@@ -3940,12 +3978,12 @@ export function RemoteSupportPage({
 
                           {/* Drawing Controls - Only show when drawing mode is active */}
                           {isDrawingMode && (
-                            <div className={`absolute top-3 left-3 right-3 ${isMobile ? 'flex-col gap-2' : 'flex-row gap-2'} flex items-stretch px-2 py-2 bg-white/95 backdrop-blur-sm rounded-[var(--radius)] border border-white/20 shadow-lg max-w-full overflow-x-auto`}>
+                            <div className={`absolute top-3 left-3 right-3 ${isMobile ? 'flex-col gap-2' : 'flex-row gap-2'} flex items-stretch px-2 py-2 bg-white/95 backdrop-blur-sm rounded-lg border border-white/20 shadow-lg max-w-full overflow-x-auto`}>
                               {/* Tool selection */}
                               <div className={`flex items-center ${isMobile ? 'gap-0.5 flex-1 justify-between' : 'gap-1'}`}>
                                 <button
                                   onClick={() => setDrawingTool('pen')}
-                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-[var(--radius-sm)] transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5 ${
+                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-md transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5 ${
                                     drawingTool === 'pen' ? 'bg-primary text-white' : 'text-black hover:bg-black/10'
                                   }`}
                                   style={{ fontWeight: 'var(--font-weight-bold)' }}
@@ -3958,7 +3996,7 @@ export function RemoteSupportPage({
                                 </button>
                                 <button
                                   onClick={() => setDrawingTool('label')}
-                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-[var(--radius-sm)] transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5 ${
+                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-md transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5 ${
                                     drawingTool === 'label' ? 'bg-primary text-white' : 'text-black hover:bg-black/10'
                                   }`}
                                   style={{ fontWeight: 'var(--font-weight-bold)' }}
@@ -3971,7 +4009,7 @@ export function RemoteSupportPage({
                                 </button>
                                 <button
                                   onClick={() => setDrawingTool('beacon')}
-                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-[var(--radius-sm)] transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5 ${
+                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-md transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5 ${
                                     drawingTool === 'beacon' ? 'bg-primary text-white' : 'text-black hover:bg-black/10'
                                   }`}
                                   style={{ fontWeight: 'var(--font-weight-bold)' }}
@@ -4010,7 +4048,7 @@ export function RemoteSupportPage({
                                 <button
                                   onClick={handleUndoDrawing}
                                   disabled={drawingPaths.length === 0}
-                                  className={`${isMobile ? 'p-1' : 'p-1.5'} text-xs rounded-[var(--radius-sm)] text-black hover:bg-black/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
+                                  className={`${isMobile ? 'p-1' : 'p-1.5'} text-xs rounded-md text-black hover:bg-black/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                   title="Undo last"
                                 >
                                   <IconUndo />
@@ -4018,7 +4056,7 @@ export function RemoteSupportPage({
                                 <button
                                   onClick={handleClearDrawing}
                                   disabled={drawingPaths.length === 0}
-                                  className={`${isMobile ? 'p-1' : 'p-1.5'} text-xs rounded-[var(--radius-sm)] text-black hover:bg-black/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
+                                  className={`${isMobile ? 'p-1' : 'p-1.5'} text-xs rounded-md text-black hover:bg-black/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                   title="Clear all"
                                 >
                                   <IconTrash />
@@ -4026,7 +4064,7 @@ export function RemoteSupportPage({
                                 {!isMobile && (
                                   <button
                                     onClick={() => toast.success('HD quality requested')}
-                                    className="px-3 py-1.5 text-xs rounded-[var(--radius-sm)] bg-white/80 text-black hover:bg-white transition-colors flex items-center gap-1.5"
+                                    className="px-3 py-1.5 text-xs rounded-md bg-white/80 text-black hover:bg-white transition-colors flex items-center gap-1.5"
                                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                                     title="Request HD quality"
                                   >
@@ -4038,7 +4076,7 @@ export function RemoteSupportPage({
                                 )}
                                 <button
                                   onClick={handleUnfreezeFrame}
-                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-[var(--radius-sm)] bg-white/80 text-black hover:bg-white transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5`}
+                                  className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-md bg-white/80 text-black hover:bg-white transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5`}
                                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                                   title="Unpause video"
                                 >
@@ -4048,7 +4086,7 @@ export function RemoteSupportPage({
                                 {frozenFrame && (
                                   <button
                                     onClick={handleUnfreezeFrame}
-                                    className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-[var(--radius-sm)] bg-primary text-white hover:bg-primary/90 transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5`}
+                                    className={`${isMobile ? 'px-2 py-1 flex-1' : 'px-3 py-1.5'} text-xs rounded-md bg-primary text-white hover:bg-primary/90 transition-colors flex items-center ${isMobile ? 'justify-center' : ''} gap-1.5`}
                                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                                     title="Unfreeze frame"
                                   >
@@ -4062,13 +4100,13 @@ export function RemoteSupportPage({
 
                           {/* Name label */}
                           <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                            <div className="px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded-[var(--radius)] border border-white/10">
+                            <div className="px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded-lg border border-white/10">
                               <span className="text-white text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                                 {spotlightedParticipant.name}
                               </span>
                             </div>
                             {spotlightedParticipant.spotlightedForEveryone && (
-                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary backdrop-blur-sm rounded-[var(--radius)] border border-primary-foreground/20">
+                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary backdrop-blur-sm rounded-lg border border-primary-foreground/20">
                                 <IconSpotlight className="text-white" />
                                 <span className="text-primary-foreground text-xs" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                                   Spotlighted for Everyone
@@ -4079,7 +4117,7 @@ export function RemoteSupportPage({
 
                           {/* Screen Sharing Indicator */}
                           {spotlightedParticipant.id === 'me' && isScreenSharing && !isDrawingMode && (
-                            <div className="absolute top-3 left-3 px-3 py-2 bg-primary/90 backdrop-blur-sm rounded-[var(--radius)] flex items-center gap-2">
+                            <div className="absolute top-3 left-3 px-3 py-2 bg-primary/90 backdrop-blur-sm rounded-lg flex items-center gap-2">
                               <IconScreenShare />
                               <span className="text-white text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                                 Sharing screen
@@ -4095,7 +4133,7 @@ export function RemoteSupportPage({
                                 return (
                                   <div 
                                     key={caption.id}
-                                    className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-[var(--radius)] border border-white/20 transition-opacity duration-500"
+                                    className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-white/20 transition-opacity duration-500"
                                     style={{ opacity }}
                                   >
                                     <p className="text-white text-sm text-center">{caption.text}</p>
@@ -4103,7 +4141,7 @@ export function RemoteSupportPage({
                                 );
                               })}
                               {currentCaption && (
-                                <div className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-[var(--radius)] border border-white/20">
+                                <div className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-white/20">
                                   <p className="text-white text-sm text-center">{currentCaption}</p>
                                 </div>
                               )}
@@ -4130,7 +4168,7 @@ export function RemoteSupportPage({
                               isMobile 
                                 ? 'w-32 aspect-video' 
                                 : ''
-                            } bg-[#2a2438] rounded-[var(--radius)] overflow-visible shadow-2xl relative group transition-all select-none ${
+                            } bg-[#2a2438] rounded-lg overflow-visible shadow-2xl relative group transition-all select-none ${
                               speakingParticipants.has(otherParticipants[0].id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border-2 border-white/30'
                             }`}
                             onMouseDown={(e) => {
@@ -4188,7 +4226,7 @@ export function RemoteSupportPage({
                               }
                             }}
                           >
-                            <div className="w-full h-full rounded-[var(--radius)] overflow-hidden">
+                            <div className="w-full h-full rounded-lg overflow-hidden">
                               {otherParticipants[0].id === 'me' ? (
                                 localStream ? (
                                   <video
@@ -4357,7 +4395,7 @@ export function RemoteSupportPage({
                                 }}
                                 className={`${
                                   isMobile ? (isLandscape ? 'w-full cursor-pointer' : 'w-32 cursor-pointer') : videoLayout === 'sidebar' ? 'w-full' : 'w-48'
-                                } aspect-video bg-[#2a2438] rounded-[var(--radius)] overflow-hidden shadow-xl relative group shrink-0 transition-all ${
+                                } aspect-video bg-[#2a2438] rounded-lg overflow-hidden shadow-xl relative group shrink-0 transition-all ${
                                   speakingParticipants.has(participant.id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border-2 border-white/30'
                                 }`}
                               >
@@ -4485,7 +4523,7 @@ export function RemoteSupportPage({
                     {connectedParticipants.map((participant) => (
                       <div 
                         key={participant.id} 
-                        className={`aspect-video bg-[#2a2438] rounded-[var(--radius)] overflow-hidden shadow-lg relative group transition-all ${
+                        className={`aspect-video bg-[#2a2438] rounded-lg overflow-hidden shadow-lg relative group transition-all ${
                           speakingParticipants.has(participant.id) ? 'ring-2 ring-[#11E874] ring-offset-1 ring-offset-[#3a2f4d]' : 'border border-white/10'
                         }`}
                       >
@@ -4568,7 +4606,7 @@ export function RemoteSupportPage({
                         return (
                           <div 
                             key={caption.id}
-                            className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-[var(--radius)] border border-white/20 transition-opacity duration-300"
+                            className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-white/20 transition-opacity duration-300"
                             style={{ opacity }}
                           >
                             <div className="flex items-start gap-2">
@@ -4584,7 +4622,7 @@ export function RemoteSupportPage({
                         );
                       })}
                       {currentCaption && (
-                        <div className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-[var(--radius)] border border-white/20">
+                        <div className="px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-white/20">
                           <div className="flex items-start gap-2">
                             <div 
                               className="size-6 rounded-full bg-primary flex items-center justify-center text-white text-xs shrink-0 mt-0.5 cursor-pointer group relative"
@@ -4608,7 +4646,7 @@ export function RemoteSupportPage({
 
               {/* Global Screen Sharing Indicator - only in grid mode when no one spotlighted */}
               {!spotlightedParticipantId && isScreenSharing && connectedParticipants.length === 1 && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-2 bg-primary/90 backdrop-blur-sm rounded-[var(--radius)] flex items-center gap-2">
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-2 bg-primary/90 backdrop-blur-sm rounded-lg flex items-center gap-2">
                   <IconScreenShare />
                   <span className="text-white text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                     You are sharing your screen
@@ -4647,7 +4685,7 @@ export function RemoteSupportPage({
                 </div>
                 <button
                   onClick={() => setShowChatPanel(false)}
-                  className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  className="p-2 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
                   <svg className="block size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -4712,10 +4750,10 @@ export function RemoteSupportPage({
                                         navigate(`/web/project/${attachment.projectId || 'generator'}/knowledgebase`);
                                         toast.success(`Opening ${attachment.name}`);
                                       }}
-                                      className="flex items-start gap-3 p-3 bg-card border border-border rounded-[var(--radius)] hover:border-primary/40 hover:bg-primary/5 transition-all text-left group/attachment"
+                                      className="flex items-start gap-3 p-3 bg-card border border-border rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-all text-left group/attachment"
                                       style={{ boxShadow: 'var(--elevation-sm)' }}
                                     >
-                                      <div className="size-9 bg-primary/10 rounded-[var(--radius)] flex items-center justify-center shrink-0 group-hover/attachment:bg-primary/20 transition-colors mt-0.5">
+                                      <div className="size-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 group-hover/attachment:bg-primary/20 transition-colors mt-0.5">
                                         {kbTypeIcon[attachment.type] ?? <FileText size={15} className="text-primary" />}
                                       </div>
                                       <div className="flex-1 min-w-0">
@@ -4758,7 +4796,7 @@ export function RemoteSupportPage({
                     {selectedAttachments.map((attachment) => (
                       <div
                         key={attachment.id}
-                        className="flex items-center gap-2 px-3 py-2 bg-primary/10 border border-primary/20 rounded-[var(--radius)] text-xs group/chip hover:bg-primary/15 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-primary/10 border border-primary/20 rounded-lg text-xs group/chip hover:bg-primary/15 transition-colors"
                       >
                         <FileText size={14} className="text-primary shrink-0" />
                         <span className="text-foreground truncate max-w-[150px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
@@ -4792,7 +4830,7 @@ export function RemoteSupportPage({
                       }
                     }}
                     placeholder="Type a message..."
-                    className="flex-1 bg-input-background border border-border rounded-[var(--radius)] px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted resize-none overflow-y-auto custom-scrollbar shadow-sm"
+                    className="flex-1 bg-input-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted resize-none overflow-y-auto custom-scrollbar shadow-sm"
                     style={{ minHeight: '44px', maxHeight: '200px' }}
                     rows={1}
                   />
@@ -4808,7 +4846,7 @@ export function RemoteSupportPage({
                     {/* Attachment Picker Popover */}
                     {wsSettings.allowFileTransfer && showAttachmentPicker && (
                       <div
-                        className="absolute bottom-full right-0 mb-2 bg-card border border-border rounded-[var(--radius)] w-[480px] max-h-[60vh] flex flex-col overflow-hidden z-50"
+                        className="absolute bottom-full right-0 mb-2 bg-card border border-border rounded-lg w-[480px] max-h-[60vh] flex flex-col overflow-hidden z-50"
                         style={{ boxShadow: 'var(--elevation-md)' }}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -4823,7 +4861,7 @@ export function RemoteSupportPage({
                             </div>
                             <button
                               onClick={() => { setShowAttachmentPicker(false); setAttachmentSearch(''); }}
-                              className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground"
+                              className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground"
                             >
                               <svg className="size-4" fill="none" viewBox="0 0 18 18">
                                 <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -4834,7 +4872,7 @@ export function RemoteSupportPage({
 
                         {/* Search */}
                         <div className="px-4 py-2.5 border-b border-border shrink-0">
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/40 border border-border rounded-[var(--radius)] focus-within:border-primary transition-colors">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/40 border border-border rounded-lg focus-within:border-primary transition-colors">
                             <svg className="size-3.5 text-muted shrink-0" fill="none" viewBox="0 0 14 14">
                               <path d="M6.125 11.375C8.88642 11.375 11.125 9.13642 11.125 6.375C11.125 3.61358 8.88642 1.375 6.125 1.375C3.36358 1.375 1.125 3.61358 1.125 6.375C1.125 9.13642 3.36358 11.375 6.125 11.375Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               <path d="M12.625 12.875L9.71875 9.96875" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -4892,7 +4930,7 @@ export function RemoteSupportPage({
                                     <div key={item.id}>
                                       <button
                                         onClick={() => toggleSection(item.id)}
-                                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
                                         style={{ paddingLeft: `${8 + depth * 14}px` }}
                                       >
                                         <Chevron id={item.id} />
@@ -4918,12 +4956,12 @@ export function RemoteSupportPage({
                                         }]);
                                       }
                                     }}
-                                    className={`w-full flex items-center gap-2.5 py-2 pr-2.5 rounded-[var(--radius)] transition-all text-left group ${
+                                    className={`w-full flex items-center gap-2.5 py-2 pr-2.5 rounded-lg transition-all text-left group ${
                                       isSelected ? 'bg-primary/10 border border-primary/30' : 'border border-transparent hover:bg-secondary/50 hover:border-border/50'
                                     }`}
                                     style={{ paddingLeft: `${10 + depth * 14}px` }}
                                   >
-                                    <div className={`size-7 rounded-[var(--radius)] flex items-center justify-center shrink-0 transition-colors ${
+                                    <div className={`size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                                       isSelected ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted group-hover:text-foreground'
                                     }`}>
                                       {typeIcon[item.type] ?? <FileText size={16} />}
@@ -4961,7 +4999,7 @@ export function RemoteSupportPage({
                                 <div key={project.id} className="mb-2 last:mb-0">
                                   <button
                                     onClick={() => toggleSection(project.id)}
-                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
                                   >
                                     <Chevron id={project.id} />
                                     <div className="size-4 bg-primary/10 rounded flex items-center justify-center shrink-0">
@@ -4986,7 +5024,7 @@ export function RemoteSupportPage({
                           <div className="flex gap-2">
                             <button
                               onClick={() => { setShowAttachmentPicker(false); setSelectedAttachments([]); setAttachmentSearch(''); }}
-                              className="flex-1 px-3 py-2 rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors text-foreground text-sm"
+                              className="flex-1 px-3 py-2 rounded-lg border border-border hover:bg-secondary transition-colors text-foreground text-sm"
                               style={{ fontWeight: 'var(--font-weight-semibold)' }}
                             >
                               Cancel
@@ -4994,7 +5032,7 @@ export function RemoteSupportPage({
                             <button
                               onClick={() => { setShowAttachmentPicker(false); setAttachmentSearch(''); }}
                               disabled={selectedAttachments.length === 0}
-                              className="flex-1 px-3 py-2 rounded-[var(--radius)] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                              className="flex-1 px-3 py-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                               style={{
                                 fontWeight: 'var(--font-weight-semibold)',
                                 backgroundColor: selectedAttachments.length > 0 ? 'var(--primary)' : 'var(--secondary)',
@@ -5016,7 +5054,7 @@ export function RemoteSupportPage({
                           }
                           setShowAttachmentPicker(prev => !prev);
                         }}
-                        className={`h-[44px] w-[44px] flex items-center justify-center border rounded-[var(--radius)] transition-all shrink-0 shadow-sm ${
+                        className={`h-[44px] w-[44px] flex items-center justify-center border rounded-lg transition-all shrink-0 shadow-sm ${
                           showAttachmentPicker
                             ? 'bg-primary/10 border-primary/40 text-primary'
                             : 'bg-card border-border text-muted hover:bg-secondary hover:border-primary/30 hover:text-primary'
@@ -5029,7 +5067,7 @@ export function RemoteSupportPage({
                     <button
                       onClick={handleSendMessage}
                       disabled={!chatInput.trim() && selectedAttachments.length === 0}
-                      className="h-[44px] px-5 flex items-center justify-center bg-primary text-primary-foreground rounded-[var(--radius)] hover:bg-primary/90 transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm disabled:shadow-none"
+                      className="h-[44px] px-5 flex items-center justify-center bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm disabled:shadow-none"
                     >
                       <IconSend />
                     </button>
@@ -5125,7 +5163,7 @@ export function RemoteSupportPage({
                 </div>
                 <button 
                   onClick={() => setShowInviteModal(false)} 
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors shrink-0"
+                  className="p-1.5 hover:bg-secondary rounded-lg transition-colors shrink-0"
                 >
                   <svg className="size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -5245,7 +5283,7 @@ export function RemoteSupportPage({
                   <div className="space-y-1.5">
                     <div className="text-xs text-muted">Call ID</div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 px-3 py-2 bg-secondary/30 rounded-[var(--radius)] text-sm text-foreground font-mono">
+                      <div className="flex-1 px-3 py-2 bg-secondary/30 rounded-lg text-sm text-foreground font-mono">
                         {callId}
                       </div>
                       <button
@@ -5269,7 +5307,7 @@ export function RemoteSupportPage({
                             textArea.remove();
                           }
                         }}
-                        className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                        className="p-2 hover:bg-secondary rounded-lg transition-colors"
                         title="Copy Call ID"
                       >
                         <svg className="size-4 text-muted" fill="none" viewBox="0 0 11.3333 13.3333">
@@ -5283,7 +5321,7 @@ export function RemoteSupportPage({
                   <div className="space-y-1.5">
                     <div className="text-xs text-muted">Password</div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 px-3 py-2 bg-secondary/30 rounded-[var(--radius)] text-sm text-foreground font-mono">
+                      <div className="flex-1 px-3 py-2 bg-secondary/30 rounded-lg text-sm text-foreground font-mono">
                         {callPassword}
                       </div>
                       <button
@@ -5307,7 +5345,7 @@ export function RemoteSupportPage({
                             textArea.remove();
                           }
                         }}
-                        className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                        className="p-2 hover:bg-secondary rounded-lg transition-colors"
                         title="Copy Password"
                       >
                         <svg className="size-4 text-muted" fill="none" viewBox="0 0 11.3333 13.3333">
@@ -5357,7 +5395,7 @@ export function RemoteSupportPage({
                           </div>
                           <button
                             onClick={() => handleInviteParticipant(person)}
-                            className="px-4 py-1.5 bg-primary text-primary-foreground rounded-full text-xs hover:opacity-90 transition-opacity shrink-0"
+                            className="px-4 py-1.5 bg-primary text-primary-foreground rounded-full text-xs hover:brightness-110 transition-all shrink-0"
                             style={{ fontWeight: 'var(--font-weight-bold)' }}
                           >
                             Add
@@ -5387,7 +5425,7 @@ export function RemoteSupportPage({
                 </div>
                 <button 
                   onClick={() => setShowAudioSettingsModal(false)} 
-                  className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors shrink-0"
+                  className="p-1.5 hover:bg-secondary rounded-lg transition-colors shrink-0"
                 >
                   <svg className="size-4" fill="none" viewBox="0 0 18 18">
                     <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -5578,7 +5616,7 @@ export function RemoteSupportPage({
           </p>
           <button
             onClick={() => setConnectionError(false)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 transition-all"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             <RefreshCw size={16} />
@@ -5596,9 +5634,9 @@ export function RemoteSupportPage({
     const durationFormatted = `${summaryMinutes}m ${summarySeconds}s`;
 
     return (
-      <div className="h-full flex items-center justify-center bg-background" style={{ fontFamily: 'var(--font-family)' }}>
+      <div className="h-full flex items-center justify-center bg-background" >
         <div
-          className="bg-card rounded-[var(--radius)] border border-border w-full flex flex-col items-center px-8 py-10"
+          className="bg-card rounded-lg border border-border w-full flex flex-col items-center px-8 py-10"
           style={{ maxWidth: 520, boxShadow: 'var(--elevation-lg)' }}
         >
           {/* Green checkmark */}
@@ -5627,7 +5665,7 @@ export function RemoteSupportPage({
           {/* Stats grid 2x2 */}
           <div className="grid grid-cols-2 gap-3 w-full mb-6">
             {/* Duration */}
-            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+            <div className="bg-secondary rounded-lg p-4 flex flex-col items-center gap-1">
               <Clock size={18} className="text-muted mb-1" />
               <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
                 {durationFormatted}
@@ -5636,7 +5674,7 @@ export function RemoteSupportPage({
             </div>
 
             {/* Participants */}
-            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+            <div className="bg-secondary rounded-lg p-4 flex flex-col items-center gap-1">
               <IconPeople />
               <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
                 {postCallSummary.participants.length}
@@ -5645,7 +5683,7 @@ export function RemoteSupportPage({
             </div>
 
             {/* Messages */}
-            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+            <div className="bg-secondary rounded-lg p-4 flex flex-col items-center gap-1">
               <IconChat />
               <span className="text-foreground" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-base)' }}>
                 {postCallSummary.chatMessageCount}
@@ -5654,7 +5692,7 @@ export function RemoteSupportPage({
             </div>
 
             {/* Recording */}
-            <div className="bg-secondary rounded-[var(--radius)] p-4 flex flex-col items-center gap-1">
+            <div className="bg-secondary rounded-lg p-4 flex flex-col items-center gap-1">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-muted mb-1">
                 <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2" />
                 <circle cx="12" cy="12" r="3" fill={postCallSummary.wasRecorded ? '#FF1F1F' : 'currentColor'} />
@@ -5696,7 +5734,7 @@ export function RemoteSupportPage({
           <div className="flex items-center gap-3 w-full">
             <button
               onClick={() => setPostCallSummary(null)}
-              className="flex-1 px-5 py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+              className="flex-1 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 transition-all"
               style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--text-base)' }}
             >
               Return to Lobby
@@ -5713,12 +5751,24 @@ export function RemoteSupportPage({
                 setPostCallSummary(null);
                 handleJoinMeeting(newMeeting);
               }}
-              className="flex-1 px-5 py-2.5 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-secondary/80 transition-colors"
+              className="flex-1 px-5 py-2.5 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
               style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--text-base)' }}
             >
               Call Again
             </button>
           </div>
+
+          {/* Download Transcript link */}
+          {postCallSummary.chatMessageCount > 0 && (
+            <button
+              onClick={() => toast.success('Chat transcript downloaded')}
+              className="mt-4 flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+              style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-medium)' }}
+            >
+              <FileText size={14} />
+              Download chat transcript ({postCallSummary.chatMessageCount} messages)
+            </button>
+          )}
         </div>
       </div>
     );
@@ -5762,7 +5812,7 @@ export function RemoteSupportPage({
             </span>
           </div>
           {isMobile && (
-            <button onClick={() => setShowMobilePeople(false)} className="p-1.5 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted">
+            <button onClick={() => setShowMobilePeople(false)} className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted">
               <svg className="size-4" fill="none" viewBox="0 0 18 18"><path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             </button>
           )}
@@ -5770,7 +5820,7 @@ export function RemoteSupportPage({
 
         {/* Search */}
         <div className="px-3 pb-2.5 pt-0.5 border-b border-border/60 shrink-0">
-          <div className="bg-secondary/30 border border-border rounded-[var(--radius)] px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+          <div className="bg-secondary/30 border border-border rounded-lg px-3 py-1.5 flex items-center gap-2 focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
             <IconSearch />
             <input
               type="text"
@@ -5885,8 +5935,7 @@ export function RemoteSupportPage({
                     ? 'border-primary text-foreground'
                     : 'border-transparent text-muted hover:text-foreground'
                 }`}
-                style={{ fontFamily: 'var(--font-family)' }}
-              >
+                             >
                 <svg className={`block size-4 ${activeTab === 'agenda' ? 'text-primary' : 'text-muted'}`} fill="none" viewBox="0 0 16 16">
                   <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                   <path d="M2 6h12" stroke="currentColor" strokeWidth="1.5"/>
@@ -5903,8 +5952,7 @@ export function RemoteSupportPage({
                     ? 'border-primary text-foreground'
                     : 'border-transparent text-muted hover:text-foreground'
                 }`}
-                style={{ fontFamily: 'var(--font-family)' }}
-              >
+                             >
                 <Clock size={16} className={activeTab === 'recent' ? 'text-primary' : ''} />
                 <span style={{ fontWeight: activeTab === 'recent' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)' }}>
                   Recent
@@ -5917,8 +5965,7 @@ export function RemoteSupportPage({
                     ? 'border-primary text-foreground'
                     : 'border-transparent text-muted hover:text-foreground'
                 }`}
-                style={{ fontFamily: 'var(--font-family)' }}
-              >
+                             >
                 <svg className={`block size-4 ${activeTab === 'history' ? 'text-primary' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
@@ -5983,7 +6030,7 @@ export function RemoteSupportPage({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowMobilePeople(true)}
-                  className="p-2 -ml-2 hover:bg-secondary rounded-[var(--radius)] transition-colors"
+                  className="p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors"
                 >
                   <svg className="block size-5" fill="none" viewBox="0 0 20 20">
                     <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -6000,8 +6047,7 @@ export function RemoteSupportPage({
                         ? 'border-primary text-foreground' 
                         : 'border-transparent text-muted hover:text-foreground'
                     }`}
-                    style={{ fontFamily: 'var(--font-family)' }}
-                  >
+                                     >
                     <svg className="block size-4 text-foreground" fill="none" viewBox="0 0 16 16">
                       <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                       <path d="M2 6h12" stroke="currentColor" strokeWidth="1.5"/>
@@ -6018,8 +6064,7 @@ export function RemoteSupportPage({
                         ? 'border-primary text-foreground'
                         : 'border-transparent text-muted hover:text-foreground'
                     }`}
-                    style={{ fontFamily: 'var(--font-family)' }}
-                  >
+                                     >
                     <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -6034,8 +6079,7 @@ export function RemoteSupportPage({
                         ? 'border-primary text-foreground'
                         : 'border-transparent text-muted hover:text-foreground'
                     }`}
-                    style={{ fontFamily: 'var(--font-family)' }}
-                  >
+                                     >
                     <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
@@ -6189,7 +6233,7 @@ export function RemoteSupportPage({
                     onChange={(e) => setDeviceId(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="000 000 000"
                     className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted"
-                    style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em', fontFamily: 'var(--font-family)' }}
+                    style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em' }}
                     maxLength={9}
                     autoFocus
                   />
@@ -6273,7 +6317,7 @@ export function RemoteSupportPage({
                     onChange={(e) => setInviteDeviceId(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="000 000 000"
                     className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted"
-                    style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em', fontFamily: 'var(--font-family)' }}
+                    style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em' }}
                     maxLength={9}
                     autoFocus
                   />
@@ -6304,7 +6348,7 @@ export function RemoteSupportPage({
                 </button>
                 <button
                   className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
-                    inviteDeviceId.length === 9 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90' : 'bg-secondary text-muted cursor-not-allowed'
+                    inviteDeviceId.length === 9 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:brightness-110' : 'bg-secondary text-muted cursor-not-allowed'
                   }`}
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                   onClick={handleInviteByDeviceId}
@@ -6358,7 +6402,7 @@ export function RemoteSupportPage({
                       onChange={(e) => setMeetingCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                       placeholder="0000 0000"
                       className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted"
-                      style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em', fontFamily: 'var(--font-family)' }}
+                      style={{ fontSize: 'var(--text-base)', letterSpacing: '0.12em' }}
                       maxLength={8}
                       autoFocus
                     />
@@ -6388,8 +6432,7 @@ export function RemoteSupportPage({
                       onChange={(e) => setMeetingPassword(e.target.value)}
                       placeholder="Enter if required"
                       className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted text-sm"
-                      style={{ fontFamily: 'var(--font-family)' }}
-                    />
+                                         />
                   </div>
                 </div>
               </div>
@@ -6434,7 +6477,7 @@ export function RemoteSupportPage({
                     return (
                   <div
                     key={meeting.id}
-                    className={`bg-card border rounded-[var(--radius)] overflow-hidden transition-all group/card hover:shadow-md ${
+                    className={`bg-card border rounded-lg overflow-hidden transition-all group/card hover:shadow-md ${
                       isStartingSoon ? 'border-primary/40 shadow-sm shadow-primary/5' : 'border-border hover:border-primary/30'
                     }`}
                   >
@@ -6503,7 +6546,7 @@ export function RemoteSupportPage({
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             onClick={() => handleEditMeeting(meeting)}
-                            className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded-[var(--radius)] transition-colors opacity-0 group-hover/card:opacity-100"
+                            className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-colors opacity-0 group-hover/card:opacity-100"
                             title="Edit meeting"
                           >
                             <svg className="size-3.5" fill="none" viewBox="0 0 18 18">
@@ -6513,7 +6556,7 @@ export function RemoteSupportPage({
                           </button>
                           <button
                             onClick={() => handleDeleteMeeting(meeting.id!)}
-                            className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-[var(--radius)] transition-colors opacity-0 group-hover/card:opacity-100"
+                            className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors opacity-0 group-hover/card:opacity-100"
                             title="Delete meeting"
                           >
                             <svg className="size-3.5" fill="none" viewBox="0 0 18 18">
@@ -6522,9 +6565,9 @@ export function RemoteSupportPage({
                           </button>
                           <button
                             onClick={() => handleJoinMeeting(meeting)}
-                            className={`px-3.5 py-1.5 rounded-[var(--radius)] transition-all text-xs flex items-center gap-1.5 ${
+                            className={`px-3.5 py-1.5 rounded-lg transition-all text-xs flex items-center gap-1.5 ${
                               isStartingSoon
-                                ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-sm'
+                                ? 'bg-primary text-primary-foreground hover:brightness-110 shadow-sm'
                                 : 'bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground'
                             }`}
                             style={{ fontWeight: 'var(--font-weight-bold)' }}
@@ -6601,7 +6644,7 @@ export function RemoteSupportPage({
                     return (
                       <div
                         key={call.id}
-                        className="bg-card border border-border rounded-[var(--radius)] overflow-hidden transition-all group/card hover:border-primary/30 hover:shadow-md"
+                        className="bg-card border border-border rounded-lg overflow-hidden transition-all group/card hover:border-primary/30 hover:shadow-md"
                       >
                         <div className="flex items-stretch">
                           {/* Accent bar */}
@@ -6614,7 +6657,7 @@ export function RemoteSupportPage({
                           <div className="flex items-center gap-4 px-4 py-3.5 flex-1 min-w-0">
                             {/* Call Icon */}
                             <div className="shrink-0">
-                              <div className={`size-10 rounded-[var(--radius)] flex items-center justify-center ${
+                              <div className={`size-10 rounded-lg flex items-center justify-center ${
                                 call.type === 'completed' ? 'bg-primary/10 text-primary' :
                                 call.type === 'missed' ? 'bg-destructive/10 text-destructive' :
                                 'bg-secondary text-muted'
@@ -6666,7 +6709,7 @@ export function RemoteSupportPage({
                             <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 onClick={() => handleCallAgain(call)}
-                                className="px-3.5 py-1.5 bg-secondary text-foreground rounded-[var(--radius)] hover:bg-primary hover:text-primary-foreground transition-all text-xs flex items-center gap-1.5"
+                                className="px-3.5 py-1.5 bg-secondary text-foreground rounded-lg hover:bg-primary hover:text-primary-foreground transition-all text-xs flex items-center gap-1.5"
                                 style={{ fontWeight: 'var(--font-weight-bold)' }}
                                 title="Call again"
                               >
@@ -6718,7 +6761,7 @@ export function RemoteSupportPage({
                     return (
                       <div
                         key={call.id}
-                        className="bg-card border border-border rounded-[var(--radius)] overflow-hidden transition-all group/card hover:border-primary/30 hover:shadow-md"
+                        className="bg-card border border-border rounded-lg overflow-hidden transition-all group/card hover:border-primary/30 hover:shadow-md"
                       >
                         <div className="flex items-stretch">
                           {/* Accent bar */}
@@ -6727,7 +6770,7 @@ export function RemoteSupportPage({
                           <div className="flex items-center gap-4 px-4 py-3.5 flex-1 min-w-0">
                             {/* Recording Icon */}
                             <div className="shrink-0">
-                              <div className="size-10 rounded-[var(--radius)] flex items-center justify-center bg-primary/10 text-primary">
+                              <div className="size-10 rounded-lg flex items-center justify-center bg-primary/10 text-primary">
                                 <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <circle cx="12" cy="12" r="3" strokeWidth={2} fill="currentColor" />
                                   <circle cx="12" cy="12" r="9" strokeWidth={2} />
@@ -6777,7 +6820,7 @@ export function RemoteSupportPage({
                               {call.recording?.recordedByUserId === 'me' && (
                                 <button
                                   onClick={() => toast.success(`Downloading recording: ${call.title}`)}
-                                  className="px-3.5 py-1.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:brightness-110 transition-all text-xs flex items-center gap-1.5 shadow-sm"
+                                  className="px-3.5 py-1.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 transition-all text-xs flex items-center gap-1.5 shadow-sm"
                                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                                   title="Download recording"
                                 >
@@ -6822,7 +6865,7 @@ export function RemoteSupportPage({
             {/* Call Device Button */}
             <button
               onClick={() => setShowCallDeviceModal(true)}
-              className="flex flex-col items-center gap-1.5 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-[var(--radius)] transition-colors flex-1 text-foreground"
+              className="flex flex-col items-center gap-1.5 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors flex-1 text-foreground"
             >
               <Phone className="size-5" />
               <span className="text-[11px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
@@ -6833,7 +6876,7 @@ export function RemoteSupportPage({
             {/* Join Meeting Button */}
             <button
               onClick={() => setShowJoinMeetingModal(true)}
-              className="flex flex-col items-center gap-1.5 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-[var(--radius)] transition-colors flex-1 text-foreground"
+              className="flex flex-col items-center gap-1.5 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors flex-1 text-foreground"
             >
               <Video className="size-5" />
               <span className="text-[11px]" style={{ fontWeight: 'var(--font-weight-medium)' }}>
@@ -6844,7 +6887,7 @@ export function RemoteSupportPage({
             {/* Create Button */}
             <button
               onClick={handleCreateMeeting}
-              className="flex flex-col items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity flex-1"
+              className="flex flex-col items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:brightness-110 transition-all flex-1"
             >
               <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -6860,10 +6903,9 @@ export function RemoteSupportPage({
       {incomingCall && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
           <div
-            className="bg-card rounded-[var(--radius)] p-8 flex flex-col items-center gap-5 border border-border"
+            className="bg-card rounded-lg p-8 flex flex-col items-center gap-5 border border-border"
             style={{
               boxShadow: 'var(--elevation-lg)',
-              fontFamily: 'var(--font-family)',
               minWidth: '340px',
               maxWidth: '420px',
             }}
@@ -6937,7 +6979,7 @@ export function RemoteSupportPage({
                   setIncomingCall(null);
                   toast('Call declined');
                 }}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-[var(--radius)] text-white hover:opacity-90 transition-opacity"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-white hover:brightness-110 transition-all"
                 style={{
                   backgroundColor: '#FF1F1F',
                   fontWeight: 'var(--font-weight-bold)',
@@ -6963,7 +7005,7 @@ export function RemoteSupportPage({
                   setIsCreateMode(false);
                   setShowPreJoin(true);
                 }}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg hover:brightness-110 transition-all"
                 style={{
                   backgroundColor: '#11E874',
                   fontWeight: 'var(--font-weight-bold)',

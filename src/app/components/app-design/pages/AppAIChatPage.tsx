@@ -306,7 +306,7 @@ export function AppAIChatPage() {
           {/* Floating feedback card */}
           {showFeedback && messages.length > 0 && (
             <div className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-[calc(100vw-32px)] sm:w-80 max-w-80">
-              <div className="bg-card border border-border rounded-[var(--radius)] shadow-elevation-lg overflow-hidden">
+              <div className="bg-card border border-border rounded-lg shadow-elevation-lg overflow-hidden">
                 {/* Close button */}
                 <button
                   onClick={() => setShowFeedback(false)}
@@ -344,13 +344,13 @@ export function AppAIChatPage() {
 
                       {/* Thumbs options */}
                       <div className="grid grid-cols-2 gap-3 mb-4">
-                        <button className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius)] border border-border hover:border-destructive hover:bg-destructive/5 transition-all group">
+                        <button className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border hover:border-destructive hover:bg-destructive/5 transition-all group">
                           <ThumbsDown className="size-6 text-muted group-hover:text-destructive transition-colors" />
                           <span className="text-xs text-muted group-hover:text-destructive transition-colors" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                             Need more help
                           </span>
                         </button>
-                        <button className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius)] border border-border hover:border-accent hover:bg-accent/5 transition-all group">
+                        <button className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border hover:border-accent hover:bg-accent/5 transition-all group">
                           <ThumbsUp className="size-6 text-muted group-hover:text-accent transition-colors" />
                           <span className="text-xs text-muted group-hover:text-accent transition-colors" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                             Yes

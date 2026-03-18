@@ -219,7 +219,7 @@ export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoMo
             {/* Run in 3D - Primary action (green accent) */}
             <button
               onClick={handleRunIn3D}
-              className="flex-1 flex items-center justify-center gap-2 text-white hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="flex-1 flex items-center justify-center gap-2 text-white hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98]"
               style={{
                 padding: '14px 16px',
                 backgroundColor: '#11E874',
@@ -238,7 +238,7 @@ export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoMo
             {isContentCreator && (
               <button
                 onClick={handleEdit}
-                className="flex items-center justify-center gap-2 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{
                   padding: '14px 20px',
                   backgroundColor: '#2F80ED',

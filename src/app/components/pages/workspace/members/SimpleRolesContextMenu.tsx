@@ -365,16 +365,16 @@ export function SimpleRolesContextMenu({ selectedRoles, currentRole, onClose, on
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
               {isFilterMode ? 'Filter by Role' : isBatchMode ? 'Update Role' : 'Assign Role'}
             </h3>
             {isBatchMode && !isFilterMode && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 Updating {selectedMembersCount} member{selectedMembersCount > 1 ? 's' : ''}
               </p>
             )}
             {isFilterMode && selectedRoles && selectedRoles.length > 0 && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 {selectedRoles.length} role{selectedRoles.length > 1 ? 's' : ''} selected
               </p>
             )}
@@ -427,11 +427,11 @@ export function SimpleRolesContextMenu({ selectedRoles, currentRole, onClose, on
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)' }}>
+                    <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
                       {role.name}
                     </p>
                     {role.description && (
-                      <p className="text-xs" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                      <p className="text-xs" style={{ color: 'var(--muted)' }}>
                         {role.description}
                       </p>
                     )}
@@ -468,7 +468,7 @@ export function SimpleRolesContextMenu({ selectedRoles, currentRole, onClose, on
               className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs hover:bg-secondary rounded-lg transition-colors"
               style={{ 
                 color: 'var(--primary)', 
-                fontFamily: 'var(--font-family)',
+                
                 fontWeight: 'var(--font-weight-bold)',
               }}
             >

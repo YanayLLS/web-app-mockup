@@ -129,7 +129,7 @@ function TreeNode({
           <span
             className={`truncate ${isSelected ? 'text-primary font-medium' : 'text-foreground'}`}
             style={{
-              fontFamily: 'var(--font-family)',
+              
               fontSize: isLeaf ? 'var(--text-xs)' : 'var(--text-sm)',
               opacity: isHidden || allHidden ? 0.4 : 1,
             }}
@@ -140,7 +140,7 @@ function TreeNode({
             <span
               className="flex-shrink-0 text-muted/70"
               style={{
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: '10px',
                 backgroundColor: 'var(--secondary)',
                 padding: '0 5px',
@@ -286,7 +286,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
                 <p
                   className="text-foreground font-semibold"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-base)',
                   }}
                 >
@@ -315,7 +315,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
                     borderRadius: 'var(--radius-button)',
                     padding: 'var(--spacing-sm) var(--spacing-lg)',
                     paddingLeft: '32px',
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-sm)',
                   }}
                 />
@@ -353,7 +353,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
                   <Layers className="size-8 opacity-30" />
                   <p
                     style={{
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                       textAlign: 'center',
                     }}
@@ -376,7 +376,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
               <div
                 className="flex justify-between text-muted"
                 style={{
-                  fontFamily: 'var(--font-family)',
+                  
                   fontSize: 'var(--text-xs)',
                 }}
               >
@@ -387,7 +387,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
                 <div
                   className="flex justify-between text-muted"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-xs)',
                     marginTop: '2px',
                   }}
@@ -400,7 +400,7 @@ export function PartsCatalogPanel({ isOpen, onClose, hierarchy }: PartsCatalogPa
                 <div
                   className="flex justify-between text-muted"
                   style={{
-                    fontFamily: 'var(--font-family)',
+                    
                     fontSize: 'var(--text-xs)',
                     marginTop: '2px',
                   }}

@@ -152,38 +152,37 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-start justify-center pt-[10vh]"
+      className="fixed inset-0 z-[200] flex items-start justify-center pt-[10vh] animate-in fade-in duration-150"
       style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="w-full max-w-[560px] mx-4 rounded-2xl shadow-2xl overflow-hidden"
-        style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)' }}
+        className="w-full max-w-[560px] mx-4 bg-card border border-border rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200"
+        style={{ boxShadow: '0 24px 48px rgba(0,0,0,0.15)' }}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-          <Search size={16} style={{ color: 'var(--color-muted)', flexShrink: 0 }} />
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border/60">
+          <Search size={16} className="text-muted shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search pages, projects, knowledge base…"
-            className="flex-1 bg-transparent border-none outline-none text-sm"
-            style={{ color: 'var(--color-foreground)', fontFamily: 'var(--font-family)' }}
+            placeholder="Search pages, projects, knowledge base..."
+            className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="p-1 rounded hover:bg-secondary transition-colors flex-shrink-0">
-              <X size={13} style={{ color: 'var(--color-muted)' }} />
+            <button onClick={() => setQuery('')} className="p-1 rounded-md hover:bg-secondary transition-colors flex-shrink-0">
+              <X size={13} className="text-muted" />
             </button>
           )}
-          <kbd className="hidden sm:flex items-center px-1.5 py-0.5 rounded text-[10px] border border-border" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-family)' }}>
+          <kbd className="hidden sm:flex items-center px-1.5 py-0.5 rounded text-[10px] border border-border/60 text-muted/60 bg-secondary/30">
             Esc
           </kbd>
         </div>
 
         {/* Results */}
-        <div className="max-h-[420px] overflow-y-auto py-2">
+        <div className="max-h-[420px] overflow-y-auto custom-scrollbar py-1.5">
           {results.length === 0 ? (
             <div className="px-4 py-10 text-center">
               <Search size={20} className="mx-auto mb-2 text-muted/30" />
@@ -194,53 +193,57 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
           ) : (
             categories.map(cat => (
               <div key={cat.label}>
-                <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider uppercase" style={{ color: 'var(--color-muted)' }}>
+                <div className="px-4 py-1.5 text-[10px] text-muted tracking-wider uppercase" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   {cat.label}
                 </div>
-                {cat.items.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={item.action}
-                    onMouseEnter={() => setFocusedIdx(item.globalIdx)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
-                    style={{
-                      background: focusedIdx === item.globalIdx ? 'var(--color-secondary)' : 'transparent',
-                      outline: focusedIdx === item.globalIdx ? '1px solid rgba(47,128,237,0.2)' : 'none',
-                      outlineOffset: '-1px',
-                    }}
-                  >
-                    <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${
-                      item.category === 'Pages' ? 'text-primary' :
-                      item.category === 'Workspace' ? 'text-[#8B5CF6]' :
-                      item.category === 'Projects' ? 'text-[#F59E0B]' :
-                      'text-[#10b981]'
-                    }`} style={{
-                      background: item.category === 'Pages' ? 'rgba(47,128,237,0.08)' :
-                                  item.category === 'Workspace' ? 'rgba(139,92,246,0.08)' :
-                                  item.category === 'Projects' ? 'rgba(245,158,11,0.08)' :
-                                  'rgba(16,185,129,0.08)'
-                    }}>
-                      {item.icon}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate" style={{ color: 'var(--color-foreground)' }}>{item.label}</div>
-                      {item.subtitle && (
-                        <div className="text-xs truncate" style={{ color: 'var(--color-muted)' }}>{item.subtitle}</div>
+                {cat.items.map(item => {
+                  const isFocused = focusedIdx === item.globalIdx;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={item.action}
+                      onMouseEnter={() => setFocusedIdx(item.globalIdx)}
+                      className={`w-full flex items-center gap-3 px-3 mx-1.5 py-2.5 text-left rounded-lg transition-all ${
+                        isFocused ? 'bg-secondary/80' : ''
+                      }`}
+                      style={{ width: 'calc(100% - 12px)' }}
+                    >
+                      <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${
+                        item.category === 'Pages' ? 'text-primary' :
+                        item.category === 'Workspace' ? 'text-[#8B5CF6]' :
+                        item.category === 'Projects' ? 'text-[#F59E0B]' :
+                        'text-[#10b981]'
+                      }`} style={{
+                        background: item.category === 'Pages' ? 'rgba(47,128,237,0.08)' :
+                                    item.category === 'Workspace' ? 'rgba(139,92,246,0.08)' :
+                                    item.category === 'Projects' ? 'rgba(245,158,11,0.08)' :
+                                    'rgba(16,185,129,0.08)'
+                      }}>
+                        {item.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-foreground truncate" style={{ fontWeight: 'var(--font-weight-medium)' }}>{item.label}</div>
+                        {item.subtitle && (
+                          <div className="text-xs text-muted truncate">{item.subtitle}</div>
+                        )}
+                      </div>
+                      {isFocused && (
+                        <kbd className="text-[10px] text-muted/50 px-1 py-0.5 rounded border border-border/40 bg-background shrink-0">↵</kbd>
                       )}
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             ))
           )}
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t border-border flex items-center gap-3">
+        <div className="px-4 py-2 border-t border-border/60 flex items-center gap-4">
           {[['↑↓', 'Navigate'], ['↵', 'Open'], ['Esc', 'Close']].map(([key, label]) => (
-            <span key={key} className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px]" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-family)' }}>{key}</kbd>
-              <span className="text-[11px]" style={{ color: 'var(--color-muted)' }}>{label}</span>
+            <span key={key} className="flex items-center gap-1.5">
+              <kbd className="px-1.5 py-0.5 rounded text-[10px] border border-border/60 text-muted/60 bg-secondary/30">{key}</kbd>
+              <span className="text-[11px] text-muted/70">{label}</span>
             </span>
           ))}
         </div>

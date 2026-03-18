@@ -599,7 +599,7 @@ export function AppLayout() {
                         isFullscreenEmbed;
 
   return (
-    <div className="flex flex-col w-full overflow-hidden" style={{ fontFamily: 'var(--font-family)', height: '100dvh' }}>
+    <div className="flex flex-col w-full overflow-hidden" style={{  height: '100dvh' }}>
       {/* ===== TOP HEADER BAR ===== */}
       <header className="shrink-0 flex items-center px-4 lg:pl-0 lg:pr-0 gap-3" style={{ backgroundColor: '#FFFFFF', height: isPreviewMode ? '0px' : '55px', borderBottom: isPreviewMode ? 'none' : '1px solid #C2C9DB', overflow: isPreviewMode ? 'hidden' : undefined }}>
         {/* Logo — aligned above sidebar on desktop */}
@@ -612,7 +612,7 @@ export function AppLayout() {
             <span className="text-white" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '16px' }}>F</span>
           </div>
         </div>
-        <span className="hidden lg:block cursor-pointer" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '20px', color: '#36415D', fontFamily: 'var(--font-family)' }} onClick={() => navigate('/app/knowledgebase')}>
+        <span className="hidden lg:block cursor-pointer" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '20px', color: '#36415D' }} onClick={() => navigate('/app/knowledgebase')}>
           frontline.io
         </span>
         {/* Mobile logo */}
@@ -620,7 +620,7 @@ export function AppLayout() {
           <div className="size-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#36415D' }}>
             <span className="text-white" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '16px' }}>F</span>
           </div>
-          <span className="hidden sm:block" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '20px', color: '#36415D', fontFamily: 'var(--font-family)' }}>
+          <span className="hidden sm:block" style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '20px', color: '#36415D' }}>
             Frontline
           </span>
         </div>

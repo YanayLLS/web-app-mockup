@@ -63,7 +63,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
               color: 'var(--popover-foreground)',
               padding: 'var(--spacing-sm) var(--spacing-md)',
               fontSize: 'var(--text-xs)',
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-normal)',
               boxShadow: 'var(--elevation-sm)',
               maxWidth: '240px',
@@ -150,7 +150,7 @@ function OutcomeEditor({
       <div>
         <label style={{
           fontSize: 'var(--text-xs)',
-          fontFamily: 'var(--font-family)',
+          
           fontWeight: 'var(--font-weight-bold)',
           color: 'var(--foreground)',
           display: 'block',
@@ -170,7 +170,7 @@ function OutcomeEditor({
             style={{
               padding: 'var(--spacing-sm)',
               fontSize: 'var(--text-sm)',
-              fontFamily: 'var(--font-family)',
+              
               backgroundColor: 'var(--card)',
               color: 'var(--foreground)',
               border: '1px solid var(--border)',
@@ -190,7 +190,7 @@ function OutcomeEditor({
         ) : (
           <p style={{
             fontSize: 'var(--text-sm)',
-            fontFamily: 'var(--font-family)',
+            
             color: state.description ? 'var(--foreground)' : 'var(--muted-foreground)',
             margin: 0, padding: 'var(--spacing-sm)',
             backgroundColor: 'var(--card)', borderRadius: 'var(--radius)',
@@ -206,7 +206,7 @@ function OutcomeEditor({
         <div>
           <label style={{
             fontSize: 'var(--text-xs)',
-            fontFamily: 'var(--font-family)',
+            
             fontWeight: 'var(--font-weight-bold)',
             color: 'var(--foreground)',
             display: 'block',
@@ -224,7 +224,7 @@ function OutcomeEditor({
               style={{
                 padding: 'var(--spacing-sm)',
                 fontSize: 'var(--text-sm)',
-                fontFamily: 'var(--font-family)',
+                
                 backgroundColor: 'var(--card)',
                 color: 'var(--foreground)',
                 border: '1px solid var(--border)',
@@ -244,7 +244,7 @@ function OutcomeEditor({
           ) : (
             <p style={{
               fontSize: 'var(--text-sm)',
-              fontFamily: 'var(--font-family)',
+              
               color: state.remediationSteps ? 'var(--foreground)' : 'var(--muted-foreground)',
               margin: 0, padding: 'var(--spacing-sm)',
               backgroundColor: 'var(--card)', borderRadius: 'var(--radius)',
@@ -302,7 +302,7 @@ function OutcomeEditor({
               border: '1px dashed var(--border)',
               cursor: 'pointer',
               fontSize: 'var(--text-xs)',
-              fontFamily: 'var(--font-family)',
+              
               fontWeight: 'var(--font-weight-medium)'
             }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
@@ -372,7 +372,7 @@ function CheckpointEditor({
       {/* Label input */}
       <div>
         <label style={{
-          fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+          fontSize: 'var(--text-xs)',
           fontWeight: 'var(--font-weight-bold)', color: 'var(--muted-foreground)',
           textTransform: 'uppercase', letterSpacing: '0.5px',
           display: 'block', marginBottom: 'var(--spacing-xs)'
@@ -388,7 +388,7 @@ function CheckpointEditor({
             className="w-full rounded-lg"
             style={{
               padding: 'var(--spacing-sm) var(--spacing-md)',
-              fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)',
+              fontSize: 'var(--text-sm)',
               backgroundColor: 'var(--card)', color: 'var(--foreground)',
               border: '1px solid var(--border)', outline: 'none'
             }}
@@ -396,7 +396,7 @@ function CheckpointEditor({
             onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--border)'; }}
           />
         ) : (
-          <span style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', color: 'var(--foreground)' }}>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--foreground)' }}>
             {checkpoint.label || 'Untitled checkpoint'}
           </span>
         )}
@@ -405,7 +405,7 @@ function CheckpointEditor({
       {/* Type selector */}
       <div>
         <label style={{
-          fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+          fontSize: 'var(--text-xs)',
           fontWeight: 'var(--font-weight-bold)', color: 'var(--muted-foreground)',
           textTransform: 'uppercase', letterSpacing: '0.5px',
           display: 'block', marginBottom: 'var(--spacing-xs)'
@@ -428,7 +428,7 @@ function CheckpointEditor({
                   backgroundColor: isActive ? 'var(--card)' : 'transparent',
                   color: isActive ? 'var(--foreground)' : 'var(--muted-foreground)',
                   border: 'none', cursor: editingEnabled ? 'pointer' : 'default',
-                  fontSize: '11px', fontFamily: 'var(--font-family)',
+                  fontSize: '11px',
                   fontWeight: isActive ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)',
                   boxShadow: isActive ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'
                 }}
@@ -445,7 +445,7 @@ function CheckpointEditor({
       {/* Severity selector */}
       <div>
         <label style={{
-          fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+          fontSize: 'var(--text-xs)',
           fontWeight: 'var(--font-weight-bold)', color: 'var(--muted-foreground)',
           textTransform: 'uppercase', letterSpacing: '0.5px',
           display: 'block', marginBottom: 'var(--spacing-xs)'
@@ -468,7 +468,7 @@ function CheckpointEditor({
                   color: isActive ? cfg.color : 'var(--muted-foreground)',
                   border: isActive ? `1.5px solid ${cfg.color}` : '1.5px solid var(--border)',
                   cursor: editingEnabled ? 'pointer' : 'default',
-                  fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+                  fontSize: 'var(--text-xs)',
                   fontWeight: isActive ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)'
                 }}
               >
@@ -483,7 +483,7 @@ function CheckpointEditor({
       {/* Part selection */}
       <div>
         <label style={{
-          fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+          fontSize: 'var(--text-xs)',
           fontWeight: 'var(--font-weight-bold)', color: 'var(--muted-foreground)',
           textTransform: 'uppercase', letterSpacing: '0.5px',
           display: 'block', marginBottom: 'var(--spacing-xs)'
@@ -508,7 +508,7 @@ function CheckpointEditor({
               <Crosshair className="size-3.5 shrink-0" style={{ color: 'var(--primary)' }} />
               {checkpoint.selectedParts.map((part, i) => (
                 <span key={i} className="rounded-full" style={{
-                  fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+                  fontSize: 'var(--text-xs)',
                   fontWeight: 'var(--font-weight-medium)', backgroundColor: 'rgba(59,130,246,0.1)',
                   color: 'var(--primary)', padding: '2px 8px'
                 }}>
@@ -519,7 +519,7 @@ function CheckpointEditor({
           ) : (
             <>
               <Crosshair className="size-3.5 shrink-0" style={{ color: 'var(--muted-foreground)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--muted-foreground)' }}>
                 {editingEnabled ? 'Click to select parts' : 'No parts selected'}
               </span>
             </>
@@ -532,23 +532,23 @@ function CheckpointEditor({
         <ArrowRight className="size-3.5 shrink-0" style={{ color: 'var(--muted-foreground)' }} />
         {checkpoint.arrowDirection ? (
           <div className="flex items-center" style={{ gap: 'var(--spacing-sm)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)', color: 'var(--foreground)', fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--foreground)', fontVariantNumeric: 'tabular-nums' }}>
               ({checkpoint.arrowDirection.x.toFixed(1)}, {checkpoint.arrowDirection.y.toFixed(1)}, {checkpoint.arrowDirection.z.toFixed(1)})
             </span>
             {editingEnabled && (
               <>
-                <button onClick={handleSetArrow} style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Change</button>
-                <button onClick={() => onUpdate({ arrowDirection: undefined })} style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Clear</button>
+                <button onClick={handleSetArrow} style={{ fontSize: 'var(--text-xs)', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Change</button>
+                <button onClick={() => onUpdate({ arrowDirection: undefined })} style={{ fontSize: 'var(--text-xs)', color: 'var(--muted-foreground)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Clear</button>
               </>
             )}
           </div>
         ) : (
           editingEnabled ? (
-            <button onClick={handleSetArrow} style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={handleSetArrow} style={{ fontSize: 'var(--text-xs)', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               Set arrow direction
             </button>
           ) : (
-            <span style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>No direction set</span>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--muted-foreground)' }}>No direction set</span>
           )
         )}
       </div>
@@ -557,7 +557,7 @@ function CheckpointEditor({
       {checkpoint.type === 'measurement' && (
         <div>
           <label style={{
-            fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+            fontSize: 'var(--text-xs)',
             fontWeight: 'var(--font-weight-bold)', color: 'var(--muted-foreground)',
             textTransform: 'uppercase', letterSpacing: '0.5px',
             display: 'block', marginBottom: 'var(--spacing-xs)'
@@ -566,46 +566,46 @@ function CheckpointEditor({
           </label>
           <div className="flex items-center" style={{ gap: 'var(--spacing-sm)' }}>
             <div className="flex flex-col flex-1" style={{ gap: '2px' }}>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>Min</span>
+              <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>Min</span>
               <input
                 type="number"
                 value={checkpoint.tolerance?.min ?? ''}
                 onChange={(e) => handleToleranceChange('min', e.target.value)}
                 disabled={!editingEnabled}
                 className="w-full rounded"
-                style={{ padding: '4px 6px', fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none' }}
+                style={{ padding: '4px 6px', fontSize: 'var(--text-sm)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none' }}
               />
             </div>
             <div className="flex flex-col flex-1" style={{ gap: '2px' }}>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>Nominal</span>
+              <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>Nominal</span>
               <input
                 type="number"
                 value={checkpoint.tolerance?.nominal ?? ''}
                 onChange={(e) => handleToleranceChange('nominal', e.target.value)}
                 disabled={!editingEnabled}
                 className="w-full rounded"
-                style={{ padding: '4px 6px', fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none', fontWeight: 'var(--font-weight-bold)' }}
+                style={{ padding: '4px 6px', fontSize: 'var(--text-sm)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none', fontWeight: 'var(--font-weight-bold)' }}
               />
             </div>
             <div className="flex flex-col flex-1" style={{ gap: '2px' }}>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>Max</span>
+              <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>Max</span>
               <input
                 type="number"
                 value={checkpoint.tolerance?.max ?? ''}
                 onChange={(e) => handleToleranceChange('max', e.target.value)}
                 disabled={!editingEnabled}
                 className="w-full rounded"
-                style={{ padding: '4px 6px', fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none' }}
+                style={{ padding: '4px 6px', fontSize: 'var(--text-sm)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none' }}
               />
             </div>
             <div className="flex flex-col" style={{ gap: '2px', minWidth: '60px' }}>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>Unit</span>
+              <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>Unit</span>
               <select
                 value={checkpoint.tolerance?.unit ?? 'mm'}
                 onChange={(e) => handleToleranceChange('unit', e.target.value)}
                 disabled={!editingEnabled}
                 className="rounded"
-                style={{ padding: '4px 4px', fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none' }}
+                style={{ padding: '4px 4px', fontSize: 'var(--text-sm)', backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)', outline: 'none' }}
               >
                 {UNIT_OPTIONS.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
@@ -625,7 +625,7 @@ function CheckpointEditor({
               backgroundColor: activeTab === 'pass' ? '#ecfdf5' : 'var(--secondary)',
               color: activeTab === 'pass' ? '#059669' : 'var(--muted-foreground)',
               border: activeTab === 'pass' ? '1.5px solid #10b981' : '1.5px solid var(--border)',
-              cursor: 'pointer', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+              cursor: 'pointer', fontSize: 'var(--text-xs)',
               fontWeight: activeTab === 'pass' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)'
             }}
           >
@@ -640,7 +640,7 @@ function CheckpointEditor({
               backgroundColor: activeTab === 'fail' ? '#fef2f2' : 'var(--secondary)',
               color: activeTab === 'fail' ? '#dc2626' : 'var(--muted-foreground)',
               border: activeTab === 'fail' ? '1.5px solid #ef4444' : '1.5px solid var(--border)',
-              cursor: 'pointer', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+              cursor: 'pointer', fontSize: 'var(--text-xs)',
               fontWeight: activeTab === 'fail' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)'
             }}
           >
@@ -752,10 +752,10 @@ export function ValidationPanel({
               <CheckCircle className="size-8" style={{ color: 'var(--accent)' }} />
             </div>
             <div className="text-center">
-              <h3 style={{ fontSize: 'var(--text-h3)', fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', margin: 0, marginBottom: 'var(--spacing-sm)' }}>
+              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', margin: 0, marginBottom: 'var(--spacing-sm)' }}>
                 No Checkpoints Yet
               </h3>
-              <p style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)', margin: 0 }}>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--muted-foreground)', margin: 0 }}>
                 Add validation checkpoints to verify step completion with multiple pass/fail checks.
               </p>
             </div>
@@ -768,7 +768,7 @@ export function ValidationPanel({
                   minHeight: '44px',
                   backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)',
                   border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-medium)'
+                   fontWeight: 'var(--font-weight-medium)'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -810,10 +810,10 @@ export function ValidationPanel({
               <CheckCircle className="size-4" style={{ color: 'var(--primary)' }} />
             </div>
             <div>
-              <h2 style={{ fontSize: 'var(--text-base)', fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', margin: 0, lineHeight: '1.3' }}>
+              <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)', margin: 0, lineHeight: '1.3' }}>
                 Validation Checkpoints
               </h2>
-              <p style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)', margin: 0 }}>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--muted-foreground)', margin: 0 }}>
                 {checkpoints.length} checkpoint{checkpoints.length !== 1 ? 's' : ''} for this step
               </p>
             </div>
@@ -837,7 +837,7 @@ export function ValidationPanel({
               <div className="rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--secondary)', width: '48px', height: '48px' }}>
                 <CheckCircle className="size-6" style={{ color: 'var(--muted-foreground)' }} />
               </div>
-              <p style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)', margin: 0 }}>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--muted-foreground)', margin: 0 }}>
                 No checkpoints yet. Add one to get started.
               </p>
               {editingEnabled && (
@@ -849,7 +849,7 @@ export function ValidationPanel({
                     minHeight: '44px',
                     backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)',
                     border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
-                    fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-medium)'
+                     fontWeight: 'var(--font-weight-medium)'
                   }}
                 >
                   <Plus className="size-4" />
@@ -909,7 +909,7 @@ export function ValidationPanel({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center" style={{ gap: 'var(--spacing-xs)' }}>
                           <span style={{
-                            fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)',
+                            fontSize: 'var(--text-sm)',
                             fontWeight: 'var(--font-weight-bold)', color: 'var(--foreground)',
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                           }}>
@@ -918,23 +918,23 @@ export function ValidationPanel({
                         </div>
                         <div className="flex items-center" style={{ gap: '6px', marginTop: '2px' }}>
                           <span className="rounded-full" style={{
-                            fontSize: '10px', fontFamily: 'var(--font-family)',
+                            fontSize: '10px',
                             fontWeight: 'var(--font-weight-bold)', backgroundColor: sevCfg.bg,
                             color: sevCfg.color, padding: '1px 6px', textTransform: 'uppercase',
                             letterSpacing: '0.3px'
                           }}>
                             {sevCfg.label}
                           </span>
-                          <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>
                             {typeCfg.label}
                           </span>
                           {cp.selectedParts.length > 0 && (
-                            <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>
+                            <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>
                               · {cp.selectedParts.length} part{cp.selectedParts.length !== 1 ? 's' : ''}
                             </span>
                           )}
                           {cp.type === 'measurement' && cp.tolerance && (
-                            <span style={{ fontSize: '10px', fontFamily: 'var(--font-family)', color: 'var(--muted-foreground)' }}>
+                            <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>
                               · {cp.tolerance.nominal}{cp.tolerance.unit} ({cp.tolerance.min}–{cp.tolerance.max})
                             </span>
                           )}
@@ -998,7 +998,7 @@ export function ValidationPanel({
                     minHeight: '44px',
                     backgroundColor: 'transparent', color: 'var(--primary)',
                     border: '2px dashed var(--border)', cursor: 'pointer',
-                    fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)',
+                    fontSize: 'var(--text-sm)',
                     fontWeight: 'var(--font-weight-medium)', marginTop: 'var(--spacing-sm)'
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.05)'; }}
@@ -1026,7 +1026,7 @@ export function ValidationPanel({
                 minHeight: '44px',
                 backgroundColor: 'transparent', color: 'var(--muted-foreground)',
                 border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
-                fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-medium)'
+                 fontWeight: 'var(--font-weight-medium)'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--destructive)'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--muted-foreground)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -1040,7 +1040,7 @@ export function ValidationPanel({
 
           <div className="flex items-center" style={{ gap: 'var(--spacing-md)' }}>
             <span style={{
-              fontSize: 'var(--text-xs)', fontFamily: 'var(--font-family)',
+              fontSize: 'var(--text-xs)',
               fontWeight: 'var(--font-weight-medium)',
               color: criticalCount > 0 ? '#ef4444' : 'var(--muted-foreground)'
             }}>
@@ -1054,7 +1054,7 @@ export function ValidationPanel({
                 minHeight: '44px',
                 backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)',
                 border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
-                fontFamily: 'var(--font-family)', fontWeight: 'var(--font-weight-bold)'
+                 fontWeight: 'var(--font-weight-bold)'
               }}
               onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}

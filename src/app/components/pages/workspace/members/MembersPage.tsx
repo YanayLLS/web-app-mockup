@@ -1112,13 +1112,11 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
             <div>
               <h2 style={{
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-h2)',
                 fontWeight: 'var(--font-weight-bold)',
               }}>Members</h2>
               <p style={{ 
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 marginTop: 'calc(var(--radius) * 0.25)',
               }}>
@@ -1160,8 +1158,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   className="bg-transparent outline-none w-[200px] max-w-[40vw]"
                   style={{
                     color: 'var(--foreground)',
-                    fontFamily: 'var(--font-family)',
-                    fontSize: 'var(--text-sm)',
+                        fontSize: 'var(--text-sm)',
                   }}
                 />
               </div>
@@ -1181,7 +1178,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 borderColor: selectedGroups.length > 0 ? 'var(--primary)' : 'var(--border)',
                 backgroundColor: selectedGroups.length > 0 ? 'var(--primary-background)' : 'transparent',
                 color: selectedGroups.length > 0 ? 'var(--primary)' : 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 borderRadius: 'var(--radius)',
               }}
@@ -1204,8 +1200,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   style={{ 
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    fontFamily: 'var(--font-family)',
-                    fontSize: '10px',
+                        fontSize: '10px',
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -1224,7 +1219,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 borderColor: selectedProjects.length > 0 ? 'var(--primary)' : 'var(--border)',
                 backgroundColor: selectedProjects.length > 0 ? 'var(--primary-background)' : 'transparent',
                 color: selectedProjects.length > 0 ? 'var(--primary)' : 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 borderRadius: 'var(--radius)',
               }}
@@ -1247,8 +1241,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   style={{ 
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    fontFamily: 'var(--font-family)',
-                    fontSize: '10px',
+                        fontSize: '10px',
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -1268,7 +1261,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 borderColor: selectedRoles.length > 0 ? 'var(--primary)' : 'var(--border)',
                 backgroundColor: selectedRoles.length > 0 ? 'var(--primary-background)' : 'transparent',
                 color: selectedRoles.length > 0 ? 'var(--primary)' : 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 borderRadius: 'var(--radius)',
               }}
@@ -1291,8 +1283,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   style={{ 
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    fontFamily: 'var(--font-family)',
-                    fontSize: '10px',
+                        fontSize: '10px',
                     fontWeight: 'var(--font-weight-bold)',
                   }}
                 >
@@ -1311,8 +1302,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   borderColor: complexFilters.length > 0 ? 'var(--primary)' : 'var(--border)',
                   backgroundColor: complexFilters.length > 0 ? 'var(--primary-background)' : 'transparent',
                   color: complexFilters.length > 0 ? 'var(--primary)' : 'var(--foreground)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   borderRadius: 'var(--radius)',
                 }}
                 onMouseEnter={(e) => {
@@ -1334,8 +1324,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                     style={{ 
                       backgroundColor: 'var(--primary)',
                       color: 'var(--primary-foreground)',
-                      fontFamily: 'var(--font-family)',
-                      fontSize: '10px',
+                            fontSize: '10px',
                       fontWeight: 'var(--font-weight-bold)',
                     }}
                   >
@@ -1354,8 +1343,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   borderColor: 'var(--border)',
                   backgroundColor: 'transparent',
                   color: 'var(--destructive)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   borderRadius: 'var(--radius)',
                 }}
                 onMouseEnter={(e) => {
@@ -1408,8 +1396,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   <span 
                     style={{ 
                       color: 'var(--foreground)', 
-                      fontFamily: 'var(--font-family)',
-                      fontSize: 'var(--text-xs)',
+                            fontSize: 'var(--text-xs)',
                       lineHeight: '1.2',
                     }}
                   >
@@ -1418,8 +1405,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   <span 
                     style={{ 
                       color: seatStatus.icon, 
-                      fontFamily: 'var(--font-family)',
-                      fontSize: 'var(--text-sm)',
+                            fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-bold)',
                       lineHeight: '1.2',
                     }}
@@ -1439,8 +1425,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 <span 
                   style={{ 
                     color: 'var(--muted)', 
-                    fontFamily: 'var(--font-family)',
-                    fontSize: 'var(--text-xs)',
+                        fontSize: 'var(--text-xs)',
                     lineHeight: '1.2',
                   }}
                 >
@@ -1449,8 +1434,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 <span 
                   style={{ 
                     color: 'var(--foreground)', 
-                    fontFamily: 'var(--font-family)',
-                    fontSize: 'var(--text-sm)',
+                        fontSize: 'var(--text-sm)',
                     fontWeight: 'var(--font-weight-semibold)',
                     lineHeight: '1.2',
                   }}
@@ -1475,8 +1459,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
                   borderRadius: 'var(--radius)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-base)',
+                    fontSize: 'var(--text-base)',
                   fontWeight: 'var(--font-weight-bold)',
                   boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
                 }}
@@ -1514,8 +1497,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 style={{ 
                   backgroundColor: 'var(--primary-background)',
                   color: 'var(--primary)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   borderRadius: 'calc(var(--radius) * 0.5)',
                 }}
               >
@@ -1535,8 +1517,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 style={{ 
                   backgroundColor: 'var(--primary-background)',
                   color: 'var(--primary)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   borderRadius: 'calc(var(--radius) * 0.5)',
                 }}
               >
@@ -1561,8 +1542,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                     backgroundColor: `${groupColor}20`,
                     color: groupColor,
                     border: `1px solid ${groupColor}`,
-                    fontFamily: 'var(--font-family)',
-                    fontSize: 'var(--text-sm)',
+                        fontSize: 'var(--text-sm)',
                     borderRadius: 'calc(var(--radius) * 0.5)',
                   }}
                 >
@@ -1584,8 +1564,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 style={{ 
                   backgroundColor: 'var(--primary-background)',
                   color: 'var(--primary)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   borderRadius: 'calc(var(--radius) * 0.5)',
                 }}
               >
@@ -1627,7 +1606,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
                 borderRadius: 'var(--radius)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-bold)',
               }}
@@ -1636,7 +1614,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
             </div>
             <span style={{ 
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-medium)',
             }}>
@@ -1647,7 +1624,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
               className="ml-1 transition-colors"
               style={{ 
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 padding: '2px 6px',
                 borderRadius: 'var(--radius)',
@@ -1681,7 +1657,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
               className="border transition-all"
               style={{ 
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-medium)',
                 padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
@@ -1705,7 +1680,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
               className="border transition-all"
               style={{ 
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-medium)',
                 padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
@@ -1729,7 +1703,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
               className="border transition-all"
               style={{ 
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-medium)',
                 padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
@@ -1753,7 +1726,6 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
               className="transition-all"
               style={{ 
                 color: 'var(--destructive-foreground)',
-                fontFamily: 'var(--font-family)',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--font-weight-medium)',
                 padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
@@ -1949,7 +1921,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                           showProfileOnClick={false}
                           className="[&_div]:!text-[var(--muted)]"
                         />
-                        <span className="text-sm px-2 py-0.5 bg-secondary text-secondary-foreground rounded-lg" style={{ fontFamily: 'var(--font-family)' }}>
+                        <span className="text-sm px-2 py-0.5 bg-secondary text-secondary-foreground rounded-lg">
                           Invited
                         </span>
                       </>
@@ -1964,15 +1936,14 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                           groups={member.groups}
                           lastActive={member.lastActive}
                         />
-                        <span className="text-sm" style={{ fontFamily: 'var(--font-family)' }}>{member.name}</span>
+                        <span className="text-sm">{member.name}</span>
                       </>
                     )}
                   </div>
                 </td>
                 <td style={{ 
                   padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
                 }}>{member.email}</td>
                 <td style={{ 
@@ -2027,14 +1998,12 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 </td>
                 <td style={{ 
                   padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
                 }}>{formatRelativeTime(member.lastActive)}</td>
                 <td style={{ 
                   padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
                 }}>
                   {(() => {
@@ -2045,8 +2014,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                       return (
                         <span style={{ 
                           color: 'var(--muted-foreground)',
-                          fontFamily: 'var(--font-family)',
-                          fontSize: 'var(--text-sm)',
+                                    fontSize: 'var(--text-sm)',
                         }}>
                           —
                         </span>
@@ -2066,8 +2034,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                 </td>
                 <td style={{ 
                   padding: 'calc(var(--radius) * 0.5) calc(var(--radius) * 1)',
-                  fontFamily: 'var(--font-family)',
-                  fontSize: 'var(--text-sm)',
+                    fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
                 }}>{member.invitedOn}</td>
                 <td style={{ 
@@ -2099,8 +2066,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                                 backgroundColor: `${groupColor}20`,
                                 color: groupColor,
                                 border: `1px solid ${groupColor}`,
-                                fontFamily: 'var(--font-family)',
-                              }}
+                                              }}
                             >
                               <Users className="w-3 h-3" style={{ color: groupColor }} />
                               {group}
@@ -2121,7 +2087,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                       onClick={() => setShowAccessModal(member.id)}
                       className="text-xs cursor-pointer hover:bg-primary/10 rounded px-2 py-1 transition-all inline-flex items-center gap-1.5"
                     >
-                      <span className="hover:text-primary transition-colors font-medium" style={{ color: 'var(--primary)', fontFamily: 'var(--font-family)' }}>
+                      <span className="hover:text-primary transition-colors font-medium" style={{ color: 'var(--primary)' }}>
                         All items
                       </span>
                       <span 
@@ -2129,8 +2095,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                         style={{ 
                           backgroundColor: 'var(--primary-background)', 
                           color: 'var(--primary)',
-                          fontFamily: 'var(--font-family)',
-                          fontSize: '10px'
+                                    fontSize: '10px'
                         }}
                       >
                         {member.role}
@@ -2523,8 +2488,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-2"
                     style={{ 
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
-                    }}
+                          }}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -2540,8 +2504,7 @@ export function MembersPage({ onInviteClick, onManageGroups, roleSystem = 'new',
                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-2"
                     style={{ 
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
-                    }}
+                          }}
                   >
                     <Crown className="w-4 h-4" />
                     Transfer Ownership

@@ -150,7 +150,7 @@ export function AppRemoteSupportPage() {
                   className="flex flex-col items-center gap-3"
                 >
                   <div
-                    className="size-20 rounded-full flex items-center justify-center text-white shadow-elevation-sm hover:opacity-90 transition-opacity"
+                    className="size-20 rounded-full flex items-center justify-center text-white shadow-elevation-sm hover:brightness-110 transition-opacity"
                     style={{ backgroundColor: action.color }}
                   >
                     <Icon className="size-8" />
@@ -206,7 +206,7 @@ export function AppRemoteSupportPage() {
               {canStartCall && (
                 <button
                   onClick={() => openCallDevice(true)}
-                  className="px-3 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
+                  className="px-3 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
                   <Phone className="size-3.5" />
@@ -215,7 +215,7 @@ export function AppRemoteSupportPage() {
               )}
               <button
                 onClick={() => openJoinMeeting(true)}
-                className="px-3 py-2 bg-card border border-border text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
+                className="px-3 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-secondary transition-colors flex items-center gap-2 text-sm"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
                 <Video className="size-3.5" />
@@ -225,14 +225,14 @@ export function AppRemoteSupportPage() {
                 <div className="relative">
                   <button
                     onClick={() => setShowNewSessionMenu(!showNewSessionMenu)}
-                    className="px-3 py-2 bg-primary text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"
+                    className="px-3 py-2 bg-primary text-white rounded-lg hover:brightness-110 transition-opacity flex items-center gap-2 text-sm"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   >
                     <Plus className="size-3.5" />
                     Create Meeting
                   </button>
                   {showNewSessionMenu && (
-                    <div className="absolute top-full mt-2 right-0 w-56 bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border z-10 py-1">
+                    <div className="absolute top-full mt-2 right-0 w-56 bg-card rounded-lg shadow-elevation-lg border border-border z-10 py-1">
                       <button
                         onClick={handleStartMeeting}
                         className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
@@ -276,7 +276,7 @@ export function AppRemoteSupportPage() {
                   {mockMeetings.map((meeting) => (
                     <div
                       key={meeting.id}
-                      className="bg-card rounded-[var(--radius)] border border-border p-4 hover:shadow-sm transition-shadow"
+                      className="bg-card rounded-lg border border-border p-4 hover:shadow-sm transition-shadow"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -297,7 +297,7 @@ export function AppRemoteSupportPage() {
                             {copiedId === meeting.id ? <Check className="size-4 text-accent" /> : <Copy className="size-4" />}
                           </button>
                           <button
-                            className="px-3 py-1.5 bg-primary text-white rounded-[var(--radius-button)] hover:opacity-90 transition-opacity text-xs"
+                            className="px-3 py-1.5 bg-primary text-white rounded-lg hover:brightness-110 transition-opacity text-xs"
                             style={{ fontWeight: 'var(--font-weight-bold)' }}
                           >
                             Join
@@ -339,7 +339,7 @@ export function AppRemoteSupportPage() {
                   {mockRecentCalls.map((call) => (
                     <div
                       key={call.id}
-                      className="bg-card rounded-[var(--radius)] border border-border p-4 hover:shadow-sm transition-shadow"
+                      className="bg-card rounded-lg border border-border p-4 hover:shadow-sm transition-shadow"
                     >
                       <div className="flex items-start justify-between">
                         <div>

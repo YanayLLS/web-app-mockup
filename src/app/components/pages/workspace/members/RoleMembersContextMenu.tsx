@@ -60,7 +60,7 @@ export function RoleMembersContextMenu({
             className="text-sm font-bold" 
             style={{ 
               color: 'var(--foreground)', 
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               fontWeight: 'var(--font-weight-bold)',
             }}
@@ -106,7 +106,7 @@ export function RoleMembersContextMenu({
                     className="font-medium truncate"
                     style={{ 
                       color: 'var(--foreground)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-medium)',
                     }}
@@ -117,7 +117,7 @@ export function RoleMembersContextMenu({
                     className="text-xs truncate"
                     style={{ 
                       color: 'var(--muted)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-xs)',
                     }}
                   >
@@ -131,7 +131,7 @@ export function RoleMembersContextMenu({
               className="text-center py-8"
               style={{ 
                 color: 'var(--muted)',
-                fontFamily: 'var(--font-family)',
+                
                 fontSize: 'var(--text-sm)',
               }}
             >

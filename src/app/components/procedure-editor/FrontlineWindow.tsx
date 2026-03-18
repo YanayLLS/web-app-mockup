@@ -222,7 +222,7 @@ export function FrontlineWindow({
                 fontSize: 13,
                 fontWeight: 600,
                 color: titleColor,
-                fontFamily: 'var(--font-family)',
+                
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',

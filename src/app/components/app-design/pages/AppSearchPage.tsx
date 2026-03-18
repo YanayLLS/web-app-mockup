@@ -347,7 +347,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-start justify-center z-50 pt-4 sm:pt-12 px-2 sm:px-4 pointer-events-none">
         <div
-          className="pointer-events-auto bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border overflow-hidden flex flex-col w-full sm:w-auto"
+          className="pointer-events-auto bg-card rounded-lg shadow-elevation-lg border border-border overflow-hidden flex flex-col w-full sm:w-auto"
           style={{ maxWidth: 'min(600px, calc(100vw - 16px))', maxHeight: 'calc(100vh - 32px)' }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -490,7 +490,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
                 {voiceSupported && (
                   <button
                     onClick={startListening}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl mb-4 transition-colors hover:opacity-90"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl mb-4 transition-colors hover:brightness-110"
                     style={{
                       background: 'linear-gradient(135deg, #E6F0FF 0%, #D9E8FF 100%)',
                       border: '1px solid #C2D6F5',
@@ -705,7 +705,7 @@ export function AppSearchModal({ isOpen, onClose, initialQuery = '' }: AppSearch
           {/* Context menu */}
           {contextMenu && (
             <div
-              className="fixed z-[60] bg-card rounded-[var(--radius)] shadow-elevation-lg border border-border py-1 w-48"
+              className="fixed z-[60] bg-card rounded-lg shadow-elevation-lg border border-border py-1 w-48"
               style={{ top: Math.min(contextMenu.y, window.innerHeight - 120), left: Math.min(contextMenu.x, window.innerWidth - 200) }}
             >
               {(() => {

@@ -118,15 +118,13 @@ export function AddMembersContextMenu({
     >
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b" style={{ borderColor: 'var(--border)' }}>
-        <h3 className="font-semibold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+        <h3 className="font-semibold" style={{ color: 'var(--foreground)', fontSize: 'var(--text-sm)' }}>
           {title}
         </h3>
         <button
           onClick={onClose}
-          className="p-2 transition-colors"
+          className="p-2 hover:bg-secondary rounded-lg transition-colors"
           style={{ borderRadius: 'var(--radius-md)' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
           <X className="w-4 h-4" style={{ color: 'var(--muted)' }} />
         </button>
@@ -149,7 +147,7 @@ export function AddMembersContextMenu({
               backgroundColor: 'var(--background)',
               borderColor: 'var(--border)',
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
+              
               fontSize: 'var(--text-sm)',
               borderRadius: 'var(--radius-md)',
             }}
@@ -172,7 +170,7 @@ export function AddMembersContextMenu({
         {showGroups && filteredGroups.length > 0 && (
           <div className="mb-2">
             <div className="px-2 py-1 mb-1">
-              <span className="text-xs font-semibold uppercase" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+              <span className="text-xs font-semibold uppercase" style={{ color: 'var(--muted)' }}>
                 Groups
               </span>
             </div>
@@ -180,10 +178,8 @@ export function AddMembersContextMenu({
               <div
                 key={group.id}
                 onClick={() => toggleGroup(group.id)}
-                className="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-secondary/60 rounded-lg transition-colors"
                 style={{ borderRadius: 'var(--radius-md)' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <Checkbox checked={selectedGroups.includes(group.id)} onChange={(e) => e.stopPropagation()} />
                 <div
@@ -195,10 +191,10 @@ export function AddMembersContextMenu({
                   <Users className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+                  <div className="font-medium truncate" style={{ color: 'var(--foreground)', fontSize: 'var(--text-sm)' }}>
                     {group.name}
                   </div>
-                  <div className="truncate" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-xs)' }}>
+                  <div className="truncate" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>
                     {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
                   </div>
                 </div>
@@ -212,7 +208,7 @@ export function AddMembersContextMenu({
           <div>
             {showGroups && filteredGroups.length > 0 && (
               <div className="px-2 py-1 mb-1">
-                <span className="text-xs font-semibold uppercase" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+                <span className="text-xs font-semibold uppercase" style={{ color: 'var(--muted)' }}>
                   Members
                 </span>
               </div>
@@ -221,18 +217,16 @@ export function AddMembersContextMenu({
               <div
                 key={member.id}
                 onClick={() => toggleMember(member.id)}
-                className="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-secondary/60 rounded-lg transition-colors"
                 style={{ borderRadius: 'var(--radius-md)' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <Checkbox checked={selectedMembers.includes(member.id)} onChange={(e) => e.stopPropagation()} />
                 <MemberAvatar name={member.name} size="md" color={member.color} initials={member.initials} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family)', fontSize: 'var(--text-sm)' }}>
+                  <div className="font-medium truncate" style={{ color: 'var(--foreground)', fontSize: 'var(--text-sm)' }}>
                     {member.name}
                   </div>
-                  <div className="flex items-center gap-2 min-w-0" style={{ fontFamily: 'var(--font-family)' }}>
+                  <div className="flex items-center gap-2 min-w-0">
                     <span className="truncate" style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>{member.email}</span>
                   </div>
                 </div>
@@ -242,7 +236,7 @@ export function AddMembersContextMenu({
                     style={{
                       backgroundColor: 'var(--primary-background)',
                       color: 'var(--primary)',
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-xs)',
                       fontWeight: 'var(--font-weight-bold)',
                     }}
@@ -258,7 +252,7 @@ export function AddMembersContextMenu({
         {/* Empty State */}
         {filteredMembers.length === 0 && filteredGroups.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
               No {showGroups ? 'members or groups' : 'members'} found
             </p>
           </div>
@@ -267,32 +261,21 @@ export function AddMembersContextMenu({
 
       {/* Footer */}
       <div className="flex items-center justify-between p-3 border-t" style={{ borderColor: 'var(--border)' }}>
-        <span className="text-sm" style={{ color: 'var(--muted)', fontFamily: 'var(--font-family)' }}>
+        <span className="text-sm" style={{ color: 'var(--muted)' }}>
           {totalSelected} selected
         </span>
         <div className="flex items-center gap-2">
           <button
             onClick={onClose}
-            className="px-3 py-2 transition-colors text-sm"
-            style={{ 
-              color: 'var(--foreground)', 
-              fontFamily: 'var(--font-family)',
-              borderRadius: 'var(--radius-md)',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
+            style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-3 py-2 transition-colors hover:opacity-90 text-sm"
-            style={{
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-              fontFamily: 'var(--font-family)',
-              borderRadius: 'var(--radius-md)',
-            }}
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
+            style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             Save Changes
           </button>

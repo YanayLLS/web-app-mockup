@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, AlertTriangle, Trash2 } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {
   onClose: () => void;
@@ -19,97 +19,49 @@ export function DeleteConfirmationModal({
 }: DeleteConfirmationModalProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md p-6 shadow-lg border-2"
-        style={{
-          backgroundColor: 'var(--card)',
-          borderColor: 'var(--border)',
-          borderRadius: 'var(--radius-lg)',
-        }}
+        className="w-full max-w-md bg-card border border-border rounded-xl overflow-hidden mx-4"
+        style={{ boxShadow: '0 24px 48px rgba(0,0,0,0.12)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3
-            className="text-lg font-semibold"
-            style={{
-              color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
-            }}
-          >
-            {title}
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1 transition-colors"
-            style={{ borderRadius: 'var(--radius-md)' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <X className="w-5 h-5" style={{ color: 'var(--muted)' }} />
-          </button>
-        </div>
+        <div className="px-6 py-5">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive shrink-0">
+              <AlertTriangle size={20} />
+            </div>
+            <h3 className="text-lg text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              {title}
+            </h3>
+          </div>
 
-        {/* Content */}
-        <div className="mb-6">
-          <p
-            className="text-sm mb-3"
-            style={{
-              color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
-            }}
-          >
-            {message}
-          </p>
+          {/* Content */}
+          <p className="text-sm text-foreground/80 leading-relaxed mb-3">{message}</p>
           {itemName && (
-            <div
-              className="px-3 py-2 text-sm font-medium"
-              style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--foreground)',
-                fontFamily: 'var(--font-family)',
-                borderRadius: 'var(--radius-md)',
-              }}
-            >
+            <div className="px-3 py-2 text-sm text-foreground bg-secondary/50 rounded-lg border border-border/60" style={{ fontWeight: 'var(--font-weight-medium)' }}>
               {itemName}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/60">
           <button
             onClick={onClose}
-            className="px-4 py-2 transition-colors text-sm"
-            style={{
-              color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
-              borderRadius: 'var(--radius-md)',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="px-4 py-2.5 bg-card text-foreground border border-border rounded-lg hover:bg-secondary hover:border-primary/20 transition-all text-sm"
+            style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-            className="px-4 py-2 transition-colors text-sm"
-            style={{
-              backgroundColor: 'var(--destructive)',
-              color: 'var(--destructive-foreground)',
-              fontFamily: 'var(--font-family)',
-              borderRadius: 'var(--radius-md)',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            onClick={() => { onConfirm(); onClose(); }}
+            className="px-5 py-2.5 bg-destructive text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-destructive/20 transition-all text-sm flex items-center gap-2"
+            style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
+            <Trash2 size={15} />
             {confirmButtonText}
           </button>
         </div>

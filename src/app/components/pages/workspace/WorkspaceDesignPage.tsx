@@ -66,7 +66,7 @@ export function WorkspaceDesignPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="border-b border-border/60 bg-card px-4 sm:px-6 py-5">
         <h1 className="text-foreground mb-1" style={{

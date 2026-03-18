@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ChevronDown, ChevronRight, MoreHorizontal, RotateCcw, Eye, FileText } from 'lucide-react';
+import { ChevronDown, MoreHorizontal, RotateCcw, Eye, FileText, History } from 'lucide-react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
 import { MemberAvatar } from '../MemberAvatar';
@@ -47,32 +47,34 @@ export function VersionHistory({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
       {/* Header */}
       <button
         onClick={onToggleExpand}
-        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-secondary/50 transition-colors"
+        className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-secondary/50 transition-colors"
         aria-expanded={isExpanded}
       >
-        {isExpanded ? (
-          <ChevronDown size={12} className="text-muted" aria-hidden="true" />
-        ) : (
-          <ChevronRight size={12} className="text-muted" aria-hidden="true" />
-        )}
-        <span className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+        <History size={15} className="text-[#8B5CF6] shrink-0" />
+        <span className="text-sm text-foreground flex-1 text-left" style={{ fontWeight: 'var(--font-weight-bold)' }}>
           Version History
         </span>
+        {!isExpanded && versions.length > 0 && (
+          <span className="text-[10px] text-muted bg-secondary rounded-full px-2 py-0.5" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+            {versions.length}
+          </span>
+        )}
+        <ChevronDown size={14} className={`text-muted transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
       </button>
 
       {/* Content */}
       {isExpanded && (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 border-t border-border/40">
           {/* Column Headers */}
-          <div className="flex items-center gap-1.5 px-1.5 pb-2 text-xs text-muted">
+          <div className="flex items-center gap-1.5 px-1.5 py-2.5 text-[10px] text-muted uppercase tracking-wider" style={{ fontWeight: 'var(--font-weight-bold)' }}>
             <div className="w-14 shrink-0">Version</div>
-            <div className="flex-1 min-w-0">Publish Date</div>
+            <div className="flex-1 min-w-0">Published</div>
             <div className="w-12 shrink-0">By</div>
-            <div className="w-4 shrink-0" /> {/* For menu button */}
+            <div className="w-4 shrink-0" />
           </div>
 
           {/* Version List */}
@@ -80,12 +82,14 @@ export function VersionHistory({
             {versions.map((version, index) => (
               <div
                 key={index}
-                className="group flex items-center gap-1.5 px-1.5 py-1 hover:bg-secondary/50 rounded-[var(--radius)] transition-colors"
+                className="group flex items-center gap-1.5 px-1.5 py-1.5 hover:bg-secondary/40 rounded-lg transition-colors"
               >
-                <div className="w-14 shrink-0 text-xs text-foreground">
-                  {version.version}
+                <div className="w-14 shrink-0">
+                  <span className="text-xs text-primary px-1.5 py-0.5 bg-primary/8 rounded" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                    {version.version}
+                  </span>
                 </div>
-                <div className="flex-1 min-w-0 text-xs text-foreground truncate">
+                <div className="flex-1 min-w-0 text-xs text-muted truncate">
                   {version.publishDate}
                 </div>
                 <div className="w-12 shrink-0 flex items-center">
@@ -96,10 +100,10 @@ export function VersionHistory({
                     size="sm"
                   />
                 </div>
-                <div className="w-4 shrink-0 relative" ref={activeMenu === index ? menuRef : null}>
+                <div className="w-5 shrink-0 relative" ref={activeMenu === index ? menuRef : null}>
                   <button
                     onClick={() => setActiveMenu(activeMenu === index ? null : index)}
-                    className="md:opacity-0 md:group-hover:opacity-100 hover:bg-secondary p-0.5 rounded transition-all"
+                    className="md:opacity-0 md:group-hover:opacity-100 hover:bg-secondary p-1 rounded-md transition-all"
                     aria-label={`Version ${version.version} options`}
                     aria-haspopup="true"
                     aria-expanded={activeMenu === index}
@@ -110,30 +114,30 @@ export function VersionHistory({
                   {/* Context Menu */}
                   {activeMenu === index && (
                     <div
-                      className="absolute right-0 top-full mt-1 w-48 max-w-[calc(100vw-32px)] bg-card border border-border rounded-[var(--radius)] shadow-lg z-20 overflow-hidden"
-                      style={{ boxShadow: 'var(--elevation-sm)' }}
+                      className="absolute right-0 top-full mt-1 w-52 max-w-[calc(100vw-32px)] bg-card border border-border rounded-xl z-20 overflow-hidden p-1"
+                      style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
                     >
                       {canRollback && (
                         <button
                           onClick={() => handleRollback(index)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
                         >
-                          <RotateCcw size={16} className="text-muted" />
+                          <RotateCcw size={14} className="text-[#F59E0B]" />
                           <span>Rollback to this version</span>
                         </button>
                       )}
                       <button
                         onClick={() => handlePreview(index)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
                       >
-                        <Eye size={16} className="text-muted" />
+                        <Eye size={14} className="text-primary" />
                         <span>Preview</span>
                       </button>
                       <button
                         onClick={() => handleViewChanges(index)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
                       >
-                        <FileText size={16} className="text-muted" />
+                        <FileText size={14} className="text-muted" />
                         <span>View changes</span>
                       </button>
                     </div>

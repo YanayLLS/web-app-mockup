@@ -93,7 +93,7 @@ export function MembersPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="border-b border-border/60 bg-card px-4 sm:px-6 py-5">
         <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ export function MembersPage() {
       {/* Actions Bar */}
       <div className="border-b border-border/40 bg-card px-4 sm:px-6 py-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border rounded-[var(--radius)] focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border rounded-lg focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
             <Search size={15} className="text-muted shrink-0" />
             <input
               type="text"
@@ -167,7 +167,6 @@ export function MembersPage() {
                 className="flex items-center gap-1.5 px-3 py-1 rounded-full transition-all"
                 style={{
                   fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)',
                   fontWeight: 'var(--font-weight-bold)',
                   border: `1.5px solid ${group.color}`,
                   color: isActive ? '#FFFFFF' : group.color,

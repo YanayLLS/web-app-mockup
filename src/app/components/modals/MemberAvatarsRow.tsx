@@ -55,7 +55,6 @@ export function MemberAvatarsRow({
               backgroundColor: item.type === 'group' ? 'var(--secondary)' : item.color,
               borderColor: 'var(--background)',
               fontWeight: '600',
-              fontFamily: 'var(--font-family)',
             }}
           >
             {item.type === 'group' ? (
@@ -71,8 +70,7 @@ export function MemberAvatarsRow({
                 backgroundColor: 'var(--popover)',
                 color: 'var(--popover-foreground)',
                 fontSize: 'var(--text-xs)',
-                fontFamily: 'var(--font-family)',
-                boxShadow: '0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -1px rgba(0,0,0,0.06)',
+                  boxShadow: '0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -1px rgba(0,0,0,0.06)',
               }}
             >
               {item.type === 'group' ? (
@@ -105,8 +103,7 @@ export function MemberAvatarsRow({
                 style={{
                   backgroundColor: 'var(--destructive)',
                   color: 'var(--destructive-foreground)',
-                  fontFamily: 'var(--font-family)',
-                }}
+                    }}
               >
                 ×
               </button>
@@ -121,7 +118,6 @@ export function MemberAvatarsRow({
               backgroundColor: 'var(--secondary)',
               borderColor: 'var(--background)',
               color: 'var(--foreground)',
-              fontFamily: 'var(--font-family)',
             }}
           >
             +{additionalCount}
@@ -133,11 +129,11 @@ export function MemberAvatarsRow({
         <button
           ref={addButtonRef}
           onClick={onAddClick}
-          className={`${sizeClasses} rounded-full flex items-center justify-center border-2 border-dashed hover:bg-secondary transition-colors`}
+          className={`${sizeClasses} rounded-full flex items-center justify-center border-2 border-dashed hover:bg-primary/5 hover:border-primary/30 transition-all`}
           title="Add members"
           style={{ borderColor: 'var(--border)' }}
         >
-          <UserPlus className="w-3.5 h-3.5" style={{ color: 'var(--muted)' }} />
+          <UserPlus className="w-3.5 h-3.5 text-muted" />
         </button>
       )}
     </div>

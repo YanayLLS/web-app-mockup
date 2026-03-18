@@ -35,7 +35,7 @@ export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPubli
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
         <div
-          className="bg-card rounded-[var(--radius)] shadow-elevation-lg w-full max-w-md pointer-events-auto"
+          className="bg-card rounded-lg shadow-elevation-lg w-full max-w-md pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-6">
@@ -51,7 +51,7 @@ export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPubli
               <label className="text-xs text-muted mb-1 block" style={{ fontWeight: 'var(--font-weight-medium)' }}>
                 Current version
               </label>
-              <div className="px-3 py-2.5 bg-secondary rounded-[var(--radius)] text-sm text-foreground">
+              <div className="px-3 py-2.5 bg-secondary rounded-lg text-sm text-foreground">
                 {currentVersion || '---'}
               </div>
             </div>
@@ -65,7 +65,7 @@ export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPubli
                 type="text"
                 value={displayVersion}
                 onChange={(e) => setNewVersion(e.target.value)}
-                className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2.5 bg-card rounded-lg text-sm text-foreground border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
 
@@ -79,7 +79,7 @@ export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPubli
                 onChange={(e) => setChanges(e.target.value)}
                 rows={3}
                 placeholder="Describe the changes made..."
-                className="w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none placeholder:text-muted focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2.5 bg-card rounded-lg text-sm text-foreground border border-border outline-none resize-none placeholder:text-muted focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
 
@@ -107,14 +107,14 @@ export function AppPublishModal({ currentVersion, onClose, onPublish }: AppPubli
             <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-[var(--radius-button)] text-sm hover:bg-destructive/90 transition-colors"
+                className="px-5 py-2.5 min-h-[44px] bg-destructive text-white rounded-lg text-sm hover:bg-destructive/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => onPublish(displayVersion, changes)}
-                className="px-5 py-2.5 min-h-[44px] bg-primary text-white rounded-[var(--radius-button)] text-sm hover:bg-primary/90 transition-colors"
+                className="px-5 py-2.5 min-h-[44px] bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)' }}
               >
                 Publish

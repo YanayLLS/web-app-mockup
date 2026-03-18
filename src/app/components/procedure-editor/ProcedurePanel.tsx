@@ -315,7 +315,7 @@ export function ProcedurePanel({
                       <p 
                         className="text-white whitespace-nowrap text-xs sm:text-sm font-medium flex items-center"
                         style={{ 
-                          fontFamily: 'var(--font-family)',
+                          
                           gap: 'var(--spacing-xs)',
                           opacity: 0.9
                         }}
@@ -354,7 +354,7 @@ export function ProcedurePanel({
                         <p
                           className="text-white whitespace-nowrap text-xs sm:text-sm font-medium"
                           style={{
-                            fontFamily: 'var(--font-family)',
+                            
                             opacity: 0.9
                           }}
                         >
@@ -384,7 +384,7 @@ export function ProcedurePanel({
                       <p
                         className="text-white whitespace-nowrap text-xs sm:text-sm font-medium"
                         style={{
-                          fontFamily: 'var(--font-family)',
+                          
                           opacity: isTOCOpen ? 1 : 0.9,
                         }}
                       >
@@ -396,7 +396,7 @@ Step {stepIndex + 1} of {totalSteps}
                           className="ml-2 hidden sm:inline-flex items-center rounded-full"
                           style={{
                             fontSize: '10px',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontWeight: 600,
                             color: 'white',
                             backgroundColor: '#2F80ED',
@@ -423,8 +423,6 @@ Step {stepIndex + 1} of {totalSteps}
                           <Palette className="size-3 sm:size-4 text-white/70 hover:text-white transition-colors" />
                         </button>
                       )}
-
-                      
                       <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] cursor-pointer hover:bg-[rgba(255,255,255,0.1)] flex items-center justify-center"
@@ -487,7 +485,7 @@ Step {stepIndex + 1} of {totalSteps}
                               className="w-full text-white outline-none"
                               style={{
                                 backgroundColor: '#368dc4',
-                                fontFamily: 'var(--font-family)',
+                                
                                 fontSize: 'var(--text-h4)',
                                 fontWeight: 'var(--font-weight-bold)',
                                 padding: 'var(--spacing-sm)',
@@ -524,7 +522,7 @@ Step {stepIndex + 1} of {totalSteps}
                             <div 
                               className="text-white whitespace-pre-wrap line-clamp-2"
                               style={{
-                                fontFamily: 'var(--font-family)',
+                                
                                 fontSize: 'var(--text-h4)',
                                 fontWeight: 'var(--font-weight-bold)',
                                 lineHeight: '1.5',
@@ -566,7 +564,7 @@ Step {stepIndex + 1} of {totalSteps}
                             <span 
                               className="text-white opacity-70"
                               style={{
-                                fontFamily: 'var(--font-family)',
+                                
                                 fontSize: 'var(--text-sm)',
                                 fontWeight: 'var(--font-weight-normal)',
                                 pointerEvents: 'none'
@@ -611,7 +609,7 @@ Step {stepIndex + 1} of {totalSteps}
                               className="w-full text-white outline-none resize-none overflow-y-auto"
                               style={{
                                 backgroundColor: '#368dc4',
-                                fontFamily: 'var(--font-family)',
+                                
                                 fontSize: 'var(--text-sm)',
                                 fontWeight: 'var(--font-weight-normal)',
                                 padding: 'var(--spacing-sm)',
@@ -648,7 +646,7 @@ Step {stepIndex + 1} of {totalSteps}
                               <div 
                                 className="text-white whitespace-pre-wrap overflow-hidden"
                                 style={{
-                                  fontFamily: 'var(--font-family)',
+                                  
                                   fontSize: 'var(--text-sm)',
                                   fontWeight: 'var(--font-weight-normal)',
                                   lineHeight: '1.5',
@@ -708,7 +706,7 @@ Step {stepIndex + 1} of {totalSteps}
                             <span 
                               className="text-white opacity-70"
                               style={{
-                                fontFamily: 'var(--font-family)',
+                                
                                 fontSize: 'var(--text-sm)',
                                 fontWeight: 'var(--font-weight-normal)',
                                 pointerEvents: 'none'
@@ -795,7 +793,7 @@ Step {stepIndex + 1} of {totalSteps}
                                   }}
                                   className="bg-transparent border-none outline-none text-white text-center text-[10px] sm:text-[12px] min-w-[60px]"
                                   style={{
-                                    fontFamily: 'var(--font-family)',
+                                    
                                     fontWeight: 'var(--font-weight-normal)'
                                   }}
                                   autoFocus
@@ -811,7 +809,7 @@ Step {stepIndex + 1} of {totalSteps}
                                     }}
                                     className="text-white text-[10px] sm:text-[12px] whitespace-nowrap cursor-pointer"
                                     style={{
-                                      fontFamily: 'var(--font-family)',
+                                      
                                       fontWeight: 'var(--font-weight-normal)'
                                     }}
                                     title={`Go to step ${targetStepIndex + 1}`}
@@ -873,7 +871,7 @@ Step {stepIndex + 1} of {totalSteps}
                             <span 
                               className="text-white text-[10px] sm:text-[12px] whitespace-nowrap"
                               style={{
-                                fontFamily: 'var(--font-family)',
+                                
                                 fontWeight: 'var(--font-weight-normal)'
                               }}
                             >
@@ -975,7 +973,7 @@ Step {stepIndex + 1} of {totalSteps}
                         style={{
                           color: 'white',
                           fontSize: 'var(--text-h3)',
-                          fontFamily: 'var(--font-family)',
+                          
                           fontWeight: 'var(--font-weight-bold)',
                           margin: 0
                         }}
@@ -987,7 +985,7 @@ Step {stepIndex + 1} of {totalSteps}
                           color: 'white',
                           opacity: 0.8,
                           fontSize: 'var(--text-sm)',
-                          fontFamily: 'var(--font-family)',
+                          
                           fontWeight: 'var(--font-weight-normal)',
                           margin: 0
                         }}
@@ -1053,7 +1051,7 @@ Step {stepIndex + 1} of {totalSteps}
                           style={{
                             color: 'var(--primary-foreground)',
                             fontSize: 'var(--text-sm)',
-                            fontFamily: 'var(--font-family)',
+                            
                             fontWeight: 'var(--font-weight-normal)',
                             position: 'relative'
                           }}
@@ -1176,7 +1174,7 @@ Step {stepIndex + 1} of {totalSteps}
                   <span 
                     className="text-foreground"
                     style={{
-                      fontFamily: 'var(--font-family)',
+                      
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--font-weight-normal)'
                     }}
@@ -1209,7 +1207,7 @@ Step {stepIndex + 1} of {totalSteps}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-white text-lg font-semibold" style={{ fontFamily: 'var(--font-family)' }}>
+            <h3 className="text-white text-lg font-semibold">
               Keyboard Shortcuts
             </h3>
             <button
@@ -1231,7 +1229,7 @@ Step {stepIndex + 1} of {totalSteps}
               { keys: ['F'], label: 'Toggle fullscreen' },
             ].map((shortcut, i) => (
               <div key={i} className="flex items-center justify-between py-1.5">
-                <span className="text-white/70 text-sm" style={{ fontFamily: 'var(--font-family)' }}>
+                <span className="text-white/70 text-sm">
                   {shortcut.label}
                 </span>
                 <div className="flex items-center gap-1.5">
@@ -1244,7 +1242,7 @@ Step {stepIndex + 1} of {totalSteps}
                           background: 'rgba(255, 255, 255, 0.1)',
                           border: '1px solid rgba(255, 255, 255, 0.2)',
                           padding: '0 8px',
-                          fontFamily: 'var(--font-family)'
+                          
                         }}
                       >
                         {key}

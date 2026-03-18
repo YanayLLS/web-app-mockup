@@ -69,7 +69,7 @@ export function AppProcedureSettingsPage() {
             {canPublish && (
               <button
                 onClick={() => setShowPublishModal(true)}
-                className="px-4 py-2 min-h-[44px] bg-accent text-foreground rounded-[var(--radius-button)] text-sm hover:bg-accent/90 transition-colors"
+                className="px-4 py-2 min-h-[44px] bg-accent text-foreground rounded-lg text-sm hover:bg-accent/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)', color: '#fff', backgroundColor: '#11E874' }}
               >
                 Publish
@@ -96,7 +96,7 @@ export function AppProcedureSettingsPage() {
               value={settings.title}
               onChange={(e) => update('title', e.target.value)}
               disabled={!canEdit}
-              className={`w-full px-3 py-2.5 min-h-[44px] bg-card rounded-[var(--radius)] text-foreground border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
+              className={`w-full px-3 py-2.5 min-h-[44px] bg-card rounded-lg text-foreground border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{ fontSize: '16px' }}
             />
           </div>
@@ -106,7 +106,7 @@ export function AppProcedureSettingsPage() {
             {/* Image upload */}
             <div>
               <label className="text-xs text-muted mb-1.5 block" style={{ fontWeight: 'var(--font-weight-medium)' }}>Image</label>
-              <div className={`aspect-video bg-card rounded-[var(--radius)] border-2 border-dashed border-border flex flex-col items-center justify-center transition-colors ${canEdit ? 'cursor-pointer hover:border-primary/50' : 'opacity-60 cursor-not-allowed'}`}>
+              <div className={`aspect-video bg-card rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center transition-colors ${canEdit ? 'cursor-pointer hover:border-primary/50' : 'opacity-60 cursor-not-allowed'}`}>
                 <Upload className="size-8 text-muted mb-2" />
                 <p className="text-xs text-muted">Click to upload an image</p>
               </div>
@@ -120,7 +120,7 @@ export function AppProcedureSettingsPage() {
                 onChange={(e) => update('description', e.target.value)}
                 rows={6}
                 disabled={!canEdit}
-                className={`w-full px-3 py-2.5 bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`w-full px-3 py-2.5 bg-card rounded-lg text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -128,7 +128,7 @@ export function AppProcedureSettingsPage() {
           {/* Two-column settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Logics */}
-            <div className="bg-card rounded-[var(--radius)] p-4 border border-border">
+            <div className="bg-card rounded-lg p-4 border border-border">
               <h4 className="text-sm text-foreground mb-3" style={{ fontWeight: 'var(--font-weight-bold)' }}>Logics</h4>
               <div className="space-y-3">
                 <CheckboxField label="Enable 2D" checked={settings.enable2D} onChange={(v) => update('enable2D', v)} disabled={!canEdit} />
@@ -139,7 +139,7 @@ export function AppProcedureSettingsPage() {
             </div>
 
             {/* Text to speech */}
-            <div className="bg-card rounded-[var(--radius)] p-4 border border-border">
+            <div className="bg-card rounded-lg p-4 border border-border">
               <h4 className="text-sm text-foreground mb-3" style={{ fontWeight: 'var(--font-weight-bold)' }}>Text to speech</h4>
               <div className="space-y-3">
                 <CheckboxField label="Read headers" checked={settings.readHeaders} onChange={(v) => update('readHeaders', v)} disabled={!canEdit} />
@@ -150,7 +150,7 @@ export function AppProcedureSettingsPage() {
           </div>
 
           {/* AI Instructions */}
-          <div className="bg-card rounded-[var(--radius)] p-4 border border-border">
+          <div className="bg-card rounded-lg p-4 border border-border">
             <h4 className="text-sm text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>AI Instructions</h4>
             <p className="text-xs text-muted mb-2">Make it easier for AI chat to find this procedure</p>
             {canEdit && (
@@ -164,7 +164,7 @@ export function AppProcedureSettingsPage() {
               onChange={(e) => update('aiInstructions', e.target.value)}
               rows={4}
               disabled={!canEdit}
-              className={`w-full px-3 py-2.5 bg-background rounded-[var(--radius)] text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
+              className={`w-full px-3 py-2.5 bg-background rounded-lg text-sm text-foreground border border-border outline-none resize-none focus:ring-2 focus:ring-primary focus:border-transparent ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
             />
           </div>
 
@@ -176,7 +176,7 @@ export function AppProcedureSettingsPage() {
                 value={settings.connectedTwin}
                 onChange={(e) => update('connectedTwin', e.target.value)}
                 disabled={!canEdit}
-                className={`w-full px-3 py-2.5 min-h-[44px] bg-card rounded-[var(--radius)] text-sm text-foreground border border-border outline-none appearance-none focus:ring-2 focus:ring-primary focus:border-transparent pr-8 ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                className={`w-full px-3 py-2.5 min-h-[44px] bg-card rounded-lg text-sm text-foreground border border-border outline-none appearance-none focus:ring-2 focus:ring-primary focus:border-transparent pr-8 ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
               >
                 <option value="">None</option>
                 <option value="Elitebook 840 G9 Assembly">Elitebook 840 G9 Assembly</option>
