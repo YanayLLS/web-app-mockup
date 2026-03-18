@@ -669,9 +669,10 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
                   </p>
                   <button
                     onClick={startVideo}
-                    className="px-5 py-2.5 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-lg hover:bg-white/20 transition-all text-xs"
+                    className="px-5 py-2.5 bg-white/15 backdrop-blur-sm text-white border border-white/20 rounded-lg hover:bg-white/25 hover:border-white/30 hover:shadow-lg transition-all text-xs flex items-center gap-2 mx-auto"
                     style={{ fontWeight: 'var(--font-weight-bold)' }}
                   >
+                    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     Retry Access
                   </button>
                 </div>
@@ -852,7 +853,7 @@ function PreJoinMeeting({ meeting, onJoin, onCancel, isCreateMode, onTitleChange
               </button>
               <button
                 onClick={() => onJoin({ isMuted, isVideoOff, audioDeviceId: selectedAudio, videoDeviceId: selectedVideo })}
-                className="flex-[2] px-3 md:px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm hover:opacity-90 transition-opacity shadow-sm shadow-primary/20 flex items-center justify-center gap-2"
+                className="flex-[2] px-3 md:px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm hover:brightness-110 hover:shadow-md hover:shadow-primary/25 transition-all shadow-sm shadow-primary/20 flex items-center justify-center gap-2"
                 style={{ fontWeight: 'var(--font-weight-bold)' }}
               >
                 <Video size={15} />
@@ -5341,7 +5342,7 @@ export function RemoteSupportPage({
                 </button>
                 <button
                   className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
-                    deviceId.length === 9 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90' : 'bg-secondary text-muted cursor-not-allowed'
+                    deviceId.length === 9 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:brightness-110 hover:shadow-md hover:shadow-primary/25' : 'bg-secondary text-muted cursor-not-allowed'
                   }`}
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                   onClick={handleCallDevice}
@@ -5526,7 +5527,7 @@ export function RemoteSupportPage({
                 </button>
                 <button
                   className={`flex-[1.5] px-4 py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
-                    meetingCode.length === 8 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90' : 'bg-secondary text-muted cursor-not-allowed'
+                    meetingCode.length === 8 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:brightness-110 hover:shadow-md hover:shadow-primary/25' : 'bg-secondary text-muted cursor-not-allowed'
                   }`}
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                   onClick={handleJoinMeetingByCode}
@@ -5672,7 +5673,7 @@ export function RemoteSupportPage({
                 {canScheduleMeeting && (
                 <button
                   onClick={() => openScheduleModal(true)}
-                  className="mt-6 px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all hover:shadow-md hover:shadow-primary/20 shadow-sm shadow-primary/15 flex items-center gap-2 text-sm"
+                  className="mt-6 px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 transition-all hover:shadow-md hover:shadow-primary/20 shadow-sm shadow-primary/15 flex items-center gap-2 text-sm"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
                   <Calendar size={15} />

@@ -685,20 +685,26 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
   return (
     <div className="flex-1 flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="border-b border-border px-4 md:px-6 py-5 bg-card">
+      <div className="border-b border-border/60 px-4 md:px-6 py-5 bg-card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
-              Roles
-            </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+            <div className="flex items-center gap-3 mb-1">
+              <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
+                Roles
+              </h2>
+              <span className="px-2 py-0.5 text-[10px] bg-primary/8 text-primary rounded-full" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+                {roles.length}
+              </span>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--muted)', opacity: 0.7 }}>
               Define roles with specific permissions for training, content, and administration
             </p>
           </div>
           {isAdmin && (
             <button
               onClick={handleCreateRole}
-              className="px-4 py-2 rounded-lg transition-opacity hover:opacity-90 bg-primary text-primary-foreground flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg transition-all hover:brightness-110 hover:shadow-md hover:shadow-primary/20 bg-primary text-primary-foreground flex items-center gap-2"
+              style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-sm)' }}
             >
               <Plus className="w-4 h-4" />
               Create Role
@@ -716,11 +722,10 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
             <div
               key={role.id}
               onClick={() => handleRoleClick(role.id)}
-              className="border rounded-lg overflow-hidden cursor-pointer transition-all"
+              className="group/role border rounded-xl overflow-hidden cursor-pointer transition-all hover:shadow-md"
               style={{
                 borderColor: 'var(--border)',
                 backgroundColor: 'var(--card)',
-                borderRadius: 'var(--radius)',
               }}
             >
               {/* Role Header */}
@@ -840,9 +845,9 @@ export function RolesManagementPage({ onNavigateToMembersWithRole, roles: extern
                         e.stopPropagation();
                         handleDeleteRole(role);
                       }}
-                      className="p-2 hover:bg-destructive/10 rounded-lg transition-colors flex-shrink-0"
+                      className="p-2 hover:bg-destructive/8 rounded-lg transition-all flex-shrink-0 md:opacity-0 md:group-hover/role:opacity-100"
                     >
-                      <Trash2 className="w-4 h-4" style={{ color: 'var(--destructive)' }} />
+                      <Trash2 className="w-4 h-4 text-muted hover:text-destructive transition-colors" />
                     </button>
                   )}
                 </div>

@@ -42,7 +42,7 @@ function ActivityLogErrorState({ onRetry }: { onRetry: () => void }) {
           </p>
           <button
             onClick={onRetry}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
             style={{ fontWeight: 'var(--font-weight-bold)' }}
           >
             <RefreshCw size={16} />
@@ -205,13 +205,13 @@ export function ActivityLogPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-card px-4 sm:px-6 py-4">
+      <div className="border-b border-border/60 bg-card px-4 sm:px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h1 className="text-xl text-foreground mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
               Activity Log
             </h1>
-            <p className="text-sm text-muted">
+            <p className="text-sm text-muted/70">
               Track all changes and activities in your project
             </p>
           </div>
@@ -250,14 +250,14 @@ export function ActivityLogPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+        <div className="flex items-center gap-2 px-3 h-10 bg-secondary/30 border border-border rounded-[var(--radius)] focus-within:border-primary focus-within:bg-card focus-within:shadow-sm focus-within:shadow-primary/5 transition-all">
+          <Search size={15} className="text-muted shrink-0" />
           <input
             type="text"
             placeholder="Search activities..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 bg-secondary border border-border rounded-[var(--radius)] text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="flex-1 bg-transparent text-sm text-foreground outline-none ring-0 border-none placeholder:text-muted focus:outline-none focus:ring-0"
           />
         </div>
 
@@ -392,13 +392,15 @@ export function ActivityLogPage() {
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {filteredLogs.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <Database size={48} className="mx-auto mb-4 text-muted opacity-50" />
-                <p className="text-sm text-muted mb-1" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              <div className="text-center flex flex-col items-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ background: 'linear-gradient(135deg, rgba(47,128,237,0.08), rgba(47,128,237,0.03))', border: '1px solid rgba(47,128,237,0.1)', boxShadow: '0 8px 32px rgba(47,128,237,0.06)' }}>
+                  <Database size={28} className="text-primary/40" />
+                </div>
+                <p className="text-[15px] text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                   No activities found
                 </p>
-                <p className="text-xs text-muted">
-                  {hasActiveFilters ? 'Try adjusting your filters' : 'Activities will appear here as you make changes'}
+                <p className="text-xs text-muted max-w-[260px] leading-relaxed">
+                  {hasActiveFilters ? 'Try adjusting your filters to see results' : 'Activities will appear here as you make changes'}
                 </p>
               </div>
             </div>

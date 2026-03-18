@@ -185,8 +185,11 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         {/* Results */}
         <div className="max-h-[420px] overflow-y-auto py-2">
           {results.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm" style={{ color: 'var(--color-muted)' }}>
-              No results for "{query}"
+            <div className="px-4 py-10 text-center">
+              <Search size={20} className="mx-auto mb-2 text-muted/30" />
+              <p className="text-sm text-muted" style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                No results for "<span className="text-foreground">{query}</span>"
+              </p>
             </div>
           ) : (
             categories.map(cat => (
@@ -206,7 +209,17 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                       outlineOffset: '-1px',
                     }}
                   >
-                    <span className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-secondary)', color: 'var(--color-foreground)' }}>
+                    <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${
+                      item.category === 'Pages' ? 'text-primary' :
+                      item.category === 'Workspace' ? 'text-[#8B5CF6]' :
+                      item.category === 'Projects' ? 'text-[#F59E0B]' :
+                      'text-[#10b981]'
+                    }`} style={{
+                      background: item.category === 'Pages' ? 'rgba(47,128,237,0.08)' :
+                                  item.category === 'Workspace' ? 'rgba(139,92,246,0.08)' :
+                                  item.category === 'Projects' ? 'rgba(245,158,11,0.08)' :
+                                  'rgba(16,185,129,0.08)'
+                    }}>
                       {item.icon}
                     </span>
                     <div className="flex-1 min-w-0">

@@ -8,6 +8,7 @@ import { useRole, ROLES, UserRole, hasAccess } from '../contexts/RoleContext';
 import { getUrlParam, setUrlParam } from '../utils/urlParams';
 import { ChevronDown, Search, Settings as SettingsIcon } from 'lucide-react';
 import { useClickOutside } from '../hooks/useClickOutside';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { toast } from 'sonner';
 
 interface TopBarProps {
@@ -141,6 +142,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
     if (getUrlParam('account') === '1') setShowAccountSettings(true);
     if (getUrlParam('xrlogin') === '1') setShowXRLogin(true);
   }, []);
+  const { workspace: wsSettings } = useWorkspace();
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
   const [workspaceSearchQuery, setWorkspaceSearchQuery] = useState('');
   const [currentWorkspace, setCurrentWorkspace] = useState({ id: 'frontline', name: 'Frontline360', initials: 'F', color: 'primary' });
@@ -163,9 +165,9 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
 
   const canAccessWorkspaceManagement = hasAccess(currentRole, 'workspace-management') || hasAccess(currentRole, 'workspace-members');
 
-  // Mock workspace data
+  // Mock workspace data — current workspace uses context values
   const allWorkspaces = [
-    { id: 'frontline', name: 'Frontline360', initials: 'F', color: 'primary' },
+    { id: 'frontline', name: wsSettings.name, initials: wsSettings.name.charAt(0).toUpperCase(), color: 'primary' },
     { id: 'lls', name: 'LLS-ltd', initials: 'L', color: 'accent' },
     { id: 'design', name: 'Design Team', initials: 'D', color: 'secondary' },
     { id: 'eng', name: 'Engineering Hub', initials: 'E', color: 'primary' },
@@ -245,13 +247,17 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                 aria-haspopup="true"
               >
                 {currentWorkspace.id === 'frontline' ? (
-                  <div className="w-6 h-6 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <div className="w-5 h-5 text-primary">
-                      <IconLogo />
-                    </div>
+                  <div className="w-6 h-6 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {wsSettings.logoUrl ? (
+                      <img src={wsSettings.logoUrl} alt="" className="w-full h-full object-contain" />
+                    ) : (
+                      <div className="w-5 h-5 text-primary">
+                        <IconLogo />
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div 
+                  <div
                     className={`w-6 h-6 rounded-[var(--radius)] flex items-center justify-center flex-shrink-0 ${
                       currentWorkspace.color === 'primary' ? 'bg-primary/20 text-primary' :
                       currentWorkspace.color === 'accent' ? 'bg-accent/20 text-accent' :
@@ -267,7 +273,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'var(--font-family)'
                 }}>
-                  {currentWorkspace.name}
+                  {currentWorkspace.id === 'frontline' ? wsSettings.name : currentWorkspace.name}
                 </span>
                 <ChevronDown size={14} className={`text-muted transition-transform ${showWorkspaceMenu ? 'rotate-180' : ''}`} />
               </button>
@@ -283,13 +289,17 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                   <div className="p-4 border-b border-border">
                     <div className="flex items-center gap-3 mb-3">
                       {currentWorkspace.id === 'frontline' ? (
-                        <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center p-2">
-                          <div className="w-full h-full text-primary">
-                            <IconLogo />
-                          </div>
+                        <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center p-2 overflow-hidden">
+                          {wsSettings.logoUrl ? (
+                            <img src={wsSettings.logoUrl} alt="" className="w-full h-full object-contain" />
+                          ) : (
+                            <div className="w-full h-full text-primary">
+                              <IconLogo />
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <div 
+                        <div
                           className={`w-10 h-10 rounded-[var(--radius)] flex items-center justify-center ${
                             currentWorkspace.color === 'primary' ? 'bg-primary/20 text-primary' :
                             currentWorkspace.color === 'accent' ? 'bg-accent/20 text-accent' :
@@ -302,7 +312,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-foreground truncate" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)', fontFamily: 'var(--font-family)' }}>
-                          {currentWorkspace.name}
+                          {currentWorkspace.id === 'frontline' ? wsSettings.name : currentWorkspace.name}
                         </h3>
                         <p className="text-muted truncate" style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-family)' }}>
                           23 members • Business Plus
@@ -419,9 +429,9 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         {/* Right side - Install App and User Avatar */}
         <div className="flex-1 flex items-center justify-end gap-3">
           {!isMobile && (
-            <button className="flex items-center gap-0.5 text-primary hover:opacity-80 transition-opacity">
+            <button className="flex items-center gap-1.5 text-primary hover:bg-primary/5 px-2.5 py-1.5 rounded-lg transition-all">
               <IconDownload />
-              <span className="text-xs">Install App</span>
+              <span className="text-xs" style={{ fontWeight: 'var(--font-weight-medium)' }}>Install App</span>
             </button>
           )}
 
@@ -740,7 +750,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                     toast.success('Settings saved!');
                     setShowAccountSettings(false);
                   }}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius)] text-sm hover:opacity-90 transition-opacity"
+                  className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all"
                   style={{ fontWeight: 'var(--font-weight-bold)' }}
                 >
                   Save Changes

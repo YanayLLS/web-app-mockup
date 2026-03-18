@@ -102,36 +102,36 @@ export function GroupsPage() {
   return (
     <div className="flex flex-col h-full bg-background" style={{ fontFamily: 'var(--font-family)' }}>
       {/* Header */}
-      <div className="border-b border-border bg-card px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="border-b border-border/60 bg-card px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1
-            className="text-foreground mb-1"
-            style={{
-              fontSize: 'var(--text-h2)',
-              fontWeight: 'var(--font-weight-bold)',
-              fontFamily: 'var(--font-family)',
-            }}
-          >
-            Groups
-          </h1>
+          <div className="flex items-center gap-3 mb-1">
+            <h1
+              className="text-foreground"
+              style={{
+                fontSize: 'var(--text-h2)',
+                fontWeight: 'var(--font-weight-bold)',
+              }}
+            >
+              Groups
+            </h1>
+            <span className="px-2 py-0.5 text-[10px] bg-primary/8 text-primary rounded-full" style={{ fontWeight: 'var(--font-weight-bold)' }}>
+              {groups.length}
+            </span>
+          </div>
           <p
-            className="text-muted"
-            style={{
-              fontSize: 'var(--text-sm)',
-              fontFamily: 'var(--font-family)',
-            }}
+            className="text-muted/70"
+            style={{ fontSize: 'var(--text-sm)' }}
           >
             Manage groups to easily assign members and content access
           </p>
         </div>
         <button
           onClick={handleCreateGroup}
-          className="flex items-center gap-2 px-4 py-2 min-h-[44px] text-white rounded-[var(--radius-button)] hover:opacity-90 transition-colors flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all flex-shrink-0"
           style={{
             backgroundColor: '#2F80ED',
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-family)',
           }}
         >
           <Plus size={16} />
@@ -204,7 +204,7 @@ export function GroupsPage() {
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="group grid items-center px-4 py-3 rounded-[var(--radius)] hover:bg-secondary/50 transition-colors"
+                  className="group grid items-center px-4 py-3.5 rounded-xl hover:shadow-sm transition-all"
                   style={{
                     gridTemplateColumns: '40px 1fr 240px 280px 50px',
                     gap: '12px',
@@ -214,10 +214,10 @@ export function GroupsPage() {
                 >
                   {/* Icon */}
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: group.color }}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs"
+                    style={{ backgroundColor: group.color, fontWeight: 'var(--font-weight-bold)' }}
                   >
-                    <Users size={16} className="text-white" />
+                    {group.name.charAt(0).toUpperCase()}
                   </div>
 
                   {/* Name */}
@@ -315,13 +315,13 @@ export function GroupsPage() {
                   </div>
 
                   {/* Delete */}
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => setDeleteModalGroup(group)}
-                      className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-[var(--radius)] hover:bg-destructive/10 transition-colors"
+                      className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-destructive/8 transition-colors"
                       title="Delete group"
                     >
-                      <Trash2 size={16} style={{ color: '#FF1F1F' }} />
+                      <Trash2 size={15} className="text-muted hover:text-destructive transition-colors" />
                     </button>
                   </div>
                 </div>

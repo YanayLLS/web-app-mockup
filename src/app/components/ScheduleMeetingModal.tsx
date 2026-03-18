@@ -258,20 +258,25 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-card rounded-[var(--radius)] w-full max-w-[680px] max-h-[calc(100vh-32px)] flex flex-col border border-border"
-        style={{ boxShadow: 'var(--elevation-md)' }}
+        className="bg-card rounded-2xl w-full max-w-[680px] max-h-[calc(100vh-32px)] flex flex-col border border-border"
+        style={{ boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
-          <h2 className="text-foreground" style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}>
-            {editingMeeting ? 'Edit Meeting' : 'Schedule Remote Support Meeting'}
-          </h2>
-          <button 
-            onClick={onClose} 
-            className="p-2 hover:bg-secondary rounded-[var(--radius)] transition-colors text-muted hover:text-foreground"
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border/60 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Calendar size={18} className="text-primary" />
+            </div>
+            <h2 className="text-foreground" style={{ fontSize: 'var(--text-h3)', fontWeight: 'var(--font-weight-bold)' }}>
+              {editingMeeting ? 'Edit Meeting' : 'Schedule Meeting'}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-secondary rounded-lg transition-colors text-muted hover:text-foreground"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -287,7 +292,7 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-card border border-border focus:border-primary rounded-[var(--radius)] px-4 py-3 text-foreground outline-none transition-colors hover:border-primary/50"
+                className="w-full bg-card border border-border focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg px-4 py-3 text-foreground outline-none transition-all hover:border-primary/30"
                 placeholder="Enter meeting title"
               />
             </div>
@@ -605,19 +610,20 @@ export function ScheduleMeetingModal({ isOpen, onClose, onSchedule, people, init
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 justify-end px-6 py-4 border-t border-border shrink-0 bg-secondary/20">
+        <div className="flex items-center gap-3 justify-end px-6 py-4 border-t border-border/60 shrink-0 bg-secondary/10">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 border border-border bg-card text-foreground rounded-[var(--radius)] hover:bg-secondary transition-colors"
-            style={{ fontWeight: 'var(--font-weight-semibold)' }}
+            className="px-5 py-2.5 border border-border bg-card text-foreground rounded-lg hover:bg-secondary hover:border-border/80 transition-all"
+            style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--text-sm)' }}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2.5 bg-primary text-primary-foreground rounded-[var(--radius)] hover:opacity-90 transition-opacity"
-            style={{ fontWeight: 'var(--font-weight-semibold)' }}
+            className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all flex items-center gap-2"
+            style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-sm)' }}
           >
+            <Calendar size={14} />
             {editingMeeting ? 'Update Meeting' : 'Schedule Meeting'}
           </button>
         </div>

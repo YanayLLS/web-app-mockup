@@ -1122,12 +1122,12 @@ function AnalyticsSkeleton() {
 
       <div className="flex-1 overflow-auto px-4 sm:px-6 pb-6 space-y-5">
         {/* Chart skeleton */}
-        <div className="bg-card border border-border rounded-[var(--radius)] p-5 animate-pulse">
+        <div className="bg-card border border-border rounded-xl p-5 animate-pulse">
           <div className="flex items-center justify-between mb-5">
             <div className="h-4 bg-muted/30 rounded w-40" />
-            <div className="h-8 bg-muted/30 rounded-[var(--radius)] w-44" />
+            <div className="h-8 bg-muted/30 rounded-lg w-44" />
           </div>
-          <div className="h-[260px] bg-muted/20 rounded-[var(--radius)]" />
+          <div className="h-[260px] bg-muted/20 rounded-lg" />
           <div className="flex items-center gap-5 mt-3 pl-2">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-muted/30 rounded-full" />
@@ -1143,9 +1143,9 @@ function AnalyticsSkeleton() {
         {/* Summary cards skeleton */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-[var(--radius)] p-4 animate-pulse">
+            <div key={i} className="bg-card border border-border rounded-xl p-4 animate-pulse">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-muted/30 rounded-[var(--radius)]" />
+                <div className="w-9 h-9 bg-muted/30 rounded-xl" />
                 <div className="flex-1 space-y-2">
                   <div className="h-3 bg-muted/30 rounded w-16" />
                   <div className="h-5 bg-muted/30 rounded w-12" />
@@ -1158,9 +1158,9 @@ function AnalyticsSkeleton() {
         {/* Bottom grid skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-[var(--radius)] p-5 animate-pulse">
+            <div key={i} className="bg-card border border-border rounded-xl p-5 animate-pulse">
               <div className="h-4 bg-muted/30 rounded w-32 mb-4" />
-              <div className="h-[180px] bg-muted/20 rounded-[var(--radius)]" />
+              <div className="h-[180px] bg-muted/20 rounded-lg" />
             </div>
           ))}
         </div>
@@ -1476,9 +1476,10 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
           />
           <button
             onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-[var(--radius)] text-xs text-foreground hover:bg-secondary transition-colors"
+            className="group/btn flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-lg text-xs text-foreground hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm transition-all"
+            style={{ fontWeight: 'var(--font-weight-semibold)' }}
           >
-            <Download size={14} />
+            <Download size={14} className="text-muted group-hover/btn:text-primary transition-colors" />
             <span>Export Report</span>
           </button>
         </div>
@@ -1488,7 +1489,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
       <div className="flex-1 overflow-auto px-4 sm:px-6 pb-6 space-y-5">
 
         {/* ===== HERO CHART CARD ===== */}
-        <div className="bg-card border border-border rounded-[var(--radius)] p-5">
+        <div className="bg-card border border-border rounded-xl p-5">
           {/* Top row: chart title + mode toggle */}
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
@@ -1638,15 +1639,15 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         {/* ===== SUMMARY CARDS ROW ===== */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {[
-            { label: 'Total Views', value: totalViews.toLocaleString(), icon: <Eye size={16} className="text-primary" />, bg: 'bg-primary/10', trend: viewsTrend },
-            { label: 'Total Sessions', value: totalSessions.toString(), icon: <Activity size={16} className="text-accent" />, bg: 'bg-accent/10', trend: sessionsTrend },
-            { label: 'Completed', value: completedSessions.toString(), icon: <CheckCircle2 size={16} className="text-[#10b981]" />, bg: 'bg-[#10b981]/10', trend: completedTrend },
-            { label: 'Avg Completion', value: `${avgCompletionRate}%`, icon: <Target size={16} style={{ color: '#2F80ED' }} />, bg: 'bg-[#2F80ED]/10', trend: completionTrend },
-            { label: 'Avg Duration', value: avgDurationStr, icon: <Timer size={16} className="text-primary" />, bg: 'bg-primary/10', trend: null },
+            { label: 'Total Views', value: totalViews.toLocaleString(), icon: <Eye size={16} className="text-[#2F80ED]" />, color: '#2F80ED', trend: viewsTrend },
+            { label: 'Total Sessions', value: totalSessions.toString(), icon: <Activity size={16} className="text-[#8B5CF6]" />, color: '#8B5CF6', trend: sessionsTrend },
+            { label: 'Completed', value: completedSessions.toString(), icon: <CheckCircle2 size={16} className="text-[#10b981]" />, color: '#10b981', trend: completedTrend },
+            { label: 'Avg Completion', value: `${avgCompletionRate}%`, icon: <Target size={16} className="text-[#F59E0B]" />, color: '#F59E0B', trend: completionTrend },
+            { label: 'Avg Duration', value: avgDurationStr, icon: <Timer size={16} className="text-[#E91E63]" />, color: '#E91E63', trend: null },
           ].map((card) => (
-            <div key={card.label} className="bg-card border border-border rounded-[var(--radius)] p-4">
+            <div key={card.label} className="bg-card border border-border rounded-xl p-4 hover:shadow-sm hover:border-primary/15 transition-all">
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-[var(--radius)] ${card.bg} flex items-center justify-center`}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${card.color}12` }}>
                   {card.icon}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1673,7 +1674,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
           {/* Devices Card - donut chart */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-5">
+          <div className="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow">
             <div className="flex items-center gap-2 mb-2">
               <Monitor size={15} className="text-muted" />
               <h2 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>Devices</h2>
@@ -1754,7 +1755,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
           </div>
 
           {/* Activity Overview Card */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-5">
+          <div className="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow">
             <div className="flex items-center gap-2 mb-4">
               <Layers size={15} className="text-muted" />
               <h2 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>Activity Overview</h2>
@@ -1833,7 +1834,7 @@ export function AnalyticsPage({ projectId }: AnalyticsPageProps = {}) {
           </div>
 
           {/* Flow Performance Card - table style like "Browsers" */}
-          <div className="bg-card border border-border rounded-[var(--radius)] p-5">
+          <div className="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 size={15} className="text-muted" />
               <h2 className="text-sm text-foreground" style={{ fontWeight: 'var(--font-weight-bold)' }}>Top Flows</h2>

@@ -614,18 +614,31 @@ export function AiStudioPage() {
             {/* Usage Text and Contact Button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[12px]">
-                <div
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--foreground)',
-                  }}
-                >
-                  {formatNumber(totalCreditsUsed)} / {formatNumber(maxCreditLimit)} credits used
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--foreground)',
+                      fontWeight: 'var(--font-weight-bold)',
+                    }}
+                  >
+                    {formatNumber(totalCreditsUsed)}
+                  </span>
+                  <span style={{ fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>
+                    / {formatNumber(maxCreditLimit)} credits used
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px]" style={{
+                    background: isMaxed ? 'rgba(255,31,31,0.1)' : isWarning ? 'rgba(245,158,11,0.1)' : 'rgba(47,128,237,0.08)',
+                    color: isMaxed ? 'var(--destructive)' : isWarning ? '#f59e0b' : 'var(--primary)',
+                    fontWeight: 'var(--font-weight-bold)',
+                  }}>
+                    {Math.round(usagePercentage)}%
+                  </span>
                 </div>
                 {/* Debug Buttons */}
                 <div className="flex items-center gap-[8px]">
                   <button
-                    className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+                    className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-lg border border-border hover:bg-secondary transition-colors"
                     style={{
                       fontSize: 'var(--text-sm)',
                       color: 'var(--muted)',
@@ -637,7 +650,7 @@ export function AiStudioPage() {
                     <span>-10%</span>
                   </button>
                   <button
-                    className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+                    className="flex items-center gap-[6px] px-[8px] py-[4px] rounded-lg border border-border hover:bg-secondary transition-colors"
                     style={{
                       fontSize: 'var(--text-sm)',
                       color: 'var(--muted)',
@@ -650,13 +663,14 @@ export function AiStudioPage() {
                   </button>
                 </div>
               </div>
-              
+
               {/* Contact Support Button (always visible) */}
               <button
-                className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[var(--radius)] border border-border hover:bg-secondary transition-colors"
+                className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-lg border border-border hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm transition-all"
                 style={{
                   fontSize: 'var(--text-sm)',
                   color: 'var(--foreground)',
+                  fontWeight: 'var(--font-weight-semibold)',
                 }}
                 onClick={handleContactSupport}
               >
@@ -687,18 +701,23 @@ export function AiStudioPage() {
             
             {/* Progress Bar */}
             <div
-              className="w-full h-[8px] rounded-full overflow-hidden"
+              className="w-full h-[6px] rounded-full overflow-hidden"
               style={{ backgroundColor: 'var(--secondary)' }}
             >
               <div
-                className="h-full transition-all duration-300"
+                className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: `${Math.min(usagePercentage, 100)}%`,
-                  backgroundColor: isMaxed
-                    ? 'var(--destructive)'
+                  background: isMaxed
+                    ? 'linear-gradient(90deg, #f59e0b, var(--destructive))'
                     : isWarning
-                    ? '#f59e0b'
-                    : 'var(--primary)',
+                    ? 'linear-gradient(90deg, var(--primary), #f59e0b)'
+                    : 'linear-gradient(90deg, var(--primary), #4f9cf7)',
+                  boxShadow: isMaxed
+                    ? '0 0 8px rgba(255,31,31,0.3)'
+                    : isWarning
+                    ? '0 0 8px rgba(245,158,11,0.3)'
+                    : '0 0 8px rgba(47,128,237,0.2)',
                 }}
               />
             </div>
@@ -708,7 +727,7 @@ export function AiStudioPage() {
 
       {/* Info Banner */}
       {showInfoBanner && (
-        <div className="shrink-0 bg-primary/10 border-b border-primary/30 px-[16px] py-[12px]">
+        <div className="shrink-0 bg-primary/[0.04] border-b border-primary/15 px-[16px] py-[12px]">
           <div className="flex items-start gap-[12px]">
             <Info 
               size={20} 
@@ -1226,13 +1245,14 @@ export function AiStudioPage() {
                 {/* Enabled Status */}
                 <div className="h-[32px] flex items-center" style={{ width: `${columnWidths.enabled}px` }}>
                   <button
-                    className={`px-[12px] py-[8px] rounded-[22px] transition-opacity ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
+                    className={`px-[10px] py-[4px] rounded-full text-[11px] transition-all ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
                     style={{
                       backgroundColor: source.enabled
-                        ? '#ebf9f1'
-                        : 'rgba(0,0,0,0.05)',
-                      color: source.enabled ? '#1f9254' : 'var(--foreground)',
-                      fontSize: 'var(--text-sm)',
+                        ? 'rgba(17,232,116,0.1)'
+                        : 'rgba(0,0,0,0.04)',
+                      color: source.enabled ? '#0a9e4a' : 'var(--muted)',
+                      fontWeight: 'var(--font-weight-semibold)',
+                      border: source.enabled ? '1px solid rgba(17,232,116,0.15)' : '1px solid transparent',
                     }}
                     onClick={canEditAiStudio ? () => toggleEnabled(source.id) : undefined}
                     disabled={!canEditAiStudio}
@@ -1245,16 +1265,14 @@ export function AiStudioPage() {
                 <div className="flex items-center justify-center" style={{ width: `${columnWidths.exposeFile}px` }}>
                   {source.enabled ? (
                     <button
-                      className={`w-[25px] h-[28px] transition-opacity flex items-center justify-center ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-70'}`}
+                      className={`w-[28px] h-[28px] rounded-md transition-all flex items-center justify-center ${!canEditAiStudio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
                       onClick={canEditAiStudio ? () => toggleExposeFile(source.id) : undefined}
                       disabled={!canEditAiStudio}
                     >
                       {source.exposeFile ? (
-                        <svg width="25" height="28" fill="none" viewBox="0 0 25 28">
-                          <path d={svgPaths.p17f2f680} fill="#FF1F1F" />
-                        </svg>
+                        <X size={15} style={{ color: 'var(--muted)' }} />
                       ) : (
-                        <Check size={20} style={{ color: 'var(--accent)' }} />
+                        <Check size={16} style={{ color: 'var(--accent)' }} />
                       )}
                     </button>
                   ) : (
@@ -1278,10 +1296,12 @@ export function AiStudioPage() {
                 {/* Roles */}
                 <div className="flex items-center h-[26px] p-[4px] rounded-[var(--radius)]" style={{ width: `${columnWidths.roles}px` }}>
                   <span
-                    className="overflow-hidden text-ellipsis whitespace-nowrap"
+                    className="overflow-hidden text-ellipsis whitespace-nowrap px-2 py-0.5 rounded-md"
                     style={{
-                      fontSize: 'var(--text-sm)',
+                      fontSize: '11px',
                       color: 'var(--foreground)',
+                      background: 'var(--secondary)',
+                      fontWeight: 'var(--font-weight-medium)',
                     }}
                   >
                     {source.roles}

@@ -2847,11 +2847,13 @@ function KnowledgeBaseContent() {
                 previewMedia.thumbnail ? (
                   <img src={previewMedia.thumbnail} alt={previewMedia.name} className="max-w-full max-h-[60vh] object-contain rounded-lg" />
                 ) : (
-                  <div className="w-full max-w-md rounded-lg bg-secondary flex items-center justify-center" style={{ aspectRatio: '4/3' }}>
-                    <div className="text-center text-muted">
-                      <ImageIcon size={48} className="mx-auto mb-3 opacity-50" />
-                      <p style={{ fontSize: 'var(--text-sm)' }}>Image preview</p>
-                      <p className="opacity-60 mt-1" style={{ fontSize: 'var(--text-xs)' }}>{previewMedia.name}</p>
+                  <div className="w-full max-w-md rounded-xl bg-secondary/50 border border-border/40 flex items-center justify-center" style={{ aspectRatio: '4/3' }}>
+                    <div className="text-center">
+                      <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(47,128,237,0.06)', border: '1px solid rgba(47,128,237,0.1)' }}>
+                        <ImageIcon size={24} className="text-primary/35" />
+                      </div>
+                      <p className="text-sm text-muted" style={{ fontWeight: 'var(--font-weight-medium)' }}>Image preview</p>
+                      <p className="text-xs text-muted/50 mt-1">{previewMedia.name}</p>
                     </div>
                   </div>
                 )
@@ -2863,8 +2865,10 @@ function KnowledgeBaseContent() {
                     </div>
                   )}
                   <div className="p-8">
-                    <div className="text-center text-muted mb-6">
-                      <File size={48} className="mx-auto mb-3 opacity-50" />
+                    <div className="text-center mb-6">
+                      <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(47,128,237,0.06)', border: '1px solid rgba(47,128,237,0.1)' }}>
+                        <File size={24} className="text-primary/35" />
+                      </div>
                       <h4 className="text-foreground" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>{previewMedia.name}</h4>
                     </div>
                     {previewMedia.description && (

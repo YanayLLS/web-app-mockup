@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import svgPaths from "../../imports/svg-albmkprcym";
 import { useRole, hasAccess } from '../contexts/RoleContext';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 
 function IconLogo() {
   return (
@@ -42,10 +43,10 @@ function QuickActionCard({ icon, title, description, onClick }: QuickActionProps
       onClick={onClick}
       className="bg-card border border-border rounded-[var(--radius)] p-4 sm:p-6 hover:border-primary transition-all hover:shadow-[var(--elevation-sm)] flex flex-col items-start text-left group"
     >
-      <div className="w-12 h-12 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+      <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center mb-4 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/20 transition-all">
         {icon}
       </div>
-      <h3 className="text-foreground mb-2">{title}</h3>
+      <h3 className="text-foreground mb-2" style={{ fontWeight: 'var(--font-weight-semibold)' }}>{title}</h3>
       <p className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>
         {description}
       </p>
@@ -97,13 +98,14 @@ interface StatCardProps {
   label: string;
   trend?: string;
   trendUp?: boolean;
+  accentColor?: string;
 }
 
-function StatCard({ icon, value, label, trend, trendUp }: StatCardProps) {
+function StatCard({ icon, value, label, trend, trendUp, accentColor }: StatCardProps) {
   return (
-    <div className="bg-card border border-border rounded-[var(--radius)] p-5" style={{ boxShadow: 'var(--elevation-sm)' }}>
+    <div className="bg-card border border-border rounded-[var(--radius)] p-5 hover:border-primary/20 hover:shadow-md transition-all" style={{ boxShadow: 'var(--elevation-sm)' }}>
       <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center text-primary">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${!accentColor ? 'bg-primary/10 text-primary' : ''}`} style={accentColor ? { background: `${accentColor}12`, color: accentColor } : undefined}>
           {icon}
         </div>
         {trend && (
@@ -140,6 +142,7 @@ export function HomePage({
 }: HomePageProps) {
   const [userName] = useState('John Smith');
   const { currentRole } = useRole();
+  const { workspace: wsSettings } = useWorkspace();
   const canCreate = hasAccess(currentRole, 'create-content');
   const canRemoteSupport = hasAccess(currentRole, 'remote-support');
   const canAIChat = hasAccess(currentRole, 'ai-chat');
@@ -219,16 +222,20 @@ export function HomePage({
     <>
     <div className="flex flex-col h-full bg-card">
       {/* Header */}
-      <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-border bg-card">
-        <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="px-4 sm:px-8 py-5 sm:py-7 border-b border-border/60 bg-card">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-foreground mb-1 truncate">Welcome back, {userName}</h1>
-            <p className="text-muted" style={{ fontSize: 'var(--text-base)' }}>
+            <h1 className="text-foreground mb-1.5 truncate">Welcome back, {userName}</h1>
+            <p className="text-muted/70" style={{ fontSize: 'var(--text-base)' }}>
               Here's what's happening with your workspace today
             </p>
           </div>
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center text-primary p-2 sm:p-3 shrink-0">
-            <IconLogo />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary p-2.5 sm:p-3 shrink-0 overflow-hidden" style={{ boxShadow: '0 4px 16px rgba(47,128,237,0.08)' }}>
+            {wsSettings.logoUrl ? (
+              <img src={wsSettings.logoUrl} alt="" className="w-full h-full object-contain" />
+            ) : (
+              <IconLogo />
+            )}
           </div>
         </div>
       </div>
@@ -238,7 +245,7 @@ export function HomePage({
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Stats Overview */}
           <section>
-            <h2 className="text-foreground mb-4">Overview</h2>
+            <h2 className="text-foreground mb-4 flex items-center gap-2"><span className="w-1 h-5 rounded-full bg-primary" />Overview</h2>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard
                 icon={<FileText size={20} />}
@@ -246,6 +253,7 @@ export function HomePage({
                 label="Total Flows"
                 trend="+12%"
                 trendUp={true}
+                accentColor="#2F80ED"
               />
               <StatCard
                 icon={<Users size={20} />}
@@ -253,6 +261,7 @@ export function HomePage({
                 label="Active Team Members"
                 trend="+8%"
                 trendUp={true}
+                accentColor="#8B5CF6"
               />
               <StatCard
                 icon={<Video size={20} />}
@@ -260,6 +269,7 @@ export function HomePage({
                 label="Support Sessions This Week"
                 trend="+15%"
                 trendUp={true}
+                accentColor="#11E874"
               />
               <StatCard
                 icon={<CheckCircle2 size={20} />}
@@ -267,13 +277,14 @@ export function HomePage({
                 label="Completion Rate"
                 trend="+3%"
                 trendUp={true}
+                accentColor="#F59E0B"
               />
             </div>
           </section>
 
           {/* Quick Actions */}
           <section>
-            <h2 className="text-foreground mb-4">Quick Actions</h2>
+            <h2 className="text-foreground mb-4 flex items-center gap-2"><span className="w-1 h-5 rounded-full bg-primary" />Quick Actions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {quickActions.map((action, index) => (
                 <QuickActionCard key={index} {...action} />
@@ -285,13 +296,13 @@ export function HomePage({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Recent Activity */}
             <section className="lg:col-span-2">
-              <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden" style={{ boxShadow: 'var(--elevation-sm)' }}>
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
                   <div className="flex items-center gap-2">
-                    <Clock size={20} className="text-primary" />
-                    <h3 className="text-foreground">Recent Activity</h3>
+                    <span className="w-1 h-4 rounded-full bg-primary" />
+                    <h3 className="text-foreground text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Recent Activity</h3>
                   </div>
-                  <button className="text-primary hover:underline px-2 py-1.5" style={{ fontSize: 'var(--text-sm)' }}>
+                  <button className="text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg transition-colors" style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-weight-semibold)' }}>
                     View all
                   </button>
                 </div>
@@ -306,18 +317,18 @@ export function HomePage({
             {/* Right Column */}
             <section className="space-y-6">
               {/* Upcoming Meetings */}
-              <div className="bg-card border border-border rounded-[var(--radius)] overflow-hidden" style={{ boxShadow: 'var(--elevation-sm)' }}>
-                <div className="flex items-center gap-2 px-6 py-4 border-b border-border">
-                  <Calendar size={20} className="text-primary" />
-                  <h3 className="text-foreground">Upcoming</h3>
+              <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
+                <div className="flex items-center gap-2 px-6 py-4 border-b border-border/60">
+                  <span className="w-1 h-4 rounded-full bg-[#8B5CF6]" />
+                  <h3 className="text-foreground text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Upcoming</h3>
                 </div>
                 <div className="p-4 sm:p-6">
-                  <div className="flex items-start gap-3 mb-4 pb-4 border-b border-border last:border-0 last:mb-0 last:pb-0">
-                    <div className="w-12 h-12 rounded-[var(--radius)] bg-accent/10 flex flex-col items-center justify-center flex-shrink-0">
-                      <div className="text-accent" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
+                  <div className="flex items-start gap-3 mb-4 pb-4 border-b border-border/40 last:border-0 last:mb-0 last:pb-0">
+                    <div className="w-12 h-12 rounded-xl bg-[#11E874]/10 flex flex-col items-center justify-center flex-shrink-0">
+                      <div className="text-[#0a9e4a] text-sm leading-none" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                         15
                       </div>
-                      <div className="text-accent" style={{ fontSize: 'var(--text-sm)' }}>
+                      <div className="text-[#0a9e4a] text-[9px] uppercase mt-0.5" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                         FEB
                       </div>
                     </div>
@@ -335,11 +346,11 @@ export function HomePage({
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-[var(--radius)] bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
-                      <div className="text-primary" style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-weight-bold)' }}>
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
+                      <div className="text-primary text-sm leading-none" style={{ fontWeight: 'var(--font-weight-bold)' }}>
                         16
                       </div>
-                      <div className="text-primary" style={{ fontSize: 'var(--text-sm)' }}>
+                      <div className="text-primary text-[9px] uppercase mt-0.5" style={{ fontWeight: 'var(--font-weight-semibold)' }}>
                         FEB
                       </div>
                     </div>
@@ -358,10 +369,11 @@ export function HomePage({
                   </div>
                 </div>
                 {canSchedule && (
-                <div className="px-6 py-4 border-t border-border">
+                <div className="px-6 py-4 border-t border-border/40">
                   <button
                     onClick={onScheduleMeeting}
-                    className="w-full bg-primary text-primary-foreground px-4 py-2.5 rounded-[var(--radius)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-primary-foreground px-4 py-2.5 rounded-lg hover:brightness-110 hover:shadow-md hover:shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                    style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--text-sm)' }}
                   >
                     <Calendar size={16} />
                     <span>Schedule New Meeting</span>
@@ -371,12 +383,12 @@ export function HomePage({
               </div>
 
               {/* Quick Tip */}
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-[var(--radius)] p-4 sm:p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                    <Zap size={16} />
+              <div className="bg-gradient-to-br from-primary/8 to-primary/3 border border-primary/15 rounded-xl p-4 sm:p-6">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center" style={{ boxShadow: '0 2px 8px rgba(47,128,237,0.25)' }}>
+                    <Zap size={14} />
                   </div>
-                  <h4 className="text-foreground">Pro Tip</h4>
+                  <h4 className="text-foreground text-sm" style={{ fontWeight: 'var(--font-weight-bold)' }}>Pro Tip</h4>
                 </div>
                 <p className="text-foreground mb-4" style={{ fontSize: 'var(--text-sm)' }}>
                   Use the AI Assistant to quickly generate procedure templates based on your workflow descriptions.

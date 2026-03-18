@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import svgPaths from "../../imports/svg-albmkprcym";
-import { Users, Palette, Headphones, Grid3x3, TrendingUp, Cloud, QrCode, Puzzle, ChevronDown, ChevronLeft, Folder, Search, Settings as SettingsIcon, PanelLeft, PanelLeftClose, Crown } from 'lucide-react';
+import { Users, Palette, Headphones, Grid3x3, TrendingUp, Cloud, QrCode, Puzzle, ChevronDown, ChevronLeft, Folder, Search, Settings as SettingsIcon, PanelLeft, PanelLeftClose, Crown, HelpCircle } from 'lucide-react';
 import { useRole, hasAccess } from '../contexts/RoleContext';
 import { ProjectSettingsModal } from './modals/ProjectSettingsModal';
 import { toast } from 'sonner';
@@ -466,8 +466,10 @@ export function Sidebar({
                     )}
                   </div>
                   
-                  {filteredProjects.map((project) => {
+                  {filteredProjects.map((project, index) => {
                     const isActive = selectedProject === project.id;
+                    const dotColors = ['#2F80ED', '#8B5CF6', '#F59E0B', '#11E874', '#E91E63', '#00BCD4', '#FF6B35', '#6366F1'];
+                    const dotColor = dotColors[index % dotColors.length];
                     return (
                       <button
                         key={project.id}
@@ -475,7 +477,7 @@ export function Sidebar({
                           onProjectSelect(project.id);
                           setCurrentProject(project.id);
                         }}
-                        className={`flex items-center px-3 py-2 text-xs rounded-[var(--radius)] transition-all duration-200 text-left ${
+                        className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-[var(--radius)] transition-all duration-200 text-left ${
                           isActive
                             ? 'bg-secondary text-sidebar-foreground shadow-sm'
                             : 'text-sidebar-foreground hover:bg-secondary hover:translate-x-[2px]'
@@ -483,6 +485,7 @@ export function Sidebar({
                         style={{ fontFamily: 'var(--font-family)' }}
                         aria-current={isActive ? 'page' : undefined}
                       >
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: isActive ? dotColor : `${dotColor}60` }} />
                         {project.name}
                       </button>
                     );
@@ -512,10 +515,8 @@ export function Sidebar({
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
-        <button className={`flex items-center ${isMinimized ? 'justify-center' : 'gap-2'} text-xs text-sidebar-foreground hover:bg-secondary/50 px-3 py-1.5 rounded-[var(--radius)] transition-colors w-full`} title="Help" aria-label="Help">
-          <svg className="block w-[3.24px] h-[10.4px]" fill="none" viewBox="0 0 3.24 10.4">
-            <path d={svgPaths.p3ec9f000} fill="currentColor" />
-          </svg>
+        <button className={`flex items-center ${isMinimized ? 'justify-center' : 'gap-2'} text-xs text-sidebar-foreground hover:bg-secondary/50 px-3 py-2 rounded-lg transition-colors w-full`} title="Help" aria-label="Help">
+          <HelpCircle size={15} className="text-muted shrink-0" />
           {!isMinimized && <span>Help</span>}
         </button>
       </div>

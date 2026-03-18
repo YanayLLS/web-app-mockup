@@ -44,6 +44,7 @@ import { ActiveCallProvider } from './contexts/ActiveCallContext';
 import { ProcedureStepsProvider } from './contexts/ProcedureStepsContext';
 import { UserProfileProvider } from './contexts/UserProfileContext';
 import { AppPopupProvider } from './contexts/AppPopupContext';
+import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { FloatingMinimizedCall } from './components/FloatingMinimizedCall';
 import { getUrlParam, setUrlParam } from './utils/urlParams';
 import { LoginScreen } from './components/LoginScreen';
@@ -892,6 +893,7 @@ function AppRouter() {
   usePageTitle();
   return (
     <ProcedureStepsProvider>
+    <WorkspaceProvider>
     <RoleProvider>
     <UserProfileProvider>
       <Routes>
@@ -928,6 +930,7 @@ function AppRouter() {
       <DebugMenu />
     </UserProfileProvider>
     </RoleProvider>
+    </WorkspaceProvider>
     </ProcedureStepsProvider>
   );
 }
