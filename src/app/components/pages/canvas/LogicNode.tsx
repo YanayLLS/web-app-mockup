@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useState, useRef, useEffect } from 'react';
+import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
 import type { NodeProps } from 'reactflow';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 import {
@@ -43,9 +43,16 @@ export interface LogicNodeData {
 type ActiveMenu = 'none' | 'platforms' | 'procedure' | 'target';
 
 export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
+  const updateNodeInternals = useUpdateNodeInternals();
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>('none');
   const menuRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Tell ReactFlow to recalculate handle positions when platforms change
+  const platformIds = data.platforms?.map(p => p.id).join(',') ?? '';
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [id, platformIds, updateNodeInternals]);
 
   // Close menu when clicking outside
   useClickOutside([menuRef, containerRef], () => setActiveMenu('none'));
@@ -189,10 +196,16 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
         <Handle
           type="target"
           position={Position.Top}
-          className="!w-4 !h-4 !border-2 !left-1/2 !-translate-x-1/2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
+          className=""
           style={{
-            backgroundColor: colors.bg,
-            borderColor: 'var(--card)'
+            width: 16, height: 16,
+            left: '50%',
+            top: -8,
+            transform: 'translateX(-50%)',
+            background: colors.bg,
+            border: '2px solid var(--card)',
+            cursor: 'crosshair',
+            zIndex: 10,
           }}
         />
 
@@ -225,17 +238,15 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
           {isPlatformSwitch && (
             <button
               onClick={() => data.editingEnabled !== false && handleToggleMenu('platforms')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
+              className="canvas-config-btn w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
               style={{
                 borderColor: 'var(--border)',
                 backgroundColor: (data.platforms?.length || 0) > 0 ? 'var(--secondary)' : 'transparent',
                 color: 'var(--foreground)'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (data.platforms?.length || 0) > 0 ? 'var(--secondary)' : 'transparent'}
             >
               <span className="font-medium">
-                {(data.platforms?.length || 0) > 0 
+                {(data.platforms?.length || 0) > 0
                   ? `${data.platforms?.length} Platform${data.platforms?.length !== 1 ? 's' : ''}`
                   : 'Configure Platforms'}
               </span>
@@ -247,14 +258,12 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
             <>
               <button
                 onClick={() => data.editingEnabled !== false && data.onSelectProcedure?.()}
-                className="w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
+                className="canvas-config-btn w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
                 style={{
                   borderColor: 'var(--border)',
                   backgroundColor: data.linkedProcedureId ? 'var(--secondary)' : 'transparent',
                   color: 'var(--foreground)'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = data.linkedProcedureId ? 'var(--secondary)' : 'transparent'}
               >
                 <span className="font-medium truncate">
                   {data.linkedProcedureName || 'Select Procedure'}
@@ -268,14 +277,12 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
             <>
               <button
                 onClick={() => data.editingEnabled !== false && handleToggleMenu('target')}
-                className="w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
+                className="canvas-config-btn w-full flex items-center justify-between px-3 py-2 rounded border text-xs transition-colors"
                 style={{
                   borderColor: 'var(--border)',
                   backgroundColor: data.targetObjectName ? 'var(--secondary)' : 'transparent',
                   color: 'var(--foreground)'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = data.targetObjectName ? 'var(--secondary)' : 'transparent'}
               >
                 <span className="font-medium truncate">
                   {data.targetObjectName || 'Configure Target'}
@@ -316,14 +323,12 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                         <select
                           value={platform.platform}
                           onChange={(e) => updatePlatform(platform.id, e.target.value as PlatformOutput['platform'])}
-                          className="flex-1 text-xs border rounded px-2 py-1.5 focus:outline-none"
+                          className="canvas-input flex-1 text-xs border rounded px-2 py-1.5 focus:outline-none"
                           style={{
                             borderColor: 'var(--border)',
                             backgroundColor: 'var(--card)',
                             color: 'var(--foreground)',
                           }}
-                          onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                          onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                         >
                           <option value="desktop">Desktop</option>
                           <option value="mobile">Mobile</option>
@@ -333,33 +338,20 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                       </div>
                       <button
                         onClick={() => removePlatform(platform.id)}
-                        className="p-2 transition-colors shrink-0"
-                        style={{ color: 'var(--muted)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--destructive)'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                        className="canvas-remove-btn p-2 transition-colors shrink-0"
                       >
                         <X size={14} />
                       </button>
                     </div>
                   ))}
                   {(data.platforms?.length || 0) < 4 && (
-                    <button 
+                    <button
                       onClick={addPlatform}
-                      className="flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded transition-colors border border-dashed mt-1"
+                      className="canvas-config-btn flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded transition-colors border border-dashed mt-1"
                       style={{
                         backgroundColor: 'var(--secondary)',
                         color: 'var(--muted)',
                         borderColor: 'var(--border)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.bg + '20';
-                        e.currentTarget.style.color = colors.bg;
-                        e.currentTarget.style.borderColor = colors.bg + '40';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                        e.currentTarget.style.color = 'var(--muted)';
-                        e.currentTarget.style.borderColor = 'var(--border)';
                       }}
                     >
                       <Plus size={14} /> Add Platform
@@ -385,14 +377,12 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                       value={data.targetObjectName || ''}
                       onChange={(e) => updateData({ targetObjectName: e.target.value })}
                       placeholder="e.g., Machine Panel"
-                      className="w-full text-xs border rounded px-2.5 py-1.5 focus:outline-none"
+                      className="canvas-input w-full text-xs border rounded px-2.5 py-1.5 focus:outline-none"
                       style={{
                         borderColor: 'var(--border)',
                         backgroundColor: 'var(--card)',
                         color: 'var(--foreground)',
                       }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                     />
                   </div>
                   <div>
@@ -404,14 +394,12 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                       onChange={(e) => updateData({ targetObjectDescription: e.target.value })}
                       placeholder="Describe what to target..."
                       rows={3}
-                      className="w-full text-xs border rounded px-2.5 py-1.5 focus:outline-none resize-none"
+                      className="canvas-input w-full text-xs border rounded px-2.5 py-1.5 focus:outline-none resize-none"
                       style={{
                         borderColor: 'var(--border)',
                         backgroundColor: 'var(--card)',
                         color: 'var(--foreground)',
                       }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                     />
                   </div>
                 </div>
@@ -422,78 +410,82 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
 
         {/* Bottom Handles */}
         {isPlatformSwitch && data.platforms && data.platforms.length > 0 ? (
-          <div className="absolute -bottom-2 left-4 right-4 z-10" style={{ height: '8px' }}>
-            {data.platforms?.map((platform, index) => {
-              const isConnected = data.connectedHandles?.has(platform.id);
+          <>
+            {data.platforms.map((platform, index) => {
               const totalPlatforms = data.platforms.length;
-              
-              // Calculate horizontal position as percentage (0% to 100%)
-              const leftPercent = totalPlatforms === 1 ? 50 : (index / (totalPlatforms - 1)) * 100;
-              
+              const leftPercent = totalPlatforms === 1 ? 50 : 8 + (index / (totalPlatforms - 1)) * 84;
               return (
-                <div key={platform.id} className="absolute" style={{ left: `${leftPercent}%`, top: 0, transform: 'translateX(-50%)' }}>
-                  <Handle
-                    type="source"
-                    position={Position.Bottom}
-                    id={platform.id}
-                    className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
-                    style={{
-                      backgroundColor: colors.bg,
-                      borderColor: 'var(--card)'
-                    }}
-                  />
-                  <div className="absolute top-5 left-1/2 -translate-x-1/2 border text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shadow-sm opacity-100 transition-opacity text-center whitespace-nowrap z-20 flex items-center gap-1"
-                    style={{
-                      backgroundColor: 'var(--card)',
-                      borderColor: colors.bg + '40',
-                      color: colors.bg
-                    }}
-                  >
-                    {getPlatformIcon(platform.platform)}
-                    {platform.label}
-                  </div>
-                  {!isConnected && data.editingEnabled !== false && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        data.onAddConnectedStep?.(platform.id);
-                      }}
-                      className="absolute top-12 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
-                      style={{
-                        backgroundColor: 'var(--card)',
-                        borderColor: 'var(--border)',
-                        color: 'var(--muted)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.bg;
-                        e.currentTarget.style.borderColor = colors.bg;
-                        e.currentTarget.style.color = 'white';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--card)';
-                        e.currentTarget.style.borderColor = 'var(--border)';
-                        e.currentTarget.style.color = 'var(--muted)';
-                      }}
-                      title="Add connected step"
-                    >
-                      <Plus size={18} />
-                    </button>
-                  )}
-                </div>
+                <Handle
+                  key={platform.id}
+                  type="source"
+                  position={Position.Bottom}
+                  id={platform.id}
+                  className=""
+                  style={{
+                    width: 16, height: 16,
+                    left: `${leftPercent}%`,
+                    bottom: -8,
+                    transform: 'translateX(-50%)',
+                    background: colors.bg,
+                    border: '2px solid var(--card)',
+                    cursor: 'crosshair',
+                    zIndex: 10,
+                  }}
+                />
               );
             })}
-          </div>
+            {/* Labels and add-buttons */}
+            <div className="absolute -bottom-2 left-2 right-2 z-10 pointer-events-none" style={{ height: '20px', overflow: 'visible' }}>
+              {data.platforms.map((platform, index) => {
+                const isConnected = data.connectedHandles?.has(platform.id);
+                const totalPlatforms = data.platforms.length;
+                const leftPercent = totalPlatforms === 1 ? 50 : 8 + (index / (totalPlatforms - 1)) * 84;
+                return (
+                  <div key={platform.id} className="absolute pointer-events-auto" style={{ left: `${leftPercent}%`, top: 0, transform: 'translateX(-50%)' }}>
+                    <div className="absolute top-5 left-1/2 -translate-x-1/2 border text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shadow-sm opacity-100 transition-opacity text-center whitespace-nowrap z-20 flex items-center gap-1"
+                      style={{
+                        backgroundColor: 'var(--card)',
+                        borderColor: colors.bg + '40',
+                        color: colors.bg
+                      }}
+                    >
+                      {getPlatformIcon(platform.platform)}
+                      {platform.label}
+                    </div>
+                    {!isConnected && data.editingEnabled !== false && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          data.onAddConnectedStep?.(platform.id);
+                        }}
+                        className="canvas-add-btn absolute top-12 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
+                        title="Add connected step"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
         ) : (
           // Single output for procedure-link and object-target
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-10">
+          <>
             <Handle
               type="source"
               position={Position.Bottom}
               id="default"
-              className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
+              className=""
               style={{
-                backgroundColor: colors.bg,
-                borderColor: 'var(--card)'
+                width: 16, height: 16,
+                left: '50%',
+                bottom: -8,
+                transform: 'translateX(-50%)',
+                background: colors.bg,
+                border: '2px solid var(--card)',
+                cursor: 'crosshair',
+                zIndex: 10,
               }}
             />
             {!data.connectedHandles?.has('default') && data.editingEnabled !== false && (
@@ -502,28 +494,14 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                   e.stopPropagation();
                   data.onAddConnectedStep?.();
                 }}
-                className="absolute top-6 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  color: 'var(--muted)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.bg;
-                  e.currentTarget.style.borderColor = colors.bg;
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--card)';
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.color = 'var(--muted)';
-                }}
+                className="canvas-add-btn absolute -bottom-2 left-1/2 -translate-x-1/2 mt-6 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg z-10"
+                style={{ top: 'calc(100% + 8px)' }}
                 title="Add connected step"
               >
                 <Plus size={18} />
               </button>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
 import type { NodeProps } from 'reactflow';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 import {
@@ -63,6 +63,7 @@ export interface DynamicNodeData {
 type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'checklist' | 'media';
 
 export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) {
+  const updateNodeInternals = useUpdateNodeInternals();
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>('none');
   const menuRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -116,6 +117,12 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
     }
   }, [localDesc]);
 
+  // Tell ReactFlow to recalculate handle positions when options change
+  const optionIds = data.options?.map(o => o.id).join(',') ?? '';
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [id, optionIds, updateNodeInternals]);
+
   // Close menu when clicking outside
   useClickOutside([menuRef, containerRef], () => setActiveMenu('none'));
 
@@ -164,76 +171,77 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
     ? { background: `linear-gradient(to top, ${data.color || '#f59e0b'} 2%, transparent 40%)` }
     : {};
 
+  // Determine accent color
+  const accentColor = data.isColorized ? (data.color || '#f59e0b') : ((data.options && data.options.length > 1) ? '#2F80ED' : '#C2C9DB');
+
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative group transition-all duration-200 min-w-[220px] sm:min-w-[280px] w-max max-w-[90vw] sm:max-w-[400px]"
     >
       <div
-        className="relative border-2 rounded-lg transition-all"
+        className="canvas-step-card relative rounded-xl transition-all"
         style={{
-          borderColor: selected ? 'var(--primary)' : 'var(--border)',
-          backgroundColor: 'var(--card)',
-          boxShadow: selected ? 'var(--elevation-lg)' : 'var(--elevation-sm)',
-                  }}
+          borderColor: selected ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
+          boxShadow: selected
+            ? '0 0 0 2px var(--primary), 0 4px 16px rgba(47,128,237,0.15)'
+            : '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
+        }}
       >
-        {/* Input Handle — outer touch area is 44px via ::after */}
+        {/* Input Handle */}
         <Handle
           type="target"
           position={Position.Top}
-          className="!w-4 !h-4 !border-2 !left-1/2 !-translate-x-1/2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
+          className=""
           style={{
-            backgroundColor: 'var(--muted)',
-            borderColor: 'var(--card)'
+            width: 14, height: 14,
+            left: '50%',
+            top: -7,
+            transform: 'translateX(-50%)',
+            background: accentColor,
+            border: '2px solid var(--card)',
+            cursor: 'crosshair',
+            zIndex: 10,
           }}
         />
 
         {/* Colorize Gradient Overlay */}
         {data.isColorized && (
-          <div 
-            className="absolute inset-0 rounded-lg pointer-events-none z-0 opacity-50" 
+          <div
+            className="absolute inset-0 rounded-xl pointer-events-none z-0 opacity-40"
             style={gradientStyle}
           />
         )}
 
-        {/* Node color indicator */}
-        <div 
-          className="h-2 rounded-t-[calc(var(--radius)-2px)]" 
-          style={{ 
-            backgroundColor: data.isColorized ? (data.color || '#f59e0b') : ((data.options && data.options.length > 1) ? 'var(--primary)' : 'var(--muted)')
-          }} 
-        />
+        <div className="relative z-10 px-4 pt-3 pb-2.5 flex flex-col gap-1.5">
 
-        <div className="relative z-10 p-3 flex flex-col gap-2">
-          
-          {/* Header Section */}
-          <div className="flex flex-col gap-1 nodrag cursor-text">
+          {/* Title & Description */}
+          <div className="flex flex-col gap-0.5 nodrag cursor-text">
             <input
               type="text"
               value={localTitle}
-              onChange={(e) => { 
-                const newValue = e.target.value.slice(0, 100); // Max 100 characters
-                setLocalTitle(newValue); 
-                updateData({ title: newValue }); 
+              onChange={(e) => {
+                const newValue = e.target.value.slice(0, 100);
+                setLocalTitle(newValue);
+                updateData({ title: newValue });
               }}
               maxLength={100}
-              className="font-bold bg-transparent border-none p-0 focus:ring-0 text-base placeholder-slate-300 w-full"
+              className="font-semibold bg-transparent border-none p-0 focus:ring-0 text-[13px] leading-snug placeholder-slate-300 w-full"
               placeholder="Step Title"
-              style={{ color: 'var(--foreground)' }}
+              style={{ color: 'var(--foreground)', letterSpacing: '-0.01em' }}
             />
             <textarea
               ref={textareaRef}
               value={localDesc}
-              onChange={(e) => { 
-                setLocalDesc(e.target.value); 
+              onChange={(e) => {
+                setLocalDesc(e.target.value);
                 updateData({ description: e.target.value });
-                // Auto-grow
                 e.target.style.height = 'auto';
                 e.target.style.height = Math.min(e.target.scrollHeight, 500) + 'px';
               }}
-              className="text-xs bg-transparent border-none p-0 pr-1 focus:ring-0 resize-none min-h-[32px] placeholder-slate-300 leading-relaxed w-full overflow-y-auto custom-scrollbar"
+              className="text-[11px] bg-transparent border-none p-0 pr-1 focus:ring-0 resize-none min-h-[28px] placeholder-slate-300 leading-relaxed w-full overflow-y-auto custom-scrollbar"
               placeholder="Enter instructions..."
-              style={{ 
+              style={{
                 color: 'var(--muted)',
                 maxHeight: '500px',
                 height: 'auto'
@@ -247,62 +255,64 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
           </div>
 
           {/* Feature Toolbar */}
-          {data.editingEnabled !== false && <div className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-md border self-start mt-1 flex-wrap" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
-            <button 
+          {data.editingEnabled !== false && (
+          <div className="canvas-step-toolbar flex items-center gap-px mt-1 flex-wrap nodrag">
+            <button
               onClick={() => handleToggleMenu('colorize')}
-              className={`p-1.5 rounded transition-all relative ${data.isColorized ? 'bg-amber-100' : 'hover:bg-secondary'}`}
+              className={`canvas-step-tool-btn ${data.isColorized ? 'active' : ''}`}
               title="Colorize Node"
+              style={data.isColorized ? { '--tool-active-color': '#f59e0b' } as React.CSSProperties : undefined}
             >
-              <Palette size={14} style={{ color: data.isColorized ? '#f59e0b' : 'var(--muted)' }} />
-              {data.isColorized && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-amber-500 rounded-full" />}
+              <Palette size={14} />
             </button>
-            
-            <button 
+
+            <button
               onClick={() => handleToggleMenu('input')}
-              className={`p-1.5 rounded transition-all relative ${data.isInput ? 'bg-blue-100' : 'hover:bg-secondary'}`}
+              className={`canvas-step-tool-btn ${data.isInput ? 'active' : ''}`}
               title="Input Config"
+              style={data.isInput ? { '--tool-active-color': '#2F80ED' } as React.CSSProperties : undefined}
             >
-              <TextCursorInput size={14} style={{ color: data.isInput ? 'var(--primary)' : 'var(--muted)' }} />
-              {data.isInput && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--primary)' }} />}
+              <TextCursorInput size={14} />
             </button>
 
             <button
               onClick={() => handleToggleMenu('branching')}
-              className={`p-1.5 rounded transition-all relative ${data.options && data.options.length > 1 ? 'bg-indigo-100' : 'hover:bg-secondary'}`}
+              className={`canvas-step-tool-btn ${data.options && data.options.length > 1 ? 'active' : ''}`}
               title="Branching Config"
+              style={data.options && data.options.length > 1 ? { '--tool-active-color': '#2F80ED' } as React.CSSProperties : undefined}
             >
-              <GitFork size={14} style={{ color: data.options && data.options.length > 1 ? 'var(--primary)' : 'var(--muted)' }} />
-              {data.options && data.options.length > 1 && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--primary)' }} />}
+              <GitFork size={14} />
             </button>
 
-            <button 
+            <button
               onClick={() => handleToggleMenu('popup')}
-              className={`p-1.5 rounded transition-all relative ${data.popups && data.popups.length > 0 ? 'bg-yellow-100' : 'hover:bg-secondary'}`}
+              className={`canvas-step-tool-btn ${data.popups && data.popups.length > 0 ? 'active' : ''}`}
               title="Popup Config"
+              style={data.popups && data.popups.length > 0 ? { '--tool-active-color': '#f59e0b' } as React.CSSProperties : undefined}
             >
-              <MessageSquare size={14} style={{ color: data.popups && data.popups.length > 0 ? '#f59e0b' : 'var(--muted)' }} />
-              {data.popups && data.popups.length > 0 && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-yellow-500 rounded-full" />}
+              <MessageSquare size={14} />
             </button>
 
-            <div className="w-px h-3" style={{ backgroundColor: 'var(--border)' }} />
+            <div className="canvas-step-tool-sep" />
 
-            <button 
+            <button
               onClick={() => handleToggleMenu('checklist')}
-              className={`p-1.5 rounded transition-all relative ${data.checklist && data.checklist.length > 0 ? 'bg-emerald-50' : 'hover:bg-secondary'}`}
+              className={`canvas-step-tool-btn ${data.checklist && data.checklist.length > 0 ? 'active' : ''}`}
+              style={data.checklist && data.checklist.length > 0 ? { '--tool-active-color': '#10b981' } as React.CSSProperties : undefined}
             >
-              <ListChecks size={14} style={{ color: data.checklist && data.checklist.length > 0 ? '#10b981' : 'var(--muted)' }} />
-              {data.checklist && data.checklist.length > 0 && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+              <ListChecks size={14} />
             </button>
 
-            <button 
+            <button
               onClick={() => handleToggleMenu('media')}
-              className={`p-1.5 rounded transition-all relative ${data.media && data.media.length > 0 ? 'bg-blue-50' : 'hover:bg-secondary'}`}
+              className={`canvas-step-tool-btn ${data.media && data.media.length > 0 ? 'active' : ''}`}
               title="Attach Media"
+              style={data.media && data.media.length > 0 ? { '--tool-active-color': '#3b82f6' } as React.CSSProperties : undefined}
             >
-              <ImageIcon size={14} style={{ color: data.media && data.media.length > 0 ? '#3b82f6' : 'var(--muted)' }} />
-              {data.media && data.media.length > 0 && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />}
+              <ImageIcon size={14} />
             </button>
-          </div>}
+          </div>
+          )}
         </div>
 
         {/* Floating Configuration Menus */}
@@ -357,9 +367,14 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
                   <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Input Required</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" checked={data.isInput} onChange={() => updateData({ isInput: !data.isInput })} className="sr-only peer" />
-                    <div className="w-7 h-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all" style={{ backgroundColor: data.isInput ? 'var(--primary)' : 'var(--secondary)' }}></div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={data.isInput}
+                      onChange={() => updateData({ isInput: !data.isInput })}
+                      className="w-4 h-4 rounded border cursor-pointer accent-[var(--primary)]"
+                      style={{ accentColor: 'var(--primary)' }}
+                    />
                   </label>
                 </div>
                 {data.isInput && (
@@ -372,25 +387,15 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                       <button
                         key={type.id}
                         onClick={() => updateData({ inputType: type.id as any })}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded text-xs transition-colors ${ 
-                          data.inputType === type.id 
-                            ? 'font-medium border' 
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded text-xs transition-colors hover:bg-secondary ${
+                          data.inputType === type.id
+                            ? 'font-medium border'
                             : ''
                         }`}
                         style={{
                           backgroundColor: data.inputType === type.id ? 'rgba(47, 128, 237, 0.1)' : 'transparent',
                           color: data.inputType === type.id ? 'var(--primary)' : 'var(--foreground)',
                           borderColor: data.inputType === type.id ? 'rgba(47, 128, 237, 0.2)' : 'transparent'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (data.inputType !== type.id) {
-                            e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (data.inputType !== type.id) {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                          }
                         }}
                       >
                         <type.icon size={14} />
@@ -416,15 +421,13 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                       <input 
                         value={opt.text}
                         onChange={(e) => updateOption(opt.id, e.target.value)}
-                        className="flex-1 text-xs border rounded px-2.5 py-1.5 focus:outline-none"
+                        className="flex-1 text-xs border rounded px-2.5 py-1.5 focus:outline-none canvas-input"
                         placeholder={idx === 0 ? "Default output" : "Option label"}
                         style={{
                           borderColor: 'var(--border)',
                           backgroundColor: 'var(--card)',
                           color: 'var(--foreground)',
                         }}
-                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                       />
                       {idx > 0 && (
                         <button onClick={() => removeOption(opt.id)} className="p-1 hover:text-destructive transition-colors shrink-0" style={{ color: 'var(--muted)' }}>
@@ -436,21 +439,10 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                   ))}
                   <button 
                     onClick={() => data.onAddOption?.()}
-                    className="flex items-center justify-center gap-1.5 text-xs font-medium py-2.5 rounded transition-all border border-dashed mt-1 cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 text-xs font-medium py-2.5 rounded transition-all border border-dashed mt-1 cursor-pointer canvas-media-btn"
                     style={{
-                      backgroundColor: 'rgba(47, 128, 237, 0.1)',
                       color: 'var(--primary)',
                       borderColor: 'rgba(47, 128, 237, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.2)';
-                      e.currentTarget.style.borderColor = 'rgba(47, 128, 237, 0.5)';
-                      e.currentTarget.style.transform = 'scale(1.02)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(47, 128, 237, 0.3)';
-                      e.currentTarget.style.transform = 'scale(1)';
                     }}
                   >
                     <Plus size={14} /> Add Option
@@ -482,12 +474,8 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                             borderBottomColor: 'var(--border)',
                             color: 'var(--foreground)',
                           }}
-                          onFocus={(e) => e.currentTarget.style.borderBottomColor = 'var(--primary)'}
-                          onBlur={(e) => e.currentTarget.style.borderBottomColor = 'var(--border)'}
                         />
-                        <button onClick={() => removePopup(popup.id)} className="p-1 transition-colors shrink-0" style={{ color: 'var(--muted)' }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--destructive)'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                        <button onClick={() => removePopup(popup.id)} className="p-1 transition-colors shrink-0 canvas-icon-btn-danger"
                         >
                           <X size={12} />
                         </button>
@@ -495,7 +483,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                       <textarea
                         value={popup.description}
                         onChange={(e) => updatePopup(popup.id, { description: e.target.value })}
-                        className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none resize-none"
+                        className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none resize-none canvas-input"
                         placeholder="Description..."
                         rows={2}
                         style={{
@@ -503,8 +491,6 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                           backgroundColor: 'var(--card)',
                           color: 'var(--foreground)'
                         }}
-                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                       />
                       <div className="flex items-center gap-2">
                         <button
@@ -513,14 +499,12 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                               updatePopup(popup.id, { media: [...popup.media, ...selectedMedia] });
                             });
                           }}
-                          className="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded border transition-colors"
+                          className="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded border canvas-config-btn"
                           style={{
                             borderColor: 'var(--border)',
                             color: 'var(--muted)',
                             backgroundColor: popup.media.length > 0 ? 'var(--secondary)' : 'transparent'
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = popup.media.length > 0 ? 'var(--secondary)' : 'transparent'}
                         >
                           <ImageIcon size={10} />
                           {popup.media.length > 0 ? `${popup.media.length} Media` : 'Add Media'}
@@ -546,21 +530,11 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                   {(data.popups || []).length < 10 && (
                     <button 
                       onClick={addPopup}
-                      className="flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded transition-colors border border-dashed"
+                      className="flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded transition-colors border border-dashed canvas-config-btn"
                       style={{
                         backgroundColor: 'var(--secondary)',
                         color: 'var(--muted)',
                         borderColor: 'var(--border)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.1)';
-                        e.currentTarget.style.color = 'var(--primary)';
-                        e.currentTarget.style.borderColor = 'rgba(47, 128, 237, 0.2)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                        e.currentTarget.style.color = 'var(--muted)';
-                        e.currentTarget.style.borderColor = 'var(--border)';
                       }}
                     >
                       <Plus size={14} /> Add Popup Notice
@@ -592,17 +566,12 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                       <input 
                         value={item.text}
                         onChange={(e) => updateData({ checklist: data.checklist.map(i => i.id === item.id ? { ...i, text: e.target.value } : i) })}
-                        className={`flex-1 text-xs bg-transparent border-b border-transparent focus:outline-none py-1 ${item.done ? 'line-through' : ''}`}
-                        style={{ 
+                        className={`flex-1 text-xs bg-transparent border-b border-transparent focus:border-b-[var(--border)] focus:outline-none py-1 ${item.done ? 'line-through' : ''}`}
+                        style={{
                           color: item.done ? 'var(--muted)' : 'var(--foreground)',
-                          borderBottomColor: 'transparent'
                         }}
-                        onFocus={(e) => e.currentTarget.style.borderBottomColor = 'var(--border)'}
-                        onBlur={(e) => e.currentTarget.style.borderBottomColor = 'transparent'}
                       />
-                      <button onClick={() => updateData({ checklist: data.checklist.filter(i => i.id !== item.id) })} className="p-1 transition-colors shrink-0" style={{ color: 'var(--muted)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--destructive)'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                      <button onClick={() => updateData({ checklist: data.checklist.filter(i => i.id !== item.id) })} className="p-1 transition-colors shrink-0 canvas-icon-btn-danger"
                       >
                         <X size={14} />
                       </button>
@@ -610,10 +579,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                   ))}
                   <button 
                     onClick={() => updateData({ checklist: [...(data.checklist || []), { id: crypto.randomUUID(), text: 'Check item', done: false }] })}
-                    className="flex items-center gap-1.5 text-xs transition-colors py-1"
-                    style={{ color: 'var(--muted)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = '#10b981'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                    className="flex items-center gap-1.5 text-xs transition-colors py-1 canvas-icon-btn hover:!text-emerald-500"
                   >
                     <Plus size={14} /> Add Item
                   </button>
@@ -659,16 +625,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                                 [newMedia[idx], newMedia[idx - 1]] = [newMedia[idx - 1], newMedia[idx]];
                                 updateData({ media: newMedia });
                               }}
-                              className="p-1 rounded transition-colors"
-                              style={{ color: 'var(--muted)' }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'var(--card)';
-                                e.currentTarget.style.color = 'var(--primary)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                                e.currentTarget.style.color = 'var(--muted)';
-                              }}
+                              className="p-1 rounded transition-colors canvas-move-btn"
                               title="Move up"
                             >
                               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -683,16 +640,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                                 [newMedia[idx], newMedia[idx + 1]] = [newMedia[idx + 1], newMedia[idx]];
                                 updateData({ media: newMedia });
                               }}
-                              className="p-1 rounded transition-colors"
-                              style={{ color: 'var(--muted)' }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'var(--card)';
-                                e.currentTarget.style.color = 'var(--primary)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                                e.currentTarget.style.color = 'var(--muted)';
-                              }}
+                              className="p-1 rounded transition-colors canvas-move-btn"
                               title="Move down"
                             >
                               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -702,16 +650,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                           )}
                           <button
                             onClick={() => updateData({ media: data.media.filter((_, i) => i !== idx) })}
-                            className="p-1 rounded transition-colors"
-                            style={{ color: 'var(--muted)' }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'var(--card)';
-                              e.currentTarget.style.color = 'var(--destructive)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.color = 'var(--muted)';
-                            }}
+                            className="p-1 rounded transition-colors canvas-icon-btn-danger"
                             title="Remove"
                           >
                             <X size={12} />
@@ -724,17 +663,11 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
 
                 <div className="flex flex-col gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                   <label
-                    className="flex items-center gap-2 px-3 py-2.5 rounded text-xs transition-colors border cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded text-xs transition-colors border cursor-pointer canvas-upload-btn"
                     style={{
                       backgroundColor: 'transparent',
                       color: 'var(--foreground)',
                       borderColor: 'var(--border)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
                     <ImageIcon size={14} />
@@ -760,17 +693,10 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                         updateData({ media: [...(data.media || []), ...selectedMedia] });
                       });
                     }}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded text-xs font-medium transition-colors border"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded text-xs font-medium transition-colors border canvas-media-btn"
                     style={{
-                      backgroundColor: 'rgba(47, 128, 237, 0.1)',
                       color: 'var(--primary)',
                       borderColor: 'rgba(47, 128, 237, 0.2)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.1)';
                     }}
                   >
                     <ImageIcon size={14} />
@@ -782,136 +708,77 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
           </div>
         )}
 
-        {/* Bottom Handles */}
-        {(data.options && data.options.length > 0) ? (
-          <div className="absolute -bottom-2 left-4 right-4 z-10" style={{ height: '8px' }}>
-            {data.options?.map((opt, index) => {
+        {/* Source handle dots — direct children of the card so ReactFlow can compute their position */}
+        {data.options?.map((opt, index) => {
+          const total = data.options.length;
+          const leftPct = total === 1 ? 50 : 8 + (index / (total - 1)) * 84;
+          return (
+            <Handle
+              key={opt.id}
+              type="source"
+              position={Position.Bottom}
+              id={opt.id}
+              className=""
+              style={{
+                width: 14, height: 14,
+                left: `${leftPct}%`,
+                bottom: -7,
+                transform: 'translateX(-50%)',
+                background: total === 1 ? accentColor : 'var(--primary)',
+                border: '2px solid var(--card)',
+                cursor: 'crosshair',
+                zIndex: 10,
+              }}
+            />
+          );
+        })}
+
+        {/* Labels and add-step buttons below the handle dots */}
+        {data.options && data.options.length > 0 && (
+          <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ top: '100%', overflow: 'visible' }}>
+            {data.options.map((opt, index) => {
+              const total = data.options.length;
+              const leftPct = total === 1 ? 50 : 8 + (index / (total - 1)) * 84;
               const isConnected = data.connectedHandles?.has(opt.id);
-              const totalOptions = data.options.length;
-              
-              // Calculate horizontal position as percentage (0% to 100%)
-              const leftPercent = totalOptions === 1 ? 50 : (index / (totalOptions - 1)) * 100;
-              
+              const isSingle = total === 1;
               return (
-                <div key={opt.id} className="absolute" style={{ left: `${leftPercent}%`, top: 0, transform: 'translateX(-50%)' }}>
-                  <Handle
-                    type="source"
-                    position={Position.Bottom}
-                    id={opt.id}
-                    className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
-                    style={{
-                      backgroundColor: 'var(--primary)',
-                      borderColor: 'var(--card)'
-                    }}
-                  />
-                  <div className="absolute top-5 left-1/2 -translate-x-1/2 border text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shadow-sm opacity-100 transition-opacity text-center whitespace-nowrap z-20"
-                    style={{
-                      backgroundColor: 'var(--card)',
-                      borderColor: 'rgba(47, 128, 237, 0.2)',
-                      color: 'var(--primary)'
-                    }}
-                  >
-                    {opt.text}
-                  </div>
+                <div key={opt.id} className="absolute pointer-events-auto" style={{ left: `${leftPct}%`, top: 0, transform: 'translateX(-50%)' }}>
+                  {!isSingle && (
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded-full text-center whitespace-nowrap max-w-[72px] truncate"
+                      style={{ top: 8, backgroundColor: 'rgba(47, 128, 237, 0.08)', color: 'var(--primary)' }}
+                      title={opt.text}
+                    >
+                      {opt.text}
+                    </div>
+                  )}
                   {!isConnected && data.editingEnabled !== false && (
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        data.onAddConnectedStep?.(opt.id);
-                      }}
-                      className="absolute top-12 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
-                      style={{
-                        backgroundColor: 'var(--card)',
-                        borderColor: 'var(--border)',
-                        color: 'var(--muted)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--primary)';
-                        e.currentTarget.style.borderColor = 'var(--primary)';
-                        e.currentTarget.style.color = 'white';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--card)';
-                        e.currentTarget.style.borderColor = 'var(--border)';
-                        e.currentTarget.style.color = 'var(--muted)';
-                      }}
+                      onClick={(e) => { e.stopPropagation(); data.onAddConnectedStep?.(opt.id); }}
+                      className={`absolute left-1/2 -translate-x-1/2 rounded-full border flex items-center justify-center transition-all hover:scale-110 nodrag canvas-add-btn ${
+                        isSingle
+                          ? 'w-9 h-9 opacity-30 hover:opacity-100'
+                          : 'w-8 h-8 opacity-0 group-hover:opacity-40 hover:!opacity-100'
+                      }`}
+                      style={{ top: isSingle ? 8 : 32 }}
                       title="Add connected step"
                     >
-                      <Plus size={18} />
+                      <Plus size={isSingle ? 16 : 14} />
                     </button>
                   )}
                 </div>
               );
             })}
           </div>
-        ) : (
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-10">
-            <Handle
-              type="source"
-              position={Position.Bottom}
-              id="default"
-              className="!w-4 !h-4 !border-2 transition-all hover:!w-5 hover:!h-5 hover:!shadow-lg !cursor-crosshair after:content-[''] after:absolute after:-inset-3 after:rounded-full"
-              style={{
-                backgroundColor: 'var(--muted)',
-                borderColor: 'var(--card)'
-              }}
-            />
-            {!data.connectedHandles?.has('default') && data.editingEnabled !== false && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  data.onAddConnectedStep?.();
-                }}
-                className="absolute top-6 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 nodrag opacity-40 hover:opacity-100 shadow-md hover:shadow-lg"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  color: 'var(--muted)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--primary)';
-                  e.currentTarget.style.borderColor = 'var(--primary)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--card)';
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.color = 'var(--muted)';
-                }}
-                title="Add connected step"
-              >
-                <Plus size={18} />
-              </button>
-            )}
-          </div>
         )}
 
         {/* Hover Action Menu */}
         {data.editingEnabled !== false && (
-        <div className="absolute top-2 right-2 flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur rounded p-1 shadow-sm border z-20"
-          style={{
-            backgroundColor: 'rgba(var(--card-rgb, 255, 255, 255), 0.9)',
-            borderColor: 'var(--border)'
-          }}
-        >
-          <button onClick={() => data.onAction?.('duplicate')} className="p-1 rounded transition-colors" title="Duplicate"
-            style={{ color: 'var(--muted)' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
-          >
+        <div className="canvas-step-actions absolute -top-3 right-3 flex gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-all z-20">
+          <button onClick={() => data.onAction?.('duplicate')} className="canvas-step-action-btn" title="Duplicate">
             <Copy size={12} />
           </button>
-          <button onClick={() => data.onAction?.('delete')} className="p-1 rounded transition-colors" title="Delete"
-            style={{ color: 'var(--muted)' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--destructive)';
-              e.currentTarget.style.backgroundColor = 'rgba(255, 31, 31, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--muted)';
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
+          <button onClick={() => data.onAction?.('delete')} className="canvas-step-action-btn danger" title="Delete">
             <Trash2 size={12} />
           </button>
         </div>

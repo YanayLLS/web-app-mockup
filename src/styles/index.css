@@ -2,13 +2,26 @@
 @import './tailwind.css';
 @import './theme.css';
 
-/* Disable ReactFlow edge animations for instant connection updates */
+/* Disable ReactFlow default edge animations — we handle transitions inline */
 .react-flow__edge-path {
   transition: none !important;
 }
 
 .react-flow__edge {
   transition: none !important;
+}
+
+/* Style the temporary connection line while dragging */
+.react-flow__connection-path {
+  stroke: var(--primary) !important;
+  stroke-width: 2 !important;
+  stroke-dasharray: 6 4 !important;
+  opacity: 0.7;
+}
+
+/* Edge label buttons need high z-index to float above nodes */
+.edge-label-buttons {
+  z-index: 1000 !important;
 }
 
 /* Mobile bottom sheet slide-up animation */
@@ -43,4 +56,334 @@
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+/* ── Canvas node handles ── */
+.react-flow__node .react-flow__handle {
+  transition: width 0.15s ease, height 0.15s ease, box-shadow 0.15s ease;
+}
+.react-flow__node .react-flow__handle:hover {
+  width: 18px !important;
+  height: 18px !important;
+  box-shadow: 0 0 8px rgba(47, 128, 237, 0.3);
+}
+
+/* ── Canvas step card ── */
+.canvas-step-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Step card feature toolbar */
+.canvas-step-toolbar {
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--background);
+}
+
+/* Individual tool button in the toolbar */
+.canvas-step-tool-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #B0B7C8;
+  background: transparent;
+  transition: all 0.15s ease;
+}
+.canvas-step-tool-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #5E677D;
+}
+.canvas-step-tool-btn.active {
+  color: var(--tool-active-color, #2F80ED);
+  background: color-mix(in srgb, var(--tool-active-color, #2F80ED) 10%, transparent);
+}
+.canvas-step-tool-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tool-active-color, #2F80ED);
+}
+
+/* Toolbar divider */
+.canvas-step-tool-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 1px;
+}
+
+/* Hover action buttons (duplicate / delete) */
+.canvas-step-actions {
+  padding: 3px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.canvas-step-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: #868D9E;
+  transition: all 0.12s ease;
+}
+.canvas-step-action-btn:hover {
+  background: var(--secondary);
+  color: var(--primary);
+}
+.canvas-step-action-btn.danger:hover {
+  background: rgba(255, 31, 31, 0.08);
+  color: var(--destructive);
+}
+
+/* ── Canvas node hover utilities ── */
+
+/* "Add connected step" circular button */
+.canvas-add-btn {
+  background-color: var(--card);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #B0B7C8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.18s ease;
+}
+.canvas-add-btn:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(47, 128, 237, 0.25);
+}
+
+/* Generic icon button: muted → primary on hover */
+.canvas-icon-btn {
+  color: var(--muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.canvas-icon-btn:hover {
+  color: var(--primary);
+}
+
+/* Destructive icon button: muted → red on hover */
+.canvas-icon-btn-danger {
+  color: var(--muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.canvas-icon-btn-danger:hover {
+  color: var(--destructive);
+  background-color: rgba(255, 31, 31, 0.1);
+}
+
+/* Close button: muted → foreground on hover */
+.canvas-close-btn {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.canvas-close-btn:hover {
+  color: var(--foreground);
+}
+
+/* Context menu item hover */
+.canvas-menu-item {
+  transition: background-color 0.15s ease;
+}
+.canvas-menu-item:hover {
+  background-color: var(--secondary);
+}
+
+/* Procedure select item */
+.canvas-select-item {
+  border-color: var(--border);
+  background-color: transparent;
+  transition: all 0.15s ease;
+}
+.canvas-select-item:hover {
+  background-color: var(--secondary);
+  border-color: var(--primary);
+}
+
+/* Logic node config button */
+.canvas-config-btn {
+  transition: background-color 0.15s ease;
+}
+.canvas-config-btn:hover {
+  background-color: var(--secondary);
+}
+
+/* Platform remove button */
+.canvas-remove-btn {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.canvas-remove-btn:hover {
+  color: var(--destructive);
+}
+
+/* Focus ring for inputs */
+.canvas-input:focus {
+  border-color: var(--primary);
+}
+
+/* ─── Floating Action Menu (FAM) ─── */
+.canvas-fam {
+  padding: 5px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* Primary "New Step" button */
+.canvas-fam-primary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px 9px 13px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.canvas-fam-primary:hover {
+  background: #2570d4;
+  box-shadow: 0 4px 14px rgba(47, 128, 237, 0.35);
+  transform: translateY(-1px);
+}
+.canvas-fam-primary:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 1px 4px rgba(47, 128, 237, 0.2);
+}
+
+/* Separator between primary and icon group */
+.canvas-fam-sep {
+  width: 1px;
+  height: 22px;
+  margin: 0 6px 0 4px;
+  background: rgba(0, 0, 0, 0.09);
+  border-radius: 1px;
+}
+
+/* Icon buttons group wrapper */
+.canvas-fam-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Individual icon button */
+.canvas-fam-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #868D9E;
+  background: transparent;
+  transition: all 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.canvas-fam-icon-btn:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+  transform: translateY(-1px);
+}
+.canvas-fam-icon-btn:active {
+  transform: translateY(0) scale(0.92);
+  background: var(--accent);
+}
+
+/* ─── Rich Tooltip for FAM ─── */
+.canvas-fam-tooltip {
+  background: white !important;
+  color: var(--foreground) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  max-width: 220px;
+  line-height: 1;
+}
+.canvas-fam-tooltip .canvas-fam-tooltip-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #36415D;
+  margin-bottom: 4px;
+}
+.canvas-fam-tooltip .canvas-fam-tooltip-desc {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #868D9E;
+  line-height: 1.4;
+}
+/* Override Radix arrow for white tooltip */
+.canvas-fam-tooltip [data-slot="tooltip-arrow"],
+.canvas-fam-tooltip .bg-primary {
+  fill: white !important;
+  background: white !important;
+  color: white !important;
+}
+
+/* Media library open button */
+.canvas-media-btn {
+  background-color: rgba(47, 128, 237, 0.1);
+  transition: background-color 0.15s ease;
+}
+.canvas-media-btn:hover {
+  background-color: rgba(47, 128, 237, 0.2);
+}
+
+/* Media upload button */
+.canvas-upload-btn {
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+.canvas-upload-btn:hover {
+  background-color: var(--secondary);
+}
+
+/* Move media button */
+.canvas-move-btn {
+  color: var(--muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.canvas-move-btn:hover {
+  background-color: var(--card);
+  color: var(--primary);
+}
+
+/* Save feedback toast */
+@keyframes saveToastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes saveToastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+.save-toast {
+  animation: saveToastIn 0.2s ease-out forwards;
+}
+.save-toast-exit {
+  animation: saveToastOut 0.2s ease-in forwards;
 }

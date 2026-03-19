@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useMemo, useEffect, useLayoutEffect } from 'react';
 import { useProcedureSteps } from '../../contexts/ProcedureStepsContext';
+import { DEFAULT_PROCEDURE_STEPS } from '../../data/mockProcedureSteps';
 import type { Step } from '../procedure-editor/ProcedureEditor';
 import ReactFlow, {
   Background,
@@ -27,15 +28,20 @@ import {
   Target,
   X,
   Settings,
+  Maximize,
+  Minimize,
+  Check,
+  Search,
 } from 'lucide-react';
 import imgDots from "figma:asset/024a1ea7ee32f89f8dbc4aa4a011b69bd6e9bad7.png";
 import { DynamicNode } from './canvas/DynamicNode';
 import { StartNode } from './canvas/StartNode';
 import { NoteNode } from './canvas/NoteNode';
 import { LogicNode } from './canvas/LogicNode';
-import { CustomEdge } from './canvas/CustomEdge';
+import { CustomEdge, EdgeMarkerDefs } from './canvas/CustomEdge';
 import { ContextMenu, ContextMenuType } from './canvas/ContextMenu';
 import { MediaLibraryModal } from '../modals/MediaLibraryModal';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 import { ProcedureModal } from '../modals/ProcedureModal';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
 import { MemberAvatar } from '../MemberAvatar';
@@ -311,9 +317,12 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   const [menu, setMenu] = useState<{ x: number; y: number; type: ContextMenuType; data?: any } | null>(null);
   const connectStartRef = useRef<{ nodeId: string | null; handleId: string | null } | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [mediaLibraryCallback, setMediaLibraryCallback] = useState<((selectedMedia: string[]) => void) | null>(null);
   const [procedureSelectCallback, setProcedureSelectCallback] = useState<((procedureId: string, procedureName: string) => void) | null>(null);
   const [isProcedureModalOpen, setIsProcedureModalOpen] = useState(false);
+  const [showSaveToast, setShowSaveToast] = useState(false);
 
   const { screenToFlowPosition, fitView, setCenter } = useReactFlow();
 
@@ -364,6 +373,17 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         return node;
       })
     );
+
+    // When options change, clean up orphaned edges (edges pointing to removed option handles)
+    if ('options' in newData) {
+      const validHandleIds = new Set(newData.options.map((o: any) => o.id));
+      setEdges(eds => eds.filter(e => {
+        if (e.source !== id) return true;
+        // Keep edge if its sourceHandle is valid, or migrate null/default to first option
+        if (!e.sourceHandle || e.sourceHandle === 'default') return true;
+        return validHandleIds.has(e.sourceHandle);
+      }));
+    }
     setHasUnsavedChanges(true);
   }, [setNodes]);
 
@@ -428,10 +448,14 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         }
       };
 
+      // Use the provided sourceHandle, or fall back to the first option's ID
+      const parentOptions = (parentNode.data as any)?.options;
+      const resolvedHandle = sourceHandle || parentOptions?.[0]?.id || 'default';
+
       const newEdge: Edge = {
-        id: `e-${nodeId}-${sourceHandle || 'default'}-${newNodeId}`,
+        id: `e-${nodeId}-${resolvedHandle}-${newNodeId}`,
         source: nodeId,
-        sourceHandle: sourceHandle || undefined,
+        sourceHandle: resolvedHandle,
         target: newNodeId,
         type: 'custom',
         style: { strokeWidth: 2, stroke: '#2f80ed' },
@@ -455,11 +479,25 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   // Add additional branching option (first option is always the default output)
   const handleAddOption = useCallback((nodeId: string) => {
     setNodes(currentNodes => {
+      const node = currentNodes.find(n => n.id === nodeId);
+      if (!node) return currentNodes;
+
+      const existingOptions = (node.data as any)?.options || [{ id: crypto.randomUUID(), text: 'Continue' }];
+      const newOption = { id: crypto.randomUUID(), text: `Option ${existingOptions.length}` };
+      const firstOptionId = existingOptions[0]?.id;
+
+      // Migrate edges: if any edge uses "default" or null sourceHandle, update to first option's ID
+      if (firstOptionId) {
+        setEdges(eds => eds.map(e => {
+          if (e.source === nodeId && (!e.sourceHandle || e.sourceHandle === 'default')) {
+            return { ...e, sourceHandle: firstOptionId };
+          }
+          return e;
+        }));
+      }
+
       return currentNodes.map(n => {
         if (n.id === nodeId) {
-          const existingOptions = (n.data as any)?.options || [{ id: crypto.randomUUID(), text: 'Continue' }];
-          const newOption = { id: crypto.randomUUID(), text: `Option ${existingOptions.length}` };
-
           return {
             ...n,
             data: {
@@ -474,7 +512,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     });
 
     setHasUnsavedChanges(true);
-  }, [setNodes]);
+  }, [setNodes, setEdges]);
 
   // Add node between two connected nodes (from edge + button)
   const handleAddNodeBetween = useCallback((edgeId: string) => {
@@ -495,6 +533,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       y: (sourceNode.position.y + targetNode.position.y) / 2
     };
     
+    const newNodeFirstOptionId = crypto.randomUUID();
     const newNode: Node = {
       id: newNodeId,
       type: 'dynamic',
@@ -508,16 +547,16 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         isInput: false,
         inputType: 'text',
         isBranching: false,
-        options: [{ id: crypto.randomUUID(), text: 'Continue' }],
+        options: [{ id: newNodeFirstOptionId, text: 'Continue' }],
         popups: [],
         checklist: [],
         media: []
       }
     };
-    
+
     // Create two new edges: source -> newNode and newNode -> target
     const edge1: Edge = {
-      id: `e-${edge.source}-${edge.sourceHandle || 'default'}-${newNodeId}`,
+      id: `e-${edge.source}-${edge.sourceHandle || 'src'}-${newNodeId}`,
       source: edge.source,
       sourceHandle: edge.sourceHandle,
       target: newNodeId,
@@ -525,10 +564,11 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       style: { strokeWidth: 2, stroke: '#2f80ed' },
       animated: false
     };
-    
+
     const edge2: Edge = {
-      id: `e-${newNodeId}-default-${edge.target}`,
+      id: `e-${newNodeId}-${newNodeFirstOptionId}-${edge.target}`,
       source: newNodeId,
+      sourceHandle: newNodeFirstOptionId,
       target: edge.target,
       targetHandle: edge.targetHandle,
       type: 'custom',
@@ -560,9 +600,10 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     return nodes.map((node) => {
       // Find which handles have connections
       const connectedHandles = new Set<string>();
+      const firstOptionId = (node.data as any)?.options?.[0]?.id;
       edges.forEach(edge => {
         if (edge.source === node.id) {
-          connectedHandles.add(edge.sourceHandle || 'default');
+          connectedHandles.add(edge.sourceHandle || firstOptionId || 'default');
         }
       });
 
@@ -612,14 +653,19 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     }));
   }, [edges, handleAddNodeBetween, handleDeleteEdge]);
 
-  // Validate connections: prevent self-loops; replacement handled by onConnect
+  // Validate connections: prevent self-loops and duplicate same-source connections
   const isValidConnection = useCallback(
     (connection: Connection) => {
       // Prevent self-connections
       if (connection.source === connection.target) return false;
+      // Prevent duplicate edge from same source to same target
+      const duplicateExists = edges.some(
+        e => e.source === connection.source && e.target === connection.target
+      );
+      if (duplicateExists) return false;
       return true;
     },
-    []
+    [edges]
   );
 
   const onConnect = useCallback(
@@ -812,7 +858,26 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   const handleSave = () => {
     // Save logic here
     setHasUnsavedChanges(false);
+    setShowSaveToast(true);
+    setTimeout(() => setShowSaveToast(false), 2000);
   };
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
 
   // Function to create a new step with proper numbering
   const handleCreateNewStep = useCallback(() => {
@@ -945,7 +1010,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   }, [nodes, setNodes, setCenter]);
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-background">
+    <div ref={containerRef} className="w-full h-full flex flex-col relative bg-background">
       {/* Top Bar */}
       <div 
         className="h-auto min-h-[56px] border-b flex items-center flex-wrap px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 relative z-10 py-2"
@@ -961,11 +1026,12 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
           <ArrowLeft className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
         </button>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <span className="text-sm font-normal" style={{ color: 'var(--muted)' }}>
-            Project 1 /
+            Flow Editor
           </span>
-          <span className="text-sm font-bold" style={{ color: 'var(--primary)' }}>
+          <span className="text-sm" style={{ color: 'var(--muted)' }}>/</span>
+          <span className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
             {procedureName}
           </span>
         </div>
@@ -1022,18 +1088,31 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
         <div className="w-px h-6" style={{ backgroundColor: 'var(--border)' }} />
 
-        <button 
+        <button
           onClick={handleSave}
           className="p-2 rounded-lg hover:bg-secondary transition-colors relative"
           title="Save"
         >
           <Save className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
           {hasUnsavedChanges && (
-            <div 
-              className="absolute right-1 top-1 w-2 h-2 rounded-full" 
-              style={{ backgroundColor: 'var(--primary)' }} 
+            <div
+              className="absolute right-1 top-1 w-2 h-2 rounded-full"
+              style={{ backgroundColor: 'var(--primary)' }}
             />
           )}
+        </button>
+
+        <div className="w-px h-6" style={{ backgroundColor: 'var(--border)' }} />
+
+        <button
+          onClick={toggleFullscreen}
+          className="p-2 rounded-lg hover:bg-secondary transition-colors"
+          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+        >
+          {isFullscreen
+            ? <Minimize className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+            : <Maximize className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+          }
         </button>
       </div>
 
@@ -1067,6 +1146,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
             backgroundPosition: 'center',
           }}
         >
+          <EdgeMarkerDefs />
           <Background gap={20} size={1} style={{ backgroundColor: 'transparent' }} />
           <Controls
             className="!bottom-[20px] !left-[20px]"
@@ -1122,112 +1202,94 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
           </div>
         </div>
 
+        {/* Save Toast */}
+        {showSaveToast && (
+          <div
+            className="absolute top-4 right-4 z-10 px-4 py-2.5 rounded-lg flex items-center gap-2 save-toast pointer-events-none"
+            style={{
+              backgroundColor: 'var(--accent)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--elevation-sm)',
+            }}
+          >
+            <Check className="w-4 h-4" style={{ color: 'var(--accent-foreground, var(--foreground))' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--accent-foreground, var(--foreground))' }}>
+              Changes saved
+            </span>
+          </div>
+        )}
+
         {/* Floating Action Menu */}
-        <div 
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-2 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm"
-          style={{
-            backgroundColor: 'rgba(var(--card-rgb, 255, 255, 255), 0.95)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--elevation-lg)',
-          }}
-        >
-          <button 
-            onClick={handleCreateNewStep}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
-            style={{ 
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = '0.9';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '1';
-            }}
-            title="Create New Step"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="text-sm font-medium">New Step</span>
-          </button>
-          
-          <button 
-            onClick={handleCreateNote}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
-            style={{ 
-              backgroundColor: 'var(--secondary)',
-              color: 'var(--foreground)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--secondary)';
-            }}
-            title="Add Note"
-          >
-            <StickyNote className="w-4 h-4" />
-            <span className="text-sm font-medium">Note</span>
-          </button>
+        <TooltipProvider delayDuration={300} skipDelayDuration={100}>
+        <div className="canvas-fam absolute bottom-5 left-1/2 -translate-x-1/2 z-10 flex items-center backdrop-blur-md">
+          {/* Primary: New Step */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button onClick={handleCreateNewStep} className="canvas-fam-primary">
+                <Plus className="w-4 h-4" strokeWidth={2.5} />
+                <span>New Step</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={12} className="canvas-fam-tooltip">
+              <div className="canvas-fam-tooltip-title">New Step</div>
+              <div className="canvas-fam-tooltip-desc">Add an instruction step to the procedure flow</div>
+            </TooltipContent>
+          </Tooltip>
 
-          <div className="w-px h-6" style={{ backgroundColor: 'var(--border)' }} />
+          <div className="canvas-fam-sep" />
 
-          <button 
-            onClick={() => handleCreateLogicNode('platform-switch')}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
-            style={{ 
-              backgroundColor: 'var(--secondary)',
-              color: 'var(--foreground)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--secondary)';
-            }}
-            title="Platform Switch Logic"
-          >
-            <GitBranch className="w-4 h-4" />
-            <span className="text-sm font-medium">Platform</span>
-          </button>
+          {/* Secondary icon buttons */}
+          <div className="canvas-fam-group">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button onClick={handleCreateNote} className="canvas-fam-icon-btn">
+                  <StickyNote className="w-[18px] h-[18px]" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={12} className="canvas-fam-tooltip">
+                <div className="canvas-fam-tooltip-title">Note</div>
+                <div className="canvas-fam-tooltip-desc">Pin a note to the canvas for team comments or reminders</div>
+              </TooltipContent>
+            </Tooltip>
 
-          <button 
-            onClick={() => handleCreateLogicNode('procedure-link')}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
-            style={{ 
-              backgroundColor: 'var(--secondary)',
-              color: 'var(--foreground)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--secondary)';
-            }}
-            title="Link to Flow"
-          >
-            <ExternalLink className="w-4 h-4" />
-            <span className="text-sm font-medium">Procedure</span>
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button onClick={() => handleCreateLogicNode('platform-switch')} className="canvas-fam-icon-btn">
+                  <GitBranch className="w-[18px] h-[18px]" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={12} className="canvas-fam-tooltip">
+                <div className="canvas-fam-tooltip-title">Platform Branch</div>
+                <div className="canvas-fam-tooltip-desc">Split the flow based on device — show different steps for HoloLens, tablet, or desktop</div>
+              </TooltipContent>
+            </Tooltip>
 
-          <button 
-            onClick={() => handleCreateLogicNode('object-target')}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
-            style={{ 
-              backgroundColor: 'var(--secondary)',
-              color: 'var(--foreground)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--secondary)';
-            }}
-            title="Object Target Logic"
-          >
-            <Target className="w-4 h-4" />
-            <span className="text-sm font-medium">Target</span>
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button onClick={() => handleCreateLogicNode('procedure-link')} className="canvas-fam-icon-btn">
+                  <ExternalLink className="w-[18px] h-[18px]" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={12} className="canvas-fam-tooltip">
+                <div className="canvas-fam-tooltip-title">Procedure Link</div>
+                <div className="canvas-fam-tooltip-desc">Jump to another procedure mid-flow, then return to continue</div>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button onClick={() => handleCreateLogicNode('object-target')} className="canvas-fam-icon-btn">
+                  <Target className="w-[18px] h-[18px]" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={12} className="canvas-fam-tooltip">
+                <div className="canvas-fam-tooltip-title">Object Target</div>
+                <div className="canvas-fam-tooltip-desc">Anchor a step to a specific 3D object in the digital twin scene</div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
+        </TooltipProvider>
       </div>
 
       {/* Media Library Modal */}
@@ -1267,53 +1329,33 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
               </h3>
               <button
                 onClick={() => setProcedureSelectCallback(null)}
-                className="p-1 rounded transition-colors"
-                style={{ color: 'var(--muted)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--foreground)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                className="p-1 rounded canvas-close-btn"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
               Select a procedure to link to this logic node.
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto custom-scrollbar">
-              {/* Mock procedure list - in real app, this would come from your data */}
-              {[
-                { id: 'proc-1', name: 'Machine Maintenance' },
-                { id: 'proc-2', name: 'Safety Inspection' },
-                { id: 'proc-3', name: 'Equipment Setup' },
-                { id: 'proc-4', name: 'Quality Check' },
-                { id: 'proc-5', name: 'Calibration Process' },
-              ].map((procedure) => (
+              {Object.entries(DEFAULT_PROCEDURE_STEPS)
+                .filter(([id]) => id !== procedureId)
+                .map(([id, data]) => (
                 <button
-                  key={procedure.id}
+                  key={id}
                   onClick={() => {
                     if (procedureSelectCallback) {
-                      procedureSelectCallback(procedure.id, procedure.name);
+                      procedureSelectCallback(id, data.title);
                     }
                   }}
-                  className="w-full text-left px-4 py-3 rounded border transition-colors"
-                  style={{
-                    borderColor: 'var(--border)',
-                    backgroundColor: 'transparent',
-                    color: 'var(--foreground)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                    e.currentTarget.style.borderColor = 'var(--primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                  }}
+                  className="w-full text-left px-4 py-3 rounded border canvas-select-item"
+                  style={{ color: 'var(--foreground)' }}
                 >
-                  <div className="font-medium">{procedure.name}</div>
+                  <div className="font-medium">{data.title}</div>
                   <div className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-                    ID: {procedure.id}
+                    {data.steps.length} steps
                   </div>
                 </button>
               ))}
