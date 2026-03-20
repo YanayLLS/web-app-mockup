@@ -56,6 +56,7 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-[60] p-4 pointer-events-none">
         <div
+          data-demo="config-selector-modal"
           className="pointer-events-auto flex flex-col w-full sm:w-[480px]"
           style={{
             maxWidth: '100%',
@@ -214,6 +215,7 @@ export function AppConfigurationSelector({ isOpen, onClose, onSelect }: AppConfi
               Cancel
             </button>
             <button
+              data-demo="config-selector-open"
               onClick={handleOpen}
               disabled={!selectedId}
               className="active:scale-[0.97] transition-all"
@@ -324,31 +326,12 @@ function SelectorConfigItem({
           style={{
             fontSize: '12px',
             color: '#868D9E',
-            margin: '3px 0 8px 0',
+            margin: '3px 0 0 0',
             lineHeight: '1.5',
           }}
         >
           {config.description}
         </p>
-        {/* Tags */}
-        <div className="flex flex-wrap" style={{ gap: '4px' }}>
-          {config.tags.map((tag) => (
-            <span
-              key={tag}
-              style={{
-                fontSize: '10px',
-                fontWeight: 500,
-                color: isSelected ? '#2F80ED' : '#868D9E',
-                backgroundColor: isSelected ? 'rgba(47,128,237,0.06)' : '#F5F5F5',
-                padding: '2px 8px',
-                borderRadius: '99px',
-                border: `1px solid ${isSelected ? 'rgba(47,128,237,0.12)' : '#E9E9E9'}`,
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
       </div>
     </button>
   );

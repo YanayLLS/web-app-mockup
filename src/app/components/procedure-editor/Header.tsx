@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Settings, X, RotateCw, Upload, Save, Zap, Bookmark, AlertCircle, Undo, List, CheckCircle, ExternalLink } from 'lucide-react';
+import { Settings, X, RotateCw, Upload, Save, Zap, Bookmark, AlertCircle, Undo, List, CheckCircle, ExternalLink, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import type { TwinState } from './ProcedureEditor';
@@ -18,6 +18,9 @@ interface HeaderProps {
   onAnimate: () => void;
   onSaveTwinState: () => void;
   onClearTwinState: () => void;
+  onToggleHotspots?: () => void;
+  isHotspotsPanelOpen?: boolean;
+  hotspotCount?: number;
 }
 
 export function Header({
@@ -33,7 +36,10 @@ export function Header({
   hasCritical,
   onAnimate,
   onSaveTwinState,
-  onClearTwinState
+  onClearTwinState,
+  onToggleHotspots,
+  isHotspotsPanelOpen = false,
+  hotspotCount = 0
 }: HeaderProps) {
   const [showDigitalTwinMenu, setShowDigitalTwinMenu] = useState(false);
   const [deletedTwinState, setDeletedTwinState] = useState(false);
@@ -205,6 +211,43 @@ export function Header({
             </div>
           )}
         </div>
+
+        {/* Hotspots Button */}
+        {onToggleHotspots && (
+          <div className="relative shrink-0">
+            <button
+              onClick={onToggleHotspots}
+              className={`content-stretch flex gap-2 items-center p-2 relative rounded-lg shrink-0 w-8 h-8 min-h-[44px] min-w-[44px] justify-center transition-colors ${
+                isHotspotsPanelOpen ? 'bg-primary/20 hover:bg-primary/30' : 'hover:bg-secondary/50'
+              }`}
+              title={isHotspotsPanelOpen ? 'Close Hotspots' : 'Open Hotspots'}
+              aria-label={isHotspotsPanelOpen ? 'Close Hotspots' : 'Open Hotspots'}
+              aria-pressed={isHotspotsPanelOpen}
+            >
+              <MapPin className={`size-4 ${isHotspotsPanelOpen ? 'text-primary' : 'text-foreground'}`} />
+              {hotspotCount > 0 && (
+                <div
+                  className="absolute rounded-full flex items-center justify-center"
+                  style={{
+                    top: '-6px',
+                    right: '-6px',
+                    minWidth: '16px',
+                    height: '16px',
+                    padding: '0 4px',
+                    backgroundColor: 'var(--primary)',
+                    pointerEvents: 'none',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    color: 'white',
+                    lineHeight: 1
+                  }}
+                >
+                  {hotspotCount}
+                </div>
+              )}
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-row items-center self-stretch">
           <div className="bg-border h-full shrink-0 w-px" />

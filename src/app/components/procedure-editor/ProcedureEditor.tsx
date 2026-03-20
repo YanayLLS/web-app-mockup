@@ -18,6 +18,8 @@ import { SaveIndicator } from './SaveIndicator';
 import { ARPlacementFlow, type ObjectTarget, type PlacementMethod } from './ARPlacementFlow';
 import { ContextMenu } from './ContextMenu';
 import { DemoRunner, type DemoFeature } from './DemoRunner';
+import { AnimationBuilder } from './AnimationBuilder';
+import { HotspotsPanel } from './HotspotsPanel';
 import { GraduationCap, Undo, AlertCircle, X, MoreVertical, Keyboard, Glasses, Video, RotateCcw, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -701,6 +703,7 @@ export function ProcedureEditor() {
   const [showOptionsManager, setShowOptionsManager] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [showPartsCatalog, setShowPartsCatalog] = useState(false);
+  const [showHotspotsPanel, setShowHotspotsPanel] = useState(false);
   const [showTOC, setShowTOC] = useState(false);
   const [showPopupPanel, setShowPopupPanel] = useState(false);
   const [showValidationPanel, setShowValidationPanel] = useState(false);
@@ -2144,15 +2147,14 @@ export function ProcedureEditor() {
               checkpointCount={currentStep.validation?.checkpoints?.length ?? 0}
               hasCritical={currentStep.validation?.checkpoints?.some(cp => cp.severity === 'critical') ?? false}
               onAnimate={() => {
-                // Tell 3D scene to open animation editor for this step
-                postToScene({
-                  type: 'open-animation-editor',
-                  stepId: currentStep.id,
-                  animationId: currentStep.animationId || null
-                });
+                // Open the Animation Builder editor overlay
+                setIsAnimationEditorOpen(true);
               }}
               onSaveTwinState={() => postToScene({ type: 'capture-twin-state' })}
               onClearTwinState={() => handleUpdateStep({ twinState: null })}
+              onToggleHotspots={() => setShowHotspotsPanel(!showHotspotsPanel)}
+              isHotspotsPanelOpen={showHotspotsPanel}
+              hotspotCount={7}
             />
           )}
 
@@ -2786,6 +2788,12 @@ export function ProcedureEditor() {
             />
           )}
 
+          {/* Hotspots Panel */}
+          <HotspotsPanel
+            isOpen={showHotspotsPanel}
+            onClose={() => setShowHotspotsPanel(false)}
+          />
+
           {/* Bookmarks and Parts Catalog are now opened inside the 3D scene via postMessage */}
         </div>
       </div>
@@ -3073,6 +3081,12 @@ export function ProcedureEditor() {
           onIsolate={handleIsolate}
         />
       )}
+
+      {/* Animation Builder Editor - Full-screen overlay */}
+      <AnimationBuilder
+        isOpen={isAnimationEditorOpen}
+        onClose={() => setIsAnimationEditorOpen(false)}
+      />
 
       {/* Demo Runner for procedure tutorials */}
       <DemoRunner

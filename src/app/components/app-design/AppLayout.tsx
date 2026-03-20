@@ -432,6 +432,12 @@ function App3DViewer() {
   const urlMode = params.get('mode');
   const isImmersiveMode = urlMode === 'immersive';
   const startMode = urlMode === 'editor' ? '&startMode=editor' : isImmersiveMode ? '&startMode=immersive' : '';
+  const configName = params.get('config');
+  const isDemoComplete = params.get('demo') === 'kb-config-complete';
+  const [showDemoComplete, setShowDemoComplete] = useState(isDemoComplete);
+
+  // Stable cache-buster so parent re-renders don't reload the iframe
+  const [cacheBuster] = useState(() => Date.now());
 
   // Auto-open from URL param
   useEffect(() => {
@@ -464,13 +470,45 @@ function App3DViewer() {
       <div className="w-full h-full relative" style={{ overflow: 'hidden', touchAction: 'none' }}>
         <iframe
           ref={sceneIframeRef}
-          src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true${startMode}&v=${Date.now()}`}
+          src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true${startMode}&v=${cacheBuster}`}
           className="absolute inset-0 w-full h-full border-0"
           style={{ overflow: 'hidden' }}
           title="Digital Twin"
           allow="autoplay; fullscreen; camera; xr-spatial-tracking"
         />
         {isImmersiveMode && <ImmersiveActionBar onLeave={() => navigate('/app/immersive')} iframeRef={sceneIframeRef} />}
+        {showDemoComplete && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.45)' }}>
+            <div className="rounded-xl shadow-2xl p-6 text-center" style={{ background: '#fff', width: 340 }}>
+              <div className="text-4xl mb-3" style={{ color: '#11E874' }}>&#10003;</div>
+              <div className="text-base font-bold mb-1" style={{ color: '#36415D' }}>Configurations Demo Complete!</div>
+              <div className="text-sm mb-4" style={{ color: '#868D9E', lineHeight: 1.5 }}>
+                The digital twin loaded with the <b style={{ color: '#2F80ED' }}>{configName || 'selected'}</b> configuration applied. Only parts defined in that configuration are visible.
+                <br /><br />
+                You've completed the full workflow: <b style={{ color: '#36415D' }}>create</b>, <b style={{ color: '#36415D' }}>customize</b>, <b style={{ color: '#36415D' }}>organize</b>, <b style={{ color: '#36415D' }}>save &amp; publish</b>, and <b style={{ color: '#36415D' }}>open from the Knowledge Base</b>.
+              </div>
+              <div className="flex gap-2 justify-center">
+                <button
+                  className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+                  style={{ background: '#2F80ED', color: '#fff' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#5999F1')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#2F80ED')}
+                  onClick={() => {
+                    setShowDemoComplete(false);
+                    // Clean up demo param from URL
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('demo');
+                    history.replaceState(null, '', url.toString());
+                    // Notify DebugMenu that demo is complete
+                    window.postMessage({ type: 'debugDemoEnded', featureId: 'kb-config-selection' }, '*');
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {proc && (
         <AppProcedureInfoModal

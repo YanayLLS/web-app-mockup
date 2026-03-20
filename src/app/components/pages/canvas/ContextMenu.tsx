@@ -120,19 +120,15 @@ export function ContextMenu({ x, y, type, onClose, onAction, nodeData }: Context
             <div className="py-1">
               <button
                 onClick={() => onAction('duplicate')}
-                className="w-full text-left px-4 py-2 text-sm transition-colors"
+                className="w-full text-left px-4 py-2 text-sm transition-colors canvas-menu-item"
                 style={{ color: 'var(--foreground)' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Duplicate Node
               </button>
               <button
                 onClick={() => onAction('delete')}
-                className="w-full text-left px-4 py-2 text-sm transition-colors"
+                className="w-full text-left px-4 py-2 text-sm transition-colors canvas-menu-item"
                 style={{ color: 'var(--destructive)' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Delete Node
               </button>
@@ -157,12 +153,10 @@ export function ContextMenu({ x, y, type, onClose, onAction, nodeData }: Context
       <div className="py-1 min-w-[200px]">
         <button
           onClick={() => onAction('create-step')}
-          className="w-full text-left px-4 py-2 text-sm transition-colors"
+          className="w-full text-left px-4 py-2 text-sm transition-colors canvas-menu-item"
           style={{
             color: 'var(--foreground)',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
           <div className="font-medium">Create Step</div>
           <div className="text-xs" style={{ color: 'var(--muted)' }}>
@@ -175,12 +169,10 @@ export function ContextMenu({ x, y, type, onClose, onAction, nodeData }: Context
             <div className="border-t my-1" style={{ borderColor: 'var(--border)' }} />
             <button
               onClick={() => onAction('auto-arrange')}
-              className="w-full text-left px-4 py-2 text-sm transition-colors"
+              className="w-full text-left px-4 py-2 text-sm transition-colors canvas-menu-item"
               style={{
                 color: 'var(--foreground)',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--secondary)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <div className="font-medium">Auto Arrange</div>
               <div className="text-xs" style={{ color: 'var(--muted)' }}>

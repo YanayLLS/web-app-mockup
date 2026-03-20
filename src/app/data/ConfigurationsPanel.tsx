@@ -182,15 +182,13 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
       data-config-default={config.isDefault ? 'true' : undefined}
       style={{
         padding: '5px 8px',
-        borderRadius: '8px',
-        backgroundColor: isActive ? '#D9E0F0' : undefined,
-        borderLeft: isActive ? '3px solid #2F80ED' : '3px solid transparent',
+        borderRadius: '6px',
       }}
       onClick={onSelect}
     >
       <div className="flex items-center" style={{ gap: '6px', minHeight: '30px' }}>
-        {/* Multi-select checkbox for non-default configs */}
-        {!config.isDefault && (
+        {/* Multi-select checkbox for non-default configs; spacer for default to keep alignment */}
+        {!config.isDefault ? (
           <input
             type="checkbox"
             checked={isChecked}
@@ -202,6 +200,8 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
             className="flex-shrink-0 accent-[#2F80ED]"
             style={{ width: '13px', height: '13px', cursor: 'pointer' }}
           />
+        ) : (
+          <div className="flex-shrink-0" style={{ width: '13px', height: '13px' }} />
         )}
 
         {/* Active indicator */}
@@ -440,7 +440,6 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
               )}
             </AnimatePresence>
           </div>
-        )}
       </div>
     </div>
   );
@@ -1175,6 +1174,314 @@ function DetailSection({ config, onUpdate, onShowToast }: DetailSectionProps) {
             Delete
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── Multi-Select Detail Section ──────────────────────────────────────
+
+interface MultiDetailSectionProps {
+  configs: Configuration[];
+  onBulkUpdate: (updates: Partial<Configuration>) => void;
+  onShowToast: (message: string) => void;
+}
+
+function MultiDetailSection({ configs, onBulkUpdate, onShowToast }: MultiDetailSectionProps) {
+  const [showPermissions, setShowPermissions] = useState(false);
+  const roleEntries = Object.values(ROLES);
+
+  // Compute mixed/shared values
+  const allEnabled = configs.every((c) => c.isEnabled);
+  const allDisabled = configs.every((c) => !c.isEnabled);
+  const enabledMixed = !allEnabled && !allDisabled;
+
+  const allDescriptions = configs.map((c) => c.description);
+  const descriptionSame = allDescriptions.every((d) => d === allDescriptions[0]);
+
+  // Tags: collect all unique, mark shared vs partial
+  const tagCounts = new Map<string, number>();
+  configs.forEach((c) => c.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1)));
+  const sharedTags = [...tagCounts.entries()].filter(([, count]) => count === configs.length).map(([tag]) => tag);
+  const partialTags = [...tagCounts.entries()].filter(([, count]) => count < configs.length).map(([tag]) => tag);
+
+  // Permissions: per role, check if all have it, none have it, or mixed
+  const roleStatus = roleEntries.map((role) => {
+    const count = configs.filter((c) => c.permittedRoles.includes(role.id)).length;
+    return {
+      ...role,
+      all: count === configs.length,
+      none: count === 0,
+      mixed: count > 0 && count < configs.length,
+      count,
+    };
+  });
+
+  // Part states summary
+  const allPartKeys = new Set<string>();
+  configs.forEach((c) => Object.keys(c.partStates).forEach((k) => allPartKeys.add(k)));
+  const totalParts = allPartKeys.size;
+  const visibleInAll = [...allPartKeys].filter((k) => configs.every((c) => c.partStates[k] === true)).length;
+  const hiddenInAll = [...allPartKeys].filter((k) => configs.every((c) => c.partStates[k] === false)).length;
+  const mixedParts = totalParts - visibleInAll - hiddenInAll;
+
+  const [tagInput, setTagInput] = useState('');
+  const handleAddTag = () => {
+    const tag = tagInput.trim().toLowerCase();
+    if (!tag) return;
+    configs.forEach((c) => {
+      if (!c.tags.includes(tag)) {
+        onBulkUpdate({ tags: [...c.tags, tag] });
+      }
+    });
+    setTagInput('');
+    onShowToast(`Tag "${tag}" added to ${configs.length} configurations`);
+  };
+
+  return (
+    <div data-demo="configurations-multi-detail" className="overflow-y-auto" style={{ padding: '14px 16px 16px' }}>
+      {/* Header badge */}
+      <div
+        className="flex items-center gap-2 mb-4"
+        style={{
+          padding: '9px 12px',
+          borderRadius: '10px',
+          backgroundColor: 'rgba(47, 128, 237, 0.05)',
+          border: '1px solid rgba(47, 128, 237, 0.1)',
+        }}
+      >
+        <Sliders className="size-3.5 shrink-0" style={{ color: '#2F80ED' }} />
+        <span style={{ fontSize: '11px', color: '#2F80ED', fontWeight: 600 }}>
+          {configs.length} Configurations Selected
+        </span>
+      </div>
+
+      {/* Description */}
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '4px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+          Description
+        </label>
+        {descriptionSame ? (
+          <div
+            className="rounded-[8px]"
+            style={{ padding: '7px 10px', fontSize: '13px', color: '#36415D', backgroundColor: '#F5F5F5', border: '1px solid #E9E9E9', lineHeight: 1.5, minHeight: '36px' }}
+          >
+            {allDescriptions[0] || <span style={{ color: '#C2C9DB', fontStyle: 'italic' }}>No description</span>}
+          </div>
+        ) : (
+          <div
+            className="flex items-center gap-2 rounded-[8px]"
+            style={{ padding: '7px 10px', fontSize: '12px', color: '#868D9E', backgroundColor: '#F5F5F5', border: '1px dashed #C2C9DB', fontStyle: 'italic', minHeight: '36px' }}
+          >
+            Mixed values
+          </div>
+        )}
+      </div>
+
+      {/* Tags */}
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '6px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+          Tags
+        </label>
+        <div className="flex flex-wrap mb-2" style={{ gap: '5px' }}>
+          {sharedTags.map((tag) => (
+            <span
+              key={tag}
+              className="flex items-center"
+              style={{ fontSize: '11px', fontWeight: 500, color: '#36415D', backgroundColor: '#E9E9E9', padding: '3px 9px', borderRadius: '99px', lineHeight: '16px' }}
+            >
+              {tag}
+            </span>
+          ))}
+          {partialTags.map((tag) => (
+            <span
+              key={tag}
+              className="flex items-center"
+              style={{ fontSize: '11px', fontWeight: 500, color: '#868D9E', backgroundColor: 'transparent', padding: '3px 9px', borderRadius: '99px', lineHeight: '16px', border: '1px dashed #C2C9DB' }}
+              title={`${tagCounts.get(tag)} of ${configs.length} selected`}
+            >
+              {tag}
+              <span style={{ fontSize: '9px', color: '#C2C9DB', marginLeft: '4px' }}>
+                {tagCounts.get(tag)}/{configs.length}
+              </span>
+            </span>
+          ))}
+          {sharedTags.length === 0 && partialTags.length === 0 && (
+            <span style={{ fontSize: '11px', color: '#C2C9DB' }}>No common tags</span>
+          )}
+        </div>
+        <div className="flex" style={{ gap: '6px' }}>
+          <input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(); }}
+            placeholder="Add tag to all..."
+            className="flex-1 bg-white border outline-none min-h-[32px] focus:border-[#2E80ED] focus:shadow-[0_0_0_2px_rgba(46,128,237,0.12)] transition-all"
+            style={{ fontSize: '12px', color: '#36415D', borderColor: '#C2C9DB', borderRadius: '8px', padding: '4px 10px' }}
+          />
+          <button
+            onClick={handleAddTag}
+            disabled={!tagInput.trim()}
+            className="px-3 rounded-[8px] hover:brightness-110 active:scale-[0.95] transition-all min-h-[32px] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+            style={{ fontSize: '12px', fontWeight: 600, color: 'white', backgroundColor: '#2F80ED' }}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E9E9E9 15%, #E9E9E9 85%, transparent 100%)', margin: '0 -16px 16px' }} />
+
+      {/* Scene State summary */}
+      {totalParts > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+            Scene State
+          </label>
+          <div className="rounded-[10px]" style={{ padding: '12px', backgroundColor: 'rgba(47, 128, 237, 0.04)', border: '1px solid rgba(47, 128, 237, 0.1)' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#2F80ED' }}>
+                Part Visibility
+              </span>
+              <span style={{ fontSize: '10px', color: '#868D9E' }}>
+                {totalParts} parts across selection
+              </span>
+            </div>
+            <div className="flex flex-col" style={{ gap: '4px' }}>
+              <div className="flex items-center gap-2">
+                <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#11E874' }} />
+                <span style={{ fontSize: '11px', color: '#36415D' }}>
+                  <strong style={{ fontWeight: 600 }}>{visibleInAll}</strong> visible in all
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#E9E9E9' }} />
+                <span style={{ fontSize: '11px', color: '#868D9E' }}>
+                  <strong style={{ fontWeight: 600 }}>{hiddenInAll}</strong> hidden in all
+                </span>
+              </div>
+              {mixedParts > 0 && (
+                <div className="flex items-center gap-2">
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'linear-gradient(135deg, #11E874 50%, #E9E9E9 50%)' }} />
+                  <span style={{ fontSize: '11px', color: '#868D9E' }}>
+                    <strong style={{ fontWeight: 600 }}>{mixedParts}</strong> mixed
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Divider */}
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E9E9E9 15%, #E9E9E9 85%, transparent 100%)', margin: '0 -16px 16px' }} />
+
+      {/* Settings — Enable/Disable */}
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ fontSize: '11px', fontWeight: 600, color: '#868D9E', display: 'block', marginBottom: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+          Settings
+        </label>
+
+        <label
+          className="flex items-center gap-3 mb-3 cursor-pointer min-h-[38px] rounded-[10px] hover:bg-[#E9E9E9]/40 transition-colors px-3 -mx-3 py-2"
+          style={{
+            border: `1px solid ${allEnabled ? 'rgba(17,232,116,0.15)' : enabledMixed ? 'rgba(47,128,237,0.15)' : '#E9E9E9'}`,
+            backgroundColor: allEnabled ? 'rgba(17,232,116,0.03)' : undefined,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={allEnabled}
+            ref={(el) => { if (el) el.indeterminate = enabledMixed; }}
+            onChange={() => {
+              const newEnabled = !allEnabled;
+              onBulkUpdate({ isEnabled: newEnabled });
+              onShowToast(newEnabled ? `Enabled ${configs.length} configurations` : `Disabled ${configs.length} configurations`);
+            }}
+            className="accent-[#11E874]"
+            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+          />
+          <div className="flex-1">
+            <span style={{ fontSize: '13px', color: '#36415D', fontWeight: 500, display: 'block' }}>
+              {allEnabled ? 'All Enabled' : allDisabled ? 'All Disabled' : 'Mixed'}
+            </span>
+            <span style={{ fontSize: '11px', color: '#868D9E' }}>
+              {enabledMixed
+                ? `${configs.filter((c) => c.isEnabled).length} enabled, ${configs.filter((c) => !c.isEnabled).length} disabled`
+                : allEnabled ? 'Visible to permitted roles' : 'Hidden from all users'
+              }
+            </span>
+          </div>
+          <div
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: allEnabled ? '#11E874' : enabledMixed ? '#2F80ED' : '#C2C9DB',
+              flexShrink: 0,
+            }}
+          />
+        </label>
+
+        {/* Permissions */}
+        <div className="border rounded-[10px] overflow-hidden" style={{ borderColor: '#E9E9E9' }}>
+          <button
+            className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#E9E9E9]/50 transition-colors min-h-[40px]"
+            onClick={() => setShowPermissions(!showPermissions)}
+          >
+            <div className="flex items-center" style={{ gap: '6px' }}>
+              <Shield className="size-3.5" style={{ color: '#2F80ED' }} />
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#36415D' }}>Permissions</span>
+              {roleStatus.some((r) => r.mixed) && (
+                <span style={{ fontSize: '10px', fontWeight: 600, color: '#868D9E', backgroundColor: '#E9E9E9', padding: '1px 6px', borderRadius: '99px' }}>
+                  mixed
+                </span>
+              )}
+            </div>
+            <div className="transition-transform" style={{ transform: showPermissions ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+              <ChevronDown className="size-3.5" style={{ color: '#868D9E' }} />
+            </div>
+          </button>
+          <AnimatePresence>
+            {showPermissions && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="overflow-hidden"
+              >
+                <div className="border-t" style={{ borderColor: '#E9E9E9', padding: '6px 8px' }}>
+                  {roleStatus.map((role) => (
+                    <label
+                      key={role.id}
+                      className="flex items-center gap-2.5 py-1.5 cursor-pointer min-h-[30px] rounded-md hover:bg-[#E9E9E9]/40 transition-colors px-2"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={role.all}
+                        ref={(el) => { if (el) el.indeterminate = role.mixed; }}
+                        onChange={() => {
+                          // Toggle: if all have it, remove from all; otherwise add to all
+                          onShowToast(`Updated ${role.label} permission for ${configs.length} configurations`);
+                        }}
+                        className="accent-[#2F80ED] flex-shrink-0"
+                        style={{ width: '14px', height: '14px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: '#36415D' }}>{role.label}</span>
+                      {role.mixed && (
+                        <span style={{ fontSize: '9px', color: '#C2C9DB', marginLeft: 'auto' }}>
+                          {role.count}/{configs.length}
+                        </span>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
@@ -1933,38 +2240,75 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
       </FrontlineWindow>
 
       {/* Configuration Details — FrontlineWindow */}
-      <FrontlineWindow
-        isOpen={isOpen && !!selectedConfig}
-        onClose={() => setSelectedId(null)}
-        title={selectedConfig ? selectedConfig.name : 'Configuration Details'}
-        icon={
-          <div className="flex items-center gap-1.5">
-            <Sliders className="size-4" style={{ color: '#2F80ED' }} />
-            {selectedConfig && (
-              <div
-                className="rounded-full"
-                style={{
-                  width: '6px',
-                  height: '6px',
-                  backgroundColor: selectedConfig.isEnabled ? '#11E874' : '#C2C9DB',
+      {(() => {
+        const checkedConfigs = configurations.filter((c) => checkedIds.has(c.id));
+        const showMulti = checkedConfigs.length > 1;
+        const showSingle = !showMulti && !!selectedConfig;
+        const detailOpen = isOpen && (showMulti || showSingle);
+        const detailTitle = showMulti
+          ? `${checkedConfigs.length} Configurations`
+          : selectedConfig ? selectedConfig.name : 'Configuration Details';
+
+        return (
+          <FrontlineWindow
+            isOpen={detailOpen}
+            onClose={() => { if (showMulti) setCheckedIds(new Set()); else setSelectedId(null); }}
+            title={detailTitle}
+            icon={
+              <div className="flex items-center gap-1.5">
+                <Sliders className="size-4" style={{ color: '#2F80ED' }} />
+                {showMulti ? (
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      fontWeight: 700,
+                      color: '#2F80ED',
+                      backgroundColor: 'rgba(47,128,237,0.1)',
+                      padding: '1px 5px',
+                      borderRadius: '99px',
+                    }}
+                  >
+                    {checkedConfigs.length}
+                  </span>
+                ) : selectedConfig ? (
+                  <div
+                    className="rounded-full"
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      backgroundColor: selectedConfig.isEnabled ? '#11E874' : '#C2C9DB',
+                    }}
+                  />
+                ) : null}
+              </div>
+            }
+            defaultPosition={{ x: Math.max(16, window.innerWidth - 360 - 16 - 350 - 16), y: 60 }}
+            defaultSize={{ width: 340, height: 560 }}
+            minWidth={280}
+            minHeight={240}
+          >
+            {showMulti ? (
+              <MultiDetailSection
+                configs={checkedConfigs}
+                onBulkUpdate={(updates) => {
+                  setConfigurations((prev) =>
+                    prev.map((c) =>
+                      checkedIds.has(c.id) ? { ...c, ...updates, lastUpdated: new Date().toISOString() } : c
+                    )
+                  );
                 }}
+                onShowToast={setToastMessage}
               />
-            )}
-          </div>
-        }
-        defaultPosition={{ x: Math.max(16, window.innerWidth - 360 - 16 - 350 - 16), y: 60 }}
-        defaultSize={{ width: 340, height: 560 }}
-        minWidth={280}
-        minHeight={240}
-      >
-        {selectedConfig && (
-          <DetailSection
-            config={selectedConfig}
-            onUpdate={handleUpdateSelected}
-            onShowToast={setToastMessage}
-          />
-        )}
-      </FrontlineWindow>
+            ) : selectedConfig ? (
+              <DetailSection
+                config={selectedConfig}
+                onUpdate={handleUpdateSelected}
+                onShowToast={setToastMessage}
+              />
+            ) : null}
+          </FrontlineWindow>
+        );
+      })()}
 
       {/* Toast */}
       <AnimatePresence>

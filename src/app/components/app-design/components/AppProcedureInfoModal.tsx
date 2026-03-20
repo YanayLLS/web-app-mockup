@@ -29,7 +29,7 @@ export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoMo
   const navigate = useNavigate();
   const [language, setLanguage] = useState('English');
   const { currentRole } = useRole();
-  const isContentCreator = hasAccess(currentRole, 'projects-edit');
+  const isContentCreator = currentRole === 'content-creator' || currentRole === 'admin';
   const [showConfigSelector, setShowConfigSelector] = useState(false);
 
   // Auto-select default configuration — no "None" option

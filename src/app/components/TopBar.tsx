@@ -393,9 +393,12 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
         <div className="flex items-center gap-2">
           {/* Search Field - Desktop */}
           {!isMobile && (
-            <button
+            <div
               onClick={() => onOpenSearch?.()}
-              className="group flex items-center gap-2.5 bg-secondary/30 border border-border rounded-full px-3.5 py-1.5 w-full max-w-[720px] min-w-[200px] transition-all hover:border-primary/40 hover:bg-secondary/50 hover:shadow-sm"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenSearch?.(); }}
+              className="group flex items-center gap-2.5 bg-secondary/30 border border-border rounded-full px-3.5 py-1.5 w-full max-w-[720px] min-w-[200px] transition-all hover:border-primary/40 hover:bg-secondary/50 hover:shadow-sm cursor-pointer"
               aria-label="Open search"
             >
               <Search size={14} className="text-muted shrink-0" />
@@ -413,7 +416,7 @@ export function TopBar({ isChatOpen, onToggleChat, onMenuClick, isMobile, isWork
                   <IconAi />
                 </button>
               )}
-            </button>
+            </div>
           )}
 
           {/* Search Icon - Mobile */}

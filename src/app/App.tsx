@@ -55,6 +55,8 @@ import { ProcedureEditorPage } from './components/pages/ProcedureEditorPage';
 import { AppLayout } from './components/app-design/AppLayout';
 import { DebugMenu } from './components/DebugMenu';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
+import { AnimationsPanel } from './data/AnimationsPanel';
+import { ConfigurationsPanel } from './data/ConfigurationsPanel';
 import {
   IconHome,
   IconNotifications,
@@ -161,6 +163,8 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
   const [shouldShowScheduleModal, setShouldShowScheduleModal] = useState(false);
   const [openFavoriteItem, setOpenFavoriteItem] = useState<any | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAnimationsPanelOpen, setIsAnimationsPanelOpen] = useState(false);
+  const [isConfigurationsPanelOpen, setIsConfigurationsPanelOpen] = useState(false);
 
   // Wrappers that keep URL params in sync with modal state
   const openSettingsModal = (open: boolean) => {
@@ -240,7 +244,19 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
     if (isMobile) {
       setIsSidebarOpen(false);
     }
-    
+
+    // Animations opens as an overlay panel instead of navigating
+    if (menuItem === 'animations') {
+      setIsAnimationsPanelOpen(true);
+      return;
+    }
+
+    // Configurations opens as an overlay panel instead of navigating
+    if (menuItem === 'configurations') {
+      setIsConfigurationsPanelOpen(true);
+      return;
+    }
+
     const routeMap: { [key: string]: string } = {
       'home': '/web/home',
       'notifications': '/web/notifications',
@@ -840,6 +856,18 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
           item={openFavoriteItem}
         />
       )}
+
+      {/* Animations Panel */}
+      <AnimationsPanel
+        isOpen={isAnimationsPanelOpen}
+        onClose={() => setIsAnimationsPanelOpen(false)}
+      />
+
+      {/* Configurations Panel */}
+      <ConfigurationsPanel
+        isOpen={isConfigurationsPanelOpen}
+        onClose={() => setIsConfigurationsPanelOpen(false)}
+      />
 
       {/* Floating Minimized Call */}
       <FloatingMinimizedCall />

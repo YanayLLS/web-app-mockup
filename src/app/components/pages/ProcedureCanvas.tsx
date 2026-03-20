@@ -653,16 +653,21 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     }));
   }, [edges, handleAddNodeBetween, handleDeleteEdge]);
 
-  // Validate connections: prevent self-loops and duplicate same-source connections
+  // Validate connections: prevent self-loops, duplicates, and enforce one-edge-per-source-handle
   const isValidConnection = useCallback(
     (connection: Connection) => {
       // Prevent self-connections
       if (connection.source === connection.target) return false;
-      // Prevent duplicate edge from same source to same target
+      // Prevent duplicate edge from same source handle to same target
       const duplicateExists = edges.some(
-        e => e.source === connection.source && e.target === connection.target
+        e => e.source === connection.source && e.target === connection.target && e.sourceHandle === connection.sourceHandle
       );
       if (duplicateExists) return false;
+      // Each source handle can only connect to one target (dragging replaces, but block the UI hint)
+      const handleAlreadyConnected = edges.some(
+        e => e.source === connection.source && e.sourceHandle === connection.sourceHandle
+      );
+      if (handleAlreadyConnected) return false;
       return true;
     },
     [edges]

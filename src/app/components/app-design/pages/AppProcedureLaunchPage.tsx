@@ -1,6 +1,9 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Flag, ChevronDown, Loader2, AlertTriangle, Monitor } from 'lucide-react';
-import { useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Flag, ChevronDown, Loader2, AlertTriangle, Monitor, Shield } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useRole } from '../../../contexts/RoleContext';
+import { AppConfigurationSelector } from '../components/AppConfigurationSelector';
+import { MOCK_CONFIGURATIONS } from '../../../data/configurationsData';
 
 type LaunchState = 'normal' | 'loading' | 'error';
 
@@ -14,9 +17,29 @@ const procedureNames: Record<string, string> = {
 export function AppProcedureLaunchPage() {
   const navigate = useNavigate();
   const { projectId, procedureId } = useParams();
+  const [searchParams] = useSearchParams();
   const [launchState, setLaunchState] = useState<LaunchState>('normal');
+  const [showConfigSelector, setShowConfigSelector] = useState(false);
+  const { currentRole } = useRole();
 
   const procedureName = procedureNames[procedureId || ''] || 'Procedure';
+
+  // FR60: only show config selector if >1 enabled config exists for user's role
+  const availableConfigs = useMemo(() => {
+    return MOCK_CONFIGURATIONS.filter(
+      (c) => c.isEnabled && c.permittedRoles.includes(currentRole)
+    );
+  }, [currentRole]);
+  const hasMultipleConfigs = availableConfigs.length > 1;
+
+  // Read config from URL param, fallback to default
+  const defaultConfig = useMemo(() => {
+    return availableConfigs.find((c) => c.isDefault) ?? availableConfigs[0] ?? null;
+  }, [availableConfigs]);
+  const configFromUrl = searchParams.get('config');
+  const [selectedConfigName, setSelectedConfigName] = useState<string>(
+    configFromUrl || defaultConfig?.name || 'Default Configuration'
+  );
 
   const handleLaunchOnDevice = () => {
     setLaunchState('loading');
@@ -53,6 +76,26 @@ export function AppProcedureLaunchPage() {
         >
           {procedureName}
         </h1>
+
+        {/* Configuration badge — only if >1 config (FR60) */}
+        {hasMultipleConfigs && (
+          <button
+            onClick={() => setShowConfigSelector(true)}
+            className="flex items-center gap-2 mb-6 hover:bg-[rgba(47,128,237,0.04)] transition-colors active:scale-[0.98]"
+            style={{
+              padding: '8px 16px',
+              borderRadius: '10px',
+              border: '1px solid rgba(47,128,237,0.2)',
+              backgroundColor: 'rgba(47,128,237,0.03)',
+            }}
+          >
+            <Shield style={{ width: '14px', height: '14px', color: '#2F80ED' }} />
+            <span style={{ fontSize: '13px', color: '#2F80ED', fontWeight: 'var(--font-weight-semibold)' }}>
+              {selectedConfigName}
+            </span>
+            <ChevronDown style={{ width: '12px', height: '12px', color: '#2F80ED', opacity: 0.5 }} />
+          </button>
+        )}
 
         <div className="w-full space-y-3" style={{ maxWidth: 'min(384px, calc(100vw - 32px))' }}>
           <button
@@ -120,6 +163,16 @@ export function AppProcedureLaunchPage() {
           </div>
         </>
       )}
+
+      {/* Configuration Selector Modal */}
+      <AppConfigurationSelector
+        isOpen={showConfigSelector}
+        onClose={() => setShowConfigSelector(false)}
+        onSelect={(_configId, configName) => {
+          setSelectedConfigName(configName);
+          setShowConfigSelector(false);
+        }}
+      />
     </div>
   );
 }

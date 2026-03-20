@@ -198,9 +198,9 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
           position={Position.Top}
           className=""
           style={{
-            width: 16, height: 16,
+            width: 14, height: 14,
             left: '50%',
-            top: -8,
+            top: -7,
             transform: 'translateX(-50%)',
             background: colors.bg,
             border: '2px solid var(--card)',
@@ -422,9 +422,9 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
                   id={platform.id}
                   className=""
                   style={{
-                    width: 16, height: 16,
+                    width: 14, height: 14,
                     left: `${leftPercent}%`,
-                    bottom: -8,
+                    bottom: -7,
                     transform: 'translateX(-50%)',
                     background: colors.bg,
                     border: '2px solid var(--card)',
@@ -478,9 +478,9 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
               id="default"
               className=""
               style={{
-                width: 16, height: 16,
+                width: 14, height: 14,
                 left: '50%',
-                bottom: -8,
+                bottom: -7,
                 transform: 'translateX(-50%)',
                 background: colors.bg,
                 border: '2px solid var(--card)',

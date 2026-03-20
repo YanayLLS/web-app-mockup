@@ -1,7 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Play, Settings, ChevronDown, Share2, Star, MoreVertical, Edit, Clock, User, Layers, Box, Globe, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Play, Settings, ChevronDown, Share2, Star, MoreVertical, Edit, Clock, User, Layers, Box, Globe, X, Shield } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { AppConfigurationSelector } from '../components/AppConfigurationSelector';
+import { MOCK_CONFIGURATIONS } from '../../../data/configurationsData';
 
 const procedures: Record<string, {
   name: string;
@@ -56,14 +58,30 @@ const defaultProcedure = {
 export function AppProcedureDetailPage() {
   const navigate = useNavigate();
   const { projectId, procedureId } = useParams();
-  const [selectedConfig, setSelectedConfig] = useState(0);
   const [selectedMode, setSelectedMode] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showCreatorArea, setShowCreatorArea] = useState(true);
   const [showLanguageSelector, setShowLanguageSelector] = useState(true);
+  const [showConfigSelector, setShowConfigSelector] = useState(false);
 
   const { currentRole } = useRole();
   const canEdit = hasAccess(currentRole, 'projects-edit');
+
+  // FR60: only show config selector if >1 enabled config exists for user's role
+  const availableConfigs = useMemo(() => {
+    return MOCK_CONFIGURATIONS.filter(
+      (c) => c.isEnabled && c.permittedRoles.includes(currentRole)
+    );
+  }, [currentRole]);
+  const hasMultipleConfigs = availableConfigs.length > 1;
+
+  // Auto-select default configuration
+  const defaultConfig = useMemo(() => {
+    return availableConfigs.find((c) => c.isDefault) ?? availableConfigs[0] ?? null;
+  }, [availableConfigs]);
+  const [selectedConfigName, setSelectedConfigName] = useState<string>(
+    defaultConfig?.name ?? 'Default Configuration'
+  );
 
   const procedure = procedures[procedureId || ''] || defaultProcedure;
 
@@ -168,19 +186,23 @@ export function AppProcedureDetailPage() {
                   </div>
                 )}
 
-                {/* Configuration */}
-                <div>
-                  <label className="text-xs text-muted mb-1 block" style={{ fontWeight: 'var(--font-weight-medium)' }}>Configuration</label>
-                  <select
-                    value={selectedConfig}
-                    onChange={(e) => setSelectedConfig(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 bg-secondary rounded-lg text-sm text-foreground border-none outline-none appearance-none cursor-pointer min-h-[44px]"
-                  >
-                    {procedure.configurations.map((config, i) => (
-                      <option key={i} value={i}>{config}</option>
-                    ))}
-                  </select>
-                </div>
+                {/* Configuration — only show if >1 enabled config (FR60) */}
+                {hasMultipleConfigs && (
+                  <div>
+                    <label className="text-xs text-muted mb-1 block" style={{ fontWeight: 'var(--font-weight-medium)' }}>Configuration</label>
+                    <button
+                      onClick={() => setShowConfigSelector(true)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 bg-secondary rounded-lg text-sm min-h-[44px] hover:bg-[rgba(47,128,237,0.04)] transition-colors"
+                      style={{ border: '1px solid rgba(47,128,237,0.2)' }}
+                    >
+                      <Shield style={{ width: '14px', height: '14px', color: '#2F80ED', flexShrink: 0 }} />
+                      <span className="flex-1 text-left truncate" style={{ color: '#2F80ED', fontWeight: 'var(--font-weight-semibold)' }}>
+                        {selectedConfigName}
+                      </span>
+                      <ChevronDown style={{ width: '14px', height: '14px', color: '#2F80ED', flexShrink: 0, opacity: 0.5 }} />
+                    </button>
+                  </div>
+                )}
 
                 {/* Mode */}
                 <div>
@@ -199,7 +221,10 @@ export function AppProcedureDetailPage() {
 
               {/* Run button */}
               <button
-                onClick={() => navigate(`/app/project/${projectId}/procedure/${procedureId}/launch`)}
+                onClick={() => {
+                  const configParam = selectedConfigName ? `?config=${encodeURIComponent(selectedConfigName)}` : '';
+                  navigate(`/app/project/${projectId}/procedure/${procedureId}/launch${configParam}`);
+                }}
                 className="w-full bg-primary text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
                 style={{ fontWeight: 'var(--font-weight-semibold)', minHeight: '48px' }}
               >
@@ -267,6 +292,15 @@ export function AppProcedureDetailPage() {
           </div>
         </div>
       </div>
+      {/* Configuration Selector Modal */}
+      <AppConfigurationSelector
+        isOpen={showConfigSelector}
+        onClose={() => setShowConfigSelector(false)}
+        onSelect={(_configId, configName) => {
+          setSelectedConfigName(configName);
+          setShowConfigSelector(false);
+        }}
+      />
     </div>
   );
 }

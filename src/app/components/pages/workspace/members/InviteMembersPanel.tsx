@@ -5,7 +5,7 @@ import { ProjectAccessModal } from './ProjectAccessModal';
 import { RolesSelectionContextMenu } from './RolesSelectionContextMenu';
 import { SimpleRolesContextMenu, type RoleWithDescription } from './SimpleRolesContextMenu';
 import { GroupContextMenu } from './GroupContextMenu';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/app/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/app/components/ui/tooltip';
 import { calculateMenuPosition } from '@/app/utils/positionUtils';
 import * as XLSX from 'xlsx';
 import { RequestSeatsModal } from './RequestSeatsModal';
@@ -563,14 +563,15 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
               
               {/* Quick Actions Bar - Enhanced */}
               <div className="flex items-center justify-end">
+                <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <label 
+                    <label
                       htmlFor="file-upload"
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs transition-colors cursor-pointer"
-                      style={{ 
+                      style={{
                         color: 'var(--muted)',
-                        
+
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.color = 'var(--primary)';
@@ -590,12 +591,12 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                       />
                     </label>
                   </TooltipTrigger>
-                  <TooltipContent 
+                  <TooltipContent
                     side="left"
-                    style={{ 
+                    style={{
                       backgroundColor: 'var(--popover)',
                       color: 'var(--popover-foreground)',
-                      
+
                       fontSize: 'var(--text-sm)',
                       borderRadius: 'var(--radius)',
                       border: '1px solid var(--border)',
@@ -605,6 +606,7 @@ export function InviteMembersPanel({ onClose, onInvite, roleSystem, onNavigateTo
                     Quick bulk import: Upload a file and we'll extract all email addresses
                   </TooltipContent>
                 </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
             </div>

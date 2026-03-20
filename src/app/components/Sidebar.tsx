@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import svgPaths from "../../imports/svg-albmkprcym";
-import { Users, Palette, Headphones, Grid3x3, TrendingUp, Cloud, QrCode, Puzzle, ChevronDown, ChevronLeft, Folder, Search, Settings as SettingsIcon, PanelLeft, PanelLeftClose, Crown, HelpCircle } from 'lucide-react';
+import { Users, Palette, Headphones, Grid3x3, TrendingUp, Cloud, QrCode, Puzzle, ChevronDown, ChevronLeft, Folder, Search, Settings as SettingsIcon, PanelLeft, PanelLeftClose, Crown, HelpCircle, Play, Sliders } from 'lucide-react';
 import { useRole, hasAccess } from '../contexts/RoleContext';
 import { ProjectSettingsModal } from './modals/ProjectSettingsModal';
 import { toast } from 'sonner';
@@ -27,6 +27,8 @@ const mainMenuItems = [
   { id: 'notifications', label: 'Notifications', icon: 'notifications', badge: webNotifications.filter(n => n.unread).length > 0 ? String(webNotifications.filter(n => n.unread).length) : undefined },
   { id: 'remote-support', label: 'Remote Support', icon: 'remote-support' },
   { id: 'ai-studio', label: 'AI Studio', icon: 'ai' },
+  { id: 'animations', label: 'Animations', icon: 'animations' },
+  { id: 'configurations', label: 'Configurations', icon: 'configurations' },
   { id: 'archive', label: 'Archive', icon: 'archive' },
 ];
 
@@ -158,6 +160,10 @@ function getIcon(iconName: string) {
       return <Puzzle size={20} />;
     case 'crown':
       return <Crown size={20} />;
+    case 'animations':
+      return <Play size={20} />;
+    case 'configurations':
+      return <Sliders size={20} />;
     default:
       return null;
   }

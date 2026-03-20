@@ -396,8 +396,8 @@ export function AppFolderBrowsePage() {
                 <span>Last updated: {loadingDT.date}</span>
                 {loadingDT.version && <><span>|</span><span>Version {loadingDT.version}</span></>}
               </div>
-              {/* Content creator area - only for roles with edit access */}
-              {hasAccess(currentRole, 'projects-edit') && (
+              {/* Content creator area - only for content-creator and admin */}
+              {(currentRole === 'content-creator' || currentRole === 'admin') && (
                 <div
                   className="w-full flex items-center justify-between"
                   style={{ backgroundColor: '#E9E9E9', borderRadius: '25px', padding: '10px 16px', marginBottom: '20px' }}

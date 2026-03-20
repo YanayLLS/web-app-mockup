@@ -12,7 +12,6 @@ import { useRole, ROLES, type UserRole } from '../contexts/RoleContext';
 interface PageLink { label: string; path: string; children?: PageLink[]; }
 interface FeatureItem { id: string; name: string; icon: string; desc: string; demoSteps: number; route: string; }
 interface FeatureGroup { label: string; features: FeatureItem[]; }
-interface DemoPlaylist { id: string; name: string; featureIds: string[]; }
 interface StateSnapshot { id: string; name: string; ts: number; route: string; role: UserRole; }
 interface PaletteCmd { id: string; label: string; desc: string; category: string; action: () => void; }
 
@@ -87,7 +86,7 @@ const featureGroups: FeatureGroup[] = [
     { id: 'grid-settings', name: 'Grid & Settings', icon: '\u2699\uFE0F', desc: 'Toggle the reference grid and configure scene settings.', demoSteps: 8, route: '/app/3d-viewer' },
     { id: 'animations', name: 'Animation Manager', icon: '\u{1F39E}\uFE0F', desc: 'Create, organize, and preview animations for your parts.', demoSteps: 8, route: '/app/3d-viewer' },
     { id: 'keyboard', name: 'Keyboard Shortcuts', icon: '\u2328\uFE0F', desc: 'Master the keyboard shortcuts to speed up your workflow.', demoSteps: 5, route: '/app/3d-viewer' },
-    { id: 'dt-configurations', name: 'Configurations', icon: '\u{1F39B}\uFE0F', desc: 'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.', demoSteps: 20, route: '/app/3d-viewer' },
+    { id: 'dt-configurations', name: 'Configurations', icon: '\u{1F39B}\uFE0F', desc: 'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.', demoSteps: 22, route: '/app/3d-viewer' },
   ]},
   { label: 'XR App', features: [
     { id: 'xr-login', name: 'Login & Settings', icon: '\u{1F510}', desc: 'Log in to the XR app and configure connection settings.', demoSteps: 5, route: '/xr' },
@@ -99,16 +98,13 @@ const featureGroups: FeatureGroup[] = [
   { label: 'Procedures', features: [
     { id: 'proc-twin-state', name: 'Set State of a Digital Twin', icon: '\u{1F4BE}', desc: 'Save and restore the 3D scene state (camera, visibility, X-Ray) per procedure step.', demoSteps: 5, route: '/app/procedure-editor/p1' },
   ]},
+  { label: 'App', features: [
+    { id: 'kb-config-selection', name: 'Open DT with Configuration', icon: '\u{1F39B}\uFE0F', desc: 'Open a digital twin from the Knowledge Base and select a configuration.', demoSteps: 6, route: '/app/project/generator/kb' },
+  ]},
 ];
 
 const allFeatures = featureGroups.flatMap(g => g.features);
 
-// ==================== PLAYLISTS ====================
-const builtInPlaylists: DemoPlaylist[] = [
-  { id: 'full-tour', name: 'Full Product Tour', featureIds: ['hotspots', 'import-model', 'camera', 'save-preview', 'animations'] },
-  { id: '3d-essentials', name: '3D Essentials', featureIds: ['import-model', 'parts-catalog', 'camera', 'grid-settings'] },
-  { id: 'xr-overview', name: 'XR Overview', featureIds: ['xr-login', 'xr-kb', 'xr-procedures', 'xr-call'] },
-];
 
 // ==================== VIEWPORT PRESETS ====================
 const viewportPresets = [
@@ -132,7 +128,6 @@ export function DebugMenu() {
     const s = new Set<string>();
     featureGroups.forEach(g => s.add(g.label));
     [...appPages, ...webPages].forEach(p => { if (p.children) s.add(p.path); });
-    s.add('playlists');
     return s;
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -166,8 +161,6 @@ export function DebugMenu() {
   // Feature 9: Pinned items
   const [pinnedItems, setPinnedItems] = useState<string[]>(() => lsGet(LS.PINS, []));
 
-  // Feature 2: Playlist runner
-  const [playlistRun, setPlaylistRun] = useState<{ id: string; idx: number } | null>(null);
 
   // Feature 12: Auto-hide button
   const [btnIdle, setBtnIdle] = useState(false);
@@ -223,11 +216,15 @@ export function DebugMenu() {
 
   const startDemo = useCallback((feat: FeatureItem, keepOpen = false) => {
     const isParentDemo = feat.id.startsWith('proc-');
+    const isKBDemo = feat.id.startsWith('kb-');
     const featPath = feat.route.split('?')[0]; // strip query params for comparison
     const onPage = currentPathname === featPath || currentPathname.startsWith(featPath + '/')
       || (isParentDemo && currentPathname.startsWith('/app/procedure-editor/'));
     if (onPage) {
-      if (isParentDemo) {
+      if (isKBDemo) {
+        // KB demos run in the React parent on the KB page
+        window.dispatchEvent(new CustomEvent('kb-demo-start', { detail: { featureId: feat.id } }));
+      } else if (isParentDemo) {
         // Procedure demos run in the React parent, not the iframe
         window.dispatchEvent(new CustomEvent('procedure-demo-start', { detail: { featureId: feat.id } }));
       } else {
@@ -241,28 +238,6 @@ export function DebugMenu() {
     if (!keepOpen) setIsOpen(false);
   }, [currentPathname, navigate]);
 
-  const startPlaylist = useCallback((playlistId: string) => {
-    const pl = builtInPlaylists.find(p => p.id === playlistId);
-    if (!pl || !pl.featureIds.length) return;
-    const feat = allFeatures.find(f => f.id === pl.featureIds[0]);
-    if (!feat) return;
-    setPlaylistRun({ id: playlistId, idx: 0 });
-    startDemo(feat);
-  }, [startDemo]);
-
-  const stopPlaylist = useCallback(() => setPlaylistRun(null), []);
-
-  const skipPlaylistDemo = useCallback(() => {
-    if (!playlistRun) return;
-    const pl = builtInPlaylists.find(p => p.id === playlistRun.id);
-    if (!pl) return;
-    const nextIdx = playlistRun.idx + 1;
-    if (nextIdx >= pl.featureIds.length) { setPlaylistRun(null); return; }
-    const feat = allFeatures.find(f => f.id === pl.featureIds[nextIdx]);
-    if (!feat) { setPlaylistRun(null); return; }
-    setPlaylistRun({ id: pl.id, idx: nextIdx });
-    startDemo(feat);
-  }, [playlistRun, startDemo]);
 
   // ==================== SNAPSHOTS ====================
   const saveSnapshot = () => {
@@ -356,16 +331,13 @@ export function DebugMenu() {
       { id: 'vp-tablet', label: 'Viewport: Tablet', desc: '768px', category: 'Viewport', action: () => setViewport('tablet') },
       { id: 'vp-phone', label: 'Viewport: Phone', desc: '375px', category: 'Viewport', action: () => setViewport('phone') },
       { id: 'vp-reset', label: 'Viewport: Reset', desc: 'Clear viewport override', category: 'Viewport', action: () => setViewport(null) },
-      ...builtInPlaylists.map(p => ({
-        id: `pl-${p.id}`, label: `Run: ${p.name}`, desc: `${p.featureIds.length} demos`, category: 'Demos', action: () => startPlaylist(p.id),
-      })),
       ...Object.entries(ROLES).map(([id, role]) => ({
         id: `role-${id}`, label: `Switch to ${role.label}`, desc: role.description, category: 'Roles', action: () => setRole(id as UserRole),
       })),
     ];
     return cmds;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPath, navigate, setRole, startPlaylist]);
+  }, [currentPath, navigate, setRole]);
 
   const filteredCommands = useMemo(() => {
     if (!cmdQuery) return commands;
@@ -498,6 +470,23 @@ export function DebugMenu() {
           }, 300);
         }
       }
+      if (e.data?.type === 'kbDemosAvailable' && pendingDemoRef.current) {
+        const fid = pendingDemoRef.current;
+        if (fid.startsWith('kb-')) {
+          pendingDemoRef.current = null;
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('kb-demo-start', { detail: { featureId: fid } }));
+          }, 300);
+        }
+      }
+      // DT scene config demo continuation → navigate to KB and start KB demo
+      if (e.data?.type === 'debugDemoContinue' && e.data.nextFeatureId) {
+        const feat = allFeatures.find(f => f.id === e.data.nextFeatureId);
+        if (feat) {
+          if (e.data.featureId) markDemoComplete(e.data.featureId);
+          setTimeout(() => startDemo(feat), 300);
+        }
+      }
       if (e.data?.type === 'debugDemoStarted') {
         const url = new URL(window.location.href);
         url.searchParams.set('demo', e.data.featureId);
@@ -509,17 +498,6 @@ export function DebugMenu() {
         // URL cleanup
         const url = new URL(window.location.href);
         if (url.searchParams.has('demo')) { url.searchParams.delete('demo'); history.replaceState(null, '', url.toString()); }
-        // Playlist advance
-        setPlaylistRun(prev => {
-          if (!prev) return null;
-          const pl = builtInPlaylists.find(p => p.id === prev.id);
-          if (!pl) return null;
-          const ni = prev.idx + 1;
-          if (ni >= pl.featureIds.length) return null;
-          const feat = allFeatures.find(f => f.id === pl.featureIds[ni]);
-          if (feat) setTimeout(() => startDemo(feat), 800);
-          return { id: pl.id, idx: ni };
-        });
       }
     };
     window.addEventListener('message', h);
@@ -546,6 +524,14 @@ export function DebugMenu() {
             }, 600);
           } else if (onPage) {
             pendingDemoRef.current = feat.id;
+            // Also try sending directly after iframe loads (debugFeatures may have already fired)
+            setTimeout(() => {
+              if (pendingDemoRef.current === feat.id) {
+                pendingDemoRef.current = null;
+                const iframe = document.querySelector('iframe') as HTMLIFrameElement | null;
+                if (iframe?.contentWindow) iframe.contentWindow.postMessage({ type: 'debugStartDemo', featureId: feat.id }, '*');
+              }
+            }, 1200);
           } else {
             pendingDemoRef.current = feat.id;
             navigate(`${feat.route}?demo=${feat.id}`);
@@ -671,12 +657,9 @@ export function DebugMenu() {
         style={{ padding: `5px 8px 5px ${indent}px`, ...diFocusStyle(idx) }}
         onClick={() => startDemo(feat)}>
         <span style={{ fontSize: '14px', flexShrink: 0, width: '20px', textAlign: 'center' }}>{feat.icon}</span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
-            <span style={{ fontSize: '13px', color: '#36415D', fontWeight: 500 }}>{feat.name}</span>
-            {done && <Check style={{ width: '12px', height: '12px', color: '#11E874' }} />}
-          </div>
-          <div style={{ fontSize: '11px', color: '#868D9E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{feat.desc}</div>
+        <div className="flex-1 min-w-0 flex items-center gap-1">
+          <span style={{ fontSize: '13px', color: '#36415D', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{feat.name}</span>
+          {done && <Check style={{ width: '12px', height: '12px', color: '#11E874', flexShrink: 0 }} />}
         </div>
         {renderPinStar(`f:${feat.id}`, true)}
         <button onClick={(e) => shareDemoLink(feat, e)}
@@ -729,8 +712,6 @@ export function DebugMenu() {
     roles: totalRoles,
   };
 
-  // Playlist info for runner
-  const runningPlaylist = playlistRun ? builtInPlaylists.find(p => p.id === playlistRun.id) : null;
 
   // ==================== JSX ====================
   return createPortal(
@@ -753,21 +734,6 @@ export function DebugMenu() {
         {isOpen ? <X style={{ width: '16px', height: '16px', color: 'white' }} /> : <Bug style={{ width: '16px', height: '16px', color: 'white' }} />}
       </button>
 
-      {/* ===== Floating playlist pill (visible when panel closed) ===== */}
-      {playlistRun && runningPlaylist && !isOpen && (
-        <div className="fixed z-[9998] flex items-center gap-2" style={{
-          bottom: '60px', right: '16px', padding: '6px 12px', borderRadius: '20px',
-          background: 'linear-gradient(135deg, #2F80ED, #2F80ED)', color: 'white', fontSize: '12px', fontWeight: 600,
-          boxShadow: '0 2px 12px rgba(47, 128, 237,0.4)',
-        }}>
-          <ListOrdered style={{ width: '12px', height: '12px' }} />
-          <span>{runningPlaylist.name}</span>
-          <span style={{ opacity: 0.7 }}>{playlistRun.idx + 1}/{runningPlaylist.featureIds.length}</span>
-          <button onClick={skipPlaylistDemo} title="Skip to next" className="hover:bg-white/20 rounded p-0.5"><SkipForward style={{ width: '12px', height: '12px' }} /></button>
-          <button onClick={stopPlaylist} title="Stop" className="hover:bg-white/20 rounded p-0.5"><Square style={{ width: '10px', height: '10px' }} /></button>
-        </div>
-      )}
-
       {/* ===== Debug panel ===== */}
       {isOpen && (
         <div className="fixed z-[9998] flex flex-col" style={{
@@ -782,12 +748,6 @@ export function DebugMenu() {
               <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#36415D' }}>Debug Menu</span>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setShowSnapshots(!showSnapshots)}
-                className="flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition-colors"
-                style={{ fontSize: '12px', color: showSnapshots ? '#2F80ED' : '#868D9E', border: `1px solid ${showSnapshots ? '#2F80ED33' : 'transparent'}`, borderRadius: '6px' }}
-                title="State Snapshots">
-                <Camera style={{ width: '12px', height: '12px' }} />
-              </button>
               <button onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.href = '/'; }}
                 className="flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
                 style={{ fontSize: '12px', color: '#FF1F1F', border: '1px solid #FF1F1F33', borderRadius: '6px' }}
@@ -796,66 +756,6 @@ export function DebugMenu() {
               </button>
             </div>
           </div>
-
-          {/* Snapshot dropdown */}
-          {showSnapshots && (
-            <div className="shrink-0" style={{ padding: '8px 12px', borderBottom: '1px solid #E9E9E9', backgroundColor: '#FDFBFF', maxHeight: '180px', overflowY: 'auto' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <input value={snapName} onChange={e => setSnapName(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') saveSnapshot(); }}
-                  placeholder="Snapshot name..."
-                  className="flex-1 bg-white outline-none rounded"
-                  style={{ fontSize: '12px', color: '#36415D', padding: '4px 8px', border: '1px solid #C2C9DB' }} />
-                <button onClick={saveSnapshot}
-                  className="shrink-0 rounded hover:bg-purple-50 transition-colors"
-                  style={{ padding: '4px 8px', fontSize: '12px', color: '#2F80ED', border: '1px solid #2F80ED33', fontWeight: 600 }}>
-                  <Save style={{ width: '12px', height: '12px' }} />
-                </button>
-              </div>
-              {snapshots.length === 0 && <div style={{ fontSize: '11px', color: '#868D9E', textAlign: 'center', padding: '4px' }}>No snapshots yet</div>}
-              {snapshots.map(s => (
-                <div key={s.id} className="flex items-center gap-2 rounded hover:bg-purple-50 transition-colors" style={{ padding: '3px 4px', marginBottom: '2px' }}>
-                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => restoreSnapshot(s)}>
-                    <div style={{ fontSize: '12px', color: '#36415D', fontWeight: 500 }}>{s.name}</div>
-                    <div style={{ fontSize: '10px', color: '#868D9E' }}>{ROLES[s.role].label} &middot; {s.route}</div>
-                  </div>
-                  <button onClick={() => deleteSnapshot(s.id)} className="shrink-0 hover:bg-red-50 rounded p-1" title="Delete">
-                    <Trash2 style={{ width: '10px', height: '10px', color: '#FF1F1F' }} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Current route (collapsible + copy) */}
-          <div className="shrink-0" style={{ padding: routeCollapsed ? '4px 12px' : '6px 12px', borderBottom: '1px solid #E9E9E9', backgroundColor: '#F5F5F5' }}>
-            <div className="flex items-center gap-1 cursor-pointer" onClick={() => setRouteCollapsed(!routeCollapsed)}>
-              {routeCollapsed ? <ChevronRight style={{ width: '10px', height: '10px', color: '#868D9E' }} /> : <ChevronDown style={{ width: '10px', height: '10px', color: '#868D9E' }} />}
-              <span style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', flex: 1 }}>Current Route</span>
-              <button onClick={(e) => { e.stopPropagation(); copyRoute(); }}
-                className="shrink-0 rounded hover:bg-blue-50 transition-colors p-0.5" title="Copy full URL">
-                {routeCopied ? <Check style={{ width: '12px', height: '12px', color: '#11E874' }} /> : <Copy style={{ width: '12px', height: '12px', color: '#868D9E' }} />}
-              </button>
-            </div>
-            {!routeCollapsed && (
-              <div style={{ fontSize: '12px', color: '#2F80ED', fontFamily: 'monospace', wordBreak: 'break-all', marginTop: '2px' }}>{currentPath}</div>
-            )}
-          </div>
-
-          {/* Playlist progress bar */}
-          {playlistRun && runningPlaylist && (
-            <div className="shrink-0 flex items-center gap-2" style={{ padding: '5px 12px', borderBottom: '1px solid #E9E9E9', background: 'linear-gradient(90deg, #F3E8FF, #EDE9FE)' }}>
-              <ListOrdered style={{ width: '12px', height: '12px', color: '#2F80ED' }} />
-              <span style={{ fontSize: '11px', color: '#2F80ED', fontWeight: 600, flex: 1 }}>{runningPlaylist.name}</span>
-              <span style={{ fontSize: '11px', color: '#2F80ED' }}>{playlistRun.idx + 1}/{runningPlaylist.featureIds.length}</span>
-              <button onClick={skipPlaylistDemo} className="rounded hover:bg-purple-200 p-0.5" title="Next"><SkipForward style={{ width: '11px', height: '11px', color: '#2F80ED' }} /></button>
-              <button onClick={stopPlaylist} className="rounded hover:bg-red-100 p-0.5" title="Stop"><Square style={{ width: '9px', height: '9px', color: '#FF1F1F' }} /></button>
-              {/* Progress bar */}
-              <div style={{ width: '40px', height: '3px', borderRadius: '2px', backgroundColor: '#D9D9F0', overflow: 'hidden' }}>
-                <div style={{ width: `${((playlistRun.idx + 1) / runningPlaylist.featureIds.length) * 100}%`, height: '100%', backgroundColor: '#2F80ED', borderRadius: '2px', transition: 'width 0.3s' }} />
-              </div>
-            </div>
-          )}
 
           {/* Tabs with count badges */}
           <div className="flex shrink-0" style={{ borderBottom: '1px solid #E9E9E9' }}>
@@ -1031,7 +931,7 @@ export function DebugMenu() {
                   {/* Recent pages - removed */}
 
                   {/* Platform nav tabs */}
-                  <div className="flex shrink-0" style={{ margin: '2px 4px 6px', borderBottom: '1px solid #E9E9E9' }}>
+                  <div className="flex shrink-0" style={{ margin: '2px 4px 6px', borderBottom: '1px solid #E9E9E9', position: 'sticky', top: 0, zIndex: 10, background: '#fff' }}>
                     {[
                       { label: 'Selector', path: '/', active: !isApp && !isWeb && !isXR },
                       { label: 'App', path: '/app/knowledgebase', active: isApp },
@@ -1057,41 +957,6 @@ export function DebugMenu() {
               {/* ==================== DEMOS TAB ==================== */}
               {activeTab === 'features' && (
                 <div style={{ padding: '0 4px' }}>
-                  {/* Playlists */}
-                  <div style={{ marginBottom: '4px' }}>
-                    <button onClick={() => toggleSection('playlists')}
-                      className="flex items-center gap-1.5 w-full hover:bg-black/5 rounded transition-colors"
-                      style={{ padding: '5px 8px' }}>
-                      {expandedSections.has('playlists') ? <ChevronDown style={{ width: '12px', height: '12px', color: '#2F80ED' }} /> : <ChevronRight style={{ width: '12px', height: '12px', color: '#2F80ED' }} />}
-                      <ListOrdered style={{ width: '12px', height: '12px', color: '#2F80ED' }} />
-                      <span style={{ fontSize: '12px', color: '#2F80ED', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Playlists</span>
-                      <span style={{ fontSize: '11px', color: '#868D9E', marginLeft: 'auto' }}>{builtInPlaylists.length}</span>
-                    </button>
-                    {expandedSections.has('playlists') && builtInPlaylists.map(pl => {
-                      const idx = nextDi();
-                      const isRunning = playlistRun?.id === pl.id;
-                      const doneCount = pl.featureIds.filter(id => completedDemos.includes(id)).length;
-                      return (
-                        <div key={pl.id} data-di={idx}
-                          className="flex items-center gap-2 rounded cursor-pointer hover:bg-purple-50 transition-colors"
-                          style={{ padding: '5px 8px 5px 28px', ...diFocusStyle(idx) }}
-                          onClick={() => !isRunning && startPlaylist(pl.id)}>
-                          <Play style={{ width: '12px', height: '12px', color: isRunning ? '#11E874' : '#2F80ED', fill: isRunning ? '#11E874' : 'none' }} />
-                          <div className="flex-1 min-w-0">
-                            <div style={{ fontSize: '13px', color: '#36415D', fontWeight: 500 }}>{pl.name}</div>
-                            <div style={{ fontSize: '11px', color: '#868D9E' }}>{pl.featureIds.length} demos &middot; {doneCount} done</div>
-                          </div>
-                          {isRunning && (
-                            <div className="flex items-center gap-1">
-                              <button onClick={e => { e.stopPropagation(); skipPlaylistDemo(); }} className="rounded hover:bg-purple-200 p-0.5"><SkipForward style={{ width: '11px', height: '11px', color: '#2F80ED' }} /></button>
-                              <button onClick={e => { e.stopPropagation(); stopPlaylist(); }} className="rounded hover:bg-red-100 p-0.5"><Square style={{ width: '9px', height: '9px', color: '#FF1F1F' }} /></button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
                   {/* Pinned demos */}
                   {pinnedFeats.length > 0 && (
                     <div style={{ marginBottom: '4px' }}>
@@ -1214,30 +1079,6 @@ export function DebugMenu() {
             )}
           </div>
 
-          {/* Footer — viewport info + presets + shortcut */}
-          <div className="shrink-0" style={{ borderTop: '1px solid #E9E9E9', backgroundColor: '#F5F5F5' }}>
-            {/* Viewport presets */}
-            <div className="flex items-center justify-between" style={{ padding: '4px 12px' }}>
-              <div className="flex items-center gap-1">
-                {viewportPresets.map(vp => (
-                  <button key={vp.id} onClick={() => setViewport(activeViewport === vp.id ? null : vp.id)}
-                    className="rounded hover:bg-black/5 transition-colors"
-                    style={{ padding: '3px', color: activeViewport === vp.id ? '#2F80ED' : '#C2C9DB' }}
-                    title={`${vp.label} (${vp.w}px)`}>
-                    <vp.Icon style={{ width: '14px', height: '14px' }} />
-                  </button>
-                ))}
-              </div>
-              <span style={{ fontSize: '10px', color: '#868D9E', fontFamily: 'monospace' }}>
-                {vpSize.w}&times;{vpSize.h}
-              </span>
-            </div>
-            {/* Shortcut + branding */}
-            <div className="flex items-center justify-between" style={{ padding: '2px 12px 5px', fontSize: '11px', color: '#868D9E' }}>
-              <span>Shift+F &middot; Ctrl+K</span>
-              <span>Debug &middot; Mockup Design</span>
-            </div>
-          </div>
         </div>
       )}
 

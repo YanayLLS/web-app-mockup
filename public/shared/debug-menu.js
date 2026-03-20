@@ -19,7 +19,7 @@
           { target:'[data-menu="hotspots"]', text:'Click the Hotspot tool in the left toolbar to activate hotspot mode.', pos:'right', wait:'validate',
             validate:function(){ var b=document.querySelector('[data-menu="hotspots"]'); return b && b.classList.contains('active'); }},
           { target:'#openHsManagerSideBtn', text:'Now click the Hotspot Manager button to open the manager panel.', pos:'right', wait:'validate',
-            setup:function(){ var b=document.querySelector('[data-menu="hotspots"]'); if(b&&!b.classList.contains('active')) b.click(); },
+            setup:function(){ var b=document.querySelector('[data-menu="hotspots"]'); if(b&&!b.classList.contains('active')) b.click(); var sb=document.getElementById('openHsManagerSideBtn'); if(sb){ sb.style.display='flex'; demo.cleanup.push(function(){ sb.style.display=''; }); } },
             validate:function(){ var m=document.getElementById('hsManager'); return m && !m.classList.contains('hidden'); }},
           { target:'#hsManager', text:'The Hotspot Manager is now open. It lists all your hotspots with search, reorder, and bulk actions.', pos:'left', wait:'observe' },
           { target:'#hmAdd', text:'Click the + button to create a new hotspot. It will appear on the model at the center of your view.', pos:'left', wait:'validate',
@@ -55,7 +55,7 @@
             validate:function(){ var cb=document.getElementById('hmShowLines'); return cb && cb.checked; }},
           { target:'.hs-marker.show-line:not(.hs-hidden)', text:'Connection lines are now visible on the 3D markers, making hotspot positions easier to identify on the model.', pos:'top', wait:'observe', trackTip:true,            setup:function(){ var sp=document.getElementById('hmSettingsPanel'); if(sp) sp.style.display='none'; var sb=document.getElementById('hmSettingsBtn'); if(sb) sb.classList.remove('active'); var m=document.getElementById('hsManager'); if(m&&!m.classList.contains('hidden')){ var cf=typeof closeHotspotManager==='function'; if(cf) closeHotspotManager(); else m.classList.add('hidden'); } }},
           { target:'#btSave', text:'Save your work before previewing. Click Save now.', pos:'top', wait:'click' },
-          { target:'#btSave', text:'A publish prompt will appear. You can <b>Publish</b> to make changes live for other users, or click <b>Not now</b> to skip.', pos:'top', wait:'validate',
+          { target:'#publishPrompt', text:'A publish prompt appeared. You can <b>Publish</b> to make changes live for other users, or click <b>Not now</b> to skip.', pos:'top', wait:'validate', trackTip:true,
             setup:function(){ this._seen=false; },
             validate:function(){ if(document.getElementById('publishNo')){this._seen=true;return false;} return this._seen; }},
           { target:'#btPreview', text:'Click Preview to see your hotspots as end users will experience them.', pos:'top', wait:'click' },
@@ -186,21 +186,25 @@
         ]},
       { id:'dt-configurations', name:'Configurations', icon:'🎛️',
         desc:'Create and manage digital twin configurations — define part visibility, tags, permissions, folders, and import/export configs.',
-        flow:['Open Configurations tab','Learn about configurations','Create a configuration','Name and describe it','Add tags','Set from view','Set permissions','Create a folder','Organize configs','Context menu actions','Search and filter','Save and publish','Preview as a technician','How configs work for users'],
+        continueDemo:'kb-config-selection',
+        flow:['Open Configurations tab','Learn about configurations','Open Create menu','Pick configuration type','Name the configuration','Add a description','Add tags','Set from view','Set permissions','Create a folder','Organize configs','Context menu actions','Search and filter','Save changes','Publish prompt','Preview in Viewer mode','See the active config','Continue to Knowledge Base'],
         demo:[
           // Step 1: Open Configurations tab — auto-advances if already active
           { target:'[data-tab="configurations"]', text:'Click the <b>Configurations</b> tab to manage digital twin variants.', pos:'right', wait:'validate',
             validate:function(){ var tab=document.querySelector('[data-tab="configurations"]'); return tab && tab.classList.contains('active'); }},
           // Step 2: Orientation
           { target:'.config-header', text:'This is the <b>Configurations</b> panel. Each configuration defines which parts are visible — perfect for machines with optional modules or regional variants.<br><br>The <b>Default Configuration</b> shows the base state of the model. It can be customized but cannot be deleted.', pos:'left', wait:'observe', requireTab:'configurations' },
-          // Step 3: Create a configuration — click Create, pick an option from the dropdown
-          { target:'#cfgCreateBtn', text:'Click <b>Create</b> to open the dropdown, then select <b>"From current view"</b> — this captures the current 3D scene\'s parts visibility as the starting state.', pos:'left', wait:'validate', requireTab:'configurations',
+          // Step 3: Click Create to open dropdown
+          { target:'#cfgCreateBtn', text:'Click <b>Create</b> to open the dropdown menu.', pos:'left', wait:'validate', requireTab:'configurations',
             setup:function(){
               demo._prevCount = configData ? configData.filter(function(c){return c.type==='config';}).length : 0;
             },
+            validate:function(){ var dd=document.getElementById('cfgCreateDropdown'); return dd && dd.classList.contains('show'); }},
+          // Step 3b: Pick "From current view" from the dropdown
+          { target:'#cfgCreateDropdown', text:'Select <b>"From current view"</b> — this captures the current 3D scene\'s part visibility as the starting state.', pos:'left', wait:'validate', requireTab:'configurations',
             validate:function(){ return configData && configData.filter(function(c){return c.type==='config';}).length > (demo._prevCount||0); }},
           // Step 4: Edit name (detail panel targets)
-          { target:'#configDetailName', text:'The detail panel opened. Type a name for your configuration — try <b>"Standard Model"</b>.', pos:'top', wait:'validate',
+          { target:'#configDetailName', text:'The detail panel opened. Here you can type a name for your configuration — e.g. <b>"Standard Model"</b>.', pos:'top', wait:'observe',
             setup:function(){
               var dd = document.getElementById('cfgCreateDropdown'); if (dd) dd.classList.remove('show');
               // Ensure config detail panel is visible, positioned, and populated
@@ -215,9 +219,7 @@
               }
               // Re-render to ensure fields are populated
               if (typeof renderConfigDetail === 'function') renderConfigDetail();
-              var el = document.getElementById('configDetailName'); demo._initConfigName = el ? el.value : '';
-            },
-            validate:function(){ var el=document.getElementById('configDetailName'); return el && el.value.trim().length > 0 && el.value !== (demo._initConfigName||''); }},
+            }},
           // Step 5: Add description
           { target:'#configDetailDesc', text:'Add a description explaining what this variant represents, e.g. <i>"Standard production model without coolant system."</i>', pos:'left', wait:'observe',
             setup:function(){
@@ -280,24 +282,26 @@
           // Step 15: Clear search
           { target:'#configSearchInput', text:'Clear the search to see all configurations again.', pos:'left', wait:'validate', requireTab:'configurations',
             validate:function(){ var el=document.getElementById('configSearchInput'); return el && el.value.trim().length === 0; }},
-          // Step 16: Save — merges with publish prompt (validate sees publish dialog appear then dismiss)
-          { target:'#btSave', text:'Click <b>Save</b> to persist your configuration changes. A publish prompt will appear — click <b>Publish</b> or <b>Not now</b>.', pos:'top', wait:'validate',
+          // Step 16: Save
+          { target:'#btSave', text:'Click <b>Save</b> to persist your configuration changes.', pos:'top', wait:'click',
             setup:function(){
-              this._seen = false;
               // Hide detail panel to unblock Save button (but don't null configSelectedId)
               var dp=document.getElementById('configDetailPanel');
               if(dp&&!dp.classList.contains('hidden')) dp.classList.add('hidden');
-            },
+            }},
+          // Step 16b: Wait for publish prompt to appear
+          { target:'#btSave', text:'Waiting for the publish prompt...', pos:'top', wait:'appear:#publishPrompt' },
+          // Step 16c: Publish prompt
+          { target:'#publishPrompt', text:'A publish prompt appeared. You can <b>Publish</b> to make changes live for other users, or click <b>Not now</b> to skip.', pos:'top', wait:'validate', trackTip:true,
+            setup:function(){ this._seen=false; },
             validate:function(){ if(document.getElementById('publishNo')){this._seen=true;return false;} return this._seen; }},
           // Step 17: Preview
-          { target:'#btPreview', text:'Click <b>Preview</b> to switch to Viewer mode and see the digital twin as a technician would.', pos:'top', wait:'validate',
+          { target:'#btPreview', text:'Click <b>Preview</b> to switch to Viewer mode and see your configuration applied.', pos:'top', wait:'validate',
             validate:function(){ return !isInEditMode(); }},
-          // Step 18: Viewer — observe the result
-          { target:'#viewport', text:'You\'re now in <b>Viewer mode</b> — this is exactly what technicians see. Notice how <b>only the parts defined in your active configuration</b> are visible. Parts you hid are gone from the view.', pos:'top', wait:'observe', viewerMode:true },
-          // Step 19: Viewer — explain how technicians select configs
-          { target:'#viewport', text:'In the full product, technicians see a <b>"Open with Configuration"</b> button when opening a digital twin. They can search configurations by name or tag and select the one matching their machine.<br><br>If only the Default Configuration exists, no selector appears — the model loads normally.', pos:'top', wait:'observe', viewerMode:true },
-          // Step 20: Return to editor
-          { target:'#viewport', text:'To make more changes, click the <b>three-dot menu</b> (⋮) → <b>Edit digital twin</b> to return to the editor.<br><br>🎉 <b>Configurations demo complete!</b> You\'ve learned to create, customize, organize, and preview configurations.', pos:'top', wait:'observe', viewerMode:true },
+          // Step 18: Viewer — observe with active config
+          { target:'#viewport', text:'You\'re now in <b>Viewer mode</b> — this is exactly what technicians see. The digital twin is showing the <b>active configuration</b> you created. Only the parts defined in it are visible.', pos:'top', wait:'observe', viewerMode:true },
+          // Step 19: Transition to KB
+          { target:'#viewport', text:'Now let\'s see the full technician experience. Next, we\'ll open the <b>Knowledge Base</b> — where technicians find and launch digital twins with a <b>Configuration Selector</b>.', pos:'top', wait:'observe', viewerMode:true },
         ]},
       { id:'keyboard', name:'Keyboard Shortcuts', icon:'⌨️',
         desc:'Master the keyboard shortcuts to speed up your workflow.',
@@ -991,7 +995,7 @@
         '<div class="gd-text">'+step.text+'</div>' +
         waitHtml +
         '<div class="gd-btns">' +
-          (idx > 0 && !step.viewerMode ? '<button class="gd-b gd-b-sec gd-prev">Back</button>' : '') +
+          (idx > 0 ? '<button class="gd-b gd-b-sec gd-prev">Back</button>' : '') +
           (isWait ? '' : (isLast ? '<button class="gd-b gd-b-done gd-done">Done</button>' : '<button class="gd-b gd-b-pri gd-next">Next</button>')) +
         '</div>';
 
@@ -1117,6 +1121,13 @@
     if (demo.hlEl) demo.hlEl.style.display = 'none';
     var feat = demo.feat;
     markCompleted(feat.id);
+    // Continuation: if feature has continueDemo, signal parent to start that demo
+    if (feat.continueDemo && isEmbedded) {
+      var fid = feat.id, nextId = feat.continueDemo;
+      endDemo();
+      window.parent.postMessage({ type: 'debugDemoContinue', featureId: fid, nextFeatureId: nextId }, '*');
+      return;
+    }
     var nextFeat = getNextFeature(feat.id);
     var allDone = buildDots(feat.demo.length, feat.demo.length);
     var nextHtml = nextFeat ? '<button class="gd-b gd-b-pri gd-next-feat" style="display:flex;align-items:center;gap:5px"><span>' + nextFeat.icon + '</span> Try: ' + nextFeat.name + '</button>' : '';
@@ -1148,7 +1159,7 @@
           btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;vertical-align:-2px;margin-right:4px"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>Share';
         }, 2000);
       });
-    };
+    });
     demo.tipEl.querySelector('.gd-close').addEventListener('click', function() { endDemo(); });
   }
 

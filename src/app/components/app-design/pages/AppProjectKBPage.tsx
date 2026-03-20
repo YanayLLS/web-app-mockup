@@ -1,12 +1,13 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { FolderOpen, FileText, Film, ChevronRight, Plus, ChevronDown, X, Eye, EyeOff, RefreshCw, Cuboid, Search, SlidersHorizontal, LayoutGrid, List } from 'lucide-react';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { AppProcedureInfoModal } from '../components/AppProcedureInfoModal';
 import { AppConfigurationSelector } from '../components/AppConfigurationSelector';
 import { MOCK_CONFIGURATIONS } from '../../../data/configurationsData';
 import { getUrlParam, setUrlParam } from '../../../utils/urlParams';
 import { useProject } from '../../../contexts/ProjectContext';
 import { useRole, hasAccess } from '../../../contexts/RoleContext';
+import { DemoRunner, type DemoFeature } from '../../../components/procedure-editor/DemoRunner';
 
 type KBItemType = 'folder' | 'procedure' | 'digital-twin' | 'media';
 
@@ -101,6 +102,66 @@ export function AppProjectKBPage() {
     return def?.name ?? accessibleConfigs[0]?.name ?? null;
   }, [accessibleConfigs]);
 
+  // KB Config Selection Demo
+  const [activeKBDemo, setActiveKBDemo] = useState<DemoFeature | null>(null);
+
+  const kbConfigDemo = useMemo<DemoFeature>(() => ({
+    id: 'kb-config-selection',
+    name: 'KB Configuration Selection',
+    steps: [
+      {
+        target: '[data-demo="dt-card"]',
+        text: 'This is the <b>Knowledge Base</b> page. Technicians see all digital twins, flows, and media here.<br><br>Click a <b>Digital Twin</b> card to open it.',
+        pos: 'bottom' as const,
+        wait: 'click',
+      },
+      {
+        target: '[data-demo="dt-loading-modal"]',
+        text: 'The loading modal appears with a <b>Configuration</b> row. The Default Configuration is pre-selected, but the technician can change it.',
+        pos: 'left' as const,
+        wait: 'observe',
+      },
+      {
+        target: '[data-demo="dt-config-change"]',
+        text: 'Click <b>Change</b> to open the Configuration Selector and browse available configurations.',
+        pos: 'left' as const,
+        wait: 'click',
+      },
+      {
+        target: '[data-demo="config-selector-modal"]',
+        text: 'The <b>Configuration Selector</b> shows all enabled configurations for the technician\'s role. They can <b>search by name or tag</b> and select the one matching their machine.',
+        pos: 'left' as const,
+        wait: 'observe',
+      },
+      {
+        target: '[data-demo="config-selector-open"]',
+        text: 'After selecting a configuration, click <b>Open</b> to confirm the choice.',
+        pos: 'top' as const,
+        wait: 'click',
+      },
+      {
+        target: '[data-demo="dt-open"]',
+        text: 'The selected configuration is now shown. Click <b>Open</b> to load the digital twin with this configuration applied.',
+        pos: 'top' as const,
+        wait: 'click',
+      },
+    ],
+  }), []);
+
+  // Listen for demo start events from DebugMenu
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.featureId === 'kb-config-selection') {
+        setActiveKBDemo(kbConfigDemo);
+      }
+    };
+    window.addEventListener('kb-demo-start', handler);
+    // Also notify DebugMenu that KB demos are available
+    window.postMessage({ type: 'kbDemosAvailable', features: [{ id: 'kb-config-selection', name: 'KB Configuration Selection', demoSteps: kbConfigDemo.steps.length }] }, '*');
+    return () => window.removeEventListener('kb-demo-start', handler);
+  }, [kbConfigDemo]);
+
   const selectItem = (item: KBItem | null) => {
     setSelectedItem(item);
     setUrlParam('open', item?.id ?? null);
@@ -137,10 +198,11 @@ export function AppProjectKBPage() {
         clearInterval(interval);
         setTimeout(() => {
           const configParam = dtSelectedConfigName ? `?config=${encodeURIComponent(dtSelectedConfigName)}` : '';
+          const demoParam = activeKBDemo ? `${configParam ? '&' : '?'}demo=kb-config-complete` : '';
           setLoadingDT(null);
           setDtSelectedConfigName(null);
           setDtLoadingStarted(false);
-          navigate(`/app/3d-viewer${configParam}`);
+          navigate(`/app/3d-viewer${configParam}${demoParam}`);
         }, 200);
       }
       setLoadProgress(progress);
@@ -355,6 +417,7 @@ export function AppProjectKBPage() {
         {digitalTwins.map((item) => (
           <div
             key={item.id}
+            data-demo="dt-card"
             onClick={() => { setDtLoadingPaused(showConfigSelector); setDtSelectedConfigName(defaultConfigName); setDtLoadingStarted(!showConfigSelector); setLoadingDT(item); }}
             className="cursor-pointer overflow-hidden hover:shadow-elevation-md transition-all"
             style={{
@@ -463,6 +526,7 @@ export function AppProjectKBPage() {
           <div className="fixed inset-0 bg-black/40 z-50" onClick={() => { setLoadingDT(null); setDtLoadingPaused(false); setDtLoadingStarted(false); setDtSelectedConfigName(null); }} />
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
             <div
+              data-demo="dt-loading-modal"
               className="pointer-events-auto flex flex-col items-center"
               style={{
                 width: '480px',
@@ -542,6 +606,7 @@ export function AppProjectKBPage() {
                     </span>
                   </div>
                   <button
+                    data-demo="dt-config-change"
                     onClick={() => setShowDTConfigSelector(true)}
                     className="hover:bg-[rgba(47,128,237,0.06)] active:scale-[0.97] transition-all shrink-0"
                     style={{
@@ -587,8 +652,8 @@ export function AppProjectKBPage() {
                 </div>
               )}
 
-              {/* Content creator area - only for roles with edit access */}
-              {hasAccess(currentRole, 'projects-edit') && (
+              {/* Content creator area - only for content-creator and admin */}
+              {(currentRole === 'content-creator' || currentRole === 'admin') && (
                 <div
                   className="w-full flex items-center justify-between"
                   style={{
@@ -617,6 +682,7 @@ export function AppProjectKBPage() {
               {dtLoadingPaused ? (
                 <div className="w-full flex flex-col items-center" style={{ gap: '10px' }}>
                   <button
+                    data-demo="dt-open"
                     onClick={() => { setDtLoadingPaused(false); setDtLoadingStarted(true); }}
                     className="w-full flex items-center justify-center gap-2 hover:shadow-[0_4px_16px_rgba(47,128,237,0.3)] active:scale-[0.98] transition-all"
                     style={{
@@ -746,6 +812,15 @@ export function AppProjectKBPage() {
           </div>
         </>
       )}
+
+      {/* KB Config Selection Demo Runner */}
+      <DemoRunner
+        feature={activeKBDemo}
+        onEnd={() => {
+          setActiveKBDemo(null);
+          window.postMessage({ type: 'debugDemoEnded', featureId: 'kb-config-selection' }, '*');
+        }}
+      />
     </div>
   );
 }
