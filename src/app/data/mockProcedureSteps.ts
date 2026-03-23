@@ -13,7 +13,6 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     popups: [
       { id: 'popup-1a', title: 'Required PPE', description: 'Safety glasses, insulated gloves (rated 1000V), steel-toe boots, hearing protection, and flame-resistant clothing are mandatory.', position: { x: 30, y: 20 }, color: '#FF6B35', mediaFiles: [], arrowDirection: 'down' },
       { id: 'popup-1b', title: 'Main Breaker Lockout', description: 'The main breaker is located on the generator control panel. Switch to OFF, apply your personal padlock, and attach the lockout tag with date and name.', position: { x: 70, y: 45 }, color: '#FF1F1F', mediaFiles: [], requiresConfirmation: true, confirmButtonText: 'Lockout applied', arrowDirection: 'left' },
-      { id: 'popup-1c', title: 'Fuel Supply Valve', description: 'Close the fuel supply valve on the fuel line near the base frame. This prevents fuel flow during filter and line inspections.', position: { x: 50, y: 75 }, color: '#FF1F1F', mediaFiles: [], requiresConfirmation: true, confirmButtonText: 'Fuel valve closed', arrowDirection: 'up' },
     ],
     mediaFiles: [],
   },
@@ -22,7 +21,10 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     parentStepId: sid(1),
     title: 'Visual Inspection of Generator Housing',
     description: 'Perform a thorough walk-around inspection of the generator enclosure. Check for external damage, corrosion, fluid leaks, loose bolts, and debris accumulation. Inspect exhaust connections and ventilation openings for blockages.',
-    actions: [],
+    actions: [
+      { label: 'Pass — No issues found', nextStepId: '' },
+      { label: 'Fail — Damage detected', nextStepId: '' },
+    ],
     color: '#2F80ED',
     hasAnimation: false,
     popups: [
@@ -43,7 +45,10 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     parentStepId: sid(2),
     title: 'Check Engine Oil Level & Condition',
     description: 'Remove the oil dipstick, wipe clean, reinsert fully, and withdraw to read the level. Oil should be between the LOW and FULL marks. Inspect oil color and consistency — dark black or gritty oil indicates the need for an oil change.',
-    actions: [],
+    actions: [
+      { label: 'Oil level OK', nextStepId: '' },
+      { label: 'Oil needs change', nextStepId: '' },
+    ],
     color: '#8404B3',
     hasAnimation: false,
     popups: [
@@ -66,26 +71,27 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     actions: [],
     color: '#FF6B35',
     hasAnimation: true,
-    popups: [
-      { id: 'popup-4a', title: 'Drain Plug Location', description: 'The oil drain plug is at the lowest point of the oil pan, accessible from the underside of the generator. Use a 19mm socket wrench.', position: { x: 40, y: 65 }, color: '#FF6B35', mediaFiles: [], arrowDirection: 'up' },
-      { id: 'popup-4b', title: 'Oil Filter Replacement', description: 'Use a filter wrench to remove the old filter (turn counter-clockwise). Apply a thin film of new oil to the new filter gasket. Hand-tighten the new filter plus 3/4 turn.', position: { x: 65, y: 35 }, color: '#2F80ED', mediaFiles: [], arrowDirection: 'left' },
-      { id: 'popup-4c', title: 'Oil Specification', description: 'Use SAE 15W-40 API CK-4 rated diesel engine oil. Capacity: 12.5 liters. Do not overfill — check dipstick after adding 12 liters.', position: { x: 25, y: 30 }, color: '#11E874', mediaFiles: [], arrowDirection: 'right' },
+    popups: [],
+    mediaFiles: [
+      { id: 'media-4a', name: 'Oil Change Reference Video', type: 'video', url: '', size: 24500000 },
+      { id: 'media-4b', name: 'Filter Torque Spec Sheet', type: 'document', url: '', size: 850000 },
     ],
-    mediaFiles: [],
   },
   {
     id: sid(5),
     parentStepId: sid(4),
     title: 'Inspect & Replace Air Filter',
     description: 'Open the air filter housing by releasing the four spring clips. Remove the air filter element and inspect for dirt, damage, or moisture. Hold the filter up to light — if light does not pass through, replace the element. Clean the housing interior before installing the new filter.',
-    actions: [],
+    actions: [
+      { label: 'Filter OK — reinstall', nextStepId: '' },
+      { label: 'Filter dirty — replace', nextStepId: '' },
+    ],
     color: 'var(--foreground)',
     hasAnimation: true,
-    popups: [
-      { id: 'popup-5a', title: 'Air Filter Housing', description: 'The air filter housing is located on top of the engine, connected to the intake manifold via a rubber boot. Release the four spring clips to open.', position: { x: 45, y: 25 }, color: '#2F80ED', mediaFiles: [], arrowDirection: 'down' },
-      { id: 'popup-5b', title: 'Filter Service Indicator', description: 'Check the restriction indicator on the air cleaner housing. If the indicator shows RED, the filter must be replaced regardless of visual condition.', position: { x: 70, y: 50 }, color: '#FF1F1F', mediaFiles: [], arrowDirection: 'left' },
+    popups: [],
+    mediaFiles: [
+      { id: 'media-5a', name: 'Air Filter Diagram', type: 'image', url: '', size: 1200000 },
     ],
-    mediaFiles: [],
   },
   {
     id: sid(6),
@@ -97,7 +103,6 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     hasAnimation: false,
     popups: [
       { id: 'popup-6a', title: 'Radiator Cap Warning', description: 'NEVER open the radiator cap when the engine is hot. The cooling system is pressurized and can cause severe burns. Wait at least 30 minutes after shutdown.', position: { x: 35, y: 20 }, color: '#FF1F1F', mediaFiles: [], arrowDirection: 'down' },
-      { id: 'popup-6b', title: 'Coolant Specification', description: 'Use a 50/50 mix of ethylene glycol antifreeze and distilled water. Do not mix coolant types (green vs orange). Total system capacity: 18 liters.', position: { x: 60, y: 55 }, color: '#11E874', mediaFiles: [], arrowDirection: 'left' },
     ],
     mediaFiles: [],
     validation: {
@@ -112,13 +117,15 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     parentStepId: sid(6),
     title: 'Inspect Fuel System',
     description: 'Check all fuel lines and fittings for leaks, cracks, or loose connections. Inspect the fuel/water separator bowl — drain any accumulated water by opening the petcock valve at the bottom. Replace the fuel filter if the service interval has been reached (every 500 hours).',
-    actions: [],
+    actions: [
+      { label: 'No water — skip drain', nextStepId: '' },
+      { label: 'Water found — drain separator', nextStepId: '' },
+      { label: 'Filter due — replace filter', nextStepId: '' },
+    ],
     color: '#FF6B35',
     hasAnimation: false,
     popups: [
       { id: 'popup-7a', title: 'Fuel/Water Separator', description: 'The fuel/water separator is mounted on the engine front, between the fuel tank and injection pump. Clear water from the bowl by opening the drain valve until clean fuel flows.', position: { x: 30, y: 45 }, color: '#FF6B35', mediaFiles: [], arrowDirection: 'right' },
-      { id: 'popup-7b', title: 'Fuel Line Inspection', description: 'Follow each fuel line from the tank to the engine. Check for chafing where lines contact the frame. Look for wet spots or diesel smell indicating a leak.', position: { x: 65, y: 35 }, color: '#2F80ED', mediaFiles: [], arrowDirection: 'down' },
-      { id: 'popup-7c', title: 'Fuel Filter Replacement', description: 'If replacing: close fuel supply valve, use a filter wrench to remove old filter, prime new filter with clean diesel, install hand-tight plus 1/2 turn. Bleed air from the system using the bleed screw on the injection pump.', position: { x: 50, y: 70 }, color: '#8404B3', mediaFiles: [], arrowDirection: 'up' },
     ],
     mediaFiles: [],
   },
@@ -132,9 +139,10 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     hasAnimation: false,
     popups: [
       { id: 'popup-8a', title: 'Battery Voltage Reference', description: '12.6V+ = fully charged\n12.4V = 75% charged\n12.2V = 50% charged\n12.0V = 25% charged\nBelow 12.0V = dead — replace or recharge immediately.', position: { x: 40, y: 30 }, color: '#2F80ED', mediaFiles: [], arrowDirection: 'down' },
-      { id: 'popup-8b', title: 'Terminal Cleaning', description: 'Disconnect negative (-) terminal first, then positive (+). Clean with baking soda solution and wire brush. Apply anti-corrosion spray. Reconnect positive first, then negative.', position: { x: 65, y: 60 }, color: '#11E874', mediaFiles: [], arrowDirection: 'left' },
     ],
-    mediaFiles: [],
+    mediaFiles: [
+      { id: 'media-8a', name: 'Electrical Wiring Diagram', type: 'document', url: '', size: 2100000 },
+    ],
     validation: {
       id: 'val-8',
       checkpoints: [
@@ -147,7 +155,11 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     parentStepId: sid(8),
     title: 'Inspect Drive Belt & Coolant Hoses',
     description: 'Check the serpentine drive belt for cracks, fraying, glazing, or excessive slack. Belt deflection should be 10-12mm at the longest span. Inspect all coolant hoses by squeezing them — they should be firm but flexible. Soft, spongy, or cracked hoses must be replaced.',
-    actions: [],
+    actions: [
+      { label: 'Belt & hoses OK', nextStepId: '' },
+      { label: 'Belt needs replacement', nextStepId: '' },
+      { label: 'Hoses need replacement', nextStepId: '' },
+    ],
     color: '#8404B3',
     hasAnimation: false,
     popups: [
@@ -171,11 +183,7 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     actions: [],
     color: '#11E874',
     hasAnimation: false,
-    popups: [
-      { id: 'popup-10a', title: 'Startup Checklist', description: '1. All panels and covers secured\n2. Tools removed from generator area\n3. Lockout devices removed\n4. Fuel valve open\n5. Coolant and oil at correct levels\n6. Area clear of personnel', position: { x: 25, y: 25 }, color: '#11E874', mediaFiles: [], requiresConfirmation: true, confirmButtonText: 'All pre-start checks passed', arrowDirection: 'down' },
-      { id: 'popup-10b', title: 'Operating Parameters', description: 'Voltage: 220V ±5% (or 380V for 3-phase)\nFrequency: 50 Hz ±0.5 Hz\nOil pressure: 40–60 psi\nCoolant temp: 80–95°C\nIf any parameter is out of range, shut down immediately.', position: { x: 65, y: 40 }, color: '#2F80ED', mediaFiles: [], arrowDirection: 'left' },
-      { id: 'popup-10c', title: 'Maintenance Log Entry', description: 'Record: date, run hours, oil level/change, filter status, coolant level, battery voltage, belt condition, and any issues found. Sign and date the entry.', position: { x: 45, y: 75 }, color: '#8404B3', mediaFiles: [], requiresConfirmation: true, confirmButtonText: 'Logbook updated', arrowDirection: 'up' },
-    ],
+    popups: [],
     mediaFiles: [],
     validation: {
       id: 'val-10',

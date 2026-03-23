@@ -38,6 +38,7 @@ import {
   Database
 } from 'lucide-react';
 import { ProcedureModal } from '../modals/ProcedureModal';
+import { ProcedureModalVariantE2 } from '../modals/ProcedureModalVariantE2';
 import { ConnectionPicker } from '../modals/ConnectionPicker';
 import { MediaLibraryModal } from '../modals/MediaLibraryModal';
 import { ProcedureCanvas } from './ProcedureCanvas';
@@ -2377,45 +2378,56 @@ function KnowledgeBaseContent() {
         </div>
       )}
 
-      {/* Procedure Modal */}
-      {openProcedure && (
-        <ProcedureModal
-          procedure={{
+      {/* Procedure Modal — design variant routing */}
+      {openProcedure && (() => {
+        const id = openProcedure.id;
+        const designVariant = id.endsWith('-kb-design-e2') ? 'E2'
+          : null;
+
+        const commonProps = {
+          procedure: {
             ...openProcedure,
             isPublished: openProcedure.isPublished ?? false,
             hasUnpublishedChanges: openProcedure.hasUnpublishedChanges ?? false,
             publishedVersion: openProcedure.publishedVersion || '1.5',
             publishedDate: openProcedure.publishedDate || '12/02/2022',
-          }}
-          startEditingTitle={openProcedure.id === newlyCreatedProcedureId}
-          onOpenCanvas={() => {
-            openCanvas(openProcedure);
-            openProcedureModal(null);
-          }}
-          onClose={() => {
+          },
+          onClose: () => {
             openProcedureModal(null);
             setNewlyCreatedProcedureId(null);
-          }}
-          onSave={(updatedProcedure) => {
-            const updateItem = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
-              return items.map(item => {
-                if (item.id === updatedProcedure.id) {
-                  return updatedProcedure;
-                }
-                if (item.children) {
-                  return { ...item, children: updateItem(item.children) };
-                }
-                return item;
-              });
-            };
-            const newItems = updateItem(items);
-            setItems(newItems);
-            updateKnowledgeBaseItems(newItems);
-            // Update the open procedure state to reflect new changes
-            openProcedureModal(updatedProcedure);
-          }}
-        />
-      )}
+          },
+        };
+
+        if (designVariant === 'E2') return <ProcedureModalVariantE2 {...commonProps} />;
+
+        return (
+          <ProcedureModal
+            {...commonProps}
+            startEditingTitle={openProcedure.id === newlyCreatedProcedureId}
+            onOpenCanvas={() => {
+              openCanvas(openProcedure);
+              openProcedureModal(null);
+            }}
+            onSave={(updatedProcedure) => {
+              const updateItem = (items: KnowledgeBaseItem[]): KnowledgeBaseItem[] => {
+                return items.map(item => {
+                  if (item.id === updatedProcedure.id) {
+                    return updatedProcedure;
+                  }
+                  if (item.children) {
+                    return { ...item, children: updateItem(item.children) };
+                  }
+                  return item;
+                });
+              };
+              const newItems = updateItem(items);
+              setItems(newItems);
+              updateKnowledgeBaseItems(newItems);
+              openProcedureModal(updatedProcedure);
+            }}
+          />
+        );
+      })()}
 
       {/* Digital Twin Modal */}
       {openDigitalTwin && (

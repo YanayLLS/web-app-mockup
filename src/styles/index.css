@@ -19,9 +19,61 @@
   opacity: 0.7;
 }
 
+/* ─── Edge Reconnection Handles ─── */
+.react-flow__edgeupdater {
+  r: 12 !important;
+  fill: rgba(47, 128, 237, 0.06) !important;
+  stroke: rgba(47, 128, 237, 0.25) !important;
+  stroke-width: 1.5 !important;
+  cursor: grab !important;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+.react-flow__edgeupdater:hover {
+  r: 14 !important;
+  fill: rgba(47, 128, 237, 0.18) !important;
+  stroke: #2F80ED !important;
+  stroke-width: 2 !important;
+  filter: drop-shadow(0 0 8px rgba(47, 128, 237, 0.5));
+  cursor: grab !important;
+  animation: edgeHandlePulse 1.2s ease-in-out infinite;
+}
+.react-flow__edgeupdater:active {
+  r: 10 !important;
+  fill: rgba(47, 128, 237, 0.3) !important;
+  stroke: #2F80ED !important;
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 0 12px rgba(47, 128, 237, 0.6));
+  cursor: grabbing !important;
+  animation: none;
+}
+@keyframes edgeHandlePulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(47, 128, 237, 0.4));
+    stroke-opacity: 1;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(47, 128, 237, 0.7));
+    stroke-opacity: 0.7;
+  }
+}
+
 /* Edge label buttons need high z-index to float above nodes */
 .edge-label-buttons {
   z-index: 1000 !important;
+}
+
+/* ─── ProcedureModal enter animations ─── */
+@keyframes pmOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pmDialogIn {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes pmPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* Mobile bottom sheet slide-up animation */
@@ -58,6 +110,11 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+/* ── Group (section) parent node — allow children to render outside ── */
+.react-flow__node-section {
+  overflow: visible !important;
+}
+
 /* ── Canvas node handles ── */
 .react-flow__node .react-flow__handle {
   transition: width 0.15s ease, height 0.15s ease, box-shadow 0.15s ease;
@@ -68,6 +125,15 @@
   box-shadow: 0 0 8px rgba(47, 128, 237, 0.3);
 }
 
+/* ── Hide edge updater grab circles unless the edge is hovered ── */
+.react-flow__edgeupdater {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.react-flow__edge:hover .react-flow__edgeupdater {
+  opacity: 1;
+}
+
 /* ── Canvas step card ── */
 .canvas-step-card {
   background: white;
@@ -75,52 +141,115 @@
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* Step card feature toolbar */
+/* Step card feature toolbar — collapsed by default, expand on hover */
 .canvas-step-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
   padding: 3px;
   border-radius: 8px;
-  background: var(--background);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(4px);
+  width: 100%;
 }
 
-/* Individual tool button in the toolbar */
+/* Buttons stretch to fill toolbar width evenly */
+.canvas-step-toolbar > .canvas-step-tool-btn {
+  flex: 1 1 0;
+  justify-content: center;
+}
+.canvas-step-toolbar > .canvas-step-tool-sep {
+  flex: 0 0 auto;
+}
+.canvas-step-toolbar > .canvas-step-tool-hint {
+  flex: 1 1 0;
+  justify-content: center;
+}
+
+/* Individual tool button — icon + compact label */
 .canvas-step-tool-btn {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px 0 6px;
   border-radius: 6px;
   color: #B0B7C8;
   background: transparent;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  cursor: pointer;
 }
+.canvas-step-tool-label {
+  font-size: 10.5px;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+/* Dim inactive buttons when toolbar is collapsed (not hovered) */
+.canvas-step-toolbar:not(:hover):not(.expanded) .canvas-step-tool-btn:not(.active):not(.menu-open) {
+  opacity: 0.3;
+}
+.canvas-step-toolbar:not(:hover):not(.expanded) .canvas-step-tool-btn:not(.active):not(.menu-open) .canvas-step-tool-label {
+  visibility: hidden;
+}
+.canvas-step-toolbar:not(:hover):not(.expanded) .canvas-step-tool-sep {
+  opacity: 0.2;
+}
+
 .canvas-step-tool-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
   color: #5E677D;
 }
 .canvas-step-tool-btn.active {
   color: var(--tool-active-color, #2F80ED);
-  background: color-mix(in srgb, var(--tool-active-color, #2F80ED) 10%, transparent);
+  background: color-mix(in srgb, var(--tool-active-color, #2F80ED) 8%, transparent);
 }
 .canvas-step-tool-btn.active::after {
   content: '';
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 2px;
+  right: 2px;
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: var(--tool-active-color, #2F80ED);
+}
+/* Visual indicator when config menu is open */
+.canvas-step-tool-btn.menu-open {
+  background: rgba(47, 128, 237, 0.12);
+  color: var(--tool-active-color, #2F80ED);
+  box-shadow: inset 0 -2px 0 var(--tool-active-color, #2F80ED);
 }
 
 /* Toolbar divider */
 .canvas-step-tool-sep {
   width: 1px;
   height: 16px;
-  margin: 0 2px;
+  margin: 0 1px;
   background: rgba(0, 0, 0, 0.08);
   border-radius: 1px;
+}
+
+/* Hint shown when all features are off (collapsed state) */
+.canvas-step-tool-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  height: 26px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #B0B7C8;
+  cursor: default;
+}
+.canvas-step-toolbar:hover .canvas-step-tool-hint,
+.canvas-step-toolbar.expanded .canvas-step-tool-hint {
+  display: none;
 }
 
 /* Hover action buttons (duplicate / delete) */
@@ -148,6 +277,89 @@
 .canvas-step-action-btn.danger:hover {
   background: rgba(255, 31, 31, 0.08);
   color: var(--destructive);
+}
+
+/* ── Node tooltip (pure CSS) ── */
+.node-tooltip-wrap {
+  position: relative;
+}
+.node-tooltip {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 100;
+}
+.node-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #ffffff;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.06));
+}
+.node-tooltip-bottom {
+  bottom: auto;
+  top: calc(100% + 10px);
+}
+.node-tooltip-bottom::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: #ffffff;
+}
+.node-tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.node-tooltip-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #36415D;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+.node-tooltip-desc {
+  font-size: 10px;
+  font-weight: 400;
+  color: #868D9E;
+  line-height: 1.3;
+}
+.node-tooltip-kbd {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #F5F5F5;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  color: #868D9E;
+  line-height: 1.2;
+}
+.node-tooltip-wrap:hover > .node-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.35s;
+}
+/* Ensure tooltip doesn't flicker on fast mouse movement */
+.node-tooltip-wrap:not(:hover) > .node-tooltip {
+  transition-delay: 0s;
 }
 
 /* ── Canvas node hover utilities ── */
@@ -386,4 +598,638 @@
 }
 .save-toast-exit {
   animation: saveToastOut 0.2s ease-in forwards;
+}
+
+/* ─── Canvas Search Overlay ─── */
+.canvas-search-highlight .canvas-step-card,
+.canvas-search-highlight > div:first-child {
+  animation: canvasSearchPulse 1.5s ease-in-out infinite;
+}
+@keyframes canvasSearchPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.35), 0 4px 16px rgba(47, 128, 237, 0.15); }
+  50% { box-shadow: 0 0 0 8px rgba(47, 128, 237, 0.12), 0 4px 16px rgba(47, 128, 237, 0.08); }
+}
+.canvas-search-dimmed {
+  opacity: 0.25 !important;
+  transition: opacity 0.3s ease;
+}
+.react-flow__node:not(.canvas-search-dimmed):not(.canvas-search-highlight) {
+  transition: opacity 0.3s ease;
+}
+
+/* ─── Canvas Validation Indicators ─── */
+.canvas-validation-error .canvas-step-card,
+.canvas-validation-error > div:first-child {
+  box-shadow: 0 0 0 2px #FF1F1F, 0 0 8px rgba(255, 31, 31, 0.2) !important;
+}
+.canvas-validation-error::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF1F1F;
+  z-index: 20;
+  pointer-events: none;
+}
+.canvas-validation-warning .canvas-step-card,
+.canvas-validation-warning > div:first-child {
+  box-shadow: 0 0 0 2px #f59e0b, 0 0 8px rgba(245, 158, 11, 0.2) !important;
+}
+.canvas-validation-warning::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* ─── Canvas Presentation Mode ─── */
+.canvas-presentation-dimmed {
+  opacity: 0.3 !important;
+  filter: grayscale(0.4);
+  transition: opacity 0.4s ease, filter 0.4s ease;
+  pointer-events: none;
+}
+.canvas-presentation-active .canvas-step-card,
+.canvas-presentation-active > div:first-child {
+  box-shadow: 0 0 0 3px #2F80ED, 0 0 20px rgba(47, 128, 237, 0.25) !important;
+  animation: canvasPresentationGlow 2s ease-in-out infinite;
+}
+@keyframes canvasPresentationGlow {
+  0%, 100% { box-shadow: 0 0 0 3px #2F80ED, 0 0 20px rgba(47, 128, 237, 0.25); }
+  50% { box-shadow: 0 0 0 4px #2F80ED, 0 0 30px rgba(47, 128, 237, 0.35); }
+}
+.canvas-presentation-active {
+  z-index: 10 !important;
+  transition: opacity 0.4s ease;
+}
+
+/* ─── Floating Config Menus (node toolbar panels) ─── */
+
+/* Base shell — replaces inline Tailwind on the floating container */
+.canvas-config-menu {
+  position: absolute;
+  z-index: 50;
+  min-width: 240px;
+  max-width: 300px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.10),
+    0 1px 4px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* Placement variants */
+.canvas-config-menu.placement-right {
+  top: 0;
+  left: 100%;
+  margin-left: 14px;
+  animation: configMenuIn 0.2s ease-out both;
+}
+.canvas-config-menu.placement-left {
+  top: 0;
+  right: 100%;
+  margin-right: 14px;
+  animation: configMenuInFromRight 0.2s ease-out both;
+}
+.canvas-config-menu.placement-bottom {
+  top: 100%;
+  left: 0;
+  margin-top: 14px;
+  animation: configMenuInFromTop 0.2s ease-out both;
+}
+
+/* Entry animations per direction */
+@keyframes configMenuIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes configMenuInFromRight {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes configMenuInFromTop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Connector arrow (rotated square) ── */
+.canvas-config-menu-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  transform: rotate(45deg);
+  z-index: -1;
+}
+/* Arrow points left (menu is to the right of node) */
+.canvas-config-menu-arrow.arrow-left {
+  left: -6px;
+  top: 16px;
+  border-right: none;
+  border-top: none;
+}
+/* Arrow points right (menu is to the left of node) */
+.canvas-config-menu-arrow.arrow-right {
+  right: -6px;
+  top: 16px;
+  border-left: none;
+  border-bottom: none;
+}
+/* Arrow points up (menu is below node) */
+.canvas-config-menu-arrow.arrow-top {
+  top: -6px;
+  left: 20px;
+  border-bottom: none;
+  border-right: none;
+}
+
+/* ── Unified menu header ── */
+.canvas-config-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.canvas-config-menu-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.canvas-config-menu-header-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.01em;
+}
+.canvas-config-menu-header-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--secondary);
+  color: var(--muted);
+}
+.canvas-config-menu-header-close {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  color: var(--muted);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.canvas-config-menu-header-close:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+/* ── Unified dashed "Add" button ── */
+.canvas-config-menu-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 0;
+  border-radius: 8px;
+  border: 1.5px dashed var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  transition: all 0.15s ease;
+}
+.canvas-config-menu-add:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(47, 128, 237, 0.04);
+}
+
+/* ── Input menu option with left accent ── */
+.canvas-config-menu-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+  color: var(--foreground);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.canvas-config-menu-option:hover {
+  background: var(--secondary);
+}
+.canvas-config-menu-option.selected {
+  border-left-color: var(--primary);
+  background: rgba(47, 128, 237, 0.08);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ── Narrower scrollbar inside config menus ── */
+.canvas-config-menu .custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.canvas-config-menu .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+.canvas-config-menu .custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.canvas-config-menu .custom-scrollbar {
+  scrollbar-width: thin;
+}
+
+/* ── Checklist item card ── */
+.canvas-config-menu-item-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  transition: background 0.15s ease;
+}
+.canvas-config-menu-item-card.done {
+  background: var(--secondary);
+}
+
+/* Media thumbnail */
+.canvas-media-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.canvas-media-thumb-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #b0b7c8;
+}
+
+/* ─── Horizontal Output Editor (branching edit mode) ─── */
+
+/* Container bar below node handles */
+.canvas-output-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(47, 128, 237, 0.15);
+  box-shadow:
+    0 2px 12px rgba(47, 128, 237, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(6px);
+  animation: outputEditorIn 0.2s ease-out both;
+  max-height: 300px;
+  overflow: hidden;
+  width: 200px;
+}
+
+/* Scrollable option list inside the editor */
+.canvas-output-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 230px;
+  overflow-y: auto;
+  cursor: grab;
+  padding-right: 2px;
+}
+.canvas-output-list:active {
+  cursor: grabbing;
+}
+.canvas-output-list::-webkit-scrollbar {
+  width: 3px;
+}
+.canvas-output-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.canvas-output-list::-webkit-scrollbar-thumb {
+  background: rgba(47, 128, 237, 0.2);
+  border-radius: 2px;
+}
+.canvas-output-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(47, 128, 237, 0.35);
+}
+@keyframes outputEditorIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Individual editable chip */
+.canvas-output-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px 4px 8px;
+  border-radius: 8px;
+  background: rgba(47, 128, 237, 0.06);
+  border: 1px solid rgba(47, 128, 237, 0.15);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  width: 100%;
+}
+.canvas-output-chip:hover {
+  background: rgba(47, 128, 237, 0.10);
+  border-color: rgba(47, 128, 237, 0.3);
+}
+.canvas-output-chip:focus-within {
+  background: rgba(47, 128, 237, 0.08);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.12);
+}
+
+/* Small colored dot at start of chip */
+.canvas-output-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Inline text input */
+.canvas-output-chip-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--foreground);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 1px 0;
+  line-height: 1.3;
+}
+.canvas-output-chip-input::placeholder {
+  color: #b0b7c8;
+  font-weight: 400;
+}
+
+/* Delete button on chip */
+.canvas-output-chip-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  color: #b0b7c8;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.12s ease;
+}
+.canvas-output-chip:hover .canvas-output-chip-delete {
+  opacity: 1;
+}
+.canvas-output-chip-delete:hover {
+  color: var(--destructive);
+  background: rgba(255, 31, 31, 0.08);
+}
+
+/* Add output button */
+.canvas-output-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 26px;
+  border-radius: 6px;
+  border: 1.5px dashed rgba(47, 128, 237, 0.25);
+  color: #b0b7c8;
+  background: transparent;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  font-size: 10px;
+  font-weight: 500;
+}
+.canvas-output-add-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(47, 128, 237, 0.06);
+}
+
+/* ─── Rich Text Description (Tiptap) ─── */
+
+/* Editor content area */
+.rt-editor-content {
+  font-size: 11px;
+  line-height: 1.625;
+  color: var(--muted);
+  outline: none;
+  min-height: 28px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.rt-editor-content:focus {
+  outline: none;
+}
+/* Placeholder */
+.rt-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #cbd5e1;
+  pointer-events: none;
+  height: 0;
+}
+/* Typography within editor */
+.rt-editor-content p {
+  margin: 0;
+}
+.rt-editor-content h2 {
+  font-size: 12px;
+  font-weight: 700;
+  margin: 4px 0 2px;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+.rt-editor-content h3 {
+  font-size: 11px;
+  font-weight: 650;
+  margin: 3px 0 1px;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+.rt-editor-content ul {
+  margin: 2px 0;
+  padding-left: 16px;
+  list-style-type: disc;
+}
+.rt-editor-content ol {
+  margin: 2px 0;
+  padding-left: 16px;
+  list-style-type: decimal;
+}
+.rt-editor-content li {
+  margin: 1px 0;
+}
+.rt-editor-content li p {
+  margin: 0;
+}
+.rt-editor-content mark {
+  border-radius: 2px;
+  padding: 0 2px;
+}
+.rt-link {
+  color: #2F80ED;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* Fixed toolbar at top of editor */
+.rt-fixed-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #f8f9fb;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  padding: 2px 3px;
+  gap: 1px;
+  margin-bottom: 4px;
+}
+.rt-bubble-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.rt-bubble-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #5E677D;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.rt-bubble-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #36415D;
+}
+.rt-bubble-btn.active {
+  background: rgba(47, 128, 237, 0.12);
+  color: #2F80ED;
+}
+.rt-bubble-sep {
+  width: 1px;
+  height: 14px;
+  margin: 0 1px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 1px;
+}
+
+/* Highlight color picker */
+.rt-highlight-wrapper {
+  position: relative;
+}
+.rt-highlight-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 5px 6px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+}
+.rt-highlight-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease;
+}
+.rt-highlight-swatch:hover {
+  transform: scale(1.2);
+}
+.rt-highlight-remove {
+  background: #fff !important;
+  border-color: rgba(255, 31, 31, 0.3);
+  color: #FF1F1F;
+}
+.rt-color-swatch {
+  border: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Link input row */
+.rt-link-input-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.rt-link-input {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid #C2C9DB;
+  border-radius: 5px;
+  outline: none;
+  width: 160px;
+  height: 24px;
+  color: #36415D;
+}
+.rt-link-input:focus {
+  border-color: #2E80ED;
+}
+
+/* Non-editable display — make sure cursor is grab for dragging */
+.rt-description-wrapper .ProseMirror:not(.ProseMirror-focused) {
+  cursor: grab;
+}
+/* Prevent node-drag when editing */
+.rt-description-wrapper .ProseMirror-focused {
+  cursor: text;
 }

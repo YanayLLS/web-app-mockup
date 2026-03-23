@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Bug, X, RotateCcw, ChevronRight, ChevronDown, ChevronUp, Search, Play, FileText,
   Sparkles, Shield, Share2, Check, Copy, Star, Clock, Monitor, Tablet, Smartphone,
-  Zap, Camera, Trash2, Square, SkipForward, ArrowLeftRight, ListOrdered,
+  Zap, Camera, Trash2, Square, SkipForward, ArrowLeftRight, ListOrdered, SlidersHorizontal,
 } from 'lucide-react';
 import { useRole, ROLES, type UserRole } from '../contexts/RoleContext';
 
@@ -113,7 +113,7 @@ const viewportPresets = [
   { id: 'phone', label: 'Phone', w: 375, Icon: Smartphone },
 ];
 
-type TabId = 'pages' | 'features' | 'roles';
+type TabId = 'pages' | 'features' | 'roles' | 'variables';
 
 // ==================== COMPONENT ====================
 export function DebugMenu() {
@@ -160,6 +160,20 @@ export function DebugMenu() {
 
   // Feature 9: Pinned items
   const [pinnedItems, setPinnedItems] = useState<string[]>(() => lsGet(LS.PINS, []));
+
+  // Feature 10: Debug variables
+  const [debugVars, setDebugVars] = useState<Record<string, number>>({
+    aiUsage: 75, // 0-100 percentage
+  });
+  const setDebugVar = (key: string, value: number) => {
+    setDebugVars(prev => ({ ...prev, [key]: value }));
+    // Dispatch events based on variable
+    if (key === 'aiUsage') {
+      const max = 20000;
+      const used = value >= 100 ? max : Math.round((value / 100) * max);
+      window.dispatchEvent(new CustomEvent('flow-debug', { detail: { action: 'set-ai-credits', used, max: value === 0 ? 0 : max } }));
+    }
+  };
 
 
   // Feature 12: Auto-hide button
@@ -331,6 +345,13 @@ export function DebugMenu() {
       { id: 'vp-tablet', label: 'Viewport: Tablet', desc: '768px', category: 'Viewport', action: () => setViewport('tablet') },
       { id: 'vp-phone', label: 'Viewport: Phone', desc: '375px', category: 'Viewport', action: () => setViewport('phone') },
       { id: 'vp-reset', label: 'Viewport: Reset', desc: 'Clear viewport override', category: 'Viewport', action: () => setViewport(null) },
+      {
+        id: 'vars-tab',
+        label: 'Open Variables Panel',
+        desc: 'Switch to the Variables tab to control debug state',
+        category: 'State',
+        action: () => { setActiveTab('variables'); },
+      },
       ...Object.entries(ROLES).map(([id, role]) => ({
         id: `role-${id}`, label: `Switch to ${role.label}`, desc: role.description, category: 'Roles', action: () => setRole(id as UserRole),
       })),
@@ -706,10 +727,12 @@ export function DebugMenu() {
   };
 
   // ==================== TAB BADGE COUNTS ====================
+  const debugVarCount = Object.keys(debugVars).length;
   const tabBadges: Record<TabId, number> = {
     pages: totalAppPages + totalWebPages,
     features: totalFeatures,
     roles: totalRoles,
+    variables: debugVarCount,
   };
 
 
@@ -763,6 +786,7 @@ export function DebugMenu() {
               { id: 'pages' as TabId, label: 'Pages', Icon: FileText, color: '#2F80ED' },
               { id: 'features' as TabId, label: 'Demos', Icon: Sparkles, color: '#2F80ED' },
               { id: 'roles' as TabId, label: 'Roles', Icon: Shield, color: '#11E874' },
+              { id: 'variables' as TabId, label: 'Vars', Icon: SlidersHorizontal, color: '#F59E0B' },
             ]).map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className="flex-1 flex items-center justify-center gap-1 py-2 transition-colors hover:bg-black/5"
@@ -994,6 +1018,77 @@ export function DebugMenu() {
                 </div>
               )}
 
+              {/* ==================== VARIABLES TAB ==================== */}
+              {activeTab === 'variables' && (
+                <div style={{ padding: '8px 8px' }}>
+                  <div style={{ margin: '0 4px 10px', fontSize: '11px', color: '#868D9E' }}>
+                    Adjust variables to preview different states across the app.
+                  </div>
+
+                  {/* AI Usage */}
+                  <div style={{
+                    margin: '0 4px 8px', padding: '10px 12px', backgroundColor: '#FFFBF0',
+                    border: '1px solid #F59E0B33', borderRadius: '8px',
+                  }}>
+                    <div className="flex items-center justify-between" style={{ marginBottom: '6px' }}>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#36415D' }}>AI Usage</div>
+                        <div style={{ fontSize: '11px', color: '#868D9E', marginTop: '1px' }}>Controls AI credit limit state in the flow editor</div>
+                      </div>
+                      <span style={{
+                        fontSize: '13px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', minWidth: '38px', textAlign: 'right',
+                        color: debugVars.aiUsage >= 100 ? '#FF1F1F' : debugVars.aiUsage >= 80 ? '#F59E0B' : '#2F80ED',
+                      }}>
+                        {debugVars.aiUsage}%
+                      </span>
+                    </div>
+                    <input
+                      type="range" min={0} max={100} step={5}
+                      value={debugVars.aiUsage}
+                      onChange={(e) => setDebugVar('aiUsage', Number(e.target.value))}
+                      className="debug-var-slider"
+                      style={{ width: '100%', accentColor: debugVars.aiUsage >= 100 ? '#FF1F1F' : debugVars.aiUsage >= 80 ? '#F59E0B' : '#2F80ED' }}
+                    />
+                    <div className="flex items-center justify-between" style={{ marginTop: '4px' }}>
+                      <span style={{ fontSize: '10px', color: '#868D9E' }}>0% — No usage</span>
+                      <span style={{ fontSize: '10px', color: '#868D9E' }}>100% — Limit reached</span>
+                    </div>
+                    {/* Quick presets */}
+                    <div className="flex gap-1.5" style={{ marginTop: '8px' }}>
+                      {[
+                        { label: '0%', value: 0 },
+                        { label: '50%', value: 50 },
+                        { label: '80%', value: 80 },
+                        { label: '100%', value: 100 },
+                      ].map((p) => (
+                        <button key={p.value}
+                          onClick={() => setDebugVar('aiUsage', p.value)}
+                          className="flex-1 rounded transition-colors"
+                          style={{
+                            padding: '3px 0', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                            backgroundColor: debugVars.aiUsage === p.value ? '#F59E0B22' : '#F5F5F5',
+                            color: debugVars.aiUsage === p.value ? '#D97706' : '#868D9E',
+                            border: debugVars.aiUsage === p.value ? '1px solid #F59E0B44' : '1px solid #E9E9E9',
+                          }}
+                          onMouseEnter={(e) => { if (debugVars.aiUsage !== p.value) e.currentTarget.style.backgroundColor = '#E9E9E9'; }}
+                          onMouseLeave={(e) => { if (debugVars.aiUsage !== p.value) e.currentTarget.style.backgroundColor = '#F5F5F5'; }}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Placeholder for future variables */}
+                  <div style={{
+                    margin: '0 4px', padding: '16px', border: '1px dashed #C2C9DB', borderRadius: '8px',
+                    textAlign: 'center', color: '#868D9E', fontSize: '11px',
+                  }}>
+                    More variables will appear here as they're added.
+                  </div>
+                </div>
+              )}
+
               {/* ==================== ROLES TAB ==================== */}
               {activeTab === 'roles' && (
                 <div style={{ padding: '4px 4px' }}>
@@ -1086,6 +1181,19 @@ export function DebugMenu() {
         @keyframes debug-glow {
           0% { box-shadow: 0 2px 12px rgba(118,75,162,0.5), 0 0 20px rgba(102,126,234,0.3); }
           100% { box-shadow: 0 2px 16px rgba(240,147,251,0.6), 0 0 28px rgba(118,75,162,0.4); }
+        }
+        .debug-var-slider {
+          -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px;
+          background: #E9E9E9; outline: none; cursor: pointer;
+        }
+        .debug-var-slider::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+          border-radius: 50%; background: white; border: 2px solid currentColor;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.15); cursor: pointer;
+        }
+        .debug-var-slider::-moz-range-thumb {
+          width: 16px; height: 16px; border-radius: 50%; background: white;
+          border: 2px solid currentColor; box-shadow: 0 1px 4px rgba(0,0,0,0.15); cursor: pointer;
         }
       `}</style>
     </>,

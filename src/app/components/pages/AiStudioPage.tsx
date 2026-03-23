@@ -234,6 +234,19 @@ export function AiStudioPage() {
   // AI Usage tracking - now using credits instead of tokens
   const [totalCreditsUsed, setTotalCreditsUsed] = useState(15000); // Start at 75%
   const [maxCreditLimit, setMaxCreditLimit] = useState(20000); // Changed to 20,000
+
+  // Listen for debug menu AI usage changes
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.action === 'set-ai-credits') {
+        setTotalCreditsUsed(detail.used);
+        if (detail.max != null) setMaxCreditLimit(detail.max);
+      }
+    };
+    window.addEventListener('flow-debug', handler);
+    return () => window.removeEventListener('flow-debug', handler);
+  }, []);
   
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>({
     checkbox: 35,
@@ -447,8 +460,10 @@ export function AiStudioPage() {
   const confirmPublish = () => {
     console.log('Publishing knowledge sources...');
     setShowPublishModal(false);
-    // Simulate credit usage increase after publish
-    setTotalCreditsUsed(Math.min(totalCreditsUsed + 2000, maxCreditLimit + 5000));
+    if (!isMaxed) {
+      // Simulate credit usage increase after publish
+      setTotalCreditsUsed(Math.min(totalCreditsUsed + 2000, maxCreditLimit + 5000));
+    }
   };
 
   const handleDiscard = () => {
@@ -487,6 +502,7 @@ export function AiStudioPage() {
   };
 
   const handleSendMessage = () => {
+    if (isMaxed) return;
     if (chatMessage.trim() || attachedFiles.length > 0) {
       const userMsg: ChatMessage = {
         role: 'user',
@@ -1872,7 +1888,7 @@ export function AiStudioPage() {
                       className="w-[36px] h-[36px] rounded-lg flex items-center justify-center hover:bg-primary/10 transition-colors shrink-0"
                       style={{ backgroundColor: chatMessage.trim() || attachedFiles.length > 0 ? 'var(--primary)' : 'transparent' }}
                       onClick={handleSendMessage}
-                      disabled={!chatMessage.trim() && attachedFiles.length === 0}
+                      disabled={isMaxed || (!chatMessage.trim() && attachedFiles.length === 0)}
                       title="Send message"
                     >
                       <Send

@@ -165,6 +165,8 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAnimationsPanelOpen, setIsAnimationsPanelOpen] = useState(false);
   const [isConfigurationsPanelOpen, setIsConfigurationsPanelOpen] = useState(false);
+  // Persist canvas param across tab switches so the flow editor stays open
+  const [savedCanvasId, setSavedCanvasId] = useState<string | null>(null);
 
   // Wrappers that keep URL params in sync with modal state
   const openSettingsModal = (open: boolean) => {
@@ -737,13 +739,20 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
                 } else if (tabId === 'media') {
                   openMediaLibraryModal(true);
                 } else {
+                  // Save canvas param when leaving KB tab so we can restore it
+                  if (selectedProjectTab === 'overview') {
+                    const canvasParam = getUrlParam('canvas');
+                    setSavedCanvasId(canvasParam);
+                  }
                   const routeMap: { [key: string]: string } = {
                     'overview': 'knowledgebase',
                     'analytics': 'analytics',
                     'activity': 'activity',
                   };
                   const route = routeMap[tabId] || tabId;
-                  navigate(`/web/project/${selectedProject}/${route}`);
+                  // Restore canvas param when returning to KB tab
+                  const search = tabId === 'overview' && savedCanvasId ? `?canvas=${savedCanvasId}` : '';
+                  navigate(`/web/project/${selectedProject}/${route}${search}`);
                 }
               }}
             />
