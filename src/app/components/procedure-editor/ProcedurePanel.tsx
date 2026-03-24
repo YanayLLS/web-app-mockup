@@ -43,6 +43,8 @@ interface ProcedurePanelProps {
   checkpointCount: number;
   hasCritical: boolean;
   onOpenValidation: () => void;
+  layout?: 'topleft';
+  tocEnabled?: boolean;
 }
 
 export function ProcedurePanel({
@@ -82,7 +84,9 @@ export function ProcedurePanel({
   onOpenFlowEditor,
   checkpointCount,
   hasCritical,
-  onOpenValidation
+  onOpenValidation,
+  layout,
+  tocEnabled
 }: ProcedurePanelProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -238,18 +242,19 @@ export function ProcedurePanel({
     <>
     <CardWrapper
       data-tutorial="step-card"
-      className={`content-stretch flex items-end justify-end relative shrink-0 transition-all duration-300 ${isCollapsed ? 'w-auto' : 'w-full sm:w-[700px] max-w-[calc(100vw-32px)]'} z-10`}
-      style={{ 
+      className={`content-stretch flex ${layout === 'topleft' ? 'items-start justify-start flex-col' : 'items-end justify-end'} relative shrink-0 transition-all duration-300 ${layout === 'topleft' ? 'w-[260px]' : (isCollapsed ? 'w-auto' : 'w-full sm:w-[700px] max-w-[calc(100vw-32px)]')} z-10`}
+      style={{
         filter: `drop-shadow(0px 4px 48.9px ${currentShadowColor})`,
         transition: 'filter 0.3s ease-in-out',
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        ...(layout === 'topleft' ? { height: isCollapsed ? 'auto' : '100%', maxHeight: '720px' } : {})
       }}
       {...cardProps}
     >
-      <div className="bg-[rgba(0,0,0,0.5)] flex-[1_0_0] min-h-px min-w-px relative rounded-[10px]">
+      <div className={`bg-[rgba(0,0,0,0.5)] ${layout === 'topleft' ? (isCollapsed ? 'w-full' : 'w-full h-full') : 'flex-[1_0_0] min-h-px min-w-px'} relative rounded-[10px]`}>
         <div aria-hidden="true" className="absolute border border-solid border-white/20 inset-0 pointer-events-none rounded-[10px]" />
-        <div className="flex flex-col items-center justify-center size-full p-[8px] m-[0px]">
-          <div className="content-stretch flex flex-col items-center justify-center relative w-full" style={{ gap: 'var(--spacing-md)', zIndex: 1 }}>
+        <div className={`flex flex-col items-center ${layout === 'topleft' && !isCollapsed ? 'h-full' : layout !== 'topleft' ? 'justify-center size-full' : ''} p-[8px] m-[0px]`}>
+          <div className={`content-stretch flex flex-col items-center ${layout === 'topleft' && !isCollapsed ? 'h-full' : layout !== 'topleft' ? 'justify-center' : ''} relative w-full`} style={{ gap: 'var(--spacing-md)', zIndex: 1 }}>
             <div className="content-stretch flex items-end justify-between relative shrink-0 w-full" style={{ zIndex: 2 }}>
               <div className="content-stretch flex flex-col items-start w-full" style={{ zIndex: 3 }}>
                   {/* Header */}
@@ -330,8 +335,8 @@ export function ProcedurePanel({
                       </p>
                     </button>
                     
-                    {/* Checkpoint badge */}
-                    {checkpointCount > 0 && (
+                    {/* Checkpoint badge — hidden in topleft layout */}
+                    {checkpointCount > 0 && layout !== 'topleft' && (
                       <button
                         onClick={onOpenValidation}
                         className="relative shrink-0 cursor-pointer rounded-lg transition-all flex items-center"
@@ -364,22 +369,22 @@ export function ProcedurePanel({
                     )}
 
                     <button
-                      onClick={onToggleTOC}
-                      className="relative shrink-0 cursor-pointer rounded-lg transition-all"
+                      onClick={tocEnabled ? onToggleTOC : undefined}
+                      className={`relative shrink-0 rounded-lg transition-all ${tocEnabled ? 'cursor-pointer' : 'cursor-default'}`}
                       style={{
                         padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)',
-                        background: isTOCOpen ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                        border: isTOCOpen ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent',
+                        background: isTOCOpen && tocEnabled ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                        border: isTOCOpen && tocEnabled ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent',
                       }}
                       onMouseEnter={(e) => {
-                        if (!isTOCOpen) {
+                        if (tocEnabled && !isTOCOpen) {
                           e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                         }
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = isTOCOpen ? 'rgba(255, 255, 255, 0.15)' : 'transparent';
+                        e.currentTarget.style.background = isTOCOpen && tocEnabled ? 'rgba(255, 255, 255, 0.15)' : 'transparent';
                       }}
-                      title={isTOCOpen ? "Close Table of Contents" : "Open Table of Contents"}
+                      title={!tocEnabled ? `Step ${stepIndex + 1} of ${totalSteps}` : isTOCOpen ? "Close Table of Contents" : "Open Table of Contents"}
                     >
                       <p
                         className="text-white whitespace-nowrap text-xs sm:text-sm font-medium"
@@ -438,11 +443,11 @@ Step {stepIndex + 1} of {totalSteps}
 
                   {/* Text box - Hidden when collapsed */}
                   {!isCollapsed && (
-                    <div 
-                      className="w-full flex flex-col relative"
-                      style={{ 
+                    <div
+                      className={`w-full flex flex-col relative ${layout === 'topleft' ? 'flex-1 min-h-0 overflow-y-auto' : ''}`}
+                      style={{
                         gap: 'var(--spacing-md)',
-                        minHeight: '61px',
+                        minHeight: layout === 'topleft' ? undefined : '61px',
                         pointerEvents: 'auto',
                         zIndex: 100,
                         isolation: 'isolate',
@@ -643,19 +648,24 @@ Step {stepIndex + 1} of {totalSteps}
                                 position: 'relative'
                               }}
                             >
-                              <div 
+                              <div
                                 className="text-white whitespace-pre-wrap overflow-hidden"
                                 style={{
-                                  
-                                  fontSize: 'var(--text-sm)',
+
+                                  fontSize: layout === 'topleft' ? '12px' : 'var(--text-sm)',
                                   fontWeight: 'var(--font-weight-normal)',
-                                  lineHeight: '1.5',
+                                  lineHeight: layout === 'topleft' ? '1.55' : '1.5',
                                   pointerEvents: 'none',
-                                  display: '-webkit-box',
-                                  WebkitBoxOrient: 'vertical',
-                                  WebkitLineClamp: isDescriptionExpanded ? 'unset' : 3,
-                                  maxHeight: isDescriptionExpanded ? '500px' : 'none',
-                                  overflowY: isDescriptionExpanded ? 'auto' : 'hidden'
+                                  ...(layout === 'topleft' ? {
+                                    overflowY: 'auto' as const,
+                                    maxHeight: 'none',
+                                  } : {
+                                    display: '-webkit-box',
+                                    WebkitBoxOrient: 'vertical' as const,
+                                    WebkitLineClamp: isDescriptionExpanded ? 'unset' : 3,
+                                    maxHeight: isDescriptionExpanded ? '500px' : 'none',
+                                    overflowY: isDescriptionExpanded ? 'auto' as const : 'hidden' as const,
+                                  })
                                 }}
                               >
                                 {step.description}
@@ -742,11 +752,11 @@ Step {stepIndex + 1} of {totalSteps}
                       )}
                       
                       {/* Options Container */}
-                      <div 
+                      <div
                         ref={optionsScrollRef}
                         onScroll={checkScrollButtons}
-                        className="content-stretch cursor-pointer flex flex-[1_0_0] h-full items-center justify-center min-h-px min-w-px overflow-x-auto overflow-y-clip relative scrollbar-hide"
-                        style={{ 
+                        className={`content-stretch cursor-pointer flex flex-[1_0_0] h-full items-center justify-center min-h-px min-w-px ${layout === 'topleft' ? 'flex-wrap overflow-hidden' : 'overflow-x-auto overflow-y-clip'} relative scrollbar-hide`}
+                        style={{
                           gap: 'var(--spacing-xs)',
                           padding: 'var(--spacing-sm)'
                         }}
@@ -901,7 +911,7 @@ Step {stepIndex + 1} of {totalSteps}
             {/* Popups Display - Removed, popups are now accessed via Warning button */}
 
             {/* Controls or Completion UI */}
-            <div data-tutorial="controls" className="content-stretch flex flex-col items-center relative shrink-0 w-full" style={{ pointerEvents: 'auto', zIndex: 4, marginTop: 'var(--spacing-lg)' }}>
+            <div data-tutorial="controls" className="content-stretch flex flex-col items-center relative shrink-0 w-full" style={{ pointerEvents: 'auto', zIndex: 4, marginTop: layout === 'topleft' && isCollapsed ? 'var(--spacing-sm)' : 'var(--spacing-lg)' }}>
               {isLastStep && !editingEnabled ? (
                 /* Completion UI */
                 <div 

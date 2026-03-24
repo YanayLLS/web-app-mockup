@@ -655,6 +655,7 @@ export function ProcedureEditor() {
   const urlMode = searchParams.get('mode'); // 'view' | 'edit' | null
   const isPreviewMode = searchParams.get('preview') === 'true';
   const activeConfigName = searchParams.get('config') || null;
+  const panelLayout = searchParams.get('layout') as 'topleft' | null; // 'topleft' = narrow tall card at top-left
   const hasProcedureId = typeof window !== 'undefined' && window.location.pathname.includes('/procedure-editor/');
   const procedureIdFromUrl = getProcedureIdFromUrl();
 
@@ -705,6 +706,7 @@ export function ProcedureEditor() {
   const [showPartsCatalog, setShowPartsCatalog] = useState(false);
   const [showHotspotsPanel, setShowHotspotsPanel] = useState(false);
   const [showTOC, setShowTOC] = useState(false);
+  const [tocFeatureEnabled, setTocFeatureEnabled] = useState(false);
   const [showPopupPanel, setShowPopupPanel] = useState(false);
   const [showValidationPanel, setShowValidationPanel] = useState(false);
   const [isSelectingValidationParts, setIsSelectingValidationParts] = useState(false);
@@ -1092,6 +1094,19 @@ export function ProcedureEditor() {
     window.addEventListener('procedure-demo-start', handler);
     return () => window.removeEventListener('procedure-demo-start', handler);
   }, [procDemos]);
+
+  // Listen for ToC feature flag from debug menu
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.action === 'set-toc-enabled') {
+        setTocFeatureEnabled(detail.enabled);
+        if (!detail.enabled) setShowTOC(false); // close TOC if flag turned off
+      }
+    };
+    window.addEventListener('flow-debug', handler);
+    return () => window.removeEventListener('flow-debug', handler);
+  }, []);
 
   // Notify parent (DebugMenu) that procedure demos are available
   useEffect(() => {
@@ -2486,8 +2501,8 @@ export function ProcedureEditor() {
             </motion.div>
           )}
 
-          {/* Spacer - Only show when not in AR placement or animation editing */}
-          {!showARPlacement && !isAnimationEditorOpen && (
+          {/* Spacer - Only show when not in AR placement or animation editing and not topleft layout */}
+          {!showARPlacement && !isAnimationEditorOpen && panelLayout !== 'topleft' && (
             <div className="flex-[1_0_0] min-h-px min-w-px w-full" />
           )}
 
@@ -2500,9 +2515,13 @@ export function ProcedureEditor() {
               availableTargets={availableTargets}
             />
           ) : (
-            <div className="w-full flex justify-center relative z-10 px-4 sm:px-0">
-                {/* Step card - Always centered */}
+            <div className={panelLayout === 'topleft'
+              ? 'absolute top-3 left-3 z-10'
+              : 'w-full flex justify-center relative z-10 px-4 sm:px-0'
+            } style={panelLayout === 'topleft' ? { height: 'calc(100% - 24px)', pointerEvents: 'none' } : undefined}>
+                {/* Step card */}
                 <ProcedurePanel
+                  layout={panelLayout || undefined}
                   step={currentStep}
                   stepIndex={tocDisplayNumber - 1}
                   totalSteps={tocTotalSteps}
@@ -2528,7 +2547,8 @@ export function ProcedureEditor() {
                   stepPopAnimation={stepPopAnimation}
                   flashStepShadow={flashStepShadow}
                   allSteps={steps}
-                  onToggleTOC={() => setShowTOC(!showTOC)}
+                  onToggleTOC={() => { if (tocFeatureEnabled) setShowTOC(!showTOC); }}
+                  tocEnabled={tocFeatureEnabled}
                   isTOCOpen={showTOC}
                   isFirstVisibleStep={isFirstVisibleStep}
                   onChangeColor={handleChangeColor}
@@ -2586,12 +2606,13 @@ export function ProcedureEditor() {
                   </div>
                 )}
 
-                {/* Media Viewer - Positioned absolutely to attach to left side of step card */}
+                {/* Media Viewer - Positioned absolutely to attach to left side of step card (hidden in topleft layout) */}
                 <div
-                  className="absolute right-1/2 hidden lg:flex flex-col justify-end pointer-events-none h-full"
+                  className={`absolute right-1/2 hidden ${panelLayout === 'topleft' ? '' : 'lg:flex'} flex-col justify-end pointer-events-none h-full`}
                   style={{
                     marginRight: 'calc(350px + 8px)',
-                    paddingBottom: 'var(--spacing-sm)'
+                    paddingBottom: 'var(--spacing-sm)',
+                    ...(panelLayout === 'topleft' ? { display: 'none' } : {})
                   }}
                 >
                   <div className="pointer-events-auto max-h-full flex flex-col">
@@ -2607,8 +2628,8 @@ export function ProcedureEditor() {
             </div>
           )}
 
-          {/* Configuration indicator badge in viewer mode */}
-          {!editingEnabled && activeConfigName && !isAnimationEditorOpen && !showARPlacement && (
+          {/* Configuration indicator badge in viewer mode — hidden in topleft layout (overlaps the card) */}
+          {!editingEnabled && activeConfigName && !isAnimationEditorOpen && !showARPlacement && panelLayout !== 'topleft' && (
             <div
               className="absolute top-3 left-3 z-10 flex items-center"
               style={{

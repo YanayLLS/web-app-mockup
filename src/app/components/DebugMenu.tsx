@@ -35,6 +35,7 @@ const appPages: PageLink[] = [
   { label: 'AI Chat', path: '/app/ai-chat' },
   { label: '3D Flow (Edit)', path: '/app/procedure-editor/p1' },
   { label: '3D Flow (View)', path: '/app/procedure-editor/generator-maintenance?mode=view' },
+  { label: '3D Flow (Top-Left)', path: '/app/procedure-editor/generator-maintenance?mode=view&layout=topleft' },
   { label: 'Digital Twin Viewer', path: '/app/3d-viewer' },
   { label: 'Digital Twin Editor', path: '/app/3d-viewer?mode=editor' },
   { label: 'Immersive Room', path: '/app/immersive' },
@@ -164,6 +165,7 @@ export function DebugMenu() {
   // Feature 10: Debug variables
   const [debugVars, setDebugVars] = useState<Record<string, number>>({
     aiUsage: 75, // 0-100 percentage
+    tocEnabled: 0, // 0 = false, 1 = true — feature flag for Table of Contents in procedure viewer
   });
   const setDebugVar = (key: string, value: number) => {
     setDebugVars(prev => ({ ...prev, [key]: value }));
@@ -172,6 +174,9 @@ export function DebugMenu() {
       const max = 20000;
       const used = value >= 100 ? max : Math.round((value / 100) * max);
       window.dispatchEvent(new CustomEvent('flow-debug', { detail: { action: 'set-ai-credits', used, max: value === 0 ? 0 : max } }));
+    }
+    if (key === 'tocEnabled') {
+      window.dispatchEvent(new CustomEvent('flow-debug', { detail: { action: 'set-toc-enabled', enabled: value === 1 } }));
     }
   };
 
@@ -1076,6 +1081,37 @@ export function DebugMenu() {
                           {p.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Table of Contents */}
+                  <div style={{
+                    margin: '0 4px 8px', padding: '10px 12px', backgroundColor: '#F0F7FF',
+                    border: '1px solid #2F80ED33', borderRadius: '8px',
+                  }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#36415D' }}>Table of Contents</div>
+                        <div style={{ fontSize: '11px', color: '#868D9E', marginTop: '1px' }}>Show ToC panel in procedure viewer step card</div>
+                      </div>
+                      <label className="relative" style={{ width: '36px', height: '20px', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={debugVars.tocEnabled === 1}
+                          onChange={(e) => setDebugVar('tocEnabled', e.target.checked ? 1 : 0)}
+                          style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute', inset: 0, borderRadius: '10px', transition: 'background 0.2s',
+                          backgroundColor: debugVars.tocEnabled === 1 ? '#2F80ED' : '#C2C9DB',
+                        }}>
+                          <span style={{
+                            position: 'absolute', top: '2px', left: debugVars.tocEnabled === 1 ? '18px' : '2px',
+                            width: '16px', height: '16px', borderRadius: '50%', backgroundColor: 'white',
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                          }} />
+                        </span>
+                      </label>
                     </div>
                   </div>
 
