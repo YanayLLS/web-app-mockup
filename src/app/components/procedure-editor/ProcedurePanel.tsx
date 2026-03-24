@@ -103,6 +103,7 @@ export function ProcedurePanel({
   const [cameraAnimationEnabled, setCameraAnimationEnabled] = useState(true);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [inlineMediaIndex, setInlineMediaIndex] = useState(0);
   const [editingActionIndex, setEditingActionIndex] = useState<number | null>(null);
   const [editingActionLabel, setEditingActionLabel] = useState('');
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -153,6 +154,11 @@ export function ProcedurePanel({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [checkScrollButtons]);
+
+  // Reset inline media index when step changes
+  useEffect(() => {
+    setInlineMediaIndex(0);
+  }, [step.id]);
 
   // Sync local state with step props when not editing
   useEffect(() => {
@@ -244,14 +250,18 @@ export function ProcedurePanel({
       data-tutorial="step-card"
       className={`content-stretch flex ${layout === 'topleft' ? 'items-start justify-start flex-col' : 'items-end justify-end'} relative shrink-0 transition-all duration-300 ${layout === 'topleft' ? 'w-[260px]' : (isCollapsed ? 'w-auto' : 'w-full sm:w-[700px] max-w-[calc(100vw-32px)]')} z-10`}
       style={{
-        filter: `drop-shadow(0px 4px 48.9px ${currentShadowColor})`,
-        transition: 'filter 0.3s ease-in-out',
         pointerEvents: 'auto',
         ...(layout === 'topleft' ? { height: isCollapsed ? 'auto' : '100%', maxHeight: '720px' } : {})
       }}
       {...cardProps}
     >
-      <div className={`bg-[rgba(0,0,0,0.5)] ${layout === 'topleft' ? (isCollapsed ? 'w-full' : 'w-full h-full') : 'flex-[1_0_0] min-h-px min-w-px'} relative rounded-[10px]`}>
+      <div
+        className={`bg-[rgba(0,0,0,0.5)] ${layout === 'topleft' ? (isCollapsed ? 'w-full' : 'w-full h-full') : 'flex-[1_0_0] min-h-px min-w-px'} relative rounded-[10px]`}
+        style={{
+          boxShadow: `0px 4px 48.9px ${currentShadowColor}`,
+          transition: 'box-shadow 0.3s ease-in-out',
+        }}
+      >
         <div aria-hidden="true" className="absolute border border-solid border-white/20 inset-0 pointer-events-none rounded-[10px]" />
         <div className={`flex flex-col items-center ${layout === 'topleft' && !isCollapsed ? 'h-full' : layout !== 'topleft' ? 'justify-center size-full' : ''} p-[8px] m-[0px]`}>
           <div className={`content-stretch flex flex-col items-center ${layout === 'topleft' && !isCollapsed ? 'h-full' : layout !== 'topleft' ? 'justify-center' : ''} relative w-full`} style={{ gap: 'var(--spacing-md)', zIndex: 1 }}>
@@ -395,23 +405,6 @@ export function ProcedurePanel({
                       >
 Step {stepIndex + 1} of {totalSteps}
                       </p>
-                      {/* GAP 3 (FR55-57): Purple badge when step has a configuration */}
-                      {step.configurationName && (
-                        <span
-                          className="ml-2 hidden sm:inline-flex items-center rounded-full"
-                          style={{
-                            fontSize: '10px',
-                            
-                            fontWeight: 600,
-                            color: 'white',
-                            backgroundColor: '#2F80ED',
-                            padding: '1px 8px',
-                            lineHeight: '16px',
-                          }}
-                        >
-                          {step.configurationName}
-                        </span>
-                      )}
                     </button>
                     <div className="flex flex-[1_0_0] flex-row items-center self-stretch">
                       <div className="flex-[1_0_0] h-full min-h-px min-w-px" />
@@ -732,6 +725,75 @@ Step {stepIndex + 1} of {totalSteps}
                 </div>
               </div>
             </div>
+
+            {/* Inline Media — shown inside card in topleft layout */}
+            {layout === 'topleft' && !isCollapsed && step.mediaFiles.length > 0 && (
+              <div className="relative shrink-0 w-full" style={{ zIndex: 3 }}>
+                <div
+                  className="w-full rounded-lg overflow-hidden relative"
+                  style={{ aspectRatio: '4/3', background: 'rgba(0,0,0,0.6)' }}
+                >
+                  {/* Current media */}
+                  {step.mediaFiles[inlineMediaIndex]?.type.startsWith('image') ? (
+                    <img
+                      src={step.mediaFiles[inlineMediaIndex].url}
+                      alt={step.mediaFiles[inlineMediaIndex].name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : step.mediaFiles[inlineMediaIndex]?.type.startsWith('video') ? (
+                    <video
+                      src={step.mediaFiles[inlineMediaIndex].url}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      controls
+                    />
+                  ) : null}
+
+                  {/* Nav arrows (only if multiple) */}
+                  {step.mediaFiles.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setInlineMediaIndex((inlineMediaIndex - 1 + step.mediaFiles.length) % step.mediaFiles.length)}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-0.5 transition-colors cursor-pointer"
+                      >
+                        <ChevronLeft className="size-3.5 text-white" />
+                      </button>
+                      <button
+                        onClick={() => setInlineMediaIndex((inlineMediaIndex + 1) % step.mediaFiles.length)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-0.5 transition-colors cursor-pointer"
+                      >
+                        <ChevronRight className="size-3.5 text-white" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Dots indicator */}
+                  {step.mediaFiles.length > 1 && (
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                      {step.mediaFiles.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setInlineMediaIndex(i)}
+                          className="rounded-full transition-all cursor-pointer"
+                          style={{
+                            width: i === inlineMediaIndex ? '12px' : '5px',
+                            height: '5px',
+                            background: i === inlineMediaIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Caption */}
+                <p
+                  className="text-white/60 text-center truncate mt-1"
+                  style={{ fontSize: '10px' }}
+                >
+                  {step.mediaFiles[inlineMediaIndex]?.name}
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons - Always show if there are actions or editing is enabled, and not collapsed */}
             {!isCollapsed && (step.actions.length > 0 || editingEnabled) && (

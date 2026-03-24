@@ -215,7 +215,10 @@ const sampleSteps: Step[] = [
         arrowDirection: 'up',
       },
     ],
-    mediaFiles: [],
+    mediaFiles: [
+      { id: 'sm-1a', name: 'Lockout Tagout Reference', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&h=300&fit=crop', size: 245000 },
+      { id: 'sm-1b', name: 'PPE Checklist Photo', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop', size: 312000 },
+    ],
   },
   {
     id: sampleStepIds.s2,
@@ -254,7 +257,9 @@ const sampleSteps: Step[] = [
         arrowDirection: 'up',
       },
     ],
-    mediaFiles: [],
+    mediaFiles: [
+      { id: 'sm-2a', name: 'Generator Housing Overview', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=400&h=300&fit=crop', size: 198000 },
+    ],
     validation: {
       id: 'val-2',
       checkpoints: [
@@ -354,7 +359,11 @@ const sampleSteps: Step[] = [
         arrowDirection: 'right',
       },
     ],
-    mediaFiles: [],
+    mediaFiles: [
+      { id: 'sm-4a', name: 'Oil Drain Procedure', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400&h=300&fit=crop', size: 275000 },
+      { id: 'sm-4b', name: 'Oil Filter Location', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=300&fit=crop', size: 189000 },
+      { id: 'sm-4c', name: 'Torque Spec Reference', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=300&fit=crop', size: 156000 },
+    ],
   },
   {
     id: sampleStepIds.s5,
@@ -386,7 +395,9 @@ const sampleSteps: Step[] = [
         arrowDirection: 'left',
       },
     ],
-    mediaFiles: [],
+    mediaFiles: [
+      { id: 'sm-5a', name: 'Air Filter Housing', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop', size: 210000 },
+    ],
   },
   {
     id: sampleStepIds.s6,
@@ -500,7 +511,10 @@ const sampleSteps: Step[] = [
         arrowDirection: 'left',
       },
     ],
-    mediaFiles: [],
+    mediaFiles: [
+      { id: 'sm-8a', name: 'Battery Terminal Inspection', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?w=400&h=300&fit=crop', size: 230000 },
+      { id: 'sm-8b', name: 'Multimeter Reading Guide', type: 'image/jpeg', url: 'https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=400&h=300&fit=crop', size: 185000 },
+    ],
     validation: {
       id: 'val-8',
       checkpoints: [
@@ -2562,27 +2576,6 @@ export function ProcedureEditor() {
                   onOpenValidation={() => setShowValidationPanel(true)}
                 />
 
-                {/* GAP 4 (FR59): Animation-config incompatibility warning in viewer mode */}
-                {!editingEnabled && currentStep.hasAnimation && currentStep.configurationId && activeConfigName && (
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-lg pointer-events-auto"
-                    style={{
-                      top: '-36px',
-                      padding: '6px 14px',
-                      backgroundColor: 'rgba(255, 152, 0, 0.92)',
-                      color: 'white',
-                      fontSize: '12px',
-                      
-                      fontWeight: 500,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                      zIndex: 20,
-                      maxWidth: '480px',
-                    }}
-                  >
-                    <AlertCircle className="size-3.5 shrink-0" />
-                    <span>Some parts in this step may not be visible with the current configuration.</span>
-                  </div>
-                )}
 
                 {/* Configuration is set at the digital twin level, not per-step.
                    Cannot change configuration mid-procedure. */}
