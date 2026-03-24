@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procedure Viewer – Step Card (Top-Left)</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: #1a1e2a;
+    height: 100vh;
+    overflow: hidden;
+    background-image:
+      radial-gradient(ellipse at 60% 50%, rgba(47,128,237,0.08) 0%, transparent 60%),
+      linear-gradient(160deg, #1a1e2a 0%, #0f1218 100%);
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* ─── Step Card ─── */
+  .step-card {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 260px;
+    height: calc(100vh - 40px);
+    max-height: 720px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(54, 65, 93, 0.8);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 48px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    color: white;
+  }
+
+  /* ─── Header ─── */
+  .card-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 10px 6px 10px;
+    flex-shrink: 0;
+  }
+  .tts-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .tts-btn:hover { background: rgba(255,255,255,0.1); }
+  .tts-btn svg { width: 20px; height: 20px; }
+  .tts-label { font-size: 11px; }
+  .step-counter {
+    font-size: 11px;
+    color: white;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .step-counter svg { width: 14px; height: 14px; }
+  .header-spacer { flex: 1; }
+  .collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .collapse-btn:hover { background: rgba(255,255,255,0.1); }
+  .collapse-btn svg { width: 10px; height: 10px; }
+
+  /* ─── Title ─── */
+  .step-title {
+    padding: 2px 12px 4px 12px;
+    flex-shrink: 0;
+  }
+  .step-title h2 {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: white;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ─── Media Section ─── */
+  .step-media {
+    flex-shrink: 0;
+    padding: 0 10px;
+  }
+  .media-container {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid rgba(54, 65, 93, 0.6);
+  }
+  .media-container img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  /* Play overlay for video media */
+  .media-play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+  }
+  .media-container:hover .media-play-overlay {
+    opacity: 1;
+  }
+  .media-play-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .media-play-circle svg {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+  }
+
+  /* Fullscreen button */
+  .media-fullscreen-btn {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.15s;
+  }
+  .media-container:hover .media-fullscreen-btn {
+    opacity: 1;
+  }
+  .media-fullscreen-btn:hover {
+    background: rgba(0, 0, 0, 0.75);
+  }
+  .media-fullscreen-btn svg { width: 14px; height: 14px; }
+
+  /* Carousel dots / counter */
+  .media-counter {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+  }
+  .media-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    transition: background 0.2s;
+  }
+  .media-dot.active {
+    background: white;
+  }
+
+  /* Carousel arrows */
+  .media-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.15s;
+  }
+  .media-container:hover .media-arrow { opacity: 1; }
+  .media-arrow:hover { background: rgba(0, 0, 0, 0.75); }
+  .media-arrow svg { width: 12px; height: 12px; }
+  .media-arrow-left { left: 6px; }
+  .media-arrow-right { right: 6px; }
+
+  /* ─── Description ─── */
+  .step-description {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 4px 12px 8px 12px;
+  }
+  .step-description p {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.88);
+    margin-bottom: 10px;
+  }
+  .step-description p:last-child { margin-bottom: 0; }
+
+  .step-description::-webkit-scrollbar { width: 4px; }
+  .step-description::-webkit-scrollbar-track { background: transparent; }
+  .step-description::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+  .step-description::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.35);
+  }
+
+  /* ─── Branching Options ─── */
+  .step-options {
+    padding: 6px 10px;
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .option-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 25px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .option-pill:hover {
+    background: rgba(47, 128, 237, 0.35);
+    border-color: #2F80ED;
+  }
+
+  /* ─── Player Controls ─── */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px 10px 10px;
+    flex-shrink: 0;
+  }
+  .player-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .player-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .player-btn svg { width: 14px; height: 14px; }
+  .btn-prev { width: 44px; }
+  .btn-play {
+    width: auto;
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 400;
+  }
+  .btn-play svg { width: 12px; height: 12px; }
+  .player-spacer { flex: 1; }
+  .btn-next {
+    width: auto;
+    padding: 0 14px;
+    font-size: 10px;
+    background: #2F80ED;
+    border-color: #2F80ED;
+    font-weight: 600;
+  }
+  .btn-next:hover {
+    background: #2570d4;
+    border-color: #2570d4;
+  }
+
+  /* ─── Separator ─── */
+  .card-sep {
+    height: 1px;
+    margin: 0 10px;
+    background: rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+  }
+
+  .scene-label {
+    position: absolute;
+    bottom: 24px;
+    right: 32px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="step-card">
+  <!-- Header -->
+  <div class="card-header">
+    <button class="tts-btn">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0012 8.14v7.72A4.48 4.48 0 0016.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="white"/>
+      </svg>
+      <span class="tts-label">Read</span>
+    </button>
+    <div class="step-counter">
+      <span>Step 3 of 10</span>
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M4 5.5L8 2l4 3.5M4 10.5L8 14l4-3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="header-spacer"></div>
+    <button class="collapse-btn">
+      <svg viewBox="0 0 10 10" fill="none">
+        <path d="M2 3.5L5 6.5L8 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Title -->
+  <div class="step-title">
+    <h2>Inspect the main feed roller assembly and check alignment</h2>
+  </div>
+
+  <div class="card-sep"></div>
+
+  <!-- Media (image carousel with video support) -->
+  <div class="step-media">
+    <div class="media-container">
+      <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=480&h=300&fit=crop" alt="Feed roller assembly close-up" />
+
+      <!-- Video play overlay (shown for video media) -->
+      <div class="media-play-overlay">
+        <div class="media-play-circle">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M5 3l8 5-8 5V3z" fill="white"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Carousel arrows -->
+      <button class="media-arrow media-arrow-left">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M10 12L6 8l4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="media-arrow media-arrow-right">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M6 4l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- Carousel dots -->
+      <div class="media-counter">
+        <div class="media-dot active"></div>
+        <div class="media-dot"></div>
+        <div class="media-dot"></div>
+      </div>
+
+      <!-- Fullscreen button -->
+      <button class="media-fullscreen-btn">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-sep" style="margin-top: 8px;"></div>
+
+  <!-- Description (scrollable) -->
+  <div class="step-description">
+    <p>In this step, you'll inspect the main feed roller assembly located on the left side of the printing unit. Begin by opening the access panel using the release lever marked in yellow.</p>
+    <p>Once the panel is open, visually check the roller surface for any signs of wear, scoring, or ink buildup. Use the provided cleaning cloth to gently remove any residue from the roller surface.</p>
+    <p>Next, check the roller alignment by rotating it slowly by hand. The roller should spin freely without any wobble or resistance. If you notice any irregularity, note the position and proceed to the adjustment step.</p>
+    <p>Finally, verify that the tension springs on both ends of the roller are properly seated and have not lost their elasticity. Compare the spring tension with the reference gauge provided in your toolkit.</p>
+  </div>
+
+  <div class="card-sep"></div>
+
+  <!-- Branching Options -->
+  <div class="step-options">
+    <button class="option-pill">Roller is aligned</button>
+    <button class="option-pill">Needs adjustment</button>
+  </div>
+
+  <div class="card-sep"></div>
+
+  <!-- Player Controls -->
+  <div class="player-controls">
+    <button class="player-btn btn-prev">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M10 12L6 8l4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="player-btn btn-play">
+      <span>Play</span>
+      <svg viewBox="0 0 14 14" fill="none">
+        <path d="M4.5 2.5l7 4.5-7 4.5V2.5z" fill="white"/>
+      </svg>
+    </button>
+    <div class="player-spacer"></div>
+    <button class="player-btn btn-next">Next</button>
+  </div>
+</div>
+
+<div class="scene-label">3D Viewport – Printing Unit Assembly</div>
+
+</body>
+</html>
