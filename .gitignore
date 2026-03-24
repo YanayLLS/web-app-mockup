@@ -1,6 +1,7 @@
 node_modules
 dist
 .vite
+.next/
 .claude/
 _bmad/
 _bmad-output/
