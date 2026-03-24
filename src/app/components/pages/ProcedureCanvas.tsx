@@ -36,12 +36,12 @@ import {
   Keyboard,
   Check,
   Search,
-  List,
   CheckCircle2,
   MessageSquare,
   Clock,
   Layout,
   Globe,
+  List,
 } from 'lucide-react';
 import imgDots from "figma:asset/024a1ea7ee32f89f8dbc4aa4a011b69bd6e9bad7.png";
 import { DynamicNode } from './canvas/DynamicNode';
@@ -53,11 +53,11 @@ import { ContextMenu, ContextMenuType } from './canvas/ContextMenu';
 import { MediaLibraryModal } from '../modals/MediaLibraryModal';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 import { ProcedureModal } from '../modals/ProcedureModal';
+import type { KnowledgeBaseItem } from '../../contexts/ProjectContext';
 import { useRole, hasAccess } from '../../contexts/RoleContext';
 import { MemberAvatar } from '../MemberAvatar';
 import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { SearchOverlay } from './canvas/SearchOverlay';
-import { OutlinePanel } from './canvas/OutlinePanel';
 import { useFlowValidation } from './canvas/useFlowValidation';
 import { ValidationPanel } from './canvas/ValidationPanel';
 import { useSmartGuides } from './canvas/useSmartGuides';
@@ -78,6 +78,7 @@ import { Group } from 'lucide-react';
 interface ProcedureCanvasProps {
   procedureId: string;
   procedureName: string;
+  procedureItem?: KnowledgeBaseItem;
   onClose: () => void;
 }
 
@@ -218,10 +219,20 @@ function stepsToFlow(steps: Step[]): { nodes: Node[]; edges: Edge[] } {
       },
     });
 
+    // Determine the sourceHandle for the edge from the previous node
+    let sourceHandle: string | undefined;
+    if (index > 0) {
+      const prevStep = orderedSteps[index - 1];
+      sourceHandle = prevStep.actions.length > 0
+        ? `opt-${prevId}-0`   // first action option
+        : `opt-${prevId}`;    // single "Continue" option
+    }
+
     edges.push({
       id: `e-${prevId}-${nodeId}`,
       source: prevId,
       target: nodeId,
+      sourceHandle: sourceHandle || null,
       type: 'custom',
       style: { strokeWidth: 2, stroke: '#2f80ed' },
       animated: false,
@@ -317,12 +328,12 @@ function flowToSteps(nodes: Node[], edges: Edge[]): Step[] {
 }
 
 // Auto-arrange function using dagre
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[], compact = false) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  const nodeWidth = 280;
+  const nodeWidth = compact ? 200 : 280;
 
-  dagreGraph.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 80 });
+  dagreGraph.setGraph({ rankdir: 'TB', nodesep: compact ? 40 : 100, ranksep: compact ? 30 : 80 });
 
   // Separate group (section) nodes from layoutable nodes
   const groupNodes = nodes.filter(n => n.type === 'section');
@@ -341,17 +352,22 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   // Calculate dynamic heights based on node content
   const nodeHeights = new Map<string, number>();
   layoutableNodes.forEach((node) => {
-    let height = 120; // Base height for start/logic nodes
+    let height = compact ? 60 : 120; // Base height for start/logic nodes
 
     if (node.type === 'dynamic') {
-      const data = node.data as any;
-      const baseHeight = 80;
-      const titleHeight = 30;
-      const descriptionHeight = data.description ? Math.min(60, Math.ceil(data.description.length / 4)) : 0;
-      const optionsHeight = (data.options?.length || 0) * 18;
-      const popupsHeight = (data.popups?.length || 0) * 18;
-      const mediaHeight = (data.media?.length || 0) * 18;
-      height = baseHeight + titleHeight + descriptionHeight + optionsHeight + popupsHeight + mediaHeight;
+      if (compact) {
+        // Compact: just title + small badges
+        height = 52;
+      } else {
+        const data = node.data as any;
+        const baseHeight = 80;
+        const titleHeight = 30;
+        const descriptionHeight = data.description ? Math.min(60, Math.ceil(data.description.length / 4)) : 0;
+        const optionsHeight = (data.options?.length || 0) * 18;
+        const popupsHeight = (data.popups?.length || 0) * 18;
+        const mediaHeight = (data.media?.length || 0) * 18;
+        height = baseHeight + titleHeight + descriptionHeight + optionsHeight + popupsHeight + mediaHeight;
+      }
     }
 
     nodeHeights.set(node.id, height);
@@ -399,48 +415,80 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     }
   });
 
-  const extraSpread = 160; // extra px per branch beyond the first
+  // Helper: measure actual node width from DOM, fallback to dagre constant
+  function getRenderedWidth(nodeId: string): number {
+    const el = document.querySelector(`[data-id="${nodeId}"]`) as HTMLElement | null;
+    return el ? el.offsetWidth : nodeWidth;
+  }
+
+  // Spread multi-target branching: align each target's input handle under its source handle
+  const minTargetGap = nodeWidth + (compact ? 20 : 60); // minimum gap between target left edges
   sourceToTargets.forEach((targets, sourceId) => {
-    if (targets.length < 2) return;
+    const uniqueTargets = [...new Set(targets)];
+    if (uniqueTargets.length < 2) return;
+
     const sourcePos = absolutePositions.get(sourceId);
     if (!sourcePos) return;
+    const sourceNode = layoutableNodes.find(n => n.id === sourceId);
+    if (!sourceNode) return;
+    const srcData = sourceNode.data as any;
+    const totalOptions = srcData.options?.length || 1;
+    const sourceW = getRenderedWidth(sourceId);
 
-    // Sort targets by the order of their sourceHandle in the parent's options array
-    const optionOrder = nodeOptionsOrder.get(sourceId);
-    const targetPositions = targets
-      .map(id => ({ id, pos: absolutePositions.get(id)! }))
-      .filter(t => t.pos)
-      .sort((a, b) => {
-        if (optionOrder) {
-          const handleA = edgeHandleMap.get(`${sourceId}:${a.id}`);
-          const handleB = edgeHandleMap.get(`${sourceId}:${b.id}`);
-          const idxA = handleA ? optionOrder.indexOf(handleA) : -1;
-          const idxB = handleB ? optionOrder.indexOf(handleB) : -1;
-          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-          if (idxA !== -1) return -1;
-          if (idxB !== -1) return 1;
-        }
-        return a.pos.x - b.pos.x;
-      });
+    const optionOrder = nodeOptionsOrder.get(sourceId) || [];
 
-    if (targetPositions.length < 2) return;
+    // Map targets to their option handle indices
+    const sorted = uniqueTargets
+      .map(id => {
+        const handle = edgeHandleMap.get(`${sourceId}:${id}`);
+        const optIdx = handle ? optionOrder.indexOf(handle) : -1;
+        return { id, optIdx, pos: absolutePositions.get(id)! };
+      })
+      .filter(t => t.pos);
 
-    // Calculate desired total width: (n-1) * (nodeWidth + extraSpread)
-    const n = targetPositions.length;
-    const desiredSpan = (n - 1) * (nodeWidth + extraSpread);
-    const currentSpan = targetPositions[n - 1].pos.x - targetPositions[0].pos.x;
+    // Assign unknown-handle targets to unused option slots
+    const usedIndices = new Set(sorted.filter(t => t.optIdx >= 0).map(t => t.optIdx));
+    const unusedIndices: number[] = [];
+    for (let i = 0; i < totalOptions; i++) {
+      if (!usedIndices.has(i)) unusedIndices.push(i);
+    }
+    let unusedPtr = 0;
+    sorted.forEach(t => {
+      if (t.optIdx < 0 && unusedPtr < unusedIndices.length) {
+        t.optIdx = unusedIndices[unusedPtr++];
+      }
+    });
 
-    if (desiredSpan <= currentSpan) return; // already wide enough
+    // Sort by option index (left-to-right handle order)
+    sorted.sort((a, b) => a.optIdx - b.optIdx);
 
-    // Center the spread around the source node's center
-    const sourceCenterX = sourcePos.x + nodeWidth / 2;
-    const startX = sourceCenterX - desiredSpan / 2 - nodeWidth / 2;
+    if (sorted.length < 2) return;
 
-    targetPositions.forEach((t, i) => {
-      const newX = startX + i * (nodeWidth + extraSpread);
-      // Shift this target and all its downstream descendants by the delta
+    // Compute ideal X for each target: input handle (50%) under source option handle
+    const ideals = sorted.map(t => {
+      const handlePct = totalOptions === 1 ? 50 : 8 + (t.optIdx / Math.max(1, totalOptions - 1)) * 84;
+      const handleAbsX = sourcePos.x + (handlePct / 100) * sourceW;
+      const targetW = getRenderedWidth(t.id);
+      return handleAbsX - 0.5 * targetW;
+    });
+
+    // Enforce minimum spacing (push right if too close)
+    const adjusted = [...ideals];
+    for (let i = 1; i < adjusted.length; i++) {
+      if (adjusted[i] - adjusted[i - 1] < minTargetGap) {
+        adjusted[i] = adjusted[i - 1] + minTargetGap;
+      }
+    }
+
+    // Re-center around the ideal center to preserve handle alignment symmetry
+    const idealCenter = (ideals[0] + ideals[ideals.length - 1]) / 2;
+    const adjustedCenter = (adjusted[0] + adjusted[adjusted.length - 1]) / 2;
+    const reCenter = idealCenter - adjustedCenter;
+
+    sorted.forEach((t, i) => {
+      const newX = adjusted[i] + reCenter;
       const dx = newX - t.pos.x;
-      if (dx !== 0) {
+      if (Math.abs(dx) > 1) {
         shiftSubtree(t.id, dx, absolutePositions, sourceToTargets);
       }
     });
@@ -473,6 +521,47 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
           shiftSubtree(cid, dx, positions, childMap, visited);
         }
       });
+    }
+  }
+
+  // For branching nodes whose options all converge to a single child,
+  // shift the child so its input handle (center) aligns under the first output handle.
+  // Uses DOM-measured widths for accuracy.
+  sourceToTargets.forEach((targets, sourceId) => {
+    const uniqueTargets = [...new Set(targets)];
+    if (uniqueTargets.length !== 1) return;
+    const sourceNode = layoutableNodes.find(n => n.id === sourceId);
+    if (!sourceNode) return;
+    const srcData = sourceNode.data as any;
+    if (!srcData.options || srcData.options.length <= 1) return;
+    const sourcePos = absolutePositions.get(sourceId);
+    const targetPos = absolutePositions.get(uniqueTargets[0]);
+    if (!sourcePos || !targetPos) return;
+
+    const sourceW = getRenderedWidth(sourceId);
+    const targetW = getRenderedWidth(uniqueTargets[0]);
+    // First option handle is at 8% of source width
+    const firstHandleX = sourcePos.x + 0.08 * sourceW;
+    // Target input handle is at 50% of target width
+    const inputHandleX = targetPos.x + 0.50 * targetW;
+    const shift = firstHandleX - inputHandleX;
+
+    shiftSubtree(uniqueTargets[0], shift, absolutePositions, sourceToTargets);
+  });
+
+  // Align start node center-X with its first child so they line up visually
+  const startNode = layoutableNodes.find(n => n.type === 'start');
+  if (startNode) {
+    const startTargets = sourceToTargets.get(startNode.id);
+    if (startTargets && startTargets.length === 1) {
+      const childPos = absolutePositions.get(startTargets[0]);
+      const startPos = absolutePositions.get(startNode.id);
+      if (childPos && startPos) {
+        // Center-align: set start's center X to child's center X
+        const childCenterX = childPos.x + nodeWidth / 2;
+        const startW = 220; // approximate start node width (narrower than dynamic)
+        startPos.x = childCenterX - startW / 2;
+      }
     }
   }
 
@@ -549,7 +638,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   return { nodes: layoutedNodes, edges };
 };
 
-function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanvasProps) {
+function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }: ProcedureCanvasProps) {
   const { currentRole } = useRole();
   const editingEnabled = hasAccess(currentRole, 'projects-edit');
   const { getSteps, setSteps: setContextSteps } = useProcedureSteps();
@@ -581,16 +670,33 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   const [menu, setMenu] = useState<{ x: number; y: number; type: ContextMenuType; data?: any } | null>(null);
   const connectStartRef = useRef<{ nodeId: string | null; handleId: string | null } | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // ─── Action log for detailed pending changes ───
+  // Each entry: { label, detail } — deduped by label+detail to avoid spam
+  const changeLogRef = useRef<{ label: string; detail: string }[]>([]);
+  const changeLogKeysRef = useRef(new Set<string>());
+  const [changeLogVersion, setChangeLogVersion] = useState(0); // bump to trigger re-read
+  const logChange = useCallback((label: string, detail: string) => {
+    const key = `${label}::${detail}`;
+    if (changeLogKeysRef.current.has(key)) return;
+    changeLogKeysRef.current.add(key);
+    changeLogRef.current.push({ label, detail });
+    setChangeLogVersion(v => v + 1);
+    setHasUnsavedChanges(true);
+  }, []);
+  // Read the log (triggers re-render via changeLogVersion)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const flowChangeSummary = useMemo(() => [...changeLogRef.current], [changeLogVersion]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [mediaLibraryCallback, setMediaLibraryCallback] = useState<((selectedMedia: string[]) => void) | null>(null);
   const [procedureSelectCallback, setProcedureSelectCallback] = useState<((procedureId: string, procedureName: string) => void) | null>(null);
   const [isProcedureModalOpen, setIsProcedureModalOpen] = useState(false);
+  const [procedureModalSettings, setProcedureModalSettings] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
 
   // Navigation & Discovery state
   const [showSearch, setShowSearch] = useState(false);
-  const [showOutline, setShowOutline] = useState(false);
   const [searchState, setSearchState] = useState<{ activeIds: Set<string> | null; highlightedId: string | null }>({ activeIds: null, highlightedId: null });
 
   // Validation & Layout state
@@ -607,6 +713,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
   const [showHotkeys, setShowHotkeys] = useState(false);
+  const [compactView, setCompactView] = useState(false);
 
   // Language / Localization state
   const [showLanguagePanel, setShowLanguagePanel] = useState(false);
@@ -681,7 +788,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   }, []);
   const handleSaveVersion = useCallback((name: string) => { setVersions(p => [{ id: crypto.randomUUID(), name, timestamp: new Date().toISOString(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', changeSummary: nodes.filter(n => n.type !== 'start').length + ' steps', snapshot: { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) } }, ...p]); }, [nodes, edges]);
   const handlePreviewVersion = useCallback((v: Version|null) => setPreviewingVersionId(v?.id || null), []);
-  const handleRestoreVersion = useCallback((v: Version) => { takeSnapshot(); setNodes(JSON.parse(JSON.stringify(v.snapshot.nodes))); setEdges(JSON.parse(JSON.stringify(v.snapshot.edges))); setPreviewingVersionId(null); setHasUnsavedChanges(true); }, [setNodes, setEdges, takeSnapshot]);
+  const handleRestoreVersion = useCallback((v: Version) => { takeSnapshot(); setNodes(JSON.parse(JSON.stringify(v.snapshot.nodes))); setEdges(JSON.parse(JSON.stringify(v.snapshot.edges))); setPreviewingVersionId(null); setHasUnsavedChanges(true); logChange('Version', `Restored "${v.name}"`); }, [setNodes, setEdges, takeSnapshot, logChange]);
   const handleInsertTemplate = useCallback((tpl: FlowTemplate) => {
     if (tpl.nodes.length === 0) return;
     // Calculate insertion offset: place below existing nodes
@@ -713,18 +820,26 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       return { id: `e-${idMap.get(e.source)}-${sh || 'src'}-${idMap.get(e.target)}`, source: idMap.get(e.source)!, target: idMap.get(e.target)!, sourceHandle: sh, targetHandle: e.targetHandle || null, type: 'custom' as const, style: { strokeWidth: 2, stroke: '#2f80ed' }, animated: false };
     });
     takeSnapshot();
-    setNodes(nds => [...nds, ...nn]);
-    setEdges(eds => [...eds, ...ne]);
+    // Merge then auto-arrange everything so the inserted template fits cleanly
+    const mergedNodes = [...nodes, ...nn];
+    const mergedEdges = [...edges, ...ne];
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(mergedNodes, mergedEdges, compactView);
+    setNodes([...layoutedNodes]);
+    setEdges([...layoutedEdges]);
     setHasUnsavedChanges(true);
+    logChange('Template', `Inserted template "${tpl.name}" (${tpl.nodes.length} nodes)`);
     setShowTemplateLibrary(false);
-    if (nn.length > 0) setTimeout(() => setCenter(nn[0].position.x + 140, nn[0].position.y + 100, { zoom: 1, duration: 400 }), 100);
-  }, [nodes, setNodes, setEdges, setCenter, takeSnapshot]);
+    // Pan to first inserted node after layout
+    const firstInserted = layoutedNodes.find(n => n.id === nn[0]?.id);
+    if (firstInserted) setTimeout(() => setCenter(firstInserted.position.x + 140, firstInserted.position.y + 100, { zoom: 1, duration: 400 }), 100);
+  }, [nodes, edges, setNodes, setEdges, setCenter, takeSnapshot, logChange]);
   const handleSaveAsTemplate = useCallback((name: string, desc: string, cat: string) => { const sn = nodes.filter(n => n.selected && n.type !== 'start'), si = new Set(sn.map(n => n.id)), se = edges.filter(e => si.has(e.source) && si.has(e.target)); setTemplates(p => [...p, { id: crypto.randomUUID(), name, description: desc, category: cat, nodeCount: sn.length||1, createdAt: new Date().toISOString(), authorName: 'Sarah Johnson', nodes: JSON.parse(JSON.stringify(sn)), edges: JSON.parse(JSON.stringify(se)), isFullProcedure: sn.length >= 4, isBuiltIn: false }]); }, [nodes, edges]);
   const commentCounts = useMemo(() => { const c = new Map<string, number>(); commentThreads.forEach(t => { if (!t.resolved) c.set(t.nodeId, (c.get(t.nodeId)||0)+t.comments.length); }); return c; }, [commentThreads]);
 
   // ─── Language handlers ─────────────────────────────────────────────────
   const handleSetDefaultLanguage = useCallback((code: string) => {
     setDefaultLanguage(code);
+    logChange('Language', `Default language changed to ${code}`);
     // Sync base fields from new default's Multi values
     setNodes(nds => nds.map(n => {
       if (n.type !== 'dynamic') return n;
@@ -738,6 +853,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
   const handleAddLanguages = useCallback((codes: string[], copyFromDefault: boolean) => {
     setProcedureLanguages(prev => [...prev, ...codes]);
+    logChange('Language', `Added ${codes.length} language${codes.length > 1 ? 's' : ''}: ${codes.join(', ')}`);
     setLanguageVisibility(prev => {
       const next = { ...prev };
       codes.forEach(c => { next[c] = true; });
@@ -768,6 +884,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
   const handleDeleteLanguage = useCallback((code: string) => {
     if (code === defaultLanguage) return;
+    logChange('Language', `Removed language: ${code}`);
     setProcedureLanguages(prev => prev.filter(c => c !== code));
     setLanguageVisibility(prev => { const n = { ...prev }; delete n[code]; return n; });
     if (editingLanguage === code) setEditingLanguage(defaultLanguage);
@@ -862,9 +979,10 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     }));
 
     setAiCreditsUsed(prev => Math.min(prev + targetCodes.length * 500, aiCreditsMax + 5000));
+    logChange('Translation', `AI translated to ${targetCodes.join(', ')}`);
     setShowTranslationProgress(false);
     setTranslationTargetLanguages([]);
-  }, [nodes, defaultLanguage, setNodes, aiCreditsMax]);
+  }, [nodes, defaultLanguage, setNodes, aiCreditsMax, logChange]);
 
   const handleTranslateWithAI = useCallback((targetCodes: string[]) => {
     // Use ref to always get latest AI limit values (avoids stale closure)
@@ -910,7 +1028,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     const ids = new Set(selected.map(n => n.id));
     clipboardRef.current = {
       nodes: selected.map(n => {
-        const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, ...clean } = n.data as any;
+        const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, compactView: _cv, ...clean } = n.data as any;
         return { type: n.type!, relativePosition: { x: n.position.x - cx, y: n.position.y - cy }, data: clean, originalId: n.id };
       }),
       edges: edges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({
@@ -937,11 +1055,13 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       return { id: `e-${idMap.get(ce.sourceOriginalId)}-${sh || 'src'}-${idMap.get(ce.targetOriginalId)}`, source: idMap.get(ce.sourceOriginalId)!, target: idMap.get(ce.targetOriginalId)!, sourceHandle: sh, targetHandle: ce.targetHandle, type: 'custom' as const, style: { strokeWidth: 2, stroke: '#2f80ed' }, animated: false };
     });
     takeSnapshot(); setNodes(nds => nds.map(n => ({ ...n, selected: false })).concat(newNodes)); setEdges(eds => [...eds, ...newEdges]); setHasUnsavedChanges(true);
-  }, [nodes, setNodes, setEdges, takeSnapshot]);
+    logChange('Clipboard', `Pasted ${newNodes.length} node${newNodes.length > 1 ? 's' : ''}`);
+  }, [nodes, setNodes, setEdges, takeSnapshot, logChange]);
 
   const deleteSelectedNodes = useCallback(() => {
     const sel = nodes.filter(n => n.selected && n.type !== 'start');
     if (sel.length === 0) return;
+    sel.forEach(n => logChange('Step', `Deleted "${(n.data as any)?.title || n.type || 'node'}"`));
     const ids = new Set(sel.map(n => n.id));
     // Find group nodes being deleted — free their children first
     const deletedGroupIds = new Set(sel.filter(n => n.type === 'section').map(n => n.id));
@@ -964,7 +1084,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     const idMap = new Map<string, string>(); const optMap = new Map<string, string>();
     const newNodes: Node[] = sel.map(n => {
       const nid = crypto.randomUUID(); idMap.set(n.id, nid);
-      const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, ...clean } = n.data as any;
+      const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, compactView: _cv, ...clean } = n.data as any;
       const nd = JSON.parse(JSON.stringify(clean));
       if (nd.options && Array.isArray(nd.options)) nd.options = nd.options.map((o: any) => { const oid = crypto.randomUUID(); optMap.set(o.id, oid); return { ...o, id: oid }; });
       return { id: nid, type: n.type!, position: { x: n.position.x + 50, y: n.position.y + 50 }, selected: true, data: nd };
@@ -974,7 +1094,8 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       return { id: `e-${idMap.get(e.source)}-${sh || 'src'}-${idMap.get(e.target)}`, source: idMap.get(e.source)!, target: idMap.get(e.target)!, sourceHandle: sh, targetHandle: e.targetHandle || null, type: 'custom' as const, style: { strokeWidth: 2, stroke: '#2f80ed' }, animated: false };
     });
     takeSnapshot(); setNodes(nds => nds.map(n => ({ ...n, selected: false })).concat(newNodes)); setEdges(eds => [...eds, ...intEdges]); setHasUnsavedChanges(true);
-  }, [nodes, edges, setNodes, setEdges, takeSnapshot]);
+    logChange('Step', `Duplicated ${sel.length} node${sel.length > 1 ? 's' : ''}`);
+  }, [nodes, edges, setNodes, setEdges, takeSnapshot, logChange]);
 
   const selectAllNodes = useCallback(() => { setNodes(nds => nds.map(n => ({ ...n, selected: true }))); }, [setNodes]);
 
@@ -982,7 +1103,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable)) return;
       const ctrl = e.ctrlKey || e.metaKey;
-      if ((e.key === 'Delete' || e.key === 'Backspace') && !ctrl) { e.preventDefault(); deleteSelectedNodes(); if (edges.some(ed => ed.selected)) { takeSnapshot(); setEdges(eds => eds.filter(ed => !ed.selected)); setHasUnsavedChanges(true); } return; }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !ctrl) { e.preventDefault(); deleteSelectedNodes(); if (edges.some(ed => ed.selected)) { takeSnapshot(); setEdges(eds => eds.filter(ed => !ed.selected)); setHasUnsavedChanges(true); logChange('Connection', 'Connection removed'); } return; }
       if (ctrl && e.key === 'a') { e.preventDefault(); selectAllNodes(); return; }
       if (ctrl && e.key === 'c') { e.preventDefault(); copySelectedToClipboard(); return; }
       if (ctrl && e.key === 'v') { e.preventDefault(); pasteFromClipboard(); return; }
@@ -991,15 +1112,46 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [edges, setEdges, takeSnapshot, copySelectedToClipboard, pasteFromClipboard, deleteSelectedNodes, duplicateSelected, selectAllNodes]);
+  }, [edges, setEdges, takeSnapshot, copySelectedToClipboard, pasteFromClipboard, deleteSelectedNodes, duplicateSelected, selectAllNodes, logChange]);
 
   // Helper to update node data
   const onNodeDataChange = useCallback((id: string, newData: any) => {
+    // Detect what changed and log it
+    const node = nodes.find(n => n.id === id);
+    const title = (node?.data as any)?.title || 'Untitled';
+    const stepLabel = `"${title}"`;
+    if ('title' in newData) logChange('Edit', `Title changed on ${stepLabel}`);
+    if ('description' in newData) logChange('Edit', `Description changed on ${stepLabel}`);
+    if ('color' in newData || 'isColorized' in newData) logChange('Style', `Color changed on ${stepLabel}`);
+    if ('media' in newData) {
+      const oldMedia = ((node?.data as any)?.media || []) as string[];
+      const newMedia = (newData.media || []) as string[];
+      if (newMedia.length > oldMedia.length) logChange('Media', `Media added to ${stepLabel}`);
+      else if (newMedia.length < oldMedia.length) logChange('Media', `Media removed from ${stepLabel}`);
+    }
+    if ('options' in newData) {
+      const oldOpts = ((node?.data as any)?.options || []) as any[];
+      const newOpts = (newData.options || []) as any[];
+      if (newOpts.length > oldOpts.length) logChange('Options', `Option added to ${stepLabel}`);
+      else if (newOpts.length < oldOpts.length) logChange('Options', `Option removed from ${stepLabel}`);
+      else logChange('Options', `Option text changed on ${stepLabel}`);
+    }
+    if ('popups' in newData) {
+      const oldP = ((node?.data as any)?.popups || []) as any[];
+      const newP = (newData.popups || []) as any[];
+      if (newP.length > oldP.length) logChange('Popup', `Popup added to ${stepLabel}`);
+      else if (newP.length < oldP.length) logChange('Popup', `Popup removed from ${stepLabel}`);
+      else logChange('Popup', `Popup edited on ${stepLabel}`);
+    }
+    if ('isInput' in newData) logChange('Input', `Input ${newData.isInput ? 'enabled' : 'disabled'} on ${stepLabel}`);
+    if ('inputType' in newData) logChange('Input', `Input type changed to "${newData.inputType}" on ${stepLabel}`);
+    if ('titleMulti' in newData || 'descriptionMulti' in newData) logChange('Translation', `Translation edited on ${stepLabel}`);
+    if ('linkedProcedureId' in newData) logChange('Link', `Linked procedure changed on ${stepLabel}`);
+
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === id) {
           const updatedData = { ...node.data, ...newData };
-          // Auto-update isBranching based on options (>1 means actual branching, 1 is the default "Continue")
           if ('options' in updatedData) {
             updatedData.isBranching = updatedData.options.length > 1;
           }
@@ -1009,43 +1161,46 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       })
     );
 
-    // When options change, clean up orphaned edges (edges pointing to removed option handles)
+    // When options change, clean up orphaned edges
     if ('options' in newData) {
       const validHandleIds = new Set(newData.options.map((o: any) => o.id));
       setEdges(eds => eds.filter(e => {
         if (e.source !== id) return true;
-        // Keep edge if its sourceHandle is valid, or migrate null/default to first option
         if (!e.sourceHandle || e.sourceHandle === 'default') return true;
         return validHandleIds.has(e.sourceHandle);
       }));
     }
     setHasUnsavedChanges(true);
-  }, [setNodes]);
+  }, [setNodes, nodes, logChange]);
 
   const onNodeAction = useCallback((id: string, action: 'delete' | 'duplicate') => {
+    const node = nodes.find(n => n.id === id);
+    const title = (node?.data as any)?.title || 'Untitled';
     if (action === 'delete') {
-      // Prevent deleting start node
-      if (nodes.find(n => n.id === id)?.type === 'start') return;
+      if (node?.type === 'start') return;
+      logChange('Step', `Deleted "${title}"`);
       setNodes((nds) => nds.filter((n) => n.id !== id));
       setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
     } else if (action === 'duplicate') {
-      const nodeToDuplicate = nodes.find(n => n.id === id);
-      if (nodeToDuplicate && nodeToDuplicate.type !== 'start') {
+      if (node && node.type !== 'start') {
+        logChange('Step', `Duplicated "${title}"`);
         const newNode = {
-          ...nodeToDuplicate,
+          ...node,
           id: crypto.randomUUID(),
-          position: { x: nodeToDuplicate.position.x + 50, y: nodeToDuplicate.position.y + 50 },
-          data: { ...nodeToDuplicate.data },
+          position: { x: node.position.x + 50, y: node.position.y + 50 },
+          data: { ...node.data },
           selected: true
         };
         setNodes(nds => nds.map(n => ({ ...n, selected: false })).concat(newNode));
       }
     }
     setHasUnsavedChanges(true);
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, setNodes, setEdges, logChange]);
 
   // Add connected step handler
   const handleAddConnectedStep = useCallback((nodeId: string, sourceHandle?: string) => {
+    const parent = nodes.find(n => n.id === nodeId);
+    logChange('Step', `Added connected step from "${(parent?.data as any)?.title || 'node'}"`);
     let newNodePosition = { x: 0, y: 0 };
     let newNodeId: string = '';
 
@@ -1139,6 +1294,8 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
   // Add additional branching option (first option is always the default output)
   const handleAddOption = useCallback((nodeId: string) => {
+    const nd = nodes.find(n => n.id === nodeId);
+    logChange('Options', `Option added to "${(nd?.data as any)?.title || 'node'}"`);
     setNodes(currentNodes => {
       const node = currentNodes.find(n => n.id === nodeId);
       if (!node) return currentNodes;
@@ -1179,6 +1336,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
   const handleAddNodeBetween = useCallback((edgeId: string) => {
     const edge = edges.find(e => e.id === edgeId);
     if (!edge) return;
+    logChange('Step', 'Inserted step between connections');
     
     const sourceNode = nodes.find(n => n.id === edge.source);
     const targetNode = nodes.find(n => n.id === edge.target);
@@ -1249,11 +1407,23 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
   // Auto Arrange
   const onAutoArrange = useCallback(() => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, compactView);
     setNodes([...layoutedNodes]);
     setEdges([...layoutedEdges]);
     setHasUnsavedChanges(true);
-  }, [edges, nodes, setNodes, setEdges]);
+  }, [edges, nodes, setNodes, setEdges, compactView]);
+
+  // Re-layout when compact view toggles so lines get shorter/longer
+  const prevCompactRef = useRef(compactView);
+  useEffect(() => {
+    if (prevCompactRef.current !== compactView) {
+      prevCompactRef.current = compactView;
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, compactView);
+      setNodes([...layoutedNodes]);
+      setEdges([...layoutedEdges]);
+      fitView({ padding: 0.15, duration: 400 });
+    }
+  }, [compactView]); // intentionally only depend on compactView to avoid re-triggering on node changes
 
   // Validation: Go to node handler
   const handleGoToValidationNode = useCallback((nodeId: string) => {
@@ -1322,6 +1492,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
           editingEnabled,
           editingLanguage,
           defaultLanguage,
+          compactView,
           onChange: (newData: any) => onNodeDataChange(node.id, newData),
           onAction: (action: any) => onNodeAction(node.id, action),
           onAddOption: node.type === 'dynamic' ? () => handleAddOption(node.id) : undefined,
@@ -1363,13 +1534,14 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         },
       };
     });
-  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled, searchState, showValidation, validationResult.nodeIssueMap, commentCounts, commentThreads, handleAddComment, handleResolveThread, handleUnresolveThread, handleToggleReaction, editingLanguage, defaultLanguage]);
+  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled, searchState, showValidation, validationResult.nodeIssueMap, commentCounts, commentThreads, handleAddComment, handleResolveThread, handleUnresolveThread, handleToggleReaction, editingLanguage, defaultLanguage, compactView]);
 
   // Delete edge handler
   const handleDeleteEdge = useCallback((edgeId: string) => {
+    logChange('Connection', 'Connection removed');
     setEdges((eds) => eds.filter((e) => e.id !== edgeId));
     setHasUnsavedChanges(true);
-  }, [setEdges]);
+  }, [setEdges, logChange]);
 
   // Inject callbacks into edges (+ labels)
   const edgesWithCallbacks = useMemo(() => {
@@ -1436,8 +1608,9 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       });
       
       setHasUnsavedChanges(true);
+      logChange('Connection', 'Connected nodes');
     },
-    [setEdges]
+    [setEdges, logChange]
   );
 
   const edgeUpdateSuccessful = useRef(true);
@@ -1452,8 +1625,9 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       takeSnapshot();
       setEdges((eds) => updateEdge(oldEdge, newConnection, eds));
       setHasUnsavedChanges(true);
+      logChange('Connection', 'Connection rerouted');
     },
-    [setEdges, takeSnapshot]
+    [setEdges, takeSnapshot, logChange]
   );
 
   const onEdgeUpdateEnd = useCallback(
@@ -1463,10 +1637,11 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         takeSnapshot();
         setEdges((eds) => eds.filter((e) => e.id !== edge.id));
         setHasUnsavedChanges(true);
+        logChange('Connection', 'Connection removed');
       }
       edgeUpdateSuccessful.current = true;
     },
-    [setEdges, takeSnapshot]
+    [setEdges, takeSnapshot, logChange]
   );
 
   // ─── Drag into / out of group frames ───
@@ -1614,7 +1789,8 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
       ),
     ]);
     setHasUnsavedChanges(true);
-  }, [nodes, setNodes, takeSnapshot]);
+    logChange('Group', `Created group with ${selectedNodes.length} nodes`);
+  }, [nodes, setNodes, takeSnapshot, logChange]);
 
   const handleMenuAction = useCallback((action: string) => {
     if (!menu) return;
@@ -1714,10 +1890,11 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         }, eds));
       }
       setHasUnsavedChanges(true);
+      logChange('Step', `Added step "${newNode!.data.title || 'New step'}"`);
     }
 
     setMenu(null);
-  }, [menu, nodes, screenToFlowPosition, setNodes, setEdges, onAutoArrange, onNodeAction, copySelectedToClipboard, deleteSelectedNodes, duplicateSelected, selectAllNodes, handleCreateGroup]);
+  }, [menu, nodes, screenToFlowPosition, setNodes, setEdges, onAutoArrange, onNodeAction, copySelectedToClipboard, deleteSelectedNodes, duplicateSelected, selectAllNodes, handleCreateGroup, logChange]);
 
   const handleSave = () => {
     // Save logic here
@@ -1805,13 +1982,14 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     // Deselect all other nodes
     setNodes((nds) => nds.map(n => ({ ...n, selected: false })).concat(newNode));
     setHasUnsavedChanges(true);
-    
+    logChange('Step', `Added new step "Step ${stepCount}"`);
+
     // Center on the new node after a brief delay to ensure it's rendered
     // Account for node dimensions (roughly 280x200) to center properly
     setTimeout(() => {
       setCenter(lowestX + 140, lowestY + 100, { zoom: 1, duration: 400 });
     }, 100);
-  }, [nodes, setNodes, setCenter]);
+  }, [nodes, setNodes, setCenter, logChange]);
 
   // Function to create a new note
   const handleCreateNote = useCallback(() => {
@@ -1848,12 +2026,13 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     // Deselect all other nodes
     setNodes((nds) => nds.map(n => ({ ...n, selected: false })).concat(newNote));
     setHasUnsavedChanges(true);
-    
+    logChange('Note', 'Added sticky note');
+
     // Center on the new note
     setTimeout(() => {
       setCenter(noteX + 120, noteY + 80, { zoom: 1, duration: 400 });
     }, 100);
-  }, [nodes, setNodes, setCenter]);
+  }, [nodes, setNodes, setCenter, logChange]);
 
   // Function to create logic nodes
   const handleCreateLogicNode = useCallback((logicType: 'platform-switch' | 'procedure-link' | 'object-target') => {
@@ -1890,12 +2069,13 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
     // Deselect all other nodes
     setNodes((nds) => nds.map(n => ({ ...n, selected: false })).concat(newLogicNode));
     setHasUnsavedChanges(true);
-    
+    logChange('Logic', `Added ${logicType} logic node`);
+
     // Center on the new node
     setTimeout(() => {
       setCenter(lowestX + 120, lowestY + 100, { zoom: 1, duration: 400 });
     }, 100);
-  }, [nodes, setNodes, setCenter]);
+  }, [nodes, setNodes, setCenter, logChange]);
 
 
   // Comprehensive keyboard shortcuts
@@ -1969,6 +2149,7 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
           const selectedEdgeIds = selectedEdges.map(edge => edge.id);
           setEdges((eds) => eds.filter((edge) => !selectedEdgeIds.includes(edge.id)));
           setHasUnsavedChanges(true);
+          logChange('Connection', `${selectedEdges.length} connection${selectedEdges.length > 1 ? 's' : ''} removed`);
         }
         return;
       }
@@ -2009,11 +2190,19 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         setShowHotkeys(prev => !prev);
         return;
       }
+
+      // C: Toggle compact view
+      if (e.key === 'c' || e.key === 'C') {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+          setCompactView(prev => !prev);
+          return;
+        }
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [nodes, edges, setNodes, setEdges, undo, redo, handleSave, handleCreateNewStep, handleCreateGroup, fitView]);
+  }, [nodes, edges, setNodes, setEdges, undo, redo, handleSave, handleCreateNewStep, handleCreateGroup, fitView, logChange]);
 
   // Debug menu AI credit controls
   useEffect(() => {
@@ -2116,15 +2305,15 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
           <Search className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
         </button>
 
-        {/* Outline */}
+        {/* Compact View Toggle */}
         <button
-          onClick={() => setShowOutline(!showOutline)}
-          className={`p-2 rounded-lg transition-colors ${showOutline ? 'bg-secondary' : 'hover:bg-secondary'}`}
-          title="Outline Panel"
+          onClick={() => setCompactView(!compactView)}
+          className={`p-2 rounded-lg transition-colors ${compactView ? 'bg-secondary' : 'hover:bg-secondary'}`}
+          title={compactView ? 'Expanded View' : 'Compact View — titles only'}
+          style={compactView ? { color: 'var(--primary)' } : undefined}
         >
-          <List className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+          <List className="w-4 h-4" style={{ color: compactView ? 'var(--primary)' : 'var(--foreground)' }} />
         </button>
-
 
         {/* Validation */}
         <button
@@ -2164,13 +2353,111 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         </button>
 
         {/* Keyboard Shortcuts */}
-        <button
-          onClick={() => setShowHotkeys(!showHotkeys)}
-          className={`p-2 rounded-lg transition-colors ${showHotkeys ? 'bg-secondary' : 'hover:bg-secondary'}`}
-          title="Keyboard Shortcuts (?)"
-        >
-          <Keyboard className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowHotkeys(!showHotkeys)}
+            className={`p-2 rounded-lg transition-colors ${showHotkeys ? 'bg-secondary' : 'hover:bg-secondary'}`}
+            title="Keyboard Shortcuts (?)"
+          >
+            <Keyboard className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+          </button>
+
+          {/* Keyboard Shortcuts Popover */}
+          {showHotkeys && (
+            <>
+              <div className="fixed inset-0 z-[99]" onClick={() => setShowHotkeys(false)} />
+              <div
+                className="absolute z-[100] rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150"
+                style={{
+                  width: '320px',
+                  maxHeight: '420px',
+                  top: 'calc(100% + 8px)',
+                  right: '0px',
+                  backgroundColor: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  boxShadow: '0 8px 32px rgba(54, 65, 93, 0.14), 0 2px 8px rgba(54, 65, 93, 0.08)',
+                }}
+              >
+                {/* Header */}
+                <div
+                  className="flex items-center justify-between px-4 py-2.5 border-b shrink-0"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Keyboard className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
+                    <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>
+                      Keyboard Shortcuts
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setShowHotkeys(false)}
+                    className="p-1 rounded hover:bg-secondary transition-colors"
+                  >
+                    <X size={14} style={{ color: 'var(--muted)' }} />
+                  </button>
+                </div>
+
+                {/* Shortcuts List */}
+                <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: '370px' }}>
+                  {[
+                    { section: 'General', shortcuts: [
+                      { keys: 'Ctrl+Z', label: 'Undo' },
+                      { keys: 'Ctrl+Y', label: 'Redo' },
+                      { keys: 'Ctrl+S', label: 'Save' },
+                      { keys: 'Ctrl+F', label: 'Search nodes' },
+                      { keys: 'Escape', label: 'Deselect all / close menu' },
+                      { keys: '?', label: 'Show keyboard shortcuts' },
+                    ]},
+                    { section: 'Canvas', shortcuts: [
+                      { keys: '⇧1', label: 'Fit view' },
+                      { keys: 'N', label: 'Add new step' },
+                      { keys: 'C', label: 'Toggle compact view' },
+                      { keys: 'Delete', label: 'Delete selected' },
+                      { keys: '↑ ↓ ← →', label: 'Nudge selected nodes' },
+                    ]},
+                    { section: 'Selection', shortcuts: [
+                      { keys: 'Shift+Click', label: 'Multi-select nodes' },
+                      { keys: 'Drag on canvas', label: 'Selection box' },
+                    ]},
+                    { section: 'Nodes', shortcuts: [
+                      { keys: 'Double-click', label: 'Edit node title / description' },
+                      { keys: 'Right-click', label: 'Context menu' },
+                    ]},
+                  ].map(({ section, shortcuts }) => (
+                    <div key={section}>
+                      <div
+                        className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-wider"
+                        style={{ color: 'var(--muted)', backgroundColor: 'var(--secondary)' }}
+                      >
+                        {section}
+                      </div>
+                      {shortcuts.map(({ keys, label }) => (
+                        <div
+                          key={keys}
+                          className="flex items-center justify-between px-4 py-1.5 border-b"
+                          style={{ borderColor: 'var(--border)' }}
+                        >
+                          <span className="text-[11px]" style={{ color: 'var(--foreground)' }}>{label}</span>
+                          <kbd
+                            className="inline-block text-[10px] font-mono px-1.5 py-0.5 rounded"
+                            style={{
+                              backgroundColor: 'var(--secondary)',
+                              color: 'var(--foreground)',
+                              border: '1px solid var(--border)',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {keys}
+                          </kbd>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Languages */}
         <button
@@ -2221,8 +2508,8 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
         <div className="w-px h-6" style={{ backgroundColor: 'var(--border)' }} />
 
-        <button 
-          onClick={() => setIsProcedureModalOpen(true)}
+        <button
+          onClick={() => { setProcedureModalSettings(true); setIsProcedureModalOpen(true); }}
           className="p-2 rounded-lg hover:bg-secondary transition-colors"
           title="Flow Settings"
         >
@@ -2348,16 +2635,6 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
               title="Fit View (Shift+1)"
             >
               <Maximize className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
-              <kbd
-                className="text-[9px] font-mono px-1 py-0.5 rounded"
-                style={{
-                  backgroundColor: 'var(--secondary)',
-                  color: 'var(--muted)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                ⇧1
-              </kbd>
             </button>
           </Panel>
           <MiniMap
@@ -2394,16 +2671,6 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         )}
 
         {/* Outline Panel */}
-        {showOutline && (
-          <OutlinePanel
-            nodes={nodes}
-            edges={edges}
-            selectedNodeId={nodes.find(n => n.selected)?.id || null}
-            onFocusNode={handleFocusNode}
-            onClose={() => setShowOutline(false)}
-          />
-        )}
-
         {/* Validation Panel */}
         {showValidation && (
           <ValidationPanel
@@ -2708,24 +2975,28 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
 
       {/* Procedure Modal */}
       {isProcedureModalOpen && (
-        <ProcedureModal 
+        <ProcedureModal
           procedure={{
             id: procedureId,
             name: procedureName,
-            description: '',
-            tags: [],
-            category: '',
-            estimatedTime: 0,
-            connections: [],
-            isPublished: false,
+            description: procedureItem?.description || '',
+            connectedDigitalTwinIds: procedureItem?.connectedDigitalTwinIds,
+            thumbnail: procedureItem?.thumbnail,
+            isPublished: procedureItem?.isPublished ?? false,
             hasUnpublishedChanges: hasUnsavedChanges,
-            publishedVersion: '1.0',
-            publishedDate: new Date().toLocaleDateString()
+            publishedVersion: procedureItem?.publishedVersion || '1.0',
+            publishedDate: procedureItem?.publishedDate || new Date().toLocaleDateString(),
+            createdBy: procedureItem?.createdBy || '',
+            createdDate: procedureItem?.createdDate || '',
+            lastEditedBy: procedureItem?.lastEditedBy || '',
+            lastEdited: procedureItem?.lastEdited || '',
           }}
-          onClose={() => setIsProcedureModalOpen(false)}
+          startOnSettings={procedureModalSettings}
+          flowChanges={flowChangeSummary}
+          onClose={() => { setIsProcedureModalOpen(false); setProcedureModalSettings(false); }}
           onSave={(updatedProcedure) => {
-            // Update procedure details if needed
             setIsProcedureModalOpen(false);
+            setProcedureModalSettings(false);
           }}
         />
       )}
@@ -2770,102 +3041,6 @@ function FlowEditorInner({ procedureId, procedureName, onClose }: ProcedureCanva
         }}
       />
 
-      {/* Keyboard Shortcuts Modal */}
-      {showHotkeys && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center"
-          onClick={() => setShowHotkeys(false)}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative rounded-xl overflow-hidden"
-            style={{
-              width: '480px',
-              maxHeight: '80vh',
-              backgroundColor: 'var(--card)',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--elevation-lg)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div
-              className="flex items-center justify-between px-5 py-4 border-b"
-              style={{ borderColor: 'var(--border)' }}
-            >
-              <div className="flex items-center gap-2">
-                <Keyboard className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                <span className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
-                  Keyboard Shortcuts
-                </span>
-              </div>
-              <button
-                onClick={() => setShowHotkeys(false)}
-                className="p-1 rounded hover:bg-secondary transition-colors"
-              >
-                <X size={16} style={{ color: 'var(--muted)' }} />
-              </button>
-            </div>
-
-            {/* Shortcuts List */}
-            <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(80vh - 60px)' }}>
-              {[
-                { section: 'General', shortcuts: [
-                  { keys: 'Ctrl+Z', label: 'Undo' },
-                  { keys: 'Ctrl+Y', label: 'Redo' },
-                  { keys: 'Ctrl+S', label: 'Save' },
-                  { keys: 'Ctrl+F', label: 'Search nodes' },
-                  { keys: 'Escape', label: 'Deselect all / close menu' },
-                  { keys: '?', label: 'Show keyboard shortcuts' },
-                ]},
-                { section: 'Canvas', shortcuts: [
-                  { keys: '⇧1', label: 'Fit view' },
-                  { keys: 'N', label: 'Add new step' },
-                  { keys: 'Delete', label: 'Delete selected' },
-                  { keys: '↑ ↓ ← →', label: 'Nudge selected nodes' },
-                ]},
-                { section: 'Selection', shortcuts: [
-                  { keys: 'Shift+Click', label: 'Multi-select nodes' },
-                  { keys: 'Drag on canvas', label: 'Selection box' },
-                ]},
-                { section: 'Nodes', shortcuts: [
-                  { keys: 'Double-click', label: 'Edit node title / description' },
-                  { keys: 'Right-click', label: 'Context menu' },
-                ]},
-              ].map(({ section, shortcuts }) => (
-                <div key={section}>
-                  <div
-                    className="px-5 py-2 text-[10px] font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--muted)', backgroundColor: 'var(--secondary)' }}
-                  >
-                    {section}
-                  </div>
-                  {shortcuts.map(({ keys, label }) => (
-                    <div
-                      key={keys}
-                      className="flex items-center justify-between px-5 py-2.5 border-b"
-                      style={{ borderColor: 'var(--border)' }}
-                    >
-                      <span className="text-xs" style={{ color: 'var(--foreground)' }}>{label}</span>
-                      <kbd
-                        className="inline-block text-[11px] font-mono px-2 py-0.5 rounded"
-                        style={{
-                          backgroundColor: 'var(--secondary)',
-                          color: 'var(--foreground)',
-                          border: '1px solid var(--border)',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {keys}
-                      </kbd>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

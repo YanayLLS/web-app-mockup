@@ -307,11 +307,8 @@ export function LanguagePanel({
                         e.currentTarget.style.backgroundColor = 'transparent';
                       }}
                     >
-                      <Sparkles size={13} style={{ color: aiLimitReached ? '#7F7F7F' : '#2F80ED' }} />
+                      <Sparkles size={13} style={{ color: '#2F80ED' }} />
                       Translate with AI
-                      {aiLimitReached && (
-                        <AlertTriangle size={11} style={{ color: '#FF1F1F', marginLeft: 'auto' }} />
-                      )}
                     </button>
 
                     <div className="my-1 mx-3" style={{ borderTop: '1px solid #E9E9E9' }} />
@@ -360,24 +357,6 @@ export function LanguagePanel({
         })}
       </div>
 
-      {/* ── AI limit reached alert ── */}
-      {aiLimitReached && (
-        <div className="px-5 py-3 shrink-0" style={{ borderTop: '1px solid #E9E9E9' }}>
-          <div
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg"
-            style={{
-              backgroundColor: 'rgba(255, 31, 31, 0.06)',
-              border: '1px solid rgba(255, 31, 31, 0.12)',
-            }}
-          >
-            <AlertTriangle size={13} style={{ color: '#FF1F1F', flexShrink: 0 }} />
-            <span className="text-[11px] font-medium" style={{ color: '#FF1F1F' }}>
-              AI usage limit reached. Contact your admin.
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* ── Footer actions ── */}
       <div
         className="px-5 py-4 shrink-0 flex flex-col gap-2.5"
@@ -417,33 +396,32 @@ export function LanguagePanel({
           style={{
             backgroundColor:
               procedureLanguages.length >= 2
-                ? aiLimitReached ? 'rgba(255, 31, 31, 0.04)' : 'rgba(47, 128, 237, 0.06)'
+                ? 'rgba(47, 128, 237, 0.06)'
                 : '#F5F5F5',
             color:
               procedureLanguages.length >= 2
-                ? aiLimitReached ? '#FF1F1F' : '#2F80ED'
+                ? '#2F80ED'
                 : '#7F7F7F',
             border: `1px solid ${
               procedureLanguages.length >= 2
-                ? aiLimitReached ? 'rgba(255, 31, 31, 0.2)' : 'rgba(47, 128, 237, 0.2)'
+                ? 'rgba(47, 128, 237, 0.2)'
                 : '#E9E9E9'
             }`,
             opacity: procedureLanguages.length < 2 ? 0.5 : 1,
           }}
           onMouseEnter={(e) => {
             if (procedureLanguages.length >= 2) {
-              e.currentTarget.style.backgroundColor = aiLimitReached ? 'rgba(255, 31, 31, 0.08)' : 'rgba(47, 128, 237, 0.10)';
+              e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.10)';
             }
           }}
           onMouseLeave={(e) => {
             if (procedureLanguages.length >= 2) {
-              e.currentTarget.style.backgroundColor = aiLimitReached ? 'rgba(255, 31, 31, 0.04)' : 'rgba(47, 128, 237, 0.06)';
+              e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.06)';
             }
           }}
         >
           <Sparkles size={13} />
           Translate All with AI
-          {aiLimitReached && <AlertTriangle size={11} style={{ color: '#FF1F1F' }} />}
         </button>
 
         <div className="flex gap-2">

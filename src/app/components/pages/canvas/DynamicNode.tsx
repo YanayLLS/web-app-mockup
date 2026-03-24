@@ -93,6 +93,7 @@ export interface DynamicNodeData {
   onAddConnectedStep?: (sourceHandle?: string) => void;
   connectedHandles?: Set<string>;
   onOpenMediaLibrary?: (callback: (selectedMedia: string[]) => void) => void;
+  compactView?: boolean;
 }
 
 type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'media';
@@ -296,10 +297,12 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
     (data.popups && data.popups.length > 0) ||
     (data.media && data.media.length > 0);
 
+  const isCompact = data.compactView === true;
+
   return (
     <div
       ref={containerRef}
-      className="relative group transition-all duration-200 min-w-[220px] sm:min-w-[280px] w-max max-w-[90vw] sm:max-w-[400px]"
+      className={`relative group transition-all duration-200 w-max max-w-[90vw] ${isCompact ? 'min-w-[160px] sm:min-w-[200px] sm:max-w-[260px]' : 'min-w-[220px] sm:min-w-[280px] sm:max-w-[400px]'}`}
     >
       <div
         className="canvas-step-card relative rounded-xl transition-all"
@@ -387,27 +390,55 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                 {localTitle || 'Step Title'}
               </div>
             )}
-            <RichTextDescription
-              content={localDesc}
-              isEditing={editingField === 'description'}
-              onStartEdit={() => setEditingField('description')}
-              onStopEdit={() => setEditingField('none')}
-              onChange={(html) => {
-                setLocalDesc(html);
-                if (isNonDefault) {
-                  updateData({
-                    descriptionMulti: { ...(data.descriptionMulti || {}), [editLang]: html },
-                    descriptionMultiBase: { ...(data.descriptionMultiBase || {}), [editLang]: data.description },
-                  });
-                } else {
-                  updateData({ description: html, descriptionMulti: { ...(data.descriptionMulti || {}), [defLang]: html } });
-                }
-              }}
-            />
+            {!isCompact && (
+              <RichTextDescription
+                content={localDesc}
+                isEditing={editingField === 'description'}
+                onStartEdit={() => setEditingField('description')}
+                onStopEdit={() => setEditingField('none')}
+                onChange={(html) => {
+                  setLocalDesc(html);
+                  if (isNonDefault) {
+                    updateData({
+                      descriptionMulti: { ...(data.descriptionMulti || {}), [editLang]: html },
+                      descriptionMultiBase: { ...(data.descriptionMultiBase || {}), [editLang]: data.description },
+                    });
+                  } else {
+                    updateData({ description: html, descriptionMulti: { ...(data.descriptionMulti || {}), [defLang]: html } });
+                  }
+                }}
+              />
+            )}
           </div>
 
+          {/* Compact view: inline feature badges */}
+          {isCompact && anyToolActive && (
+            <div className="flex items-center gap-1 flex-wrap mt-0.5">
+              {data.isInput && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(47,128,237,0.10)', color: 'var(--primary)' }}>
+                  <TextCursorInput size={8} /> Input
+                </span>
+              )}
+              {data.options && data.options.length > 1 && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(47,128,237,0.10)', color: 'var(--primary)' }}>
+                  <GitFork size={8} /> {data.options.length}
+                </span>
+              )}
+              {data.popups && data.popups.length > 0 && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
+                  <Zap size={8} /> {data.popups.length}
+                </span>
+              )}
+              {data.media && data.media.length > 0 && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981' }}>
+                  <ImageIcon size={8} /> {data.media.length}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Feature Toolbar — only active (on) buttons visible; hover to expand all */}
-          {data.editingEnabled !== false && (
+          {data.editingEnabled !== false && !isCompact && (
           <div className={`canvas-step-toolbar nodrag mt-1 ${activeMenu !== 'none' ? 'expanded' : ''}`}>
             <button
               onClick={() => handleToggleMenu('colorize')}
@@ -463,7 +494,7 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
         </div>
 
         {/* Floating Configuration Menus (non-branching menus only) */}
-        {activeMenu !== 'none' && activeMenu !== 'branching' && (
+        {!isCompact && activeMenu !== 'none' && activeMenu !== 'branching' && (
           <div
             ref={menuRef}
             className={`canvas-config-menu nodrag placement-${menuSide}`}
@@ -972,6 +1003,8 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
         )}
 
         {/* Comment Badge + Inline Popover */}
+        {!isCompact && (
+        <>
         <button
           onClick={(e) => { e.stopPropagation(); setShowCommentPopover(!showCommentPopover); }}
           className={`absolute -top-2.5 -right-2.5 flex items-center gap-1 rounded-full z-20 transition-all nodrag ${
@@ -1353,6 +1386,8 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               </div>
             </div>
           </div>
+        )}
+        </>
         )}
 
         {/* Node Actions — floating bar above the card */}

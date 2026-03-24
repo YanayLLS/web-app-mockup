@@ -56,9 +56,11 @@ interface ProcedureModalProps {
   startEditingTitle?: boolean;
   onOpenCanvas?: () => void;
   onOpenProcedure?: (procedureItem: any) => void;
+  startOnSettings?: boolean;
+  flowChanges?: { label: string; detail: string }[];
 }
 
-export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, onClose, onSave, startEditingTitle = false, onOpenCanvas, onOpenProcedure }: ProcedureModalProps) {
+export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, onClose, onSave, startEditingTitle = false, startOnSettings = false, onOpenCanvas, onOpenProcedure, flowChanges = [] }: ProcedureModalProps) {
   const { digitalTwins, getDigitalTwinById, knowledgeBaseItems, currentProject } = useProject();
   const { currentRole } = useRole();
   const { favorites, addFavorite, removeFavorite } = useFavorites();
@@ -104,8 +106,16 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
   const [selectedDigitalTwinIds, setSelectedDigitalTwinIds] = useState<string[]>(procedure.connectedDigitalTwinIds || []);
   const [showDigitalTwinDropdown, setShowDigitalTwinDropdown] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(startEditingTitle);
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
+  const [settingsExpanded, setSettingsExpanded] = useState(startOnSettings);
   const [versionHistoryExpanded, setVersionHistoryExpanded] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to settings section when opened via settings button
+  useEffect(() => {
+    if (startOnSettings && settingsRef.current) {
+      setTimeout(() => settingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  }, [startOnSettings]);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [isTitleHovered, setIsTitleHovered] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -247,9 +257,14 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
       else if (initialAIRef.current && !aiInstructions) pendingChanges.push({ label: 'AI Instructions', detail: 'Removed' });
       else pendingChanges.push({ label: 'AI Instructions', detail: 'Modified' });
     }
-    // If item was already flagged as having unpublished changes and no local edits
+    // If item was already flagged as having unpublished changes and no local edits,
+    // use the detailed flow changes if available
     if (procedure.hasUnpublishedChanges && pendingChanges.length === 0) {
-      pendingChanges.push({ label: 'Content', detail: isDT ? 'Digital twin updated since last publish' : 'Flow steps updated since last publish' });
+      if (flowChanges.length > 0) {
+        pendingChanges.push(...flowChanges);
+      } else {
+        pendingChanges.push({ label: 'Content', detail: isDT ? 'Digital twin updated since last publish' : 'Flow steps updated since last publish' });
+      }
     }
   }
 
@@ -1056,21 +1071,6 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
             {/* Divider */}
             <div style={{ height: 1, backgroundColor: '#F0F1F4', margin: '0 0 14px 0' }} />
 
-            {/* Unpublished changes indicator */}
-            {canEdit && procedure.isPublished && (pendingChanges.length > 0 || procedure.hasUnpublishedChanges) && (
-              <div className="flex items-center gap-2" style={{ marginBottom: 12 }}>
-                <div className="flex items-center gap-1.5" style={{
-                  padding: '4px 10px',
-                  backgroundColor: 'rgba(245,158,11,0.08)',
-                  border: '1px solid rgba(245,158,11,0.18)',
-                  borderRadius: 6,
-                }}>
-                  <AlertCircle size={13} style={{ color: '#F59E0B' }} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#D97706' }}>Unpublished changes</span>
-                </div>
-              </div>
-            )}
-
             {/* Editable title */}
             <div
               style={{ marginBottom: 10 }}
@@ -1216,28 +1216,30 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
                     Unpublishing...
                   </span>
                 ) : procedure.isPublished ? (
-                  <span
-                    onClick={canPublish ? () => setShowStatusMenu(!showStatusMenu) : undefined}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      padding: '3px 10px',
-                      backgroundColor: 'rgba(11,158,77,0.1)',
-                      color: '#0B9E4D',
-                      borderRadius: 20,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: canPublish ? 'pointer' : 'default',
-                      transition: 'filter 120ms',
-                    }}
-                    onMouseEnter={(e) => { if (canPublish) (e.currentTarget as HTMLElement).style.filter = 'brightness(0.92)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-                  >
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#0B9E4D' }} />
-                    Published
-                    {canPublish && <ChevronDown size={12} style={{ marginLeft: 2 }} />}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      onClick={canPublish ? () => setShowStatusMenu(!showStatusMenu) : undefined}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        padding: '3px 10px',
+                        backgroundColor: (pendingChanges.length > 0 || procedure.hasUnpublishedChanges) ? 'rgba(245,158,11,0.08)' : 'rgba(11,158,77,0.1)',
+                        color: (pendingChanges.length > 0 || procedure.hasUnpublishedChanges) ? '#D97706' : '#0B9E4D',
+                        borderRadius: 20,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: canPublish ? 'pointer' : 'default',
+                        transition: 'filter 120ms, background-color 200ms, color 200ms',
+                      }}
+                      onMouseEnter={(e) => { if (canPublish) (e.currentTarget as HTMLElement).style.filter = 'brightness(0.92)'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                    >
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: (pendingChanges.length > 0 || procedure.hasUnpublishedChanges) ? '#F59E0B' : '#0B9E4D' }} />
+                      {(pendingChanges.length > 0 || procedure.hasUnpublishedChanges) ? 'Unpublished changes' : 'Published'}
+                      {canPublish && <ChevronDown size={12} style={{ marginLeft: 2 }} />}
+                    </span>
+                  </div>
                 ) : (
                   <span style={{
                     display: 'inline-flex',
@@ -1464,7 +1466,7 @@ export function ProcedureModal({ isOpen = true, mode = 'procedure', procedure, o
             </div>
           ) : (
             /* Settings — procedure mode: wrap ProcedureSettings in card */
-            <div style={cardStyle}>
+            <div ref={settingsRef} style={cardStyle}>
               <ProcedureSettings
                 isExpanded={settingsExpanded}
                 onToggleExpand={() => setSettingsExpanded(!settingsExpanded)}

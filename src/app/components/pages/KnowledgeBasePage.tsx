@@ -2614,6 +2614,7 @@ function KnowledgeBaseContent() {
           <ProcedureCanvas
             procedureId={canvasProcedure.id}
             procedureName={canvasProcedure.name}
+            procedureItem={canvasProcedure}
             onClose={() => openCanvas(null)}
           />
         </div>

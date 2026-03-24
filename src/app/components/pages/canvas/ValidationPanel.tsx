@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Navigation,
   X,
+  XCircle,
   CheckCircle2,
 } from 'lucide-react';
 import type { ValidationResult, ValidationSeverity, ValidationIssue } from './useFlowValidation';
@@ -38,7 +39,7 @@ const severityConfig: Record<ValidationSeverity, { icon: typeof AlertCircle; col
   },
 };
 
-function IssueItem({ issue, onGoTo }: { issue: ValidationIssue; onGoTo: () => void }) {
+function IssueItem({ issue, onGoTo, onDismiss }: { issue: ValidationIssue; onGoTo: () => void; onDismiss: () => void }) {
   const config = severityConfig[issue.severity];
   const Icon = config.icon;
 
@@ -54,17 +55,30 @@ function IssueItem({ issue, onGoTo }: { issue: ValidationIssue; onGoTo: () => vo
       <span className="text-xs leading-relaxed flex-1" style={{ color: 'var(--foreground)' }}>
         {issue.message}
       </span>
-      <button
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
-        style={{ color: config.color }}
-        title="Go to node"
-        onClick={(e) => {
-          e.stopPropagation();
-          onGoTo();
-        }}
-      >
-        <Navigation size={12} />
-      </button>
+      <div className="flex items-center gap-0.5 shrink-0">
+        <button
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/60"
+          style={{ color: config.color }}
+          title="Go to node"
+          onClick={(e) => {
+            e.stopPropagation();
+            onGoTo();
+          }}
+        >
+          <Navigation size={12} />
+        </button>
+        <button
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/60"
+          style={{ color: '#868D9E' }}
+          title="Dismiss"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDismiss();
+          }}
+        >
+          <XCircle size={12} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -73,10 +87,12 @@ function SeveritySection({
   severity,
   issues,
   onGoToNode,
+  onDismiss,
 }: {
   severity: ValidationSeverity;
   issues: ValidationIssue[];
   onGoToNode: (nodeId: string) => void;
+  onDismiss: (issueId: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const config = severityConfig[severity];
@@ -108,6 +124,7 @@ function SeveritySection({
               key={issue.id}
               issue={issue}
               onGoTo={() => issue.nodeId && onGoToNode(issue.nodeId)}
+              onDismiss={() => onDismiss(issue.id)}
             />
           ))}
         </div>
@@ -117,9 +134,14 @@ function SeveritySection({
 }
 
 export function ValidationPanel({ result, onGoToNode, onClose }: ValidationPanelProps) {
-  const errorIssues = result.issues.filter((i) => i.severity === 'error');
-  const warningIssues = result.issues.filter((i) => i.severity === 'warning');
-  const infoIssues = result.issues.filter((i) => i.severity === 'info');
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const dismissIssue = (id: string) => setDismissedIds(prev => new Set(prev).add(id));
+  const activeIssues = result.issues.filter(i => !dismissedIds.has(i.id));
+  const dismissedCount = dismissedIds.size;
+
+  const errorIssues = activeIssues.filter((i) => i.severity === 'error');
+  const warningIssues = activeIssues.filter((i) => i.severity === 'warning');
+  const infoIssues = activeIssues.filter((i) => i.severity === 'info');
 
   return (
     <div
@@ -141,15 +163,15 @@ export function ValidationPanel({ result, onGoToNode, onClose }: ValidationPanel
           <span className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
             Validation
           </span>
-          {result.totalCount > 0 && (
+          {activeIssues.length > 0 && (
             <span
               className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
               style={{
-                backgroundColor: result.errorCount > 0 ? 'rgba(255,31,31,0.1)' : result.warningCount > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(47,128,237,0.1)',
-                color: result.errorCount > 0 ? '#FF1F1F' : result.warningCount > 0 ? '#f59e0b' : '#2F80ED',
+                backgroundColor: errorIssues.length > 0 ? 'rgba(255,31,31,0.1)' : warningIssues.length > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(47,128,237,0.1)',
+                color: errorIssues.length > 0 ? '#FF1F1F' : warningIssues.length > 0 ? '#f59e0b' : '#2F80ED',
               }}
             >
-              {result.totalCount}
+              {activeIssues.length}
             </span>
           )}
         </div>
@@ -164,21 +186,34 @@ export function ValidationPanel({ result, onGoToNode, onClose }: ValidationPanel
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-        {result.totalCount === 0 ? (
+        {activeIssues.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <CheckCircle2 size={40} style={{ color: '#11E874', opacity: 0.6 }} />
             <div className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-              No issues found
+              {dismissedCount > 0 ? 'All issues dismissed' : 'No issues found'}
             </div>
             <div className="text-xs text-center px-6" style={{ color: 'var(--muted)' }}>
-              Your flow looks good! All nodes are properly connected.
+              {dismissedCount > 0
+                ? `${dismissedCount} issue${dismissedCount > 1 ? 's' : ''} dismissed.`
+                : 'Your flow looks good! All nodes are properly connected.'}
             </div>
+            {dismissedCount > 0 && (
+              <button
+                onClick={() => setDismissedIds(new Set())}
+                className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                style={{ color: '#2F80ED', backgroundColor: 'rgba(47, 128, 237, 0.06)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.12)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.06)'; }}
+              >
+                Show dismissed
+              </button>
+            )}
           </div>
         ) : (
           <>
-            <SeveritySection severity="error" issues={errorIssues} onGoToNode={onGoToNode} />
-            <SeveritySection severity="warning" issues={warningIssues} onGoToNode={onGoToNode} />
-            <SeveritySection severity="info" issues={infoIssues} onGoToNode={onGoToNode} />
+            <SeveritySection severity="error" issues={errorIssues} onGoToNode={onGoToNode} onDismiss={dismissIssue} />
+            <SeveritySection severity="warning" issues={warningIssues} onGoToNode={onGoToNode} onDismiss={dismissIssue} />
+            <SeveritySection severity="info" issues={infoIssues} onGoToNode={onGoToNode} onDismiss={dismissIssue} />
           </>
         )}
       </div>
@@ -188,19 +223,24 @@ export function ValidationPanel({ result, onGoToNode, onClose }: ValidationPanel
         className="px-4 py-2.5 border-t shrink-0 flex items-center gap-3 text-[10px] uppercase tracking-wide font-bold"
         style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
       >
-        {result.errorCount > 0 && (
+        {errorIssues.length > 0 && (
           <span className="flex items-center gap-1" style={{ color: '#FF1F1F' }}>
-            <AlertCircle size={10} /> {result.errorCount} errors
+            <AlertCircle size={10} /> {errorIssues.length} errors
           </span>
         )}
-        {result.warningCount > 0 && (
+        {warningIssues.length > 0 && (
           <span className="flex items-center gap-1" style={{ color: '#f59e0b' }}>
-            <AlertTriangle size={10} /> {result.warningCount} warnings
+            <AlertTriangle size={10} /> {warningIssues.length} warnings
           </span>
         )}
-        {result.infoCount > 0 && (
+        {infoIssues.length > 0 && (
           <span className="flex items-center gap-1" style={{ color: '#2F80ED' }}>
-            <Info size={10} /> {result.infoCount} info
+            <Info size={10} /> {infoIssues.length} info
+          </span>
+        )}
+        {dismissedCount > 0 && (
+          <span className="flex items-center gap-1 ml-auto" style={{ color: '#868D9E' }}>
+            {dismissedCount} dismissed
           </span>
         )}
       </div>

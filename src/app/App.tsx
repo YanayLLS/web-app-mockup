@@ -344,6 +344,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
             icon: <IconOverview />,
             title: 'Knowledge Base',
             content: <KnowledgeBasePage />,
+            hideHeader: true,
           };
         case 'analytics':
           return {
@@ -365,6 +366,7 @@ function MainApp({ isMobile }: { isMobile: boolean }) {
             icon: <IconOverview />,
             title: 'Knowledge Base',
             content: <KnowledgeBasePage />,
+            hideHeader: true,
           };
         default:
           return {

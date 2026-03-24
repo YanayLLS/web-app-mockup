@@ -265,35 +265,19 @@ export function ContextMenu({ x, y, type, onClose, onAction, nodeData, selectedC
     <div ref={menuRef} className={menuClass} style={menuStyle}>
       <div className="py-1 min-w-[240px]">
         <SectionLabel>Add Node</SectionLabel>
-        <MenuItem
-          icon={Box}
-          label="Step Node"
-          sub="Configurable procedure step"
-          onClick={() => onAction('create-step')}
-        />
-        {/* #54 — Add Note and Logic Node options */}
-        <MenuItem
-          icon={StickyNote}
-          label="Note"
-          sub="Add a sticky note"
-          onClick={() => onAction('create-note')}
-        />
-        <MenuItem
-          icon={GitBranch}
-          label="Logic Node"
-          sub="Platform switch, procedure link, or object target"
-          onClick={() => onAction('create-logic')}
-        />
+        <MenuItem icon={Box} label="Step Node" onClick={() => onAction('create-step')} />
+        <MenuItem icon={StickyNote} label="Note" onClick={() => onAction('create-note')} />
+        <MenuItem icon={GitBranch} label="Logic Node" onClick={() => onAction('create-logic')} />
 
         {type === ContextMenuType.CANVAS_ROOT && (
           <>
             <Divider />
             <SectionLabel>Layout</SectionLabel>
-            <MenuItem icon={LayoutGrid} label="Auto Arrange" sub="Organize nodes automatically" onClick={() => onAction('auto-arrange')} />
+            <MenuItem icon={LayoutGrid} label="Auto Arrange" onClick={() => onAction('auto-arrange')} />
 
             <Divider />
             <SectionLabel>Organize</SectionLabel>
-            <MenuItem icon={Layers} label="Group Selected" sub="Wrap selected nodes in a section" onClick={() => onAction('group-selected')} />
+            <MenuItem icon={Layers} label="Group Selected" onClick={() => onAction('group-selected')} />
           </>
         )}
 

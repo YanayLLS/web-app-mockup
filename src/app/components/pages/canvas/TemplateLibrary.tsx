@@ -63,75 +63,68 @@ function getCategoryColor(category: string): string {
 function FlowThumbnail({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) {
   if (nodes.length === 0) return null;
 
-  // Normalize positions to fit in thumbnail
-  const xs = nodes.map(n => n.position.x);
-  const ys = nodes.map(n => n.position.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const rangeX = maxX - minX || 1;
-  const rangeY = maxY - minY || 1;
-
-  const svgW = 200, svgH = 52;
-  const padX = 18, padY = 12;
+  const svgW = 220, svgH = 80;
+  const padX = 16, padY = 14;
   const innerW = svgW - padX * 2;
   const innerH = svgH - padY * 2;
+  const nodeW = 48, nodeH = 14, nodeR = 4;
 
-  const nodeW = 24, nodeH = 12, nodeR = 3;
+  // Sort by Y position (flow order), then lay out top-to-bottom
+  const sorted = [...nodes].sort((a, b) => a.position.y - b.position.y);
+  const cols = Math.max(1, Math.ceil(Math.sqrt(sorted.length * 0.6)));
+  const rows = Math.ceil(sorted.length / cols);
+  const gapX = cols > 1 ? innerW / (cols - 1 || 1) : 0;
+  const gapY = rows > 1 ? innerH / (rows - 1 || 1) : 0;
 
   const positions = new Map<string, { cx: number; cy: number }>();
-  nodes.forEach(n => {
-    const cx = padX + ((n.position.x - minX) / rangeX) * innerW;
-    const cy = padY + ((n.position.y - minY) / rangeY) * innerH;
-    positions.set(n.id, { cx, cy });
-  });
-
-  // If all nodes stacked vertically, spread them horizontally instead
-  const allSameX = nodes.every(n => n.position.x === nodes[0].position.x);
-  if (allSameX && nodes.length > 1) {
-    const sorted = [...nodes].sort((a, b) => a.position.y - b.position.y);
-    sorted.forEach((n, i) => {
-      positions.set(n.id, {
-        cx: padX + (i / (sorted.length - 1)) * innerW,
-        cy: svgH / 2,
-      });
+  sorted.forEach((n, i) => {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    positions.set(n.id, {
+      cx: padX + (cols === 1 ? innerW / 2 : col * gapX),
+      cy: padY + (rows === 1 ? innerH / 2 : row * gapY),
     });
-  }
+  });
 
   return (
     <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ display: 'block' }}>
-      {/* Edges */}
+      {/* Edges — curved connectors */}
       {edges.map(e => {
         const from = positions.get(e.source);
         const to = positions.get(e.target);
         if (!from || !to) return null;
+        const midY = (from.cy + to.cy) / 2;
         return (
-          <line
+          <path
             key={e.id}
-            x1={from.cx} y1={from.cy}
-            x2={to.cx} y2={to.cy}
-            stroke="var(--border)"
-            strokeWidth={1.5}
+            d={`M${from.cx},${from.cy + nodeH / 2} C${from.cx},${midY} ${to.cx},${midY} ${to.cx},${to.cy - nodeH / 2}`}
+            fill="none"
+            stroke="#C2C9DB"
+            strokeWidth={1.2}
           />
         );
       })}
       {/* Nodes */}
-      {nodes.map(n => {
+      {sorted.map(n => {
         const pos = positions.get(n.id);
         if (!pos) return null;
         const d = n.data as any;
+        const isStart = n.type === 'start';
         const isBranch = d?.options?.length > 1;
-        const fillColor = d?.isColorized && d?.color ? d.color : 'var(--border)';
+        const color = d?.isColorized && d?.color ? d.color : '#2F80ED';
+        const w = isBranch ? nodeW + 8 : nodeW;
+        const r = isStart ? nodeH / 2 : isBranch ? nodeH / 2 : nodeR;
         return (
           <rect
             key={n.id}
-            x={pos.cx - nodeW / 2}
+            x={pos.cx - w / 2}
             y={pos.cy - nodeH / 2}
-            width={isBranch ? nodeW + 6 : nodeW}
+            width={w}
             height={nodeH}
-            rx={isBranch ? nodeH / 2 : nodeR}
-            fill={fillColor + '25'}
-            stroke={fillColor}
-            strokeWidth={1.5}
+            rx={r}
+            fill={isStart ? '#2F80ED' : color + '18'}
+            stroke={isStart ? '#2F80ED' : color}
+            strokeWidth={isStart ? 0 : 1.2}
           />
         );
       })}
@@ -583,7 +576,7 @@ function TemplateCard({
     >
       {/* Thumbnail */}
       <div
-        className="px-3 pt-3 pb-1"
+        className="px-3 pt-3 pb-2"
         style={{ backgroundColor: 'var(--background)' }}
       >
         <FlowThumbnail nodes={template.nodes} edges={template.edges} />
