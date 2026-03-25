@@ -53,7 +53,7 @@ export function RichTextDescription({
   onStartEdit,
   onStopEdit,
   onChange,
-  placeholder = 'Enter instructions...',
+  placeholder = 'Enter description',
 }: RichTextDescriptionProps) {
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -189,9 +189,8 @@ export function RichTextDescription({
 
   return (
     <div ref={editorContainerRef} className="rt-description-wrapper w-full min-h-[28px]">
-      {/* Fixed Toolbar — always visible at top when editing */}
-      {isEditing && (
-        <div className="rt-fixed-toolbar nodrag" onMouseDown={(e) => e.preventDefault()}>
+      {/* Fixed Toolbar — space always reserved, visible only when editing */}
+        <div className={`rt-fixed-toolbar nodrag ${isEditing ? '' : 'rt-toolbar-hidden'}`} onMouseDown={(e) => e.preventDefault()}>
           {showLinkInput ? (
             <div className="rt-link-input-row">
               <input
@@ -361,16 +360,19 @@ export function RichTextDescription({
             </div>
           )}
         </div>
-      )}
 
       {/* Editor / Display */}
       <div
         onDoubleClick={() => {
           if (!isEditing) onStartEdit();
         }}
-        className={isEditing ? 'cursor-text' : 'cursor-grab'}
+        className={isEditing ? 'cursor-text' : 'canvas-field-hover cursor-grab'}
       >
-        <EditorContent editor={editor} />
+        {!isEditing && !content ? (
+          <div className="rt-empty-placeholder">{placeholder}</div>
+        ) : (
+          <EditorContent editor={editor} />
+        )}
       </div>
     </div>
   );

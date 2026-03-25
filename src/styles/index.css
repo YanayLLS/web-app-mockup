@@ -141,24 +141,25 @@
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* Step card feature toolbar — collapsed by default, expand on hover */
+/* Step card feature toolbar — icon grid, always visible */
 .canvas-step-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   padding: 3px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.85);
+  border-radius: 7px;
+  background: rgba(245, 247, 250, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   width: 100%;
 }
 
-/* Buttons stretch to fill toolbar width evenly */
+/* Buttons fill the toolbar evenly */
 .canvas-step-toolbar > .canvas-step-tool-btn {
   flex: 1 1 0;
-  justify-content: center;
+  min-width: 0;
 }
 .canvas-step-toolbar > .canvas-step-tool-sep {
   flex: 0 0 auto;
@@ -168,60 +169,77 @@
   justify-content: center;
 }
 
-/* Individual tool button — icon + compact label */
+/* Individual tool button — square with icon + tiny label */
 .canvas-step-tool-btn {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  height: 26px;
-  padding: 0 8px 0 6px;
-  border-radius: 6px;
-  color: #B0B7C8;
+  justify-content: center;
+  gap: 1px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: #94A0B8;
   background: transparent;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
   white-space: nowrap;
   cursor: pointer;
 }
 .canvas-step-tool-label {
-  font-size: 10.5px;
-  font-weight: 550;
-  letter-spacing: 0.01em;
+  font-size: 6px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   line-height: 1;
+  text-transform: uppercase;
+  opacity: 0.6;
+  transition: font-weight 0.15s ease, opacity 0.15s ease;
 }
 
-/* Dim inactive buttons when toolbar is collapsed (not hovered) */
-.canvas-step-toolbar:not(:hover):not(.expanded) .canvas-step-tool-btn:not(.active):not(.menu-open) {
-  opacity: 0.3;
+/* Dim inactive buttons when card is not hovered and toolbar not expanded */
+.canvas-step-card:not(:hover) .canvas-step-toolbar:not(.expanded) .canvas-step-tool-btn:not(.active):not(.menu-open) {
+  opacity: 0.4;
 }
-.canvas-step-toolbar:not(:hover):not(.expanded) .canvas-step-tool-btn:not(.active):not(.menu-open) .canvas-step-tool-label {
-  visibility: hidden;
+.canvas-step-card:not(:hover) .canvas-step-toolbar:not(.expanded) .canvas-step-tool-sep {
+  opacity: 0.15;
 }
-.canvas-step-toolbar:not(:hover):not(.expanded) .canvas-step-tool-sep {
-  opacity: 0.2;
+
+/* When card is hovered or toolbar expanded, boost labels */
+.canvas-step-card:hover .canvas-step-tool-label,
+.canvas-step-toolbar.expanded .canvas-step-tool-label {
+  font-weight: 600;
+  opacity: 0.8;
 }
 
 .canvas-step-tool-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.06);
   color: #5E677D;
+}
+.canvas-step-tool-btn:hover .canvas-step-tool-label {
+  opacity: 1;
+  font-weight: 600;
 }
 .canvas-step-tool-btn.active {
   color: var(--tool-active-color, #2F80ED);
   background: color-mix(in srgb, var(--tool-active-color, #2F80ED) 8%, transparent);
 }
+.canvas-step-tool-btn.active .canvas-step-tool-label {
+  opacity: 1;
+  font-weight: 600;
+}
 .canvas-step-tool-btn.active::after {
   content: '';
   position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 5px;
-  height: 5px;
+  top: 1px;
+  right: 1px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
   background: var(--tool-active-color, #2F80ED);
 }
 /* Visual indicator when config menu is open */
 .canvas-step-tool-btn.menu-open {
-  background: rgba(47, 128, 237, 0.12);
+  background: rgba(47, 128, 237, 0.10);
   color: var(--tool-active-color, #2F80ED);
   box-shadow: inset 0 -2px 0 var(--tool-active-color, #2F80ED);
 }
@@ -229,9 +247,10 @@
 /* Toolbar divider */
 .canvas-step-tool-sep {
   width: 1px;
-  height: 16px;
+  height: 14px;
   margin: 0 1px;
-  background: rgba(0, 0, 0, 0.08);
+  align-self: center;
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 1px;
 }
 
@@ -690,6 +709,13 @@
     0 0 0 1px rgba(0, 0, 0, 0.02);
 }
 
+/* Animation Manager — larger popover */
+.canvas-config-menu.menu-animation {
+  min-width: 300px;
+  max-width: 340px;
+  padding: 14px;
+}
+
 /* Placement variants */
 .canvas-config-menu.placement-right {
   top: 0;
@@ -1049,6 +1075,18 @@
   background: rgba(47, 128, 237, 0.06);
 }
 
+/* ─── Hover frame for editable fields ─── */
+.canvas-field-hover {
+  border-radius: 4px;
+  border: 1px solid transparent;
+  margin: -2px;
+  padding: 1px;
+  transition: border-color 0.15s ease;
+}
+.canvas-field-hover:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 /* ─── Rich Text Description (Tiptap) ─── */
 
 /* Editor content area */
@@ -1128,6 +1166,10 @@
   padding: 2px 3px;
   gap: 1px;
   margin-bottom: 4px;
+}
+.rt-toolbar-hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 .rt-bubble-btn-row {
   display: flex;
@@ -1223,6 +1265,15 @@
 }
 .rt-link-input:focus {
   border-color: #2E80ED;
+}
+
+/* Empty description placeholder — matches title placeholder style */
+.rt-empty-placeholder {
+  font-size: 11px;
+  line-height: 1.625;
+  color: #cbd5e1;
+  min-height: 18px;
+  cursor: grab;
 }
 
 /* Non-editable display — make sure cursor is grab for dragging */

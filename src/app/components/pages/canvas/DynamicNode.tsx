@@ -15,13 +15,25 @@ import {
   ScanBarcode,
   Type,
   Check,
-  Zap,
   Image as ImageIcon,
   Send,
   CheckCircle,
   RotateCcw,
   SmilePlus,
   Reply,
+  Film,
+  Volume2,
+  Code,
+  Search,
+  Clock,
+  Play,
+  Folder,
+  FolderOpen,
+  ChevronRight,
+  Filter,
+  ArrowUpDown,
+  RefreshCw,
+  FolderPlus,
 } from 'lucide-react';
 import { SUPPORTED_LANGUAGES } from './languageConstants';
 import { NodeTooltip } from './NodeTooltip';
@@ -74,6 +86,16 @@ export interface DynamicNodeData {
   options: Option[];
   popups: PopupNotice[];
   media: string[]; // Array of media IDs attached to this step
+  // Animation
+  animationId?: string | null;
+  animationName?: string;
+  animationDuration?: string;
+  animationColor?: string;
+  // TTS Override
+  ttsOverride?: string;
+  // FlowCode
+  flowCode?: string;
+  flowCodeEnabled?: boolean;
   titleMulti?: Record<string, string>;
   titleMultiBase?: Record<string, string>; // source title when translation was made
   descriptionMulti?: Record<string, string>;
@@ -93,10 +115,36 @@ export interface DynamicNodeData {
   onAddConnectedStep?: (sourceHandle?: string) => void;
   connectedHandles?: Set<string>;
   onOpenMediaLibrary?: (callback: (selectedMedia: string[]) => void) => void;
-  compactView?: boolean;
 }
 
-type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'media';
+type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'media' | 'animation' | 'tts' | 'flowcode';
+
+// Animation folder/item structure matching the real Animation Manager
+interface AnimFolder {
+  id: string;
+  name: string;
+  items: { id: string; name: string; duration: string }[];
+}
+const ANIM_FOLDERS: AnimFolder[] = [
+  {
+    id: 'folder-1', name: 'Maintenance', items: [
+      { id: 'anim-1', name: 'Fuel Cap Open', duration: '1.5s' },
+      { id: 'anim-2', name: 'Top Cover Lift', duration: '2s' },
+      { id: 'anim-4', name: 'Panel Remove', duration: '1.8s' },
+    ],
+  },
+  {
+    id: 'folder-2', name: 'Exploded Views', items: [
+      { id: 'anim-5', name: 'Engine Explode', duration: '2.5s' },
+      { id: 'anim-6', name: 'Air Filter Explode', duration: '2s' },
+    ],
+  },
+];
+const ANIM_ROOT_ITEMS = [
+  { id: 'anim-3', name: 'Exhaust Highlight', duration: '1.2s' },
+];
+// Flat list for searching
+const ALL_ANIMATIONS = [...ANIM_FOLDERS.flatMap(f => f.items), ...ANIM_ROOT_ITEMS];
 
 const EMOJI_PRESETS = ['👍', '❤️', '😂', '🎉', '🔥', '👀', '✅', '💯'];
 
@@ -140,6 +188,10 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
   const [commentDraft, setCommentDraft] = useState('');
   const [replyingToThread, setReplyingToThread] = useState<{ id: string; authorName: string } | null>(null);
   const [emojiPickerFor, setEmojiPickerFor] = useState<{ threadId: string; commentId: string } | null>(null);
+  const [animSearch, setAnimSearch] = useState('');
+  const [animExpandedFolders, setAnimExpandedFolders] = useState<Set<string>>(new Set(ANIM_FOLDERS.map(f => f.id)));
+  const [animFilterOpen, setAnimFilterOpen] = useState(false);
+
   const commentInputRef = useRef<HTMLInputElement>(null);
   const commentPopoverRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -148,6 +200,26 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
   const titleInputRef = useRef<HTMLInputElement>(null);
   const descDivRef = useRef<HTMLDivElement>(null);
   const descHeightRef = useRef<number>(0);
+
+  // Prevent ReactFlow zoom when scrolling inside an actually-scrollable child
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const handler = (e: WheelEvent) => {
+      let el = e.target as HTMLElement | null;
+      while (el && el !== node) {
+        const style = getComputedStyle(el);
+        const overflowY = style.overflowY;
+        if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+          e.stopPropagation();
+          return;
+        }
+        el = el.parentElement;
+      }
+    };
+    node.addEventListener('wheel', handler, { passive: true });
+    return () => node.removeEventListener('wheel', handler);
+  }, []);
 
   // Migrate old popup data format to new format
   useEffect(() => {
@@ -291,18 +363,14 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
   // Determine accent color
   const accentColor = data.isColorized ? (data.color || '#f59e0b') : ((data.options && data.options.length > 1) ? '#2F80ED' : '#C2C9DB');
 
-  // Whether any tool feature is active (for collapsed toolbar indicator)
-  const anyToolActive = data.isColorized || data.isInput ||
-    (data.options && data.options.length > 1) ||
-    (data.popups && data.popups.length > 0) ||
-    (data.media && data.media.length > 0);
-
-  const isCompact = data.compactView === true;
+  const hasAnimation = !!data.animationId;
+  const hasTts = !!(data.ttsOverride && data.ttsOverride.trim());
+  const hasFlowCode = !!data.flowCodeEnabled;
 
   return (
     <div
       ref={containerRef}
-      className={`relative group transition-all duration-200 w-max max-w-[90vw] ${isCompact ? 'min-w-[160px] sm:min-w-[200px] sm:max-w-[260px]' : 'min-w-[220px] sm:min-w-[280px] sm:max-w-[400px]'}`}
+      className="relative group transition-all duration-200 w-max max-w-[90vw] min-w-[220px] sm:min-w-[280px] sm:max-w-[400px]"
     >
       <div
         className="canvas-step-card relative rounded-xl transition-all"
@@ -384,14 +452,13 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
             ) : (
               <div
                 onDoubleClick={() => setEditingField('title')}
-                className="font-semibold text-[13px] leading-snug w-full cursor-grab min-h-[20px]"
+                className="canvas-field-hover font-semibold text-[13px] leading-snug w-full cursor-grab min-h-[20px]"
                 style={{ color: localTitle ? 'var(--foreground)' : '#cbd5e1', letterSpacing: '-0.01em' }}
               >
                 {localTitle || 'Step Title'}
               </div>
             )}
-            {!isCompact && (
-              <RichTextDescription
+            <RichTextDescription
                 content={localDesc}
                 isEditing={editingField === 'description'}
                 onStartEdit={() => setEditingField('description')}
@@ -408,44 +475,18 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                   }
                 }}
               />
-            )}
           </div>
 
-          {/* Compact view: inline feature badges */}
-          {isCompact && anyToolActive && (
-            <div className="flex items-center gap-1 flex-wrap mt-0.5">
-              {data.isInput && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(47,128,237,0.10)', color: 'var(--primary)' }}>
-                  <TextCursorInput size={8} /> Input
-                </span>
-              )}
-              {data.options && data.options.length > 1 && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(47,128,237,0.10)', color: 'var(--primary)' }}>
-                  <GitFork size={8} /> {data.options.length}
-                </span>
-              )}
-              {data.popups && data.popups.length > 0 && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
-                  <Zap size={8} /> {data.popups.length}
-                </span>
-              )}
-              {data.media && data.media.length > 0 && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold" style={{ backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981' }}>
-                  <ImageIcon size={8} /> {data.media.length}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Feature Toolbar — only active (on) buttons visible; hover to expand all */}
-          {data.editingEnabled !== false && !isCompact && (
+          {/* Feature Toolbar — icon grid with labels below */}
+          {data.editingEnabled !== false && (
           <div className={`canvas-step-toolbar nodrag mt-1 ${activeMenu !== 'none' ? 'expanded' : ''}`}>
             <button
               onClick={() => handleToggleMenu('colorize')}
               className={`canvas-step-tool-btn ${data.isColorized ? 'active' : ''} ${activeMenu === 'colorize' ? 'menu-open' : ''}`}
               style={data.isColorized ? { '--tool-active-color': data.color || '#2F80ED' } as React.CSSProperties : undefined}
+              title="Color"
             >
-              <Palette size={13} />
+              <Palette size={11} strokeWidth={1.8} />
               <span className="canvas-step-tool-label">Color</span>
             </button>
 
@@ -453,8 +494,9 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               onClick={() => handleToggleMenu('input')}
               className={`canvas-step-tool-btn ${data.isInput ? 'active' : ''} ${activeMenu === 'input' ? 'menu-open' : ''}`}
               style={data.isInput ? { '--tool-active-color': '#2F80ED' } as React.CSSProperties : undefined}
+              title="Input"
             >
-              <TextCursorInput size={13} />
+              <TextCursorInput size={11} strokeWidth={1.8} />
               <span className="canvas-step-tool-label">Input</span>
             </button>
 
@@ -462,8 +504,9 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               onClick={() => handleToggleMenu('branching')}
               className={`canvas-step-tool-btn ${data.options && data.options.length > 1 ? 'active' : ''} ${activeMenu === 'branching' ? 'menu-open' : ''}`}
               style={data.options && data.options.length > 1 ? { '--tool-active-color': '#2F80ED' } as React.CSSProperties : undefined}
+              title="Branching"
             >
-              <GitFork size={13} />
+              <GitFork size={11} strokeWidth={1.8} />
               <span className="canvas-step-tool-label">Branch</span>
             </button>
 
@@ -471,20 +514,52 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               onClick={() => handleToggleMenu('popup')}
               className={`canvas-step-tool-btn ${data.popups && data.popups.length > 0 ? 'active' : ''} ${activeMenu === 'popup' ? 'menu-open' : ''}`}
               style={data.popups && data.popups.length > 0 ? { '--tool-active-color': '#2F80ED' } as React.CSSProperties : undefined}
+              title="Popup"
             >
-              <MessageSquare size={13} />
+              <MessageSquare size={11} strokeWidth={1.8} />
               <span className="canvas-step-tool-label">Popup</span>
             </button>
-
-            <div className="canvas-step-tool-sep" />
 
             <button
               onClick={() => handleToggleMenu('media')}
               className={`canvas-step-tool-btn ${data.media && data.media.length > 0 ? 'active' : ''} ${activeMenu === 'media' ? 'menu-open' : ''}`}
               style={data.media && data.media.length > 0 ? { '--tool-active-color': '#2F80ED' } as React.CSSProperties : undefined}
+              title="Media"
             >
-              <ImageIcon size={13} />
+              <ImageIcon size={11} strokeWidth={1.8} />
               <span className="canvas-step-tool-label">Media</span>
+            </button>
+
+            <div className="canvas-step-tool-sep" />
+
+            <button
+              onClick={() => handleToggleMenu('animation')}
+              className={`canvas-step-tool-btn ${hasAnimation ? 'active' : ''} ${activeMenu === 'animation' ? 'menu-open' : ''}`}
+              style={hasAnimation ? { '--tool-active-color': '#9C27B0' } as React.CSSProperties : undefined}
+              title="Animation"
+            >
+              <Film size={11} strokeWidth={1.8} />
+              <span className="canvas-step-tool-label">Anim</span>
+            </button>
+
+            <button
+              onClick={() => handleToggleMenu('tts')}
+              className={`canvas-step-tool-btn ${hasTts ? 'active' : ''} ${activeMenu === 'tts' ? 'menu-open' : ''}`}
+              style={hasTts ? { '--tool-active-color': '#FF9800' } as React.CSSProperties : undefined}
+              title="Text to Speech"
+            >
+              <Volume2 size={11} strokeWidth={1.8} />
+              <span className="canvas-step-tool-label">TTS</span>
+            </button>
+
+            <button
+              onClick={() => handleToggleMenu('flowcode')}
+              className={`canvas-step-tool-btn ${hasFlowCode ? 'active' : ''} ${activeMenu === 'flowcode' ? 'menu-open' : ''}`}
+              style={hasFlowCode ? { '--tool-active-color': '#4CAF50' } as React.CSSProperties : undefined}
+              title="FlowCode"
+            >
+              <Code size={11} strokeWidth={1.8} />
+              <span className="canvas-step-tool-label">Code</span>
             </button>
 
           </div>
@@ -494,10 +569,10 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
         </div>
 
         {/* Floating Configuration Menus (non-branching menus only) */}
-        {!isCompact && activeMenu !== 'none' && activeMenu !== 'branching' && (
+        {activeMenu !== 'none' && activeMenu !== 'branching' && (
           <div
             ref={menuRef}
-            className={`canvas-config-menu nodrag placement-${menuSide}`}
+            className={`canvas-config-menu nodrag placement-${menuSide}${activeMenu === 'animation' ? ' menu-animation' : ''}`}
           >
             {/* Connector arrow */}
             <div className={`canvas-config-menu-arrow ${menuSide === 'right' ? 'arrow-left' : menuSide === 'left' ? 'arrow-right' : 'arrow-top'}`} />
@@ -837,6 +912,305 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                 </div>
               </div>
             )}
+
+            {/* Animation Menu — popover with animation picker */}
+            {activeMenu === 'animation' && (() => {
+              const isSearching = animSearch.length > 0;
+              const searchLower = animSearch.toLowerCase();
+              const filteredAll = ALL_ANIMATIONS.filter(a => a.name.toLowerCase().includes(searchLower));
+              const totalCount = ALL_ANIMATIONS.length;
+              const toggleFolder = (fId: string) => {
+                setAnimExpandedFolders(prev => {
+                  const next = new Set(prev);
+                  next.has(fId) ? next.delete(fId) : next.add(fId);
+                  return next;
+                });
+              };
+              const selectAnim = (anim: { id: string; name: string; duration: string }) => {
+                updateData({ animationId: anim.id, animationName: anim.name, animationDuration: anim.duration, animationColor: '#9C27B0' });
+                setAnimSearch('');
+              };
+              const renderAnimItem = (anim: { id: string; name: string; duration: string }, indent = false) => (
+                <button
+                  key={anim.id}
+                  onClick={() => selectAnim(anim)}
+                  className="flex items-center gap-2.5 w-full text-left rounded-lg transition-colors hover:bg-black/[0.04]"
+                  style={{
+                    padding: '7px 8px',
+                    paddingLeft: indent ? '32px' : '8px',
+                    ...(data.animationId === anim.id ? { backgroundColor: 'rgba(47,128,237,0.07)' } : {}),
+                  }}
+                >
+                  <Play size={12} fill={data.animationId === anim.id ? '#2F80ED' : '#B0B7C8'} className="shrink-0" style={{ color: data.animationId === anim.id ? '#2F80ED' : '#B0B7C8' }} />
+                  <span className="flex-1 min-w-0 text-[12px] font-medium truncate" style={{ color: data.animationId === anim.id ? '#2F80ED' : 'var(--foreground)' }}>{anim.name}</span>
+                  <span className="text-[11px] shrink-0 tabular-nums" style={{ color: '#94A0B8' }}>{anim.duration}</span>
+                </button>
+              );
+
+              return (
+              <div className="flex flex-col" style={{ gap: 0 }}>
+                {/* Header */}
+                <div className="canvas-config-menu-header" style={{ paddingBottom: '10px', marginBottom: '10px' }}>
+                  <div className="canvas-config-menu-header-icon" style={{ background: 'rgba(156, 39, 176, 0.12)' }}>
+                    <Film size={14} style={{ color: '#9C27B0' }} />
+                  </div>
+                  <span className="canvas-config-menu-header-label">Animation Manager</span>
+                  <button className="canvas-config-menu-header-close" onClick={() => setActiveMenu('none')}>
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {/* Toolbar row: search + filter + folder + add */}
+                <div className="flex items-center gap-1.5">
+                  <div className="relative flex-1">
+                    <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: '#B0B7C8' }} />
+                    <input
+                      value={animSearch}
+                      onChange={(e) => setAnimSearch(e.target.value)}
+                      placeholder="Search animations..."
+                      className="w-full text-[12px] pl-8 pr-3 py-[7px] rounded-lg border focus:outline-none focus:border-[#2E80ED]"
+                      style={{ borderColor: '#C2C9DB', backgroundColor: '#fff', color: 'var(--foreground)' }}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => setAnimFilterOpen(!animFilterOpen)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg border hover:bg-black/[0.04] transition-colors"
+                      style={{ borderColor: '#C2C9DB', color: '#868D9E' }}
+                      title="Filter"
+                    >
+                      <Filter size={14} />
+                    </button>
+                    {animFilterOpen && (
+                      <div
+                        className="absolute top-full right-0 mt-1 rounded-lg border shadow-lg py-1 z-10"
+                        style={{ backgroundColor: '#fff', borderColor: '#E9E9E9', minWidth: '150px' }}
+                      >
+                        <button className="flex items-center gap-2.5 w-full px-3 py-2 text-[11px] hover:bg-black/[0.04] transition-colors" style={{ color: 'var(--foreground)' }}>
+                          <Filter size={12} /> Filter by Part
+                        </button>
+                        <button className="flex items-center gap-2.5 w-full px-3 py-2 text-[11px] hover:bg-black/[0.04] transition-colors" style={{ color: 'var(--foreground)' }}>
+                          <Film size={12} /> Filter by Procedure
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border hover:bg-black/[0.04] transition-colors"
+                    style={{ borderColor: '#C2C9DB', color: '#868D9E' }}
+                    title="New Folder"
+                  >
+                    <FolderPlus size={14} />
+                  </button>
+                  <button
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#2F80ED] hover:bg-[#82B3F4] transition-colors"
+                    style={{ color: '#fff' }}
+                    title="Create animation"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+
+                {/* Count bar */}
+                <div className="flex items-center mt-2.5 px-1" style={{ gap: '6px' }}>
+                  <span className="flex-1 text-[11px] font-medium" style={{ color: '#868D9E' }}>
+                    {isSearching ? `${filteredAll.length} result${filteredAll.length !== 1 ? 's' : ''}` : `${totalCount} animation${totalCount !== 1 ? 's' : ''}`}
+                  </span>
+                  <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-black/[0.05] transition-colors" style={{ color: '#B0B7C8' }} title="Refresh">
+                    <RefreshCw size={12} />
+                  </button>
+                  <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-black/[0.05] transition-colors" style={{ color: '#B0B7C8' }} title="Sort">
+                    <ArrowUpDown size={12} />
+                  </button>
+                </div>
+
+                {/* Currently attached animation */}
+                {hasAnimation && (
+                  <div
+                    className="flex items-center gap-3 mt-2 p-2.5 rounded-lg border"
+                    style={{ borderColor: 'rgba(47, 128, 237, 0.25)', backgroundColor: 'rgba(47, 128, 237, 0.04)' }}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: 'rgba(47, 128, 237, 0.1)' }}
+                    >
+                      <Play size={13} fill="#2F80ED" style={{ color: '#2F80ED' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-semibold truncate" style={{ color: 'var(--foreground)' }}>{data.animationName}</div>
+                      <div className="flex items-center gap-1 text-[10px]" style={{ color: '#868D9E' }}>
+                        <Clock size={10} /> {data.animationDuration}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => updateData({ animationId: null, animationName: undefined, animationDuration: undefined, animationColor: undefined })}
+                      className="w-6 h-6 flex items-center justify-center rounded transition-colors canvas-icon-btn-danger opacity-50 hover:opacity-100 shrink-0"
+                      title="Remove animation"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Divider before list */}
+                <div className="mt-2" style={{ borderTop: '1px solid var(--border)' }} />
+
+                {/* Animation list with folders */}
+                <div className="flex flex-col pt-1 max-h-[280px] overflow-y-auto custom-scrollbar" style={{ gap: 0 }}>
+                  {isSearching ? (
+                    <>
+                      {filteredAll.map(anim => renderAnimItem(anim))}
+                      {filteredAll.length === 0 && (
+                        <div className="text-[12px] text-center py-6" style={{ color: '#B0B7C8' }}>No animations found</div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {ANIM_FOLDERS.map(folder => {
+                        const isOpen = animExpandedFolders.has(folder.id);
+                        return (
+                          <div key={folder.id}>
+                            <button
+                              onClick={() => toggleFolder(folder.id)}
+                              className="flex items-center gap-2 w-full text-left rounded-lg px-2 py-[6px] hover:bg-black/[0.04] transition-colors"
+                            >
+                              <ChevronRight
+                                size={13}
+                                className="shrink-0 transition-transform"
+                                style={{ color: '#B0B7C8', transform: isOpen ? 'rotate(90deg)' : undefined }}
+                              />
+                              {isOpen
+                                ? <FolderOpen size={14} className="shrink-0" style={{ color: '#F5A623' }} />
+                                : <Folder size={14} className="shrink-0" style={{ color: '#F5A623' }} />
+                              }
+                              <span className="flex-1 text-[12px] font-medium" style={{ color: 'var(--foreground)' }}>{folder.name}</span>
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ color: '#868D9E', backgroundColor: 'rgba(0,0,0,0.05)' }}>{folder.items.length}</span>
+                            </button>
+                            {isOpen && folder.items.map(anim => renderAnimItem(anim, true))}
+                          </div>
+                        );
+                      })}
+                      {ANIM_ROOT_ITEMS.map(anim => renderAnimItem(anim))}
+                    </>
+                  )}
+                </div>
+
+                {/* Bottom action bar */}
+                <div className="flex items-center gap-2 mt-2 pt-2.5" style={{ borderTop: '1px solid var(--border)' }}>
+                  {hasAnimation ? (
+                    <>
+                      <button
+                        onClick={() => updateData({ animationId: null, animationName: undefined, animationDuration: undefined, animationColor: undefined })}
+                        className="flex-1 text-[11px] font-medium py-2 rounded-lg border hover:bg-black/[0.03] transition-colors"
+                        style={{ borderColor: '#C2C9DB', color: '#5E677D' }}
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => setActiveMenu('none')}
+                        className="flex-1 text-[11px] font-semibold py-2 rounded-lg text-white transition-colors hover:brightness-110"
+                        style={{ backgroundColor: '#2F80ED' }}
+                      >
+                        Done
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-[10px] w-full text-center py-1" style={{ color: '#B0B7C8' }}>
+                      Select an animation to attach to this step
+                    </span>
+                  )}
+                </div>
+              </div>
+              );
+            })()}
+
+            {/* TTS Override Menu */}
+            {activeMenu === 'tts' && (
+              <div className="flex flex-col gap-3">
+                <div className="canvas-config-menu-header">
+                  <div className="canvas-config-menu-header-icon" style={{ background: 'rgba(255, 152, 0, 0.12)' }}>
+                    <Volume2 size={14} style={{ color: '#FF9800' }} />
+                  </div>
+                  <span className="canvas-config-menu-header-label">TTS Override</span>
+                  {hasTts && (
+                    <button
+                      onClick={() => updateData({ ttsOverride: '' })}
+                      className="text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors ml-auto mr-1 canvas-icon-btn-danger"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button className="canvas-config-menu-header-close" onClick={() => setActiveMenu('none')} style={hasTts ? { marginLeft: 0 } : undefined}>
+                    <X size={14} />
+                  </button>
+                </div>
+                <p className="text-[9px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  Custom text the app's voice will read instead of the description.
+                </p>
+                <textarea
+                  value={data.ttsOverride || ''}
+                  onChange={(e) => updateData({ ttsOverride: e.target.value })}
+                  placeholder="Type custom narration text..."
+                  rows={3}
+                  className="w-full text-[11px] border rounded-lg px-2.5 py-2 focus:outline-none resize-none canvas-input leading-relaxed"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                />
+              </div>
+            )}
+
+            {/* FlowCode Menu */}
+            {activeMenu === 'flowcode' && (
+              <div className="flex flex-col gap-3">
+                <div className="canvas-config-menu-header">
+                  <div className="canvas-config-menu-header-icon" style={{ background: 'rgba(76, 175, 80, 0.12)' }}>
+                    <Code size={14} style={{ color: '#4CAF50' }} />
+                  </div>
+                  <span className="canvas-config-menu-header-label">FlowCode</span>
+                  <label className="flex items-center cursor-pointer ml-auto mr-1">
+                    <input
+                      type="checkbox"
+                      checked={!!data.flowCodeEnabled}
+                      onChange={() => updateData({ flowCodeEnabled: !data.flowCodeEnabled })}
+                      className="w-4 h-4 rounded border cursor-pointer"
+                      style={{ accentColor: '#4CAF50' }}
+                    />
+                  </label>
+                  <button className="canvas-config-menu-header-close" onClick={() => setActiveMenu('none')} style={{ marginLeft: 0 }}>
+                    <X size={14} />
+                  </button>
+                </div>
+                {data.flowCodeEnabled ? (
+                  <div className="relative">
+                    <div
+                      className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-t-lg text-[9px] font-semibold"
+                      style={{ backgroundColor: '#1e1e1e', color: '#9CDCFE', borderBottom: '1px solid #333' }}
+                    >
+                      <Code size={9} /> flowcode.js
+                    </div>
+                    <textarea
+                      value={data.flowCode || ''}
+                      onChange={(e) => updateData({ flowCode: e.target.value })}
+                      placeholder={'// Example:\ncontext.setVariable("status", "complete");\ncontext.goToStep("next");'}
+                      rows={6}
+                      className="w-full text-[10px] border rounded-lg px-2.5 pt-7 pb-2 focus:outline-none resize-none leading-relaxed"
+                      style={{
+                        borderColor: '#333',
+                        backgroundColor: '#1e1e1e',
+                        color: '#D4D4D4',
+                        fontFamily: 'Consolas, "Courier New", monospace',
+                        tabSize: 2,
+                      }}
+                      spellCheck={false}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-[10px] py-2 text-center" style={{ color: 'var(--muted)' }}>
+                    Enable the checkbox to write JavaScript that runs when this step executes.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -1003,7 +1377,6 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
         )}
 
         {/* Comment Badge + Inline Popover */}
-        {!isCompact && (
         <>
         <button
           onClick={(e) => { e.stopPropagation(); setShowCommentPopover(!showCommentPopover); }}
@@ -1388,7 +1761,6 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
           </div>
         )}
         </>
-        )}
 
         {/* Node Actions — floating bar above the card */}
         {data.editingEnabled !== false && (

@@ -57,6 +57,26 @@ export function LogicNode({ data, selected, id }: NodeProps<LogicNodeData>) {
   // Close menu when clicking outside
   useClickOutside([menuRef, containerRef], () => setActiveMenu('none'));
 
+  // Prevent ReactFlow zoom when scrolling inside an actually-scrollable child
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const handler = (e: WheelEvent) => {
+      let el = e.target as HTMLElement | null;
+      while (el && el !== node) {
+        const style = getComputedStyle(el);
+        const overflowY = style.overflowY;
+        if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+          e.stopPropagation();
+          return;
+        }
+        el = el.parentElement;
+      }
+    };
+    node.addEventListener('wheel', handler, { passive: true });
+    return () => node.removeEventListener('wheel', handler);
+  }, []);
+
   const updateData = (updates: Partial<LogicNodeData>) => {
     if (data.onChange) {
       data.onChange(updates);
