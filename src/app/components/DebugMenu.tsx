@@ -42,6 +42,17 @@ const appPages: PageLink[] = [
   { label: 'Immersive Room', path: '/app/immersive' },
 ];
 
+const xrPages: PageLink[] = [
+  { label: 'Login', path: '/xr/login' },
+  { label: 'Lobby', path: '/xr/lobby' },
+  { label: 'Projects', path: '/xr/projects' },
+  { label: 'Knowledge Base', path: '/xr/kb' },
+  { label: 'Item View', path: '/xr/item' },
+  { label: 'Procedure', path: '/xr/procedure' },
+  { label: 'Remote Support', path: '/xr/rs' },
+  { label: 'Call', path: '/xr/call' },
+];
+
 const webPages: PageLink[] = [
   { label: 'Home', path: '/web/home' },
   { label: 'Notifications', path: '/web/notifications' },
@@ -129,7 +140,7 @@ export function DebugMenu() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
     const s = new Set<string>();
     featureGroups.forEach(g => s.add(g.label));
-    [...appPages, ...webPages].forEach(p => { if (p.children) s.add(p.path); });
+    [...appPages, ...webPages, ...xrPages].forEach(p => { if (p.children) s.add(p.path); });
     return s;
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -226,6 +237,7 @@ export function DebugMenu() {
   };
   const totalAppPages = countPages(appPages);
   const totalWebPages = countPages(webPages);
+  const totalXrPages = countPages(xrPages);
   const totalFeatures = allFeatures.length;
   const totalRoles = roleGroups.reduce((s, g) => s + g.roles.length, 0);
 
@@ -415,11 +427,12 @@ export function DebugMenu() {
   const filteredRoleGroups = filterRoleGroups(searchQ);
   const filteredAppPages = filterPages(appPages, searchQ);
   const filteredWebPages = filterPages(webPages, searchQ);
+  const filteredXrPages = filterPages(xrPages, searchQ);
   const isGlobalSearch = !!searchQ;
-  const hasPageResults = isGlobalSearch && (filteredAppPages.length > 0 || filteredWebPages.length > 0);
+  const hasPageResults = isGlobalSearch && (filteredAppPages.length > 0 || filteredWebPages.length > 0 || filteredXrPages.length > 0);
   const hasFeatureResults = isGlobalSearch && filteredGroups.length > 0;
   const hasRoleResults = isGlobalSearch && filteredRoleGroups.length > 0;
-  const totalPageCount = countPages(filteredAppPages) + countPages(filteredWebPages);
+  const totalPageCount = countPages(filteredAppPages) + countPages(filteredWebPages) + countPages(filteredXrPages);
   const totalFeatureCount = filteredGroups.reduce((s, g) => s + g.features.length, 0);
   const totalRoleCount = filteredRoleGroups.reduce((s, g) => s + g.roles.length, 0);
   const noResults = isGlobalSearch && !hasPageResults && !hasFeatureResults && !hasRoleResults;
@@ -430,7 +443,7 @@ export function DebugMenu() {
   const pinnedPageItems = useMemo(() => {
     const all: PageLink[] = [];
     const walk = (pages: PageLink[]) => { for (const p of pages) { if (pinnedPagePaths.includes(p.path)) all.push(p); if (p.children) walk(p.children); } };
-    walk([...appPages, ...webPages]);
+    walk([...appPages, ...webPages, ...xrPages]);
     return all;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinnedItems]);
@@ -635,7 +648,7 @@ export function DebugMenu() {
       }
       // Normal search fallback
       if (searchQuery) {
-        const allPages = [...appPages, ...webPages];
+        const allPages = [...appPages, ...webPages, ...xrPages];
         const pm = getFirstMatch(allPages, searchQuery);
         if (pm) { handleNavigate(pm.path); setSearchQuery(''); return; }
         const q = searchQuery.toLowerCase();
@@ -735,7 +748,7 @@ export function DebugMenu() {
   // ==================== TAB BADGE COUNTS ====================
   const debugVarCount = Object.keys(debugVars).length;
   const tabBadges: Record<TabId, number> = {
-    pages: totalAppPages + totalWebPages,
+    pages: totalAppPages + totalWebPages + totalXrPages,
     features: totalFeatures,
     roles: totalRoles,
     variables: debugVarCount,
@@ -879,6 +892,7 @@ export function DebugMenu() {
                     </div>
                     {filteredAppPages.length > 0 && (<><div style={{ fontSize: '10px', color: '#868D9E', padding: '2px 8px 2px 20px', fontWeight: 600 }}>APP</div>{renderPageList(filteredAppPages)}</>)}
                     {filteredWebPages.length > 0 && (<><div style={{ fontSize: '10px', color: '#868D9E', padding: '2px 8px 2px 20px', fontWeight: 600 }}>WEB</div>{renderPageList(filteredWebPages)}</>)}
+                    {filteredXrPages.length > 0 && (<><div style={{ fontSize: '10px', color: '#868D9E', padding: '2px 8px 2px 20px', fontWeight: 600 }}>XR</div>{renderPageList(filteredXrPages)}</>)}
                   </div>
                 )}
 
@@ -978,7 +992,8 @@ export function DebugMenu() {
 
                   {isApp && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>App Pages</div>{renderPageList(appPages)}</>)}
                   {isWeb && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>Web Pages</div>{renderPageList(webPages)}</>)}
-                  {!isApp && !isWeb && (
+                  {isXR && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>XR Pages</div>{renderPageList(xrPages)}</>)}
+                  {!isApp && !isWeb && !isXR && (
                     <div style={{ padding: '8px', color: '#868D9E', fontSize: '12px', textAlign: 'center' }}>Select a platform tab above</div>
                   )}
                 </div>
