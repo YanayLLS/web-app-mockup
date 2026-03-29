@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 // Project management system with multi-project support
 import { toast } from 'sonner';
@@ -928,6 +928,42 @@ function usePageTitle() {
   }, [location.pathname]);
 }
 
+// XR App wrapper — syncs iframe screen navigation with parent URL
+function XrAppPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Compute initial hash from URL path once (e.g. /xr/rs → #rs)
+  const initialScreen = useRef(location.pathname.replace(/.*\/xr\/?/, '') || '');
+  const initialSrc = useRef(
+    `${import.meta.env.BASE_URL}xr/xr-app.html${initialScreen.current ? '#' + initialScreen.current : ''}`
+  );
+  // Use a ref for navigate to avoid stale closures
+  const navRef = useRef(navigate);
+  navRef.current = navigate;
+
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'xr-navigate') {
+        const screen = e.data.screen as string;
+        const target = screen === 'lobby' ? '/xr' : `/xr/${screen}`;
+        navRef.current(target, { replace: true });
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  return (
+    <div className="w-screen h-screen bg-black">
+      <iframe
+        src={initialSrc.current}
+        className="w-full h-full border-0"
+        title="XR App"
+      />
+    </div>
+  );
+}
+
 // Router wrapper that handles product selection and platform routing
 function AppRouter() {
   usePageTitle();
@@ -959,15 +995,7 @@ function AppRouter() {
           </AvatarProvider>
         } />
         <Route path="/app/*" element={<ProjectProvider><AppLayout /></ProjectProvider>} />
-        <Route path="/xr/*" element={
-          <div className="w-screen h-screen bg-black">
-            <iframe
-              src={`${import.meta.env.BASE_URL}xr/xr-app.html`}
-              className="w-full h-full border-0"
-              title="XR App"
-            />
-          </div>
-        } />
+        <Route path="/xr/*" element={<XrAppPage />} />
       </Routes>
       <DebugMenu />
     </UserProfileProvider>

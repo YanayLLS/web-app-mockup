@@ -1859,6 +1859,10 @@ function navigateTo(key) {
   callChatOpen = false;
   callParticipantsOpen = false;
   updateClock();
+  // Notify parent frame so the browser URL updates
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'xr-navigate', screen: key }, '*');
+  }
 }
 
 // Projects
