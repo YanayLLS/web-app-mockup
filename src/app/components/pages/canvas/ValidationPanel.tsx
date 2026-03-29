@@ -16,6 +16,8 @@ interface ValidationPanelProps {
   result: ValidationResult;
   onGoToNode: (nodeId: string) => void;
   onClose: () => void;
+  dismissedIds: Set<string>;
+  onDismissedIdsChange: (ids: Set<string>) => void;
 }
 
 const severityConfig: Record<ValidationSeverity, { icon: typeof AlertCircle; color: string; bgColor: string; label: string }> = {
@@ -133,9 +135,8 @@ function SeveritySection({
   );
 }
 
-export function ValidationPanel({ result, onGoToNode, onClose }: ValidationPanelProps) {
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
-  const dismissIssue = (id: string) => setDismissedIds(prev => new Set(prev).add(id));
+export function ValidationPanel({ result, onGoToNode, onClose, dismissedIds, onDismissedIdsChange }: ValidationPanelProps) {
+  const dismissIssue = (id: string) => onDismissedIdsChange(new Set(dismissedIds).add(id));
   const activeIssues = result.issues.filter(i => !dismissedIds.has(i.id));
   const dismissedCount = dismissedIds.size;
 
@@ -199,7 +200,7 @@ export function ValidationPanel({ result, onGoToNode, onClose }: ValidationPanel
             </div>
             {dismissedCount > 0 && (
               <button
-                onClick={() => setDismissedIds(new Set())}
+                onClick={() => onDismissedIdsChange(new Set())}
                 className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                 style={{ color: '#2F80ED', backgroundColor: 'rgba(47, 128, 237, 0.06)' }}
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(47, 128, 237, 0.12)'; }}

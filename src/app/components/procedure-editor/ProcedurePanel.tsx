@@ -1,5 +1,5 @@
 import { Step, Popup, MediaFile } from './ProcedureEditor';
-import { X, ChevronDown, ChevronLeft, ChevronRight, Plus, Palette, Pencil, CheckCircle, MoreVertical, Keyboard, Glasses, Video, RotateCcw, ExternalLink } from 'lucide-react';
+import { X, ChevronDown, ChevronLeft, ChevronRight, Plus, Palette, Pencil, CheckCircle, MoreVertical, Keyboard, Glasses, Video, RotateCcw, ExternalLink, Maximize2, PanelLeftClose } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import svgPaths from '../../../imports/svg-hd561eopnw';
@@ -43,8 +43,9 @@ interface ProcedurePanelProps {
   checkpointCount: number;
   hasCritical: boolean;
   onOpenValidation: () => void;
-  layout?: 'topleft';
+  layout?: 'topleft' | 'sidepanel';
   tocEnabled?: boolean;
+  onCollapseSidepanel?: () => void;
 }
 
 export function ProcedurePanel({
@@ -86,7 +87,8 @@ export function ProcedurePanel({
   hasCritical,
   onOpenValidation,
   layout,
-  tocEnabled
+  tocEnabled,
+  onCollapseSidepanel
 }: ProcedurePanelProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -108,10 +110,50 @@ export function ProcedurePanel({
   const [editingActionLabel, setEditingActionLabel] = useState('');
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const colorButtonRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardWidth, setCardWidth] = useState(200);
+  const isResizing = useRef(false);
+
+  // Right-edge drag-to-resize
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    const startX = e.clientX;
+    const startWidth = cardWidth;
+
+    // Block iframe from stealing mouse events during drag
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(f => (f.style.pointerEvents = 'none'));
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isResizing.current) return;
+      const newWidth = Math.max(200, Math.min(startWidth + (ev.clientX - startX), window.innerWidth * 0.5));
+      setCardWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      isResizing.current = false;
+      iframes.forEach(f => (f.style.pointerEvents = ''));
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [cardWidth]);
 
   const shadowColor = step.color || '#36415d';
   const isLastStep = stepIndex === totalSteps - 1;
-  
+  const isSidepanel = layout === 'sidepanel';
+
+  // Sidepanel color scheme: dark text on white bg
+  const textColor = isSidepanel ? 'text-[#36415D]' : 'text-white';
+  const textMuted = isSidepanel ? 'text-[#868D9E]' : 'text-white/60';
+
   // Flash shadow color - use accent/button color for the flash
   const currentShadowColor = flashStepShadow ? 'var(--accent)' : shadowColor;
 
@@ -248,23 +290,25 @@ export function ProcedurePanel({
     <>
     <CardWrapper
       data-tutorial="step-card"
-      className={`content-stretch flex ${layout === 'topleft' ? 'items-start justify-start flex-col' : 'items-end justify-end'} relative shrink-0 transition-all duration-300 ${layout === 'topleft' ? 'w-[260px]' : (isCollapsed ? 'w-auto' : 'w-full sm:w-[700px] max-w-[calc(100vw-32px)]')} z-10`}
+      ref={cardRef}
+      className={`content-stretch flex ${layout === 'topleft' || layout === 'sidepanel' ? 'items-start justify-start flex-col' : 'items-end justify-end'} relative shrink-0 ${layout === 'topleft' ? '' : layout === 'sidepanel' ? 'w-full h-full' : (isCollapsed ? 'w-auto' : 'w-full sm:w-[700px] max-w-[calc(100vw-32px)]')} z-10`}
       style={{
         pointerEvents: 'auto',
-        ...(layout === 'topleft' ? { height: isCollapsed ? 'auto' : '100%', maxHeight: '720px' } : {})
+        ...(layout === 'topleft' ? { width: `${cardWidth}px`, height: 'auto', maxHeight: '90vh', transition: 'none' } : {}),
+        ...(layout === 'sidepanel' ? { transition: 'none' } : {})
       }}
-      {...cardProps}
+      {...(layout === 'sidepanel' ? {} : cardProps)}
     >
       <div
-        className={`bg-[rgba(0,0,0,0.5)] ${layout === 'topleft' ? (isCollapsed ? 'w-full' : 'w-full h-full') : 'flex-[1_0_0] min-h-px min-w-px'} relative rounded-[10px]`}
-        style={{
+        className={`${layout === 'sidepanel' ? 'bg-white' : 'bg-[rgba(0,0,0,0.5)]'} ${layout === 'topleft' || layout === 'sidepanel' ? 'w-full h-full' : 'flex-[1_0_0] min-h-px min-w-px'} relative ${layout === 'sidepanel' ? '' : 'rounded-[10px]'}`}
+        style={layout === 'sidepanel' ? {} : {
           boxShadow: `0px 4px 48.9px ${currentShadowColor}`,
           transition: 'box-shadow 0.3s ease-in-out',
         }}
       >
-        <div aria-hidden="true" className="absolute border border-solid border-white/20 inset-0 pointer-events-none rounded-[10px]" />
-        <div className={`flex flex-col items-center ${layout === 'topleft' && !isCollapsed ? 'h-full' : layout !== 'topleft' ? 'justify-center size-full' : ''} p-[8px] m-[0px]`}>
-          <div className={`content-stretch flex flex-col items-center ${layout === 'topleft' && !isCollapsed ? 'h-full' : layout !== 'topleft' ? 'justify-center' : ''} relative w-full`} style={{ gap: 'var(--spacing-md)', zIndex: 1 }}>
+        {layout !== 'sidepanel' && <div aria-hidden="true" className="absolute border border-solid border-white/20 inset-0 pointer-events-none rounded-[10px]" />}
+        <div className={`flex flex-col ${layout === 'sidepanel' ? 'h-full' : 'items-center'} ${layout !== 'topleft' && layout !== 'sidepanel' ? 'justify-center size-full' : ''} ${layout === 'topleft' ? 'p-[20px]' : layout === 'sidepanel' ? 'p-[24px]' : 'p-[8px]'} m-[0px]`}>
+          <div className={`content-stretch flex flex-col ${layout === 'sidepanel' ? 'h-full' : 'items-center'} ${layout !== 'topleft' && layout !== 'sidepanel' ? 'justify-center' : ''} relative w-full`} style={{ gap: layout === 'sidepanel' ? 'var(--spacing-lg)' : 'var(--spacing-md)', zIndex: 1 }}>
             <div className="content-stretch flex items-end justify-between relative shrink-0 w-full" style={{ zIndex: 2 }}>
               <div className="content-stretch flex flex-col items-start w-full" style={{ zIndex: 3 }}>
                   {/* Header */}
@@ -276,13 +320,13 @@ export function ProcedurePanel({
                     >
                       {isTtsEnabled ? (
                         <div className="relative shrink-0 size-[20px] sm:size-[24px]">
-                          <svg className="block size-full text-white" fill="currentColor" viewBox="0 0 16 15">
+                          <svg className={`block size-full ${textColor}`} fill="currentColor" viewBox="0 0 16 15">
                             <path d={svgPaths.p184348c0} />
                           </svg>
                         </div>
                       ) : (
                         <div className="relative shrink-0 size-[20px] sm:size-[24px]">
-                          <svg className="block size-full text-white" fill="currentColor" viewBox="0 0 16 15">
+                          <svg className={`block size-full ${textColor}`} fill="currentColor" viewBox="0 0 16 15">
                             <path d={svgPaths.p184348c0} />
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center">
@@ -313,26 +357,32 @@ export function ProcedurePanel({
                         onShowPopupPanel();
                       }}
                       className="relative shrink-0 cursor-pointer rounded-lg transition-all"
-                      style={{ 
+                      style={{
                         padding: 'var(--spacing-xs, 6px) var(--spacing-sm, 8px)',
-                        background: popups.length === 0 ? 'rgba(255, 31, 31, 0.15)' : 'rgba(255, 31, 31, 0.2)',
-                        border: popups.length === 0 ? '1px solid rgba(255, 31, 31, 0.3)' : '1px solid rgba(255, 31, 31, 0.4)',
+                        background: isSidepanel
+                          ? (popups.length === 0 ? 'rgba(255, 31, 31, 0.1)' : 'rgba(255, 31, 31, 0.12)')
+                          : (popups.length === 0 ? 'rgba(255, 31, 31, 0.15)' : 'rgba(255, 31, 31, 0.2)'),
+                        border: isSidepanel
+                          ? (popups.length === 0 ? '1px solid rgba(255, 31, 31, 0.5)' : '1px solid rgba(255, 31, 31, 0.6)')
+                          : (popups.length === 0 ? '1px solid rgba(255, 31, 31, 0.3)' : '1px solid rgba(255, 31, 31, 0.4)'),
                         marginLeft: 'var(--spacing-xs)'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 31, 31, 0.25)';
+                        e.currentTarget.style.background = isSidepanel ? 'rgba(255, 31, 31, 0.15)' : 'rgba(255, 31, 31, 0.25)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = popups.length === 0 ? 'rgba(255, 31, 31, 0.15)' : 'rgba(255, 31, 31, 0.2)';
+                        e.currentTarget.style.background = isSidepanel
+                          ? (popups.length === 0 ? 'rgba(255, 31, 31, 0.1)' : 'rgba(255, 31, 31, 0.12)')
+                          : (popups.length === 0 ? 'rgba(255, 31, 31, 0.15)' : 'rgba(255, 31, 31, 0.2)');
                       }}
                       title={popups.length === 0 ? "Add warning" : "View warnings"}
                     >
-                      <p 
-                        className="text-white whitespace-nowrap text-xs sm:text-sm font-medium flex items-center"
-                        style={{ 
-                          
+                      <p
+                        className={`${isSidepanel ? 'text-[#FF1F1F]' : 'text-white'} whitespace-nowrap text-xs sm:text-sm font-medium flex items-center`}
+                        style={{
+
                           gap: 'var(--spacing-xs)',
-                          opacity: 0.9
+                          opacity: isSidepanel ? 1 : 0.9
                         }}
                       >
                         {popups.length === 0 && <Plus className="size-3" />}
@@ -397,9 +447,9 @@ export function ProcedurePanel({
                       title={!tocEnabled ? `Step ${stepIndex + 1} of ${totalSteps}` : isTOCOpen ? "Close Table of Contents" : "Open Table of Contents"}
                     >
                       <p
-                        className="text-white whitespace-nowrap text-xs sm:text-sm font-medium"
+                        className={`${textColor} whitespace-nowrap text-xs sm:text-sm font-medium`}
                         style={{
-                          
+
                           opacity: isTOCOpen ? 1 : 0.9,
                         }}
                       >
@@ -422,13 +472,17 @@ Step {stepIndex + 1} of {totalSteps}
                         </button>
                       )}
                       <button
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] cursor-pointer hover:bg-[rgba(255,255,255,0.1)] flex items-center justify-center"
-                        title={isCollapsed ? "Expand" : "Collapse"}
+                        onClick={() => isSidepanel && onCollapseSidepanel ? onCollapseSidepanel() : setIsCollapsed(!isCollapsed)}
+                        className={`relative rounded-[3px] shrink-0 size-[20px] sm:size-[24px] cursor-pointer ${isSidepanel ? 'hover:bg-[#E9E9E9]' : 'hover:bg-[rgba(255,255,255,0.1)]'} flex items-center justify-center`}
+                        title={isSidepanel ? "Hide panel" : isCollapsed ? "Expand" : "Collapse"}
                       >
-                        <ChevronDown
-                          className={`size-3 sm:size-4 text-white transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
-                        />
+                        {isSidepanel ? (
+                          <PanelLeftClose className={`size-3 sm:size-4 ${textColor}`} />
+                        ) : (
+                          <ChevronDown
+                            className={`size-3 sm:size-4 ${textColor} transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
+                          />
+                        )}
                       </button>
 
                     </div>
@@ -437,10 +491,10 @@ Step {stepIndex + 1} of {totalSteps}
                   {/* Text box - Hidden when collapsed */}
                   {!isCollapsed && (
                     <div
-                      className={`w-full flex flex-col relative ${layout === 'topleft' ? 'flex-1 min-h-0 overflow-y-auto' : ''}`}
+                      className={`w-full flex flex-col relative ${layout === 'topleft' || isSidepanel ? 'overflow-y-auto' : ''}`}
                       style={{
-                        gap: 'var(--spacing-md)',
-                        minHeight: layout === 'topleft' ? undefined : '61px',
+                        gap: isSidepanel ? 'var(--spacing-lg)' : 'var(--spacing-md)',
+                        minHeight: layout === 'topleft' || isSidepanel ? undefined : '61px',
                         pointerEvents: 'auto',
                         zIndex: 100,
                         isolation: 'isolate',
@@ -517,11 +571,11 @@ Step {stepIndex + 1} of {totalSteps}
                               position: 'relative'
                             }}
                           >
-                            <div 
-                              className="text-white whitespace-pre-wrap line-clamp-2"
+                            <div
+                              className={`${textColor} whitespace-pre-wrap line-clamp-2`}
                               style={{
-                                
-                                fontSize: 'var(--text-h4)',
+
+                                fontSize: isSidepanel ? 'var(--text-h3)' : 'var(--text-h4)',
                                 fontWeight: 'var(--font-weight-bold)',
                                 lineHeight: '1.5',
                                 pointerEvents: 'none'
@@ -642,14 +696,14 @@ Step {stepIndex + 1} of {totalSteps}
                               }}
                             >
                               <div
-                                className="text-white whitespace-pre-wrap overflow-hidden"
+                                className={`${textColor} whitespace-pre-wrap overflow-hidden`}
                                 style={{
 
-                                  fontSize: layout === 'topleft' ? '12px' : 'var(--text-sm)',
+                                  fontSize: isSidepanel ? 'var(--text-sm)' : layout === 'topleft' ? '12px' : 'var(--text-sm)',
                                   fontWeight: 'var(--font-weight-normal)',
-                                  lineHeight: layout === 'topleft' ? '1.55' : '1.5',
+                                  lineHeight: isSidepanel ? '1.6' : layout === 'topleft' ? '1.55' : '1.5',
                                   pointerEvents: 'none',
-                                  ...(layout === 'topleft' ? {
+                                  ...(layout === 'topleft' || isSidepanel ? {
                                     overflowY: 'auto' as const,
                                     maxHeight: 'none',
                                   } : {
@@ -726,49 +780,51 @@ Step {stepIndex + 1} of {totalSteps}
               </div>
             </div>
 
-            {/* Inline Media — shown inside card in topleft layout */}
-            {layout === 'topleft' && !isCollapsed && step.mediaFiles.length > 0 && (
-              <div className="relative shrink-0 w-full" style={{ zIndex: 3 }}>
+
+            {/* Inline Media — shown inside card in topleft/sidepanel layout */}
+            {(layout === 'topleft' || isSidepanel) && !isCollapsed && step.mediaFiles.length > 0 && (
+              <div className="shrink-0 w-full flex flex-col" style={{ zIndex: 3, gap: '6px' }}>
+                {/* Expand button */}
+                <div className="flex items-center justify-end w-full">
+                  <button
+                    className={`shrink-0 ${isSidepanel ? 'text-[#868D9E] hover:text-[#36415D]' : 'text-white/60 hover:text-white/90'} transition-colors cursor-pointer`}
+                    title="Expand media"
+                  >
+                    <Maximize2 className="size-3" />
+                  </button>
+                </div>
+
+                {/* Clean media image — no overlapping UI */}
                 <div
-                  className="w-full rounded-lg overflow-hidden relative"
-                  style={{ aspectRatio: '4/3', background: 'rgba(0,0,0,0.6)' }}
+                  className="w-full rounded-lg overflow-hidden"
+                  style={{ aspectRatio: '4/3', background: isSidepanel ? '#E9E9E9' : 'rgba(0,0,0,0.6)' }}
                 >
-                  {/* Current media */}
                   {step.mediaFiles[inlineMediaIndex]?.type.startsWith('image') ? (
                     <img
                       src={step.mediaFiles[inlineMediaIndex].url}
                       alt={step.mediaFiles[inlineMediaIndex].name}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="w-full h-full object-cover"
                     />
                   ) : step.mediaFiles[inlineMediaIndex]?.type.startsWith('video') ? (
                     <video
                       src={step.mediaFiles[inlineMediaIndex].url}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="w-full h-full object-cover"
                       controls
                     />
                   ) : null}
+                </div>
 
-                  {/* Nav arrows (only if multiple) */}
-                  {step.mediaFiles.length > 1 && (
-                    <>
-                      <button
-                        onClick={() => setInlineMediaIndex((inlineMediaIndex - 1 + step.mediaFiles.length) % step.mediaFiles.length)}
-                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-0.5 transition-colors cursor-pointer"
-                      >
-                        <ChevronLeft className="size-3.5 text-white" />
-                      </button>
-                      <button
-                        onClick={() => setInlineMediaIndex((inlineMediaIndex + 1) % step.mediaFiles.length)}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-0.5 transition-colors cursor-pointer"
-                      >
-                        <ChevronRight className="size-3.5 text-white" />
-                      </button>
-                    </>
-                  )}
+                {/* Controls row below media: arrows + dots */}
+                {step.mediaFiles.length > 1 && (
+                  <div className="flex items-center justify-center w-full" style={{ gap: '8px' }}>
+                    <button
+                      onClick={() => setInlineMediaIndex((inlineMediaIndex - 1 + step.mediaFiles.length) % step.mediaFiles.length)}
+                      className={`shrink-0 rounded-full p-1 transition-colors cursor-pointer ${isSidepanel ? 'bg-[#E9E9E9] hover:bg-[#D9E0F0]' : 'bg-white/10 hover:bg-white/20'}`}
+                    >
+                      <ChevronLeft className={`size-3.5 ${textColor}`} />
+                    </button>
 
-                  {/* Dots indicator */}
-                  {step.mediaFiles.length > 1 && (
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                    <div className="flex items-center" style={{ gap: '4px' }}>
                       {step.mediaFiles.map((_, i) => (
                         <button
                           key={i}
@@ -777,21 +833,22 @@ Step {stepIndex + 1} of {totalSteps}
                           style={{
                             width: i === inlineMediaIndex ? '12px' : '5px',
                             height: '5px',
-                            background: i === inlineMediaIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                            background: isSidepanel
+                              ? (i === inlineMediaIndex ? '#36415D' : '#C2C9DB')
+                              : (i === inlineMediaIndex ? 'white' : 'rgba(255,255,255,0.5)'),
                           }}
                         />
                       ))}
                     </div>
-                  )}
-                </div>
 
-                {/* Caption */}
-                <p
-                  className="text-white/60 text-center truncate mt-1"
-                  style={{ fontSize: '10px' }}
-                >
-                  {step.mediaFiles[inlineMediaIndex]?.name}
-                </p>
+                    <button
+                      onClick={() => setInlineMediaIndex((inlineMediaIndex + 1) % step.mediaFiles.length)}
+                      className={`shrink-0 rounded-full p-1 transition-colors cursor-pointer ${isSidepanel ? 'bg-[#E9E9E9] hover:bg-[#D9E0F0]' : 'bg-white/10 hover:bg-white/20'}`}
+                    >
+                      <ChevronRight className={`size-3.5 ${textColor}`} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -973,7 +1030,7 @@ Step {stepIndex + 1} of {totalSteps}
             {/* Popups Display - Removed, popups are now accessed via Warning button */}
 
             {/* Controls or Completion UI */}
-            <div data-tutorial="controls" className="content-stretch flex flex-col items-center relative shrink-0 w-full" style={{ pointerEvents: 'auto', zIndex: 4, marginTop: layout === 'topleft' && isCollapsed ? 'var(--spacing-sm)' : 'var(--spacing-lg)' }}>
+            <div data-tutorial="controls" className={`content-stretch flex flex-col items-center relative shrink-0 w-full ${isSidepanel ? 'mt-auto' : ''}`} style={{ pointerEvents: 'auto', zIndex: 4, marginTop: isSidepanel ? undefined : layout === 'topleft' && isCollapsed ? 'var(--spacing-sm)' : 'var(--spacing-lg)' }}>
               {isLastStep && !editingEnabled ? (
                 /* Completion UI */
                 <div 
@@ -1145,13 +1202,13 @@ Step {stepIndex + 1} of {totalSteps}
                           onPrevious();
                         }}
                         disabled={isFirstVisibleStep}
-                        className="bg-[rgba(0,0,0,0.5)] h-full min-h-[44px] relative rounded-[25px] shrink-0 w-[40px] sm:w-[50px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[rgba(0,0,0,0.7)] transition-colors cursor-pointer"
+                        className={`${isSidepanel ? 'bg-[#E9E9E9] hover:bg-[#D9E0F0]' : 'bg-[rgba(0,0,0,0.5)] hover:bg-[rgba(0,0,0,0.7)]'} h-full min-h-[44px] relative rounded-[25px] shrink-0 w-[40px] sm:w-[50px] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer`}
                         style={{ pointerEvents: 'auto', zIndex: 1 }}
                       >
                         <div className="overflow-clip relative rounded-[inherit] size-full flex items-center justify-center">
-                          <ChevronLeft className="size-4 sm:size-5 text-white" />
+                          <ChevronLeft className={`size-4 sm:size-5 ${textColor}`} />
                         </div>
-                        <div aria-hidden="true" className="absolute border border-solid border-white inset-0 pointer-events-none rounded-[25px]" />
+                        {!isSidepanel && <div aria-hidden="true" className="absolute border border-solid border-white inset-0 pointer-events-none rounded-[25px]" />}
                       </button>
                     </div>
                     <div className="flex flex-[1_0_0] flex-row items-center self-stretch">
@@ -1201,6 +1258,16 @@ Step {stepIndex + 1} of {totalSteps}
             </div>
           </div>
         </div>
+      {/* Right-edge resize handle */}
+      {layout === 'topleft' && (
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute top-0 -right-[5px] w-[12px] h-full cursor-ew-resize group/resize z-20"
+          title="Drag to resize"
+        >
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] rounded-full bg-white/0 group-hover/resize:bg-white/30 transition-colors" />
+        </div>
+      )}
     </CardWrapper>
 
       {/* Color Picker Menu - Rendered outside card to avoid z-index stacking issues */}

@@ -20,7 +20,7 @@ import { ContextMenu } from './ContextMenu';
 import { DemoRunner, type DemoFeature } from './DemoRunner';
 import { AnimationBuilder } from './AnimationBuilder';
 import { HotspotsPanel } from './HotspotsPanel';
-import { GraduationCap, Undo, AlertCircle, X, MoreVertical, Keyboard, Glasses, Video, RotateCcw, ExternalLink } from 'lucide-react';
+import { GraduationCap, Undo, AlertCircle, X, MoreVertical, Keyboard, Glasses, Video, RotateCcw, ExternalLink, PanelLeftOpen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProcedureSteps } from '../../contexts/ProcedureStepsContext';
@@ -670,7 +670,7 @@ export function ProcedureEditor() {
   const urlMode = searchParams.get('mode'); // 'view' | 'edit' | null
   const isPreviewMode = searchParams.get('preview') === 'true';
   const activeConfigName = searchParams.get('config') || null;
-  const panelLayout = searchParams.get('layout') as 'topleft' | null; // 'topleft' = narrow tall card at top-left
+  const panelLayout = searchParams.get('layout') as 'topleft' | 'sidepanel' | null; // 'topleft' = narrow tall card at top-left, 'sidepanel' = left side panel
   const hasProcedureId = typeof window !== 'undefined' && window.location.pathname.includes('/procedure-editor/');
   const procedureIdFromUrl = getProcedureIdFromUrl();
 
@@ -722,6 +722,10 @@ export function ProcedureEditor() {
   const [showHotspotsPanel, setShowHotspotsPanel] = useState(false);
   const [showTOC, setShowTOC] = useState(false);
   const [tocFeatureEnabled, setTocFeatureEnabled] = useState(false);
+  const [sidepanelWidth, setSidepanelWidth] = useState(240);
+  const sidepanelResizing = useRef(false);
+  const [isSidepanelDragging, setIsSidepanelDragging] = useState(false);
+  const [isSidepanelCollapsed, setIsSidepanelCollapsed] = useState(false);
   const [showPopupPanel, setShowPopupPanel] = useState(false);
   const [showValidationPanel, setShowValidationPanel] = useState(false);
   const [isSelectingValidationParts, setIsSelectingValidationParts] = useState(false);
@@ -759,6 +763,32 @@ export function ProcedureEditor() {
   // Mobile view debug state
   const [isMobileView, setIsMobileView] = useState(false);
   
+  // Sidepanel drag-to-resize
+  const handleSidepanelResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    sidepanelResizing.current = true;
+    setIsSidepanelDragging(true);
+    const startX = e.clientX;
+    const startW = sidepanelWidth;
+    const onMove = (ev: MouseEvent) => {
+      if (!sidepanelResizing.current) return;
+      const newW = Math.max(240, Math.min(startW + (ev.clientX - startX), window.innerWidth * 0.6));
+      setSidepanelWidth(newW);
+    };
+    const onUp = () => {
+      sidepanelResizing.current = false;
+      setIsSidepanelDragging(false);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [sidepanelWidth]);
+
   // Check URL for mobile mode
   const isMobilePath = typeof window !== 'undefined' && window.location.pathname === '/mobile';
   
@@ -2123,25 +2153,110 @@ export function ProcedureEditor() {
       {!isMobilePath && !isAnimationEditorOpen && <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />}
       
       <div
-        className="h-full w-full relative overflow-hidden"
+        className={`h-full w-full relative overflow-hidden ${panelLayout === 'sidepanel' ? 'flex flex-col md:flex-row' : ''}`}
         onContextMenu={handleContextMenu}
-        style={{
-          background: isARMode 
+        style={panelLayout === 'sidepanel' ? {} : {
+          background: isARMode
             ? 'url(https://images.unsplash.com/photo-1764114441123-586d13fc6ece?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwZmFjdG9yeSUyMGZsb29yJTIwY2FtZXJhJTIwdmlld3xlbnwxfHx8fDE3NzA4MTUwNDV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral) center/cover'
             : 'linear-gradient(to bottom, #4362aa, #00091d)'
         }}
       >
+        {/* === SIDEPANEL LAYOUT: Left panel + 3D view side by side === */}
+        {panelLayout === 'sidepanel' && !showARPlacement && !isAnimationEditorOpen && (
+          <>
+            {!isSidepanelCollapsed ? (
+              <>
+                {/* Side/bottom panel — left on desktop, bottom on mobile */}
+                <div
+                  className="shrink-0 overflow-y-auto bg-white border-t md:border-t-0 md:border-r border-[#E0E0E0] order-2 md:order-none h-[45%] md:h-full"
+                  style={{ width: `${sidepanelWidth}px` }}
+                >
+                  <ProcedurePanel
+                    layout="sidepanel"
+                    step={currentStep}
+                    stepIndex={tocDisplayNumber - 1}
+                    totalSteps={tocTotalSteps}
+                    isTtsEnabled={isTtsEnabled}
+                    onStepChange={handleStepChange}
+                    onNext={handleNext}
+                    onPrevious={handlePrevious}
+                    onUpdateStep={handleUpdateStep}
+                    onToggleTts={() => setIsTtsEnabled(!isTtsEnabled)}
+                    onAddTitle={handleAddTitle}
+                    onRemoveTitle={handleRemoveTitle}
+                    onAddDescription={handleAddDescription}
+                    onRemoveDescription={handleRemoveDescription}
+                    onRemoveAction={handleRemoveAction}
+                    onAddStep={handleAddStep}
+                    onDeleteStep={handleDeleteStep}
+                    popups={currentStep.popups}
+                    onRemovePopup={handleRemovePopup}
+                    onAddPopup={handleAddPopup}
+                    onShowPopupPanel={() => setShowPopupPanel(true)}
+                    editingEnabled={editingEnabled}
+                    showNewStepAnimation={showNewStepAnimation}
+                    stepPopAnimation={stepPopAnimation}
+                    flashStepShadow={flashStepShadow}
+                    allSteps={steps}
+                    onToggleTOC={() => { if (tocFeatureEnabled) setShowTOC(!showTOC); }}
+                    tocEnabled={tocFeatureEnabled}
+                    isTOCOpen={showTOC}
+                    isFirstVisibleStep={isFirstVisibleStep}
+                    onChangeColor={handleChangeColor}
+                    onAddAction={handleAddAction}
+                    onEditAction={handleEditAction}
+                    onRestart={handleRestart}
+                    onBack={handleBack}
+                    onOpenFlowEditor={handleOpenFlowEditor}
+                    checkpointCount={currentStep.validation?.checkpoints?.length ?? 0}
+                    hasCritical={currentStep.validation?.checkpoints?.some(cp => cp.severity === 'critical') ?? false}
+                    onOpenValidation={() => setShowValidationPanel(true)}
+                    onCollapseSidepanel={() => setIsSidepanelCollapsed(true)}
+                  />
+                </div>
+                {/* Resize divider — vertical on desktop, horizontal on mobile */}
+                <div
+                  onMouseDown={handleSidepanelResize}
+                  className="hidden md:block h-full w-[6px] shrink-0 cursor-ew-resize hover:bg-[#2F80ED]/20 active:bg-[#2F80ED]/30 transition-colors relative z-10"
+                  style={{ marginLeft: '-3px', marginRight: '-3px' }}
+                />
+              </>
+            ) : (
+              /* Collapsed: show open button */
+              <button
+                onClick={() => setIsSidepanelCollapsed(false)}
+                className="absolute top-3 left-3 z-20 bg-white rounded-lg shadow-md border border-[#E0E0E0] p-2 cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+                title="Show panel"
+              >
+                <PanelLeftOpen className="size-5 text-[#36415D]" />
+              </button>
+            )}
+          </>
+        )}
+
+        <div
+          className={panelLayout === 'sidepanel' ? 'flex-1 min-h-0 relative overflow-hidden order-1 md:order-none' : 'h-full w-full relative'}
+          style={panelLayout === 'sidepanel' ? {
+            background: isARMode
+              ? 'url(https://images.unsplash.com/photo-1764114441123-586d13fc6ece?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwZmFjdG9yeSUyMGZsb29yJTIwY2FtZXJhJTIwdmlld3xlbnwxfHx8fDE3NzA4MTUwNDV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral) center/cover'
+              : 'linear-gradient(to bottom, #4362aa, #00091d)'
+          } : {}}
+        >
         <div className="content-stretch flex flex-col items-center justify-center overflow-clip py-2 sm:py-2 relative size-full">
           {/* 3D Scene - Embedded from external server */}
           {!showARPlacement && (
-            <iframe
-              ref={sceneIframeRef}
-              src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true&mode=procedure`}
-              className="absolute inset-0 w-full h-full border-0"
-              style={{ zIndex: 0 }}
-              title="3D Scene"
-              allow="autoplay; fullscreen"
-            />
+            <>
+              <iframe
+                ref={sceneIframeRef}
+                src={`${import.meta.env.BASE_URL}app/digital-twin-scene.html?embedded=true&mode=procedure`}
+                className="absolute inset-0 w-full h-full border-0"
+                style={{ zIndex: 0, pointerEvents: isSidepanelDragging ? 'none' : undefined }}
+                title="3D Scene"
+                allow="autoplay; fullscreen"
+              />
+              {/* Block iframe pointer events during sidepanel resize */}
+              {isSidepanelDragging && <div className="absolute inset-0 z-[1]" />}
+            </>
           )}
 
           {/* Header - Only show when editing is enabled and not during AR placement or animation editing */}
@@ -2516,13 +2631,13 @@ export function ProcedureEditor() {
             </motion.div>
           )}
 
-          {/* Spacer - Only show when not in AR placement or animation editing and not topleft layout */}
-          {!showARPlacement && !isAnimationEditorOpen && panelLayout !== 'topleft' && (
+          {/* Spacer - Only show when not in AR placement or animation editing and not topleft/sidepanel layout */}
+          {!showARPlacement && !isAnimationEditorOpen && panelLayout !== 'topleft' && panelLayout !== 'sidepanel' && (
             <div className="flex-[1_0_0] min-h-px min-w-px w-full" />
           )}
 
-          {/* Conditional rendering: AR Placement Flow or Procedure Panel with Media Viewer (hidden during animation editing) */}
-          {isAnimationEditorOpen ? null : showARPlacement ? (
+          {/* Conditional rendering: AR Placement Flow or Procedure Panel with Media Viewer (hidden during animation editing and sidepanel) */}
+          {isAnimationEditorOpen || panelLayout === 'sidepanel' ? null : showARPlacement ? (
             // AR Placement Flow in full screen
             <ARPlacementFlow
               onComplete={handleARPlacementComplete}
@@ -2622,33 +2737,6 @@ export function ProcedureEditor() {
             </div>
           )}
 
-          {/* Configuration indicator badge in viewer mode — hidden in topleft layout (overlaps the card) */}
-          {!editingEnabled && activeConfigName && !isAnimationEditorOpen && !showARPlacement && panelLayout !== 'topleft' && (
-            <div
-              className="absolute top-3 left-3 z-10 flex items-center"
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: '20px',
-                padding: '6px 14px 6px 10px',
-                borderLeft: '3px solid #2F80ED',
-                maxWidth: '220px',
-              }}
-            >
-              <span
-                className="truncate"
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  
-                }}
-                title={activeConfigName}
-              >
-                {activeConfigName}
-              </span>
-            </div>
-          )}
 
           {/* Top-right scene buttons: close, more, AR (hidden in preview mode and during animation editing) */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 z-10" style={{ display: (isPreviewMode || isAnimationEditorOpen) ? 'none' : undefined }}>
@@ -2812,6 +2900,7 @@ export function ProcedureEditor() {
           {/* Bookmarks and Parts Catalog are now opened inside the 3D scene via postMessage */}
         </div>
       </div>
+      </div>{/* close sidepanel 3D wrapper */}
 
       {/* Table of Contents - Overlay on left (hidden during animation editing) */}
       {showTOC && !isAnimationEditorOpen && (

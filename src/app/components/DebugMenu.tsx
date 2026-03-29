@@ -36,6 +36,7 @@ const appPages: PageLink[] = [
   { label: '3D Flow (Edit)', path: '/app/procedure-editor/p1' },
   { label: '3D Flow (View)', path: '/app/procedure-editor/generator-maintenance?mode=view' },
   { label: '3D Flow (Top-Left)', path: '/app/procedure-editor/generator-maintenance?mode=view&layout=topleft' },
+  { label: '3D Flow (Side Panel)', path: '/app/procedure-editor/generator-maintenance?mode=view&layout=sidepanel' },
   { label: 'Digital Twin Viewer', path: '/app/3d-viewer' },
   { label: 'Digital Twin Editor', path: '/app/3d-viewer?mode=editor' },
   { label: 'Immersive Room', path: '/app/immersive' },

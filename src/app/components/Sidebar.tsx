@@ -5,7 +5,7 @@ import { useRole, hasAccess } from '../contexts/RoleContext';
 import { ProjectSettingsModal } from './modals/ProjectSettingsModal';
 import { toast } from 'sonner';
 import { useProject } from '../contexts/ProjectContext';
-import { webNotifications } from './pages/NotificationsPage';
+import { useNotifications } from '../contexts/NotificationContext';
 // Secondary sidebar that pushes content, resizable, with sidebar-like design v4
 
 interface SidebarProps {
@@ -24,11 +24,9 @@ interface SidebarProps {
 
 const mainMenuItems = [
   { id: 'home', label: 'Home', icon: 'home' },
-  { id: 'notifications', label: 'Notifications', icon: 'notifications', badge: webNotifications.filter(n => n.unread).length > 0 ? String(webNotifications.filter(n => n.unread).length) : undefined },
+  { id: 'notifications', label: 'Notifications', icon: 'notifications' },
   { id: 'remote-support', label: 'Remote Support', icon: 'remote-support' },
   { id: 'ai-studio', label: 'AI Studio', icon: 'ai' },
-  { id: 'animations', label: 'Animations', icon: 'animations' },
-  { id: 'configurations', label: 'Configurations', icon: 'configurations' },
   { id: 'archive', label: 'Archive', icon: 'archive' },
 ];
 
@@ -184,13 +182,11 @@ export function Sidebar({
 }: SidebarProps) {
   const { currentRole } = useRole();
   const { projects, createProject, currentProject, setCurrentProject } = useProject();
+  const { unreadCount } = useNotifications();
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
   const [showSearchField, setShowSearchField] = useState(false);
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
-
-  // Compute unread notification count for aria-labels
-  const unreadNotificationCount = webNotifications.filter(n => n.unread).length;
 
   // Filter menu items based on current role
   const availableMainMenuItems = mainMenuItems.filter(item => {
@@ -432,24 +428,24 @@ export function Sidebar({
                     {!isMinimized && (
                       <>
                         <span className="truncate">{item.label}</span>
-                        {item.badge && (
+                        {item.id === 'notifications' && unreadCount > 0 && (
                           <span
                             className="ml-auto bg-primary text-white text-xs px-1.5 py-0.5 rounded-full animate-in fade-in zoom-in-50 duration-300"
                             style={{ fontSize: 'var(--text-xs)', boxShadow: '0 0 8px rgba(47,128,237,0.4)' }}
-                            aria-label={`${item.badge} unread notifications`}
+                            aria-label={`${unreadCount} unread notifications`}
                           >
-                            {item.badge}
+                            {unreadCount}
                           </span>
                         )}
                       </>
                     )}
-                    {isMinimized && item.badge && (
+                    {isMinimized && item.id === 'notifications' && unreadCount > 0 && (
                       <div
                         className="absolute -top-1 -right-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full"
                         style={{ fontSize: 'var(--text-xs)', boxShadow: '0 0 8px rgba(47,128,237,0.4)' }}
-                        aria-label={`${item.badge} unread notifications`}
+                        aria-label={`${unreadCount} unread notifications`}
                       >
-                        {item.badge}
+                        {unreadCount}
                       </div>
                     )}
                   </button>

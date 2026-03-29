@@ -25,9 +25,9 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
         className="rounded-xl overflow-hidden"
         style={{
           width: '460px',
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E9E9E9',
-          boxShadow: '0 16px 48px rgba(54, 65, 93, 0.14), 0 4px 12px rgba(54, 65, 93, 0.08)',
+          backgroundColor: 'var(--card)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--elevation-lg, 0 16px 48px rgba(0, 0, 0, 0.14))',
         }}
       >
         {/* Header with icon */}
@@ -35,21 +35,18 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, #2F80ED, #004FFF)',
-                boxShadow: '0 2px 8px rgba(47, 128, 237, 0.3)',
-              }}
+              style={{ backgroundColor: 'rgba(47, 128, 237, 0.08)' }}
             >
-              <Sparkles className="w-[18px] h-[18px]" style={{ color: '#FFFFFF' }} />
+              <Sparkles className="w-[18px] h-[18px]" style={{ color: 'var(--primary)' }} />
             </div>
             <div>
               <h3
                 className="text-[15px] font-bold leading-tight"
-                style={{ color: '#36415D' }}
+                style={{ color: 'var(--foreground)' }}
               >
                 Translation Options
               </h3>
-              <p className="text-xs mt-0.5" style={{ color: '#868D9E' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 Some languages already have content. Choose how to handle it.
               </p>
             </div>
@@ -68,21 +65,20 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
                 style={{
                   padding: '14px 16px',
                   borderRadius: '10px',
-                  border: isActive ? '1.5px solid #2F80ED' : '1px solid #E9E9E9',
-                  backgroundColor: isActive ? 'rgba(47, 128, 237, 0.04)' : '#FFFFFF',
-                  // Compensate thicker border
+                  border: isActive ? '1.5px solid var(--primary)' : '1px solid var(--border)',
+                  backgroundColor: isActive ? 'rgba(47, 128, 237, 0.04)' : 'var(--card)',
                   margin: isActive ? '0' : '0.25px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.borderColor = '#C2C9DB';
-                    e.currentTarget.style.backgroundColor = '#FAFAFA';
+                    e.currentTarget.style.backgroundColor = 'var(--secondary)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.borderColor = '#E9E9E9';
-                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '';
+                    e.currentTarget.style.backgroundColor = '';
                   }
                 }}
               >
@@ -90,12 +86,12 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                   style={{
-                    backgroundColor: isActive ? 'rgba(47, 128, 237, 0.10)' : '#F5F5F5',
+                    backgroundColor: isActive ? 'rgba(47, 128, 237, 0.10)' : 'var(--secondary)',
                   }}
                 >
                   <opt.Icon
                     size={15}
-                    style={{ color: isActive ? '#2F80ED' : '#868D9E' }}
+                    style={{ color: isActive ? 'var(--primary)' : 'var(--muted)' }}
                   />
                 </div>
 
@@ -103,11 +99,11 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
                 <div className="flex-1 min-w-0">
                   <div
                     className="text-[13px] font-semibold"
-                    style={{ color: isActive ? '#2F80ED' : '#36415D' }}
+                    style={{ color: isActive ? 'var(--primary)' : 'var(--foreground)' }}
                   >
                     {opt.label}
                   </div>
-                  <div className="text-[11px] mt-0.5" style={{ color: '#868D9E' }}>
+                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
                     {opt.description}
                   </div>
                 </div>
@@ -116,14 +112,14 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
                 <div
                   className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0"
                   style={{
-                    borderColor: isActive ? '#2F80ED' : '#C2C9DB',
+                    borderColor: isActive ? 'var(--primary)' : '#C2C9DB',
                     transition: 'border-color 0.15s ease',
                   }}
                 >
                   {isActive && (
                     <div
                       className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: '#2F80ED' }}
+                      style={{ backgroundColor: 'var(--primary)' }}
                     />
                   )}
                 </div>
@@ -135,18 +131,16 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
         {/* Footer */}
         <div
           className="flex justify-end gap-2.5"
-          style={{ padding: '14px 20px', borderTop: '1px solid #F0F0F0' }}
+          style={{ padding: '14px 20px', borderTop: '1px solid var(--border)' }}
         >
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium transition-colors"
+            className="px-4 py-2 rounded-lg text-[13px] font-medium transition-colors hover:bg-secondary"
             style={{
-              border: '1px solid #E9E9E9',
-              color: '#5E677D',
-              backgroundColor: '#FFFFFF',
+              border: '1px solid var(--border)',
+              color: 'var(--foreground)',
+              backgroundColor: 'var(--card)',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F5F5F5'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FFFFFF'; }}
           >
             Cancel
           </button>
@@ -157,17 +151,14 @@ export function TranslationOptionsDialog({ isOpen, onClose, onContinue }: Transl
             }}
             className="px-5 py-2 rounded-lg text-[13px] font-semibold transition-all"
             style={{
-              background: 'linear-gradient(135deg, #2F80ED, #2970D0)',
-              color: '#FFFFFF',
-              boxShadow: '0 2px 6px rgba(47, 128, 237, 0.3)',
+              backgroundColor: 'var(--primary)',
+              color: 'white',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = '0 4px 10px rgba(47, 128, 237, 0.4)';
-              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.opacity = '0.9';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 2px 6px rgba(47, 128, 237, 0.3)';
-              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.opacity = '1';
             }}
           >
             Continue

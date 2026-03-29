@@ -1,0 +1,149 @@
+<h2>Template Thumbnail Improvements</h2>
+<p class="subtitle">Current thumbnails are abstract colored rectangles. Here are three directions for improvement.</p>
+
+<div class="split" style="gap: 24px; margin-bottom: 32px;">
+  <div class="mockup">
+    <div class="mockup-header">Current Thumbnail</div>
+    <div class="mockup-body" style="padding: 16px; background: #f8f8f8;">
+      <svg width="100%" height="90" viewBox="0 0 220 90" style="display: block;">
+        <!-- Abstract rectangles - current style -->
+        <rect x="78" y="4" width="48" height="14" rx="7" fill="#2F80ED" stroke="#2F80ED" stroke-width="0"/>
+        <path d="M102,18 C102,32 102,32 102,26" fill="none" stroke="#C2C9DB" stroke-width="1.2"/>
+        <rect x="78" y="26" width="48" height="14" rx="4" fill="#2f80ed18" stroke="#2f80ed" stroke-width="1.2"/>
+        <path d="M102,40 C102,54 102,54 102,48" fill="none" stroke="#C2C9DB" stroke-width="1.2"/>
+        <rect x="78" y="48" width="48" height="14" rx="4" fill="#2f80ed18" stroke="#2f80ed" stroke-width="1.2"/>
+        <path d="M102,62 C102,76 102,76 102,70" fill="none" stroke="#C2C9DB" stroke-width="1.2"/>
+        <rect x="70" y="70" width="56" height="14" rx="7" fill="#f59e0b18" stroke="#f59e0b" stroke-width="1.2"/>
+      </svg>
+      <p style="text-align:center; font-size:11px; color:#888; margin-top:8px;">Small abstract shapes, no text, hard to tell templates apart</p>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; font-size:20px; color:#aaa;">→</div>
+  <div class="mockup">
+    <div class="mockup-header">Goal</div>
+    <div class="mockup-body" style="padding: 16px; background: #f8f8f8; display:flex; align-items:center; justify-content:center; min-height: 90px;">
+      <p style="font-size:12px; color:#666; text-align:center;">Thumbnails that let users visually distinguish templates at a glance — showing flow shape, branching, and step count</p>
+    </div>
+  </div>
+</div>
+
+<div class="cards" style="grid-template-columns: 1fr 1fr 1fr;">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8f9fb;">
+      <svg width="100%" height="120" viewBox="0 0 200 120" style="display:block;">
+        <!-- Option A: Mini flowchart with step labels -->
+        <rect x="50" y="2" width="100" height="18" rx="9" fill="#2F80ED" stroke="none"/>
+        <text x="100" y="14" text-anchor="middle" font-size="7" fill="white" font-weight="600">START</text>
+
+        <line x1="100" y1="20" x2="100" y2="28" stroke="#C2C9DB" stroke-width="1.5"/>
+
+        <rect x="40" y="28" width="120" height="18" rx="4" fill="white" stroke="#2F80ED" stroke-width="1.2"/>
+        <text x="100" y="40" text-anchor="middle" font-size="7" fill="#36415D" font-weight="500">Scan Equipment</text>
+
+        <line x1="100" y1="46" x2="100" y2="54" stroke="#C2C9DB" stroke-width="1.5"/>
+
+        <rect x="40" y="54" width="120" height="18" rx="4" fill="white" stroke="#2F80ED" stroke-width="1.2"/>
+        <text x="100" y="66" text-anchor="middle" font-size="7" fill="#36415D" font-weight="500">Visual Inspection</text>
+
+        <line x1="100" y1="72" x2="100" y2="80" stroke="#C2C9DB" stroke-width="1.5"/>
+
+        <rect x="40" y="80" width="120" height="18" rx="9" fill="#f59e0b18" stroke="#f59e0b" stroke-width="1.2"/>
+        <text x="100" y="92" text-anchor="middle" font-size="7" fill="#b45309" font-weight="500">Pass / Fail?</text>
+
+        <!-- Branch indicators -->
+        <line x1="70" y1="98" x2="55" y2="110" stroke="#10b981" stroke-width="1.2"/>
+        <circle cx="55" cy="112" r="4" fill="#10b98130" stroke="#10b981" stroke-width="1"/>
+        <line x1="130" y1="98" x2="145" y2="110" stroke="#ef4444" stroke-width="1.2"/>
+        <circle cx="145" cy="112" r="4" fill="#ef444430" stroke="#ef4444" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>A: Labeled Mini-Flowchart</h3>
+      <p>Show actual step titles in a miniaturized flowchart. Branching shown with colored endpoints. Most informative but might get cramped with many steps.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8f9fb;">
+      <svg width="100%" height="120" viewBox="0 0 200 120" style="display:block;">
+        <!-- Option B: Schematic with icons -->
+        <circle cx="100" cy="12" r="8" fill="#2F80ED"/>
+        <text x="100" y="15" text-anchor="middle" font-size="7" fill="white">▶</text>
+
+        <line x1="100" y1="20" x2="100" y2="28" stroke="#C2C9DB" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+        <!-- Step with barcode icon -->
+        <rect x="60" y="28" width="80" height="16" rx="3" fill="white" stroke="#3b82f6" stroke-width="1.2"/>
+        <rect x="64" y="32" width="12" height="8" rx="1" fill="#3b82f618" stroke="#3b82f6" stroke-width="0.8"/>
+        <text x="82" y="39" font-size="6" fill="#64748b">scan</text>
+
+        <line x1="100" y1="44" x2="100" y2="50" stroke="#C2C9DB" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+        <!-- Regular step -->
+        <rect x="60" y="50" width="80" height="16" rx="3" fill="white" stroke="#C2C9DB" stroke-width="1.2"/>
+
+        <line x1="100" y1="66" x2="100" y2="72" stroke="#C2C9DB" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+        <!-- Regular step -->
+        <rect x="60" y="72" width="80" height="16" rx="3" fill="white" stroke="#C2C9DB" stroke-width="1.2"/>
+
+        <line x1="100" y1="88" x2="100" y2="94" stroke="#C2C9DB" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+        <!-- Branch diamond -->
+        <polygon points="100,94 120,104 100,114 80,104" fill="#f59e0b18" stroke="#f59e0b" stroke-width="1.2"/>
+
+        <!-- Branch lines -->
+        <line x1="80" y1="104" x2="50" y2="104" stroke="#10b981" stroke-width="1.2"/>
+        <line x1="120" y1="104" x2="150" y2="104" stroke="#ef4444" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B: Schematic with Icons</h3>
+      <p>Abstract shapes (no text) but with visual cues: diamonds for decisions, icons for input types (barcode, photo), dashed connectors. Clean and scales well.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8f9fb;">
+      <svg width="100%" height="120" viewBox="0 0 200 120" style="display:block;">
+        <!-- Option C: Enhanced current style with better layout -->
+        <!-- Start pill -->
+        <rect x="72" y="4" width="56" height="14" rx="7" fill="#2F80ED"/>
+
+        <!-- Animated-style connector -->
+        <line x1="100" y1="18" x2="100" y2="24" stroke="#2F80ED" stroke-width="1.5"/>
+        <polygon points="96,23 100,28 104,23" fill="#2F80ED"/>
+
+        <!-- Steps as rounded bars with left color accent -->
+        <rect x="55" y="30" width="90" height="12" rx="3" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+        <rect x="55" y="30" width="3" height="12" rx="1.5" fill="#3b82f6"/>
+
+        <line x1="100" y1="42" x2="100" y2="46" stroke="#C2C9DB" stroke-width="1"/>
+
+        <rect x="55" y="48" width="90" height="12" rx="3" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+        <rect x="55" y="48" width="3" height="12" rx="1.5" fill="#64748b"/>
+
+        <line x1="100" y1="60" x2="100" y2="64" stroke="#C2C9DB" stroke-width="1"/>
+
+        <rect x="55" y="66" width="90" height="12" rx="3" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+        <rect x="55" y="66" width="3" height="12" rx="1.5" fill="#64748b"/>
+
+        <line x1="100" y1="78" x2="100" y2="82" stroke="#C2C9DB" stroke-width="1"/>
+
+        <!-- Decision with branch -->
+        <rect x="50" y="84" width="100" height="12" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+
+        <!-- Two outcomes -->
+        <line x1="75" y1="96" x2="60" y2="104" stroke="#10b981" stroke-width="1.2"/>
+        <rect x="35" y="104" width="50" height="10" rx="3" fill="#d1fae5" stroke="#10b981" stroke-width="0.8"/>
+
+        <line x1="125" y1="96" x2="140" y2="104" stroke="#ef4444" stroke-width="1.2"/>
+        <rect x="115" y="104" width="50" height="10" rx="3" fill="#fee2e2" stroke="#ef4444" stroke-width="0.8"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>C: Polished Bar Layout</h3>
+      <p>Keep the abstract style but upgrade visual quality: card-like step bars with color accents, arrow connectors, colored branch endpoints. Clean and modern.</p>
+    </div>
+  </div>
+</div>

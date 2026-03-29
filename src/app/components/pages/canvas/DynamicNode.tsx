@@ -119,6 +119,7 @@ export interface DynamicNodeData {
   onAddConnectedStep?: (sourceHandle?: string) => void;
   connectedHandles?: Set<string>;
   onOpenMediaLibrary?: (callback: (selectedMedia: string[]) => void) => void;
+  versionDiffStatus?: 'modified' | 'removed' | null;
 }
 
 type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'media' | 'animation' | 'tts' | 'flowcode' | 'configurations';
@@ -398,16 +399,31 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
     updateData({ configurationIds: [] });
   };
 
+  const diffStatus = data.versionDiffStatus;
+  const diffBorderColor = diffStatus === 'modified' ? '#2F80ED' : diffStatus === 'removed' ? '#FF1F1F' : null;
+
   return (
     <div
       ref={containerRef}
       className="relative group transition-all duration-200 w-max max-w-[90vw] min-w-[220px] sm:min-w-[280px] sm:max-w-[400px]"
     >
+      {/* Version diff badge */}
+      {diffStatus && (
+        <div
+          className="absolute -top-3 right-4 z-20 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider text-white"
+          style={{ backgroundColor: diffBorderColor! }}
+        >
+          {diffStatus === 'modified' ? 'Changed' : 'Removed'}
+        </div>
+      )}
       <div
         className="canvas-step-card relative rounded-xl transition-all"
         style={{
-          borderColor: selected ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
-          boxShadow: selected
+          borderColor: diffBorderColor || (selected ? 'var(--primary)' : 'rgba(0,0,0,0.08)'),
+          border: diffBorderColor ? `2px dashed ${diffBorderColor}` : undefined,
+          boxShadow: diffBorderColor
+            ? `0 0 0 1px ${diffBorderColor}, 0 0 20px ${diffBorderColor}25`
+            : selected
             ? '0 0 0 2px var(--primary), 0 4px 16px rgba(47,128,237,0.15)'
             : '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
         }}

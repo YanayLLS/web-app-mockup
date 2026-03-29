@@ -45,6 +45,7 @@ import { ProcedureStepsProvider } from './contexts/ProcedureStepsContext';
 import { UserProfileProvider } from './contexts/UserProfileContext';
 import { AppPopupProvider } from './contexts/AppPopupContext';
 import { WorkspaceProvider } from './contexts/WorkspaceContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { FloatingMinimizedCall } from './components/FloatingMinimizedCall';
 import { getUrlParam, setUrlParam } from './utils/urlParams';
 import { LoginScreen } from './components/LoginScreen';
@@ -939,6 +940,7 @@ function AppRouter() {
         <Route path="/" element={<ProductSelector />} />
         <Route path="/web/*" element={
           <AvatarProvider>
+            <NotificationProvider>
               <ProjectProvider>
                 <GroupsProvider>
                 <FavoritesProvider>
@@ -953,6 +955,7 @@ function AppRouter() {
                 </FavoritesProvider>
                 </GroupsProvider>
               </ProjectProvider>
+            </NotificationProvider>
           </AvatarProvider>
         } />
         <Route path="/app/*" element={<ProjectProvider><AppLayout /></ProjectProvider>} />
