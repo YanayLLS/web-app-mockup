@@ -7,6 +7,8 @@ import {
   Copy,
   Layers,
   Star,
+  Trash2,
+  Check,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { Node, Edge } from 'reactflow';
@@ -33,6 +35,7 @@ interface TemplateLibraryProps {
   templates: FlowTemplate[];
   onInsertTemplate: (template: FlowTemplate) => void;
   onSaveAsTemplate: (name: string, description: string, category: string) => void;
+  onDeleteTemplate: (templateId: string) => void;
   hasSelectedNodes: boolean;
 }
 
@@ -63,70 +66,162 @@ function getCategoryColor(category: string): string {
 function FlowThumbnail({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) {
   if (nodes.length === 0) return null;
 
-  const svgW = 220, svgH = 80;
-  const padX = 16, padY = 14;
-  const innerW = svgW - padX * 2;
-  const innerH = svgH - padY * 2;
-  const nodeW = 48, nodeH = 14, nodeR = 4;
+  const svgW = 220;
+  const barW = 100, barH = 12, barR = 3;
+  const startW = 56, startH = 14, startR = 7;
+  const gapY = 6;
+  const arrowSize = 4;
+  const connLen = 10;
+  const branchBarW = 46, branchBarH = 10, branchBarR = 3;
+  const branchDropY = 14;
+  const cx = svgW / 2;
 
-  // Sort by Y position (flow order), then lay out top-to-bottom
+  // Sort by Y position (flow order)
   const sorted = [...nodes].sort((a, b) => a.position.y - b.position.y);
-  const cols = Math.max(1, Math.ceil(Math.sqrt(sorted.length * 0.6)));
-  const rows = Math.ceil(sorted.length / cols);
-  const gapX = cols > 1 ? innerW / (cols - 1 || 1) : 0;
-  const gapY = rows > 1 ? innerH / (rows - 1 || 1) : 0;
 
-  const positions = new Map<string, { cx: number; cy: number }>();
-  sorted.forEach((n, i) => {
-    const row = Math.floor(i / cols);
-    const col = i % cols;
-    positions.set(n.id, {
-      cx: padX + (cols === 1 ? innerW / 2 : col * gapX),
-      cy: padY + (rows === 1 ? innerH / 2 : row * gapY),
-    });
+  // Build positions top-down
+  type NodePos = { id: string; y: number; node: Node; isBranch: boolean; isStart: boolean; h: number };
+  const layout: NodePos[] = [];
+  let curY = 4;
+
+  sorted.forEach(n => {
+    const d = n.data as any;
+    const isStart = n.type === 'start';
+    const isBranch = (d?.options?.length ?? 0) > 1;
+    const h = isStart ? startH : barH;
+    layout.push({ id: n.id, y: curY, node: n, isBranch, isStart, h });
+    curY += h + gapY + connLen;
+  });
+
+  // If last node is a branch, add space for branch lines
+  const lastNode = layout[layout.length - 1];
+  const extraBranch = lastNode?.isBranch ? branchDropY + branchBarH + 6 : 0;
+  const svgH = Math.min(160, Math.max(80, curY - connLen + extraBranch + 4));
+
+  // Build edge lookup: source -> target
+  const edgeMap = new Map<string, string[]>();
+  edges.forEach(e => {
+    if (!edgeMap.has(e.source)) edgeMap.set(e.source, []);
+    edgeMap.get(e.source)!.push(e.target);
   });
 
   return (
     <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ display: 'block' }}>
-      {/* Edges — curved connectors */}
-      {edges.map(e => {
-        const from = positions.get(e.source);
-        const to = positions.get(e.target);
-        if (!from || !to) return null;
-        const midY = (from.cy + to.cy) / 2;
-        return (
-          <path
-            key={e.id}
-            d={`M${from.cx},${from.cy + nodeH / 2} C${from.cx},${midY} ${to.cx},${midY} ${to.cx},${to.cy - nodeH / 2}`}
-            fill="none"
-            stroke="#C2C9DB"
-            strokeWidth={1.2}
-          />
-        );
-      })}
-      {/* Nodes */}
-      {sorted.map(n => {
-        const pos = positions.get(n.id);
-        if (!pos) return null;
-        const d = n.data as any;
-        const isStart = n.type === 'start';
-        const isBranch = d?.options?.length > 1;
+      {layout.map((item, i) => {
+        const d = item.node.data as any;
         const color = d?.isColorized && d?.color ? d.color : '#2F80ED';
-        const w = isBranch ? nodeW + 8 : nodeW;
-        const r = isStart ? nodeH / 2 : isBranch ? nodeH / 2 : nodeR;
-        return (
-          <rect
-            key={n.id}
-            x={pos.cx - w / 2}
-            y={pos.cy - nodeH / 2}
-            width={w}
-            height={nodeH}
-            rx={r}
-            fill={isStart ? '#2F80ED' : color + '18'}
-            stroke={isStart ? '#2F80ED' : color}
-            strokeWidth={isStart ? 0 : 1.2}
-          />
-        );
+        const elements: React.ReactNode[] = [];
+
+        if (item.isStart) {
+          // Start pill
+          elements.push(
+            <rect
+              key={`n-${item.id}`}
+              x={cx - startW / 2} y={item.y}
+              width={startW} height={startH} rx={startR}
+              fill="#2F80ED"
+            />
+          );
+        } else if (item.isBranch) {
+          // Decision pill
+          elements.push(
+            <rect
+              key={`n-${item.id}`}
+              x={cx - barW / 2} y={item.y}
+              width={barW} height={barH} rx={barH / 2}
+              fill="#fef3c7" stroke="#f59e0b" strokeWidth={1}
+            />
+          );
+        } else {
+          // Regular step bar with left color accent
+          elements.push(
+            <g key={`n-${item.id}`}>
+              <rect
+                x={cx - barW / 2} y={item.y}
+                width={barW} height={barH} rx={barR}
+                fill="white" stroke="#e2e8f0" strokeWidth={1}
+              />
+              <rect
+                x={cx - barW / 2} y={item.y}
+                width={3} height={barH}
+                rx={1.5}
+                fill={color}
+              />
+              {/* Input type indicators */}
+              {d?.isInput && d?.inputType === 'barcode' && (
+                <g>
+                  {[0, 3, 5, 8, 10].map((offset, j) => (
+                    <rect key={j} x={cx + barW / 2 - 16 + offset} y={item.y + 3} width={1.5} height={6} rx={0.5} fill={color} opacity={0.4} />
+                  ))}
+                </g>
+              )}
+              {d?.isInput && d?.inputType === 'picture' && (
+                <circle cx={cx + barW / 2 - 10} cy={item.y + barH / 2} r={2.5} fill="none" stroke={color} strokeWidth={0.8} opacity={0.4} />
+              )}
+              {d?.isInput && d?.inputType === 'text' && (
+                <g opacity={0.4}>
+                  <line x1={cx + barW / 2 - 14} y1={item.y + barH - 3} x2={cx + barW / 2 - 6} y2={item.y + barH - 3} stroke={color} strokeWidth={0.8} />
+                  <line x1={cx + barW / 2 - 10} y1={item.y + 3} x2={cx + barW / 2 - 8} y2={item.y + barH - 3} stroke={color} strokeWidth={0.8} />
+                </g>
+              )}
+            </g>
+          );
+        }
+
+        // Connector to next node (if not last and not a branch that fans out)
+        const nextItem = layout[i + 1];
+        if (nextItem && !item.isBranch) {
+          const fromY = item.y + item.h;
+          const toY = nextItem.y;
+          elements.push(
+            <g key={`c-${item.id}`}>
+              <line x1={cx} y1={fromY} x2={cx} y2={toY} stroke="#C2C9DB" strokeWidth={1} />
+              <polygon
+                points={`${cx - arrowSize},${toY - arrowSize} ${cx},${toY} ${cx + arrowSize},${toY - arrowSize}`}
+                fill="#C2C9DB"
+              />
+            </g>
+          );
+        }
+
+        // Branch lines from decision nodes
+        if (item.isBranch) {
+          const opts = d?.options || [];
+          const numBranches = Math.min(opts.length, 3);
+          const fromY = item.y + item.h;
+          const dropY = fromY + branchDropY;
+
+          if (numBranches === 2) {
+            const leftX = cx - 36;
+            const rightX = cx + 36;
+            elements.push(
+              <g key={`b-${item.id}`}>
+                <line x1={cx} y1={fromY} x2={leftX} y2={dropY} stroke="#10b981" strokeWidth={1.2} />
+                <rect x={leftX - branchBarW / 2} y={dropY} width={branchBarW} height={branchBarH} rx={branchBarR} fill="#d1fae5" stroke="#10b981" strokeWidth={0.8} />
+                <line x1={cx} y1={fromY} x2={rightX} y2={dropY} stroke="#ef4444" strokeWidth={1.2} />
+                <rect x={rightX - branchBarW / 2} y={dropY} width={branchBarW} height={branchBarH} rx={branchBarR} fill="#fee2e2" stroke="#ef4444" strokeWidth={0.8} />
+              </g>
+            );
+          } else if (numBranches >= 3) {
+            const leftX = cx - 55;
+            const rightX = cx + 55;
+            const colors = ['#10b981', '#3b82f6', '#ef4444'];
+            const fills = ['#d1fae5', '#dbeafe', '#fee2e2'];
+            const xs = [leftX, cx, rightX];
+            elements.push(
+              <g key={`b-${item.id}`}>
+                {xs.map((bx, bi) => (
+                  <g key={bi}>
+                    <line x1={cx} y1={fromY} x2={bx} y2={dropY} stroke={colors[bi]} strokeWidth={1.2} />
+                    <rect x={bx - branchBarW / 2 + 4} y={dropY} width={branchBarW - 8} height={branchBarH} rx={branchBarR} fill={fills[bi]} stroke={colors[bi]} strokeWidth={0.8} />
+                  </g>
+                ))}
+              </g>
+            );
+          }
+        }
+
+        return elements;
       })}
     </svg>
   );
@@ -253,6 +348,7 @@ export function TemplateLibrary({
   templates,
   onInsertTemplate,
   onSaveAsTemplate,
+  onDeleteTemplate,
   hasSelectedNodes,
 }: TemplateLibraryProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -506,6 +602,7 @@ export function TemplateLibrary({
                             key={template.id}
                             template={template}
                             onInsert={() => onInsertTemplate(template)}
+                            onDelete={!template.isBuiltIn ? () => onDeleteTemplate(template.id) : undefined}
                             featured
                           />
                         ))}
@@ -528,6 +625,7 @@ export function TemplateLibrary({
                             key={template.id}
                             template={template}
                             onInsert={() => onInsertTemplate(template)}
+                            onDelete={!template.isBuiltIn ? () => onDeleteTemplate(template.id) : undefined}
                           />
                         ))}
                       </div>
@@ -560,20 +658,47 @@ export function TemplateLibrary({
 function TemplateCard({
   template,
   onInsert,
+  onDelete,
   featured = false,
 }: {
   template: FlowTemplate;
   onInsert: () => void;
+  onDelete?: () => void;
   featured?: boolean;
 }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const color = getCategoryColor(template.category);
 
   return (
     <div
-      className="group rounded-lg border transition-all hover:shadow-md cursor-pointer overflow-hidden"
+      className="group rounded-lg border transition-all hover:shadow-md cursor-pointer overflow-hidden relative"
       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
       onClick={onInsert}
     >
+      {/* Delete button for custom templates */}
+      {onDelete && (
+        <button
+          className="absolute top-2 right-2 z-10 p-1 rounded transition-all opacity-0 group-hover:opacity-100"
+          style={{
+            backgroundColor: confirmDelete ? '#ef4444' : 'var(--background)',
+            color: confirmDelete ? 'white' : 'var(--muted)',
+            border: confirmDelete ? 'none' : '1px solid var(--border)',
+          }}
+          title={confirmDelete ? 'Click to confirm delete' : 'Delete template'}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (confirmDelete) {
+              onDelete();
+            } else {
+              setConfirmDelete(true);
+              setTimeout(() => setConfirmDelete(false), 3000);
+            }
+          }}
+        >
+          {confirmDelete ? <Check className="w-3 h-3" /> : <Trash2 className="w-3 h-3" />}
+        </button>
+      )}
+
       {/* Thumbnail */}
       <div
         className="px-3 pt-3 pb-2"
@@ -589,6 +714,14 @@ function TemplateCard({
           <span className="text-[9px] font-medium uppercase" style={{ color: 'var(--muted)' }}>
             {template.category}
           </span>
+          {!template.isBuiltIn && (
+            <span
+              className="text-[8px] font-semibold uppercase px-1 py-0.5 rounded"
+              style={{ backgroundColor: 'var(--primary)', color: 'white', opacity: 0.7 }}
+            >
+              Custom
+            </span>
+          )}
           <span className="text-[9px] ml-auto" style={{ color: 'var(--muted)' }}>
             {template.nodeCount} step{template.nodeCount !== 1 ? 's' : ''}
           </span>

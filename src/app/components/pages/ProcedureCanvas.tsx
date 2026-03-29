@@ -42,6 +42,8 @@ import {
   Clock,
   Layout,
   Globe,
+  Eye,
+  RotateCcw,
 } from 'lucide-react';
 import imgDots from "figma:asset/024a1ea7ee32f89f8dbc4aa4a011b69bd6e9bad7.png";
 import { DynamicNode } from './canvas/DynamicNode';
@@ -706,9 +708,15 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     undo, redo, canUndo, canRedo, takeSnapshot,
   } = useUndoRedo(initialFlow.nodes, initialFlow.edges);
 
+  // Version preview state (must be declared before sync effect that references it)
+  const [previewingVersionId, setPreviewingVersionId] = useState<string | null>(null);
+  const previewSavedStateRef = useRef<{ nodes: Node[]; edges: Edge[] } | null>(null);
+  const [previewInfo, setPreviewInfo] = useState<{ versionName: string; unchanged: number; modified: number; removed: number; addedSince: number } | null>(null);
+
   // Sync flow changes back to the shared context (debounced)
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
+    if (previewingVersionId) return; // Don't sync during version preview
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     syncTimerRef.current = setTimeout(() => {
       const steps = flowToSteps(nodes, edges);
@@ -717,7 +725,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
       }
     }, 500);
     return () => { if (syncTimerRef.current) clearTimeout(syncTimerRef.current); };
-  }, [nodes, edges, procedureId, setContextSteps]);
+  }, [nodes, edges, procedureId, setContextSteps, previewingVersionId]);
   const [menu, setMenu] = useState<{ x: number; y: number; type: ContextMenuType; data?: any } | null>(null);
   const connectStartRef = useRef<{ nodeId: string | null; handleId: string | null } | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -752,7 +760,9 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
 
   // Validation & Layout state
   const [showValidation, setShowValidation] = useState(false);
+  const [dismissedValidationIds, setDismissedValidationIds] = useState<Set<string>>(new Set());
   const validationResult = useFlowValidation(nodes, edges, showValidation);
+  const activeValidationCount = validationResult.issues.filter(i => !dismissedValidationIds.has(i.id)).length;
   const { guides, handleNodesChange: smartGuidesHandler, clearGuides } = useSmartGuides(nodes);
 
 
@@ -787,12 +797,118 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
   const aiLimitRef = useRef({ used: 15000, max: 20000 });
   useEffect(() => { aiLimitRef.current = { used: aiCreditsUsed, max: aiCreditsMax }; }, [aiCreditsUsed, aiCreditsMax]);
 
-  const [previewingVersionId, setPreviewingVersionId] = useState<string | null>(null);
   const [commentThreads, setCommentThreads] = useState<CommentThread[]>(() => { const sn = initialFlow.nodes.filter(n => n.type === 'dynamic'); const t: CommentThread[] = []; if (sn.length >= 1) t.push({ id: 'thread-1', nodeId: sn[0].id, resolved: false, createdAt: new Date(Date.now()-7200000).toISOString(), comments: [{ id: 'c1', authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', text: 'Should we add a safety warning?', mentions: [], createdAt: new Date(Date.now()-7200000).toISOString() }, { id: 'c2', authorId: '2', authorName: 'Michael Chen', authorInitials: 'MC', authorColor: '#11e874', text: '@Sarah Johnson Yes, I will add one.', mentions: ['1'], createdAt: new Date(Date.now()-3600000).toISOString() }] }); if (sn.length >= 2) t.push({ id: 'thread-2', nodeId: sn[1].id, resolved: true, createdAt: new Date(Date.now()-86400000).toISOString(), comments: [{ id: 'c3', authorId: '3', authorName: 'Emma Williams', authorInitials: 'EW', authorColor: '#9747ff', text: 'Instructions unclear.', mentions: [], createdAt: new Date(Date.now()-86400000).toISOString() }, { id: 'c4', authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', text: 'Fixed.', mentions: [], createdAt: new Date(Date.now()-72000000).toISOString() }] }); if (sn.length >= 3) t.push({ id: 'thread-3', nodeId: sn[2].id, resolved: false, createdAt: new Date(Date.now()-1800000).toISOString(), comments: [{ id: 'c5', authorId: '2', authorName: 'Michael Chen', authorInitials: 'MC', authorColor: '#11e874', text: 'We should add a photo of the air filter housing here. Techs have been confused about which clips to release.', mentions: [], createdAt: new Date(Date.now()-1800000).toISOString() }, { id: 'c6', authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', text: '@Michael Chen Good call! I\'ll take a photo during the next maintenance session.', mentions: ['2'], createdAt: new Date(Date.now()-900000).toISOString() }, { id: 'c7', authorId: '3', authorName: 'Emma Williams', authorInitials: 'EW', authorColor: '#9747ff', text: 'Also consider adding a warning about the brittle plastic clips on older models.', mentions: [], createdAt: new Date(Date.now()-300000).toISOString() }] }); return t; });
-  const [versions, setVersions] = useState<Version[]>([{ id: 'v4', name: 'Auto-save', timestamp: new Date(Date.now()-300000).toISOString(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', changeSummary: 'Modified 2 nodes', snapshot: { nodes: initialFlow.nodes, edges: initialFlow.edges } }, { id: 'v3', name: 'v2.0 - Branching', timestamp: new Date(Date.now()-7200000).toISOString(), authorId: '2', authorName: 'Michael Chen', authorInitials: 'MC', authorColor: '#11e874', changeSummary: 'Added 3 steps', snapshot: { nodes: initialFlow.nodes.slice(0,3), edges: initialFlow.edges.slice(0,2) } }, { id: 'v2', name: 'v1.0 - Initial', timestamp: new Date(Date.now()-172800000).toISOString(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', changeSummary: 'Initial procedure', snapshot: { nodes: initialFlow.nodes.slice(0,2), edges: initialFlow.edges.slice(0,1) } }, { id: 'v1', name: 'Created', timestamp: new Date(Date.now()-259200000).toISOString(), authorId: '3', authorName: 'Emma Williams', authorInitials: 'EW', authorColor: '#9747ff', changeSummary: 'Empty procedure', snapshot: { nodes: [initialFlow.nodes[0]], edges: [] } }]);
+  const [versions, setVersions] = useState<Version[]>(() => {
+    // Build realistic version snapshots with actual different data
+    const _sid = (n: number) => `sample-step-${n}`;
+    const allNodes = initialFlow.nodes;
+    const _eStyle = { strokeWidth: 2, stroke: '#2f80ed' } as const;
+
+    // Edge builder helpers
+    const mkEdge = (src: string, tgt: string, handle?: string): Edge => ({
+      id: `e-${src}-${handle || 'dflt'}-${tgt}`,
+      source: src,
+      target: tgt,
+      sourceHandle: (handle ?? (src === 'start-node' ? null : `opt-${src}`)) as any,
+      type: 'custom',
+      style: { ..._eStyle },
+      animated: false,
+    });
+    const mkBranch = (src: string, optIdx: number, tgt: string): Edge => ({
+      id: `e-${src}-opt${optIdx}-${tgt}`,
+      source: src,
+      target: tgt,
+      sourceHandle: `opt-${src}-${optIdx}`,
+      type: 'custom',
+      style: { ..._eStyle },
+      animated: false,
+    });
+
+    // Clone a node with optional data overrides
+    const cloneNode = (id: string, overrides?: Record<string, any>): Node => {
+      const n = allNodes.find(x => x.id === id);
+      if (!n) {
+        // Fallback: create a minimal node
+        return { id, type: 'dynamic', position: { x: 0, y: 0 }, data: { title: id, description: '', isColorized: false, isInput: false, inputType: 'text', isBranching: false, options: [{ id: `opt-${id}`, text: 'Continue' }], popups: [], media: [], ...overrides } };
+      }
+      return overrides
+        ? { ...n, data: { ...n.data, ...overrides } }
+        : { ...n };
+    };
+
+    // ── v1: Created — start + first step only ──
+    const v1Nodes = [
+      cloneNode('start-node'),
+      cloneNode(_sid(1), { title: 'Safety Preparation' }),
+    ];
+    const v1Edges = [mkEdge('start-node', _sid(1))];
+    const v1Snap = getLayoutedElements(JSON.parse(JSON.stringify(v1Nodes)), JSON.parse(JSON.stringify(v1Edges)));
+
+    // ── v2: Initial — 5 linear steps, no branching ──
+    const v2Nodes = [
+      cloneNode('start-node'),
+      cloneNode(_sid(1)),
+      cloneNode(_sid(2), { title: 'Inspect Generator Housing', isBranching: false, options: [{ id: `opt-${_sid(2)}`, text: 'Continue' }] }),
+      cloneNode(_sid(3), { title: 'Check Oil Level', description: 'Remove the oil dipstick and check the level.', isBranching: false, options: [{ id: `opt-${_sid(3)}`, text: 'Continue' }] }),
+      cloneNode(_sid(4)),
+      cloneNode(_sid(5), { title: 'Check Air Filter', description: 'Open the air filter housing and inspect the element.', isBranching: false, options: [{ id: `opt-${_sid(5)}`, text: 'Continue' }] }),
+    ];
+    const v2StepIds = [_sid(1), _sid(2), _sid(3), _sid(4), _sid(5)];
+    const v2Edges: Edge[] = [mkEdge('start-node', _sid(1))];
+    for (let i = 0; i < v2StepIds.length - 1; i++) {
+      v2Edges.push(mkEdge(v2StepIds[i], v2StepIds[i + 1], `opt-${v2StepIds[i]}`));
+    }
+    const v2Snap = getLayoutedElements(JSON.parse(JSON.stringify(v2Nodes)), JSON.parse(JSON.stringify(v2Edges)));
+
+    // ── v3: Branching — 10 main steps + branch steps 11, 12, 17 ──
+    const v3Nodes = [
+      cloneNode('start-node'),
+      cloneNode(_sid(1)),
+      cloneNode(_sid(2)),
+      cloneNode(_sid(3)),
+      cloneNode(_sid(4)),
+      cloneNode(_sid(5)),
+      cloneNode(_sid(6)),
+      cloneNode(_sid(7), { title: 'Check Fuel System', isBranching: false, options: [{ id: `opt-${_sid(7)}`, text: 'Continue' }] }),
+      cloneNode(_sid(8)),
+      cloneNode(_sid(9), { title: 'Check Drive Belt & Hoses', isBranching: false, options: [{ id: `opt-${_sid(9)}`, text: 'Continue' }] }),
+      cloneNode(_sid(10)),
+      cloneNode(_sid(11)),
+      cloneNode(_sid(12)),
+      cloneNode(_sid(17)),
+    ];
+    const v3Edges: Edge[] = [
+      mkEdge('start-node', _sid(1)),
+      mkEdge(_sid(1), _sid(2), `opt-${_sid(1)}`),
+      mkBranch(_sid(2), 0, _sid(3)),
+      mkBranch(_sid(2), 1, _sid(11)),
+      mkBranch(_sid(3), 0, _sid(5)),
+      mkBranch(_sid(3), 1, _sid(4)),
+      mkEdge(_sid(4), _sid(5), `opt-${_sid(4)}`),
+      mkBranch(_sid(5), 0, _sid(6)),
+      mkBranch(_sid(5), 1, _sid(12)),
+      mkEdge(_sid(12), _sid(6), `opt-${_sid(12)}`),
+      mkEdge(_sid(6), _sid(7), `opt-${_sid(6)}`),
+      mkEdge(_sid(7), _sid(8), `opt-${_sid(7)}`),
+      mkEdge(_sid(8), _sid(9), `opt-${_sid(8)}`),
+      mkEdge(_sid(9), _sid(10), `opt-${_sid(9)}`),
+      mkEdge(_sid(11), _sid(17), `opt-${_sid(11)}`),
+    ];
+    const v3Snap = getLayoutedElements(JSON.parse(JSON.stringify(v3Nodes)), JSON.parse(JSON.stringify(v3Edges)));
+
+    // ── v4: Auto-save (latest) — full current flow ──
+    const v4Snap = { nodes: allNodes.map(n => ({ ...n })), edges: initialFlow.edges.map(e => ({ ...e })) };
+
+    return [
+      { id: 'v4', name: 'Auto-save', timestamp: new Date(Date.now() - 300000).toISOString(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', changeSummary: 'Modified 2 nodes', snapshot: v4Snap },
+      { id: 'v3', name: 'v2.0 - Branching', timestamp: new Date(Date.now() - 7200000).toISOString(), authorId: '2', authorName: 'Michael Chen', authorInitials: 'MC', authorColor: '#11e874', changeSummary: 'Added branching logic, 13 steps', snapshot: v3Snap },
+      { id: 'v2', name: 'v1.0 - Initial', timestamp: new Date(Date.now() - 172800000).toISOString(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', changeSummary: '5 linear steps', snapshot: v2Snap },
+      { id: 'v1', name: 'Created', timestamp: new Date(Date.now() - 259200000).toISOString(), authorId: '3', authorName: 'Emma Williams', authorInitials: 'EW', authorColor: '#9747ff', changeSummary: 'New procedure', snapshot: v1Snap },
+    ];
+  });
   const [templates, setTemplates] = useState<FlowTemplate[]>(() => {
     // Generate built-in templates with real node/edge data
-    return BUILT_IN_TEMPLATES.map(def => {
+    const builtIn: FlowTemplate[] = BUILT_IN_TEMPLATES.map(def => {
       const { nodes: tplNodes, edges: tplEdges } = def.generator();
       return {
         id: def.id,
@@ -808,6 +924,15 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
         isBuiltIn: true,
       };
     });
+    // Load custom templates from localStorage
+    try {
+      const saved = localStorage.getItem('flow-editor-custom-templates');
+      if (saved) {
+        const custom: FlowTemplate[] = JSON.parse(saved);
+        return [...builtIn, ...custom];
+      }
+    } catch { /* ignore corrupt data */ }
+    return builtIn;
   });
   const handleAddComment = useCallback((nodeId: string, threadId: string|null, text: string, mentions: string[]) => { const nc: CommentType = { id: crypto.randomUUID(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', text, mentions, createdAt: new Date().toISOString() }; setCommentThreads(p => threadId ? p.map(t => t.id === threadId ? { ...t, comments: [...t.comments, nc] } : t) : [...p, { id: crypto.randomUUID(), nodeId, resolved: false, createdAt: new Date().toISOString(), comments: [nc] }]); }, []);
   const handleResolveThread = useCallback((id: string) => setCommentThreads(p => p.map(t => t.id === id ? { ...t, resolved: true } : t)), []);
@@ -838,8 +963,79 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     }));
   }, []);
   const handleSaveVersion = useCallback((name: string) => { setVersions(p => [{ id: crypto.randomUUID(), name, timestamp: new Date().toISOString(), authorId: '1', authorName: 'Sarah Johnson', authorInitials: 'SJ', authorColor: '#2f80ed', changeSummary: nodes.filter(n => n.type !== 'start').length + ' steps', snapshot: { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) } }, ...p]); }, [nodes, edges]);
-  const handlePreviewVersion = useCallback((v: Version|null) => setPreviewingVersionId(v?.id || null), []);
-  const handleRestoreVersion = useCallback((v: Version) => { takeSnapshot(); setNodes(JSON.parse(JSON.stringify(v.snapshot.nodes))); setEdges(JSON.parse(JSON.stringify(v.snapshot.edges))); setPreviewingVersionId(null); setHasUnsavedChanges(true); logChange('Version', `Restored "${v.name}"`); }, [setNodes, setEdges, takeSnapshot, logChange]);
+
+  const handlePreviewVersion = useCallback((v: Version | null) => {
+    if (v) {
+      // Save current state before swapping
+      if (!previewSavedStateRef.current) {
+        previewSavedStateRef.current = {
+          nodes: JSON.parse(JSON.stringify(nodes)),
+          edges: JSON.parse(JSON.stringify(edges)),
+        };
+      }
+
+      // Compute diff: compare version snapshot nodes with current nodes
+      const currentNodeMap = new Map<string, Node>();
+      const currentNodes = previewSavedStateRef.current.nodes;
+      for (const n of currentNodes) {
+        if (n.type === 'dynamic') currentNodeMap.set(n.id, n);
+      }
+
+      let unchanged = 0, modified = 0, removed = 0;
+      const annotatedNodes = v.snapshot.nodes.map(n => {
+        if (n.type !== 'dynamic') return JSON.parse(JSON.stringify(n));
+        const cur = currentNodeMap.get(n.id);
+        let diffStatus: string | null = null;
+        if (!cur) {
+          diffStatus = 'removed';
+          removed++;
+        } else if (
+          n.data.title !== cur.data.title ||
+          n.data.description !== cur.data.description ||
+          n.data.isBranching !== cur.data.isBranching ||
+          (n.data.options?.length || 0) !== (cur.data.options?.length || 0)
+        ) {
+          diffStatus = 'modified';
+          modified++;
+        } else {
+          unchanged++;
+        }
+        return { ...JSON.parse(JSON.stringify(n)), data: { ...JSON.parse(JSON.stringify(n.data)), versionDiffStatus: diffStatus } };
+      });
+
+      const versionNodeIds = new Set(v.snapshot.nodes.map(n => n.id));
+      const addedSince = currentNodes.filter(n => n.type === 'dynamic' && !versionNodeIds.has(n.id)).length;
+
+      setNodes(annotatedNodes);
+      setEdges(JSON.parse(JSON.stringify(v.snapshot.edges)));
+      setPreviewingVersionId(v.id);
+      setPreviewInfo({ versionName: v.name, unchanged, modified, removed, addedSince });
+      setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 50);
+    } else {
+      // Exit preview — restore original state
+      if (previewSavedStateRef.current) {
+        setNodes(previewSavedStateRef.current.nodes);
+        setEdges(previewSavedStateRef.current.edges);
+        previewSavedStateRef.current = null;
+      }
+      setPreviewingVersionId(null);
+      setPreviewInfo(null);
+      setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 50);
+    }
+  }, [nodes, edges, setNodes, setEdges, fitView]);
+
+  const handleRestoreVersion = useCallback((v: Version) => {
+    takeSnapshot();
+    // If we're in preview, use saved state as the base for undo, then apply version
+    previewSavedStateRef.current = null;
+    setNodes(JSON.parse(JSON.stringify(v.snapshot.nodes)));
+    setEdges(JSON.parse(JSON.stringify(v.snapshot.edges)));
+    setPreviewingVersionId(null);
+    setPreviewInfo(null);
+    setHasUnsavedChanges(true);
+    logChange('Version', `Restored "${v.name}"`);
+    setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 50);
+  }, [setNodes, setEdges, takeSnapshot, logChange, fitView]);
   const handleInsertTemplate = useCallback((tpl: FlowTemplate) => {
     if (tpl.nodes.length === 0) return;
     // Calculate insertion offset: place below existing nodes
@@ -884,7 +1080,49 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     const firstInserted = layoutedNodes.find(n => n.id === nn[0]?.id);
     if (firstInserted) setTimeout(() => setCenter(firstInserted.position.x + 140, firstInserted.position.y + 100, { zoom: 1, duration: 400 }), 100);
   }, [nodes, edges, setNodes, setEdges, setCenter, takeSnapshot, logChange]);
-  const handleSaveAsTemplate = useCallback((name: string, desc: string, cat: string) => { const sn = nodes.filter(n => n.selected && n.type !== 'start'), si = new Set(sn.map(n => n.id)), se = edges.filter(e => si.has(e.source) && si.has(e.target)); setTemplates(p => [...p, { id: crypto.randomUUID(), name, description: desc, category: cat, nodeCount: sn.length||1, createdAt: new Date().toISOString(), authorName: 'Sarah Johnson', nodes: JSON.parse(JSON.stringify(sn)), edges: JSON.parse(JSON.stringify(se)), isFullProcedure: sn.length >= 4, isBuiltIn: false }]); }, [nodes, edges]);
+  const handleSaveAsTemplate = useCallback((name: string, desc: string, cat: string) => {
+    const sn = nodes.filter(n => n.selected && n.type !== 'start');
+    const si = new Set(sn.map(n => n.id));
+    const se = edges.filter(e => si.has(e.source) && si.has(e.target));
+    // Normalize positions so top-left is (0,0)
+    const minX = Math.min(...sn.map(n => n.position.x));
+    const minY = Math.min(...sn.map(n => n.position.y));
+    const normalizedNodes = sn.map(n => ({
+      ...n,
+      position: { x: n.position.x - minX, y: n.position.y - minY },
+      selected: false,
+    }));
+    const newTemplate: FlowTemplate = {
+      id: `custom-${Date.now()}`,
+      name,
+      description: desc,
+      category: cat,
+      nodeCount: sn.length || 1,
+      createdAt: new Date().toISOString(),
+      authorName: 'You',
+      nodes: JSON.parse(JSON.stringify(normalizedNodes)),
+      edges: JSON.parse(JSON.stringify(se)),
+      isFullProcedure: sn.length >= 4,
+      isBuiltIn: false,
+    };
+    setTemplates(p => {
+      const next = [...p, newTemplate];
+      // Persist only custom templates
+      const custom = next.filter(t => !t.isBuiltIn);
+      localStorage.setItem('flow-editor-custom-templates', JSON.stringify(custom));
+      return next;
+    });
+  }, [nodes, edges]);
+
+  const handleDeleteTemplate = useCallback((templateId: string) => {
+    setTemplates(p => {
+      const next = p.filter(t => t.id !== templateId);
+      const custom = next.filter(t => !t.isBuiltIn);
+      localStorage.setItem('flow-editor-custom-templates', JSON.stringify(custom));
+      return next;
+    });
+  }, []);
+
   const commentCounts = useMemo(() => { const c = new Map<string, number>(); commentThreads.forEach(t => { if (!t.resolved) c.set(t.nodeId, (c.get(t.nodeId)||0)+t.comments.length); }); return c; }, [commentThreads]);
 
   // ─── Language handlers ─────────────────────────────────────────────────
@@ -1536,7 +1774,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
         className: [searchClassName, validationClassName].filter(Boolean).join(' ') || node.className,
         data: {
           ...node.data,
-          editingEnabled,
+          editingEnabled: previewingVersionId ? false : editingEnabled,
           editingLanguage,
           defaultLanguage,
           onChange: (newData: any) => onNodeDataChange(node.id, newData),
@@ -1580,7 +1818,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
         },
       };
     });
-  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled, searchState, showValidation, validationResult.nodeIssueMap, commentCounts, commentThreads, handleAddComment, handleResolveThread, handleUnresolveThread, handleToggleReaction, editingLanguage, defaultLanguage]);
+  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled, previewingVersionId, searchState, showValidation, validationResult.nodeIssueMap, commentCounts, commentThreads, handleAddComment, handleResolveThread, handleUnresolveThread, handleToggleReaction, editingLanguage, defaultLanguage]);
 
   // Delete edge handler
   const handleDeleteEdge = useCallback((edgeId: string) => {
@@ -2351,14 +2589,14 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
           title="Flow Validation"
         >
           <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
-          {validationResult.totalCount > 0 && (
+          {activeValidationCount > 0 && (
             <span
               className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full text-[9px] font-bold text-white px-1"
               style={{
                 backgroundColor: validationResult.errorCount > 0 ? '#FF1F1F' : validationResult.warningCount > 0 ? '#f59e0b' : '#2F80ED',
               }}
             >
-              {validationResult.totalCount}
+              {activeValidationCount}
             </span>
           )}
         </button>
@@ -2396,87 +2634,102 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
             <>
               <div className="fixed inset-0 z-[99]" onClick={() => setShowHotkeys(false)} />
               <div
-                className="absolute z-[100] rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150"
+                className="absolute z-[100] rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 flex flex-col"
                 style={{
-                  width: '320px',
-                  maxHeight: '420px',
+                  width: '340px',
+                  maxHeight: '460px',
                   top: 'calc(100% + 8px)',
                   right: '0px',
                   backgroundColor: 'var(--card)',
                   border: '1px solid var(--border)',
-                  boxShadow: '0 8px 32px rgba(54, 65, 93, 0.14), 0 2px 8px rgba(54, 65, 93, 0.08)',
+                  boxShadow: '0 12px 40px rgba(54, 65, 93, 0.16), 0 2px 8px rgba(54, 65, 93, 0.08)',
                 }}
               >
                 {/* Header */}
                 <div
-                  className="flex items-center justify-between px-4 py-2.5 border-b shrink-0"
-                  style={{ borderColor: 'var(--border)' }}
+                  className="flex items-center justify-between px-4 py-3 shrink-0"
+                  style={{ borderBottom: '1px solid var(--border)' }}
                 >
-                  <div className="flex items-center gap-2">
-                    <Keyboard className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
-                    <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: 'rgba(47, 128, 237, 0.08)' }}
+                    >
+                      <Keyboard className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <span className="text-[13px] font-bold" style={{ color: 'var(--foreground)' }}>
                       Keyboard Shortcuts
                     </span>
                   </div>
                   <button
                     onClick={() => setShowHotkeys(false)}
-                    className="p-1 rounded hover:bg-secondary transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
                   >
                     <X size={14} style={{ color: 'var(--muted)' }} />
                   </button>
                 </div>
 
                 {/* Shortcuts List */}
-                <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: '370px' }}>
+                <div className="overflow-y-auto custom-scrollbar flex-1 py-1">
                   {[
                     { section: 'General', shortcuts: [
-                      { keys: 'Ctrl+Z', label: 'Undo' },
-                      { keys: 'Ctrl+Y', label: 'Redo' },
-                      { keys: 'Ctrl+S', label: 'Save' },
-                      { keys: 'Ctrl+F', label: 'Search nodes' },
-                      { keys: 'Escape', label: 'Deselect all / close menu' },
-                      { keys: '?', label: 'Show keyboard shortcuts' },
+                      { keys: ['Ctrl', 'Z'], label: 'Undo' },
+                      { keys: ['Ctrl', 'Y'], label: 'Redo' },
+                      { keys: ['Ctrl', 'S'], label: 'Save' },
+                      { keys: ['Ctrl', 'F'], label: 'Search nodes' },
+                      { keys: ['Esc'], label: 'Deselect all / close menu' },
+                      { keys: ['?'], label: 'Show keyboard shortcuts' },
                     ]},
                     { section: 'Canvas', shortcuts: [
-                      { keys: '⇧1', label: 'Fit view' },
-                      { keys: 'N', label: 'Add new step' },
-                      { keys: 'Delete', label: 'Delete selected' },
-                      { keys: '↑ ↓ ← →', label: 'Nudge selected nodes' },
+                      { keys: ['⇧', '1'], label: 'Fit view' },
+                      { keys: ['N'], label: 'Add new step' },
+                      { keys: ['Del'], label: 'Delete selected' },
+                      { keys: ['↑', '↓', '←', '→'], label: 'Nudge selected nodes' },
                     ]},
                     { section: 'Selection', shortcuts: [
-                      { keys: 'Shift+Click', label: 'Multi-select nodes' },
-                      { keys: 'Drag on canvas', label: 'Selection box' },
+                      { keys: ['Shift', 'Click'], label: 'Multi-select nodes' },
+                      { keys: ['Drag'], label: 'Selection box' },
                     ]},
                     { section: 'Nodes', shortcuts: [
-                      { keys: 'Double-click', label: 'Edit node title / description' },
-                      { keys: 'Right-click', label: 'Context menu' },
+                      { keys: ['Dbl-click'], label: 'Edit node title / description' },
+                      { keys: ['Right-click'], label: 'Context menu' },
                     ]},
                   ].map(({ section, shortcuts }) => (
                     <div key={section}>
                       <div
-                        className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-wider"
-                        style={{ color: 'var(--muted)', backgroundColor: 'var(--secondary)' }}
+                        className="px-4 py-[6px] text-[10px] font-bold uppercase tracking-wider select-none"
+                        style={{ color: 'var(--muted)' }}
                       >
                         {section}
                       </div>
                       {shortcuts.map(({ keys, label }) => (
                         <div
-                          key={keys}
-                          className="flex items-center justify-between px-4 py-1.5 border-b"
-                          style={{ borderColor: 'var(--border)' }}
+                          key={label}
+                          className="flex items-center justify-between px-4 py-[7px] mx-1.5 rounded-md transition-colors"
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                         >
                           <span className="text-[11px]" style={{ color: 'var(--foreground)' }}>{label}</span>
-                          <kbd
-                            className="inline-block text-[10px] font-mono px-1.5 py-0.5 rounded"
-                            style={{
-                              backgroundColor: 'var(--secondary)',
-                              color: 'var(--foreground)',
-                              border: '1px solid var(--border)',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {keys}
-                          </kbd>
+                          <div className="flex items-center gap-1 shrink-0 ml-3">
+                            {keys.map((k, i) => (
+                              <kbd
+                                key={i}
+                                className="inline-flex items-center justify-center text-[10px] font-medium rounded-[5px] select-none"
+                                style={{
+                                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                                  minWidth: '22px',
+                                  height: '22px',
+                                  padding: '0 6px',
+                                  backgroundColor: 'var(--background)',
+                                  color: 'var(--foreground)',
+                                  border: '1px solid var(--border)',
+                                  boxShadow: '0 1px 2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
+                                }}
+                              >
+                                {k}
+                              </kbd>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -2615,12 +2868,15 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
           edgeTypes={edgeTypes}
           fitView
           minZoom={0.1}
-          snapToGrid
+          snapToGrid={!previewingVersionId}
           snapGrid={[20, 20]}
-          selectionOnDrag
+          selectionOnDrag={!previewingVersionId}
           selectionMode={SelectionMode.Partial}
           multiSelectionKeyCode="Shift"
           selectNodesOnDrag={false}
+          nodesDraggable={!previewingVersionId}
+          nodesConnectable={!previewingVersionId}
+          elementsSelectable={!previewingVersionId}
           panOnDrag={[1, 2]}
           style={{
             background: `url(${imgDots})`,
@@ -2666,6 +2922,62 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
               <Maximize className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
             </button>
           </Panel>
+
+          {/* Version Preview Banner */}
+          {previewInfo && previewingVersionId && (
+            <Panel
+              position="top-center"
+              className="flex items-center gap-4 px-5 py-3 rounded-xl"
+              style={{
+                background: 'var(--card)',
+                border: '2px solid var(--primary)',
+                boxShadow: '0 4px 24px rgba(47,128,237,0.2)',
+                margin: '16px',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+                  Previewing: {previewInfo.versionName}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-[10px] font-medium" style={{ color: 'var(--muted)' }}>
+                {previewInfo.unchanged > 0 && (
+                  <span>{previewInfo.unchanged} unchanged</span>
+                )}
+                {previewInfo.modified > 0 && (
+                  <span style={{ color: '#2F80ED' }}>{previewInfo.modified} changed</span>
+                )}
+                {previewInfo.removed > 0 && (
+                  <span style={{ color: '#FF1F1F' }}>{previewInfo.removed} removed</span>
+                )}
+                {previewInfo.addedSince > 0 && (
+                  <span style={{ color: '#11E874' }}>+{previewInfo.addedSince} added since</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 ml-2">
+                <button
+                  onClick={() => {
+                    const v = versions.find(ver => ver.id === previewingVersionId);
+                    if (v) handleRestoreVersion(v);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors hover:opacity-90"
+                  style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+                >
+                  <RotateCcw className="w-3 h-3 inline mr-1" />
+                  Restore
+                </button>
+                <button
+                  onClick={() => handlePreviewVersion(null)}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors hover:bg-secondary"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                >
+                  Exit Preview
+                </button>
+              </div>
+            </Panel>
+          )}
+
           <MiniMap
             pannable
             zoomable
@@ -2706,6 +3018,8 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
             result={validationResult}
             onGoToNode={handleGoToValidationNode}
             onClose={() => setShowValidation(false)}
+            dismissedIds={dismissedValidationIds}
+            onDismissedIdsChange={setDismissedValidationIds}
           />
         )}
 
@@ -3039,6 +3353,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
           templates={templates}
           onInsertTemplate={handleInsertTemplate}
           onSaveAsTemplate={handleSaveAsTemplate}
+          onDeleteTemplate={handleDeleteTemplate}
           hasSelectedNodes={nodes.some(n => n.selected && n.type !== 'start')}
         />
       )}
