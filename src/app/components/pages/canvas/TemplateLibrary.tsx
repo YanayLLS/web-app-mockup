@@ -67,162 +67,173 @@ function FlowThumbnail({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) {
   if (nodes.length === 0) return null;
 
   const svgW = 220;
-  const barW = 100, barH = 12, barR = 3;
-  const startW = 56, startH = 14, startR = 7;
-  const gapY = 6;
-  const arrowSize = 4;
-  const connLen = 10;
-  const branchBarW = 46, branchBarH = 10, branchBarR = 3;
-  const branchDropY = 14;
+  const barH = 10, barR = 3;
+  const startH = 12, startR = 6;
+  const arrowSize = 3;
   const cx = svgW / 2;
+  const maxH = 120;
+  const padY = 4;
 
   // Sort by Y position (flow order)
   const sorted = [...nodes].sort((a, b) => a.position.y - b.position.y);
 
-  // Build positions top-down
-  type NodePos = { id: string; y: number; node: Node; isBranch: boolean; isStart: boolean; h: number };
-  const layout: NodePos[] = [];
-  let curY = 4;
+  // Group nodes into rows by similar Y position (threshold: half the average Y gap)
+  type Row = { nodes: Node[]; y: number };
+  const rows: Row[] = [];
+  const yThreshold = sorted.length > 1
+    ? Math.max(100, (sorted[sorted.length - 1].position.y - sorted[0].position.y) / (sorted.length * 1.5))
+    : 100;
 
   sorted.forEach(n => {
-    const d = n.data as any;
-    const isStart = n.type === 'start';
-    const isBranch = (d?.options?.length ?? 0) > 1;
-    const h = isStart ? startH : barH;
-    layout.push({ id: n.id, y: curY, node: n, isBranch, isStart, h });
-    curY += h + gapY + connLen;
+    const lastRow = rows[rows.length - 1];
+    if (lastRow && Math.abs(n.position.y - lastRow.nodes[0].position.y) < yThreshold) {
+      lastRow.nodes.push(n);
+    } else {
+      rows.push({ nodes: [n], y: 0 });
+    }
   });
 
-  // If last node is a branch, add space for branch lines
-  const lastNode = layout[layout.length - 1];
-  const extraBranch = lastNode?.isBranch ? branchDropY + branchBarH + 6 : 0;
-  const svgH = Math.min(160, Math.max(80, curY - connLen + extraBranch + 4));
+  // Sort nodes within each row by X position (left to right)
+  rows.forEach(row => row.nodes.sort((a, b) => a.position.x - b.position.x));
 
-  // Build edge lookup: source -> target
-  const edgeMap = new Map<string, string[]>();
-  edges.forEach(e => {
-    if (!edgeMap.has(e.source)) edgeMap.set(e.source, []);
-    edgeMap.get(e.source)!.push(e.target);
+  // Calculate dynamic vertical spacing
+  const rowCount = rows.length;
+  const totalNodeH = rows.reduce((sum, row) => sum + (row.nodes[0]?.type === 'start' ? startH : barH), 0);
+  const availableGap = maxH - padY * 2 - totalNodeH;
+  const gapPerRow = Math.max(8, availableGap / Math.max(1, rowCount - 1));
+
+  // Assign Y positions to rows
+  let curY = padY;
+  rows.forEach((row, i) => {
+    const h = row.nodes[0]?.type === 'start' ? startH : barH;
+    row.y = curY;
+    curY += h + (i < rowCount - 1 ? gapPerRow : 0);
+  });
+  const svgH = Math.max(60, curY + padY);
+
+  // Build position map for each node: { cx, cy, w, h }
+  const posMap = new Map<string, { cx: number; cy: number; w: number; h: number }>();
+  rows.forEach(row => {
+    const count = row.nodes.length;
+    const h = row.nodes[0]?.type === 'start' ? startH : barH;
+    if (count === 1) {
+      const n = row.nodes[0];
+      const w = n.type === 'start' ? 50 : 90;
+      posMap.set(n.id, { cx, cy: row.y + h / 2, w, h });
+    } else {
+      // Spread nodes horizontally
+      const totalSpread = Math.min(160, count * 60);
+      const startX = cx - totalSpread / 2;
+      const spacing = count > 1 ? totalSpread / (count - 1) : 0;
+      row.nodes.forEach((n, ni) => {
+        const w = 46;
+        posMap.set(n.id, { cx: startX + ni * spacing, cy: row.y + h / 2, w, h });
+      });
+    }
+  });
+
+  // Build edge source->targets lookup
+  const edgeList = edges.map(e => ({ source: e.source, target: e.target }));
+
+  // Render
+  const renderedNodes: React.ReactNode[] = [];
+  const renderedEdges: React.ReactNode[] = [];
+
+  // Draw edges first (behind nodes)
+  edgeList.forEach((e, ei) => {
+    const from = posMap.get(e.source);
+    const to = posMap.get(e.target);
+    if (!from || !to) return;
+    const fromY = from.cy + from.h / 2;
+    const toY = to.cy - to.h / 2;
+    // Determine edge color based on target node
+    const targetNode = nodes.find(n => n.id === e.target);
+    const td = targetNode?.data as any;
+    const isGreen = td?.isColorized && td?.color === '#10b981';
+    const isRed = td?.isColorized && (td?.color === '#ef4444');
+    const edgeColor = isGreen ? '#10b981' : isRed ? '#ef4444' : '#C2C9DB';
+    if (Math.abs(from.cx - to.cx) < 5) {
+      // Straight vertical connector
+      renderedEdges.push(
+        <g key={`e-${ei}`}>
+          <line x1={from.cx} y1={fromY} x2={to.cx} y2={toY} stroke={edgeColor} strokeWidth={1} />
+          <polygon
+            points={`${to.cx - arrowSize},${toY - arrowSize} ${to.cx},${toY} ${to.cx + arrowSize},${toY - arrowSize}`}
+            fill={edgeColor}
+          />
+        </g>
+      );
+    } else {
+      // Angled connector (for branches)
+      const midY = fromY + (toY - fromY) * 0.4;
+      renderedEdges.push(
+        <g key={`e-${ei}`}>
+          <path
+            d={`M${from.cx},${fromY} C${from.cx},${midY} ${to.cx},${midY} ${to.cx},${toY}`}
+            fill="none" stroke={edgeColor} strokeWidth={1}
+          />
+          <polygon
+            points={`${to.cx - arrowSize},${toY - arrowSize} ${to.cx},${toY} ${to.cx + arrowSize},${toY - arrowSize}`}
+            fill={edgeColor}
+          />
+        </g>
+      );
+    }
+  });
+
+  // Draw nodes
+  rows.forEach(row => {
+    row.nodes.forEach(n => {
+      const pos = posMap.get(n.id);
+      if (!pos) return;
+      const d = n.data as any;
+      const isStart = n.type === 'start';
+      const isBranch = (d?.options?.length ?? 0) > 1;
+      const color = d?.isColorized && d?.color ? d.color : '#2F80ED';
+      const x = pos.cx - pos.w / 2;
+      const y = pos.cy - pos.h / 2;
+
+      if (isStart) {
+        renderedNodes.push(
+          <rect key={`n-${n.id}`} x={x} y={y} width={pos.w} height={pos.h} rx={startR} fill="#2F80ED" />
+        );
+      } else if (isBranch) {
+        renderedNodes.push(
+          <rect key={`n-${n.id}`} x={x} y={y} width={pos.w} height={pos.h} rx={pos.h / 2}
+            fill="#fef3c7" stroke="#f59e0b" strokeWidth={1} />
+        );
+      } else {
+        // Regular bar with left accent + optional input indicator
+        const accentColor = color;
+        renderedNodes.push(
+          <g key={`n-${n.id}`}>
+            <rect x={x} y={y} width={pos.w} height={pos.h} rx={barR} fill="white" stroke="#e2e8f0" strokeWidth={1} />
+            <rect x={x} y={y} width={3} height={pos.h} rx={1.5} fill={accentColor} />
+            {d?.isInput && d?.inputType === 'barcode' && (
+              <g>
+                {[0, 3, 5, 8, 10].map((offset, j) => (
+                  <rect key={j} x={x + pos.w - 16 + offset} y={y + 2} width={1.5} height={pos.h - 4} rx={0.5} fill={accentColor} opacity={0.35} />
+                ))}
+              </g>
+            )}
+            {d?.isInput && d?.inputType === 'picture' && (
+              <circle cx={x + pos.w - 10} cy={pos.cy} r={2} fill="none" stroke={accentColor} strokeWidth={0.8} opacity={0.35} />
+            )}
+            {d?.isInput && d?.inputType === 'text' && (
+              <g opacity={0.35}>
+                <line x1={x + pos.w - 14} y1={y + pos.h - 3} x2={x + pos.w - 6} y2={y + pos.h - 3} stroke={accentColor} strokeWidth={0.8} />
+              </g>
+            )}
+          </g>
+        );
+      }
+    });
   });
 
   return (
     <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ display: 'block' }}>
-      {layout.map((item, i) => {
-        const d = item.node.data as any;
-        const color = d?.isColorized && d?.color ? d.color : '#2F80ED';
-        const elements: React.ReactNode[] = [];
-
-        if (item.isStart) {
-          // Start pill
-          elements.push(
-            <rect
-              key={`n-${item.id}`}
-              x={cx - startW / 2} y={item.y}
-              width={startW} height={startH} rx={startR}
-              fill="#2F80ED"
-            />
-          );
-        } else if (item.isBranch) {
-          // Decision pill
-          elements.push(
-            <rect
-              key={`n-${item.id}`}
-              x={cx - barW / 2} y={item.y}
-              width={barW} height={barH} rx={barH / 2}
-              fill="#fef3c7" stroke="#f59e0b" strokeWidth={1}
-            />
-          );
-        } else {
-          // Regular step bar with left color accent
-          elements.push(
-            <g key={`n-${item.id}`}>
-              <rect
-                x={cx - barW / 2} y={item.y}
-                width={barW} height={barH} rx={barR}
-                fill="white" stroke="#e2e8f0" strokeWidth={1}
-              />
-              <rect
-                x={cx - barW / 2} y={item.y}
-                width={3} height={barH}
-                rx={1.5}
-                fill={color}
-              />
-              {/* Input type indicators */}
-              {d?.isInput && d?.inputType === 'barcode' && (
-                <g>
-                  {[0, 3, 5, 8, 10].map((offset, j) => (
-                    <rect key={j} x={cx + barW / 2 - 16 + offset} y={item.y + 3} width={1.5} height={6} rx={0.5} fill={color} opacity={0.4} />
-                  ))}
-                </g>
-              )}
-              {d?.isInput && d?.inputType === 'picture' && (
-                <circle cx={cx + barW / 2 - 10} cy={item.y + barH / 2} r={2.5} fill="none" stroke={color} strokeWidth={0.8} opacity={0.4} />
-              )}
-              {d?.isInput && d?.inputType === 'text' && (
-                <g opacity={0.4}>
-                  <line x1={cx + barW / 2 - 14} y1={item.y + barH - 3} x2={cx + barW / 2 - 6} y2={item.y + barH - 3} stroke={color} strokeWidth={0.8} />
-                  <line x1={cx + barW / 2 - 10} y1={item.y + 3} x2={cx + barW / 2 - 8} y2={item.y + barH - 3} stroke={color} strokeWidth={0.8} />
-                </g>
-              )}
-            </g>
-          );
-        }
-
-        // Connector to next node (if not last and not a branch that fans out)
-        const nextItem = layout[i + 1];
-        if (nextItem && !item.isBranch) {
-          const fromY = item.y + item.h;
-          const toY = nextItem.y;
-          elements.push(
-            <g key={`c-${item.id}`}>
-              <line x1={cx} y1={fromY} x2={cx} y2={toY} stroke="#C2C9DB" strokeWidth={1} />
-              <polygon
-                points={`${cx - arrowSize},${toY - arrowSize} ${cx},${toY} ${cx + arrowSize},${toY - arrowSize}`}
-                fill="#C2C9DB"
-              />
-            </g>
-          );
-        }
-
-        // Branch lines from decision nodes
-        if (item.isBranch) {
-          const opts = d?.options || [];
-          const numBranches = Math.min(opts.length, 3);
-          const fromY = item.y + item.h;
-          const dropY = fromY + branchDropY;
-
-          if (numBranches === 2) {
-            const leftX = cx - 36;
-            const rightX = cx + 36;
-            elements.push(
-              <g key={`b-${item.id}`}>
-                <line x1={cx} y1={fromY} x2={leftX} y2={dropY} stroke="#10b981" strokeWidth={1.2} />
-                <rect x={leftX - branchBarW / 2} y={dropY} width={branchBarW} height={branchBarH} rx={branchBarR} fill="#d1fae5" stroke="#10b981" strokeWidth={0.8} />
-                <line x1={cx} y1={fromY} x2={rightX} y2={dropY} stroke="#ef4444" strokeWidth={1.2} />
-                <rect x={rightX - branchBarW / 2} y={dropY} width={branchBarW} height={branchBarH} rx={branchBarR} fill="#fee2e2" stroke="#ef4444" strokeWidth={0.8} />
-              </g>
-            );
-          } else if (numBranches >= 3) {
-            const leftX = cx - 55;
-            const rightX = cx + 55;
-            const colors = ['#10b981', '#3b82f6', '#ef4444'];
-            const fills = ['#d1fae5', '#dbeafe', '#fee2e2'];
-            const xs = [leftX, cx, rightX];
-            elements.push(
-              <g key={`b-${item.id}`}>
-                {xs.map((bx, bi) => (
-                  <g key={bi}>
-                    <line x1={cx} y1={fromY} x2={bx} y2={dropY} stroke={colors[bi]} strokeWidth={1.2} />
-                    <rect x={bx - branchBarW / 2 + 4} y={dropY} width={branchBarW - 8} height={branchBarH} rx={branchBarR} fill={fills[bi]} stroke={colors[bi]} strokeWidth={0.8} />
-                  </g>
-                ))}
-              </g>
-            );
-          }
-        }
-
-        return elements;
-      })}
+      {renderedEdges}
+      {renderedNodes}
     </svg>
   );
 }
