@@ -6,3 +6,6 @@ dist
 _bmad/
 _bmad-output/
 _mcp/browser-viewer/node_modules/
+
+# Superpowers tooling
+.superpowers/
