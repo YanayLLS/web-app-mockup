@@ -6,6 +6,18 @@
     { name: 'Digital Twin Scene', file: '../app/digital-twin-scene.html', filename: 'digital-twin-scene.html', tags: ['3d', 'viewer', 'editor', 'three.js', 'scene', 'twin', 'model', 'camera', 'undo', 'redo', 'parts'] },
     { name: 'XR App', file: '../xr/xr-app.html', filename: 'xr-app.html', tags: ['xr', 'ar', 'vr', 'mixed reality', 'camera', 'app', 'immersive', 'hololens', 'mobile'] },
   ];
+  // XR screen sub-pages (shown when inside xr-app.html)
+  const XR_SCREENS = [
+    { name: 'XR: Login', screen: 'login', tags: ['login', 'sign in', 'auth'] },
+    { name: 'XR: Lobby', screen: 'lobby', tags: ['lobby', 'home', 'main menu'] },
+    { name: 'XR: Projects', screen: 'projects', tags: ['projects', 'select', 'list'] },
+    { name: 'XR: Knowledge Base', screen: 'kb', tags: ['knowledge base', 'kb', 'articles', 'folders'] },
+    { name: 'XR: Item View', screen: 'item', tags: ['item', 'detail', '3d', 'model'] },
+    { name: 'XR: Procedure', screen: 'procedure', tags: ['procedure', 'steps', 'guide', 'workflow'] },
+    { name: 'XR: Remote Support', screen: 'rs', tags: ['remote support', 'contacts', 'meetings'] },
+    { name: 'XR: Call', screen: 'call', tags: ['call', 'video', 'chat', 'participants'] },
+  ];
+  const XR_SCREEN_ICONS = { login:'🔐', lobby:'🏠', projects:'📁', kb:'📚', item:'🔍', procedure:'📋', rs:'📞', call:'🎥' };
   const PAGE_ICONS = { 'digital-twin-scene.html':'🎬', 'xr-app.html':'🥽' };
   const currentFile = location.pathname.split('/').pop() || '';
 
@@ -434,6 +446,17 @@
       }
       if (score > 0) results.push({ type:'page', name:p.name, sub:p.tags.slice(0,4).join(', '), icon:PAGE_ICONS[p.file]||'📄', score:score, data:p });
     }
+    // Add XR screen sub-pages when on xr-app.html
+    if (currentFile === 'xr-app.html') {
+      for (var si = 0; si < XR_SCREENS.length; si++) {
+        var s = XR_SCREENS[si], sscore = 0;
+        if (!q) { sscore = 1; } else {
+          sscore = fuzzyScore(q, s.name);
+          for (var sti = 0; sti < s.tags.length; sti++) sscore = Math.max(sscore, fuzzyScore(q, s.tags[sti]) * 0.8);
+        }
+        if (sscore > 0) results.push({ type:'page', name:s.name, sub:s.tags.join(', '), icon:XR_SCREEN_ICONS[s.screen]||'📄', score:sscore, data:{ filename:'xr-screen', screen:s.screen } });
+      }
+    }
     var feats = FEATURES[currentFile] || [];
     for (var fi = 0; fi < feats.length; fi++) {
       var f = feats[fi], fscore = 0;
@@ -711,6 +734,7 @@
     var r = curResults[i];
     if (!r) return;
     if (r.type === 'page') {
+      if (r.data.screen && typeof navigateTo === 'function') { closePanel(); navigateTo(r.data.screen); return; }
       if (r.data.filename === currentFile) { closePanel(); return; }
       window.location.href = r.data.file;
     } else if (r.type === 'feature') {
