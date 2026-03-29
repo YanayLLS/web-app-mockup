@@ -1003,7 +1003,7 @@ body {
 .call-video-area {
   border-radius: var(--xr-radius-btn);
   background: linear-gradient(135deg, #2a2a3a, #1a1a2e);
-  height: 520px;
+  height: 620px;
   position: relative;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
@@ -1015,6 +1015,21 @@ body {
   font-size: 24px; font-weight: 700;
 }
 .call-video-area svg { width: 120px; height: 120px; fill: rgba(255,255,255,0.08); }
+.call-live-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: #e53935; color: #fff;
+  padding: 4px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+.call-duration-badge {
+  position: absolute; top: 12px; left: 12px;
+  background: rgba(0,0,0,0.55); color: #fff;
+  padding: 4px 12px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 .call-participants-row {
   display: flex; gap: 6px; align-items: center; justify-content: flex-end;
 }
@@ -1025,11 +1040,12 @@ body {
   border: 3px solid transparent;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
   overflow: hidden;
+  position: relative;
 }
-.call-avatar:hover { background: var(--xr-item-hover); }
-.call-avatar.active { background: #518EEF; }
+.call-avatar:hover { background: var(--xr-item-hover); border-color: var(--xr-outline); }
+.call-avatar.active { border-color: #518EEF; }
 .call-avatar .gem-icon {
   width: 70px; height: 70px;
   background: linear-gradient(135deg, #d4a0cc, #9b59b6, #7d3c98);
@@ -1692,15 +1708,10 @@ body {
         <div style="padding:12px;">
           <div class="xr-inner" style="padding:12px; display:flex; flex-direction:column; gap:6px;">
             <div class="call-video-area">
-              <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=900&fit=crop" alt="Remote caller" style="width:100%;height:100%;object-fit:cover;">
               <div class="caller-label">Jane S.</div>
-            </div>
-            <div class="call-participants-row">
-              <div class="call-avatar active"><div class="gem-icon"></div></div>
-              <div class="call-avatar"><div class="gem-icon"></div></div>
-              <div class="call-avatar"><div class="gem-icon"></div></div>
-              <div class="call-avatar"><div class="gem-icon"></div></div>
-              <div class="call-avatar"><div class="gem-icon"></div></div>
+              <div class="call-live-badge">LIVE</div>
+              <div class="call-duration-badge">12:34</div>
             </div>
           </div>
         </div>
@@ -1749,18 +1760,43 @@ body {
           <svg viewBox="0 0 24 24" onclick="showNotification('Add participant')"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <div class="participant-row">
-          <div class="participant-avatar"></div>
-          <div class="p-name">Jane S.</div>
+          <div class="participant-avatar"><img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&crop=face" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+          <div class="p-name">Jane S. <span style="font-size:10px;opacity:0.4;font-weight:400;">(Host)</span></div>
           <div class="p-icons">
-            <svg viewBox="0 0 24 24"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
           </div>
         </div>
         <div class="participant-row">
-          <div class="participant-avatar"></div>
-          <div class="p-name">John D.</div>
+          <div class="participant-avatar"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+          <div class="p-name">You</div>
           <div class="p-icons">
-            <svg viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+          </div>
+        </div>
+        <div class="participant-row">
+          <div class="participant-avatar"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+          <div class="p-name">Mark T.</div>
+          <div class="p-icons">
+            <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <svg viewBox="0 0 24 24" style="opacity:0.3;"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>
+          </div>
+        </div>
+        <div class="participant-row">
+          <div class="participant-avatar"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop&crop=face" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+          <div class="p-name">Sarah L.</div>
+          <div class="p-icons">
+            <svg viewBox="0 0 24 24" style="opacity:0.3;"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+          </div>
+        </div>
+        <div class="participant-row">
+          <div class="participant-avatar"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&h=80&fit=crop&crop=face" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+          <div class="p-name">David K.</div>
+          <div class="p-icons">
+            <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
           </div>
         </div>
       </div>
@@ -2445,6 +2481,20 @@ updateCamera = function() {
   const uiY = camY * 1.5;
   uiLayer.style.transform = `translate(${uiX}px, ${uiY}px) scale(${uiScale})`;
 };
+
+// ===== CALL DURATION TIMER =====
+let callSeconds = 754; // start at 12:34
+setInterval(function() {
+  callSeconds++;
+  const badge = document.querySelector('.call-duration-badge');
+  if (badge) {
+    const m = Math.floor(callSeconds / 60);
+    const s = String(callSeconds % 60).padStart(2, '0');
+    badge.textContent = m + ':' + s;
+  }
+}, 1000);
+
+
 </script>
 <script src="../shared/debug-menu.js"></script>
 </body>
