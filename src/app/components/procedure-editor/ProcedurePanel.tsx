@@ -1181,12 +1181,12 @@ Step {stepIndex + 1} of {totalSteps}
                     </button>
                     {/* Only show Play button if there's animation */}
                     {step.hasAnimation && (
-                      <button className="-translate-x-1/2 absolute bg-[rgba(0,0,0,0.5)] cursor-pointer h-[28px] sm:h-[34px] left-1/2 rounded-[25px] top-px w-[50px] sm:w-[61px]">
-                        <div className="content-stretch flex items-center justify-center overflow-clip relative rounded-[inherit] size-full" style={{ paddingLeft: 'var(--spacing-xs)', paddingRight: 'var(--spacing-xs)', paddingTop: 'var(--spacing-xs)', paddingBottom: 'var(--spacing-xs)' }}>
+                      <button className="-translate-x-1/2 absolute bg-[rgba(0,0,0,0.5)] cursor-pointer min-h-[44px] h-[30px] sm:h-[35px] left-1/2 rounded-[25px] top-px w-[50px] sm:w-[61px] hover:bg-[rgba(0,0,0,0.7)] transition-colors">
+                        <div className="flex items-center justify-center gap-1 rounded-[inherit] size-full" style={{ padding: 'var(--spacing-xs)' }}>
                           <p className="font-['Open_Sans:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[9px] sm:text-[10px] text-left text-white" style={{ fontVariationSettings: "'wdth' 100" }}>
                             Play
                           </p>
-                          <div className="relative shrink-0 size-[12px] sm:size-[16px]">
+                          <div className="relative shrink-0 size-[8px] sm:size-[10px]">
                             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9 14">
                               <path d="M0 0L0 14L9 7L0 0Z" fill="white" />
                             </svg>

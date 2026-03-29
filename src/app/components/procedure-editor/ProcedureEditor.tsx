@@ -64,6 +64,7 @@ export interface Step {
   nextStepId?: string; // For creating loops and custom step connections
   configurationId?: string; // GAP 3 (FR55-57): Linked configuration
   configurationName?: string; // Display name for the linked configuration
+  configurationIds?: string[]; // Specific configurations this step applies to (empty/undefined = all)
 }
 
 export interface Popup {

@@ -34,6 +34,7 @@ import {
   ArrowUpDown,
   RefreshCw,
   FolderPlus,
+  Settings,
 } from 'lucide-react';
 import { SUPPORTED_LANGUAGES } from './languageConstants';
 import { NodeTooltip } from './NodeTooltip';
@@ -96,6 +97,9 @@ export interface DynamicNodeData {
   // FlowCode
   flowCode?: string;
   flowCodeEnabled?: boolean;
+  // Configurations
+  configurationIds?: string[]; // Selected config IDs (empty/undefined = all)
+  availableConfigurations?: { id: string; name: string }[]; // All configs for the model
   titleMulti?: Record<string, string>;
   titleMultiBase?: Record<string, string>; // source title when translation was made
   descriptionMulti?: Record<string, string>;
@@ -117,7 +121,7 @@ export interface DynamicNodeData {
   onOpenMediaLibrary?: (callback: (selectedMedia: string[]) => void) => void;
 }
 
-type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'media' | 'animation' | 'tts' | 'flowcode';
+type ActiveMenu = 'none' | 'colorize' | 'input' | 'branching' | 'popup' | 'media' | 'animation' | 'tts' | 'flowcode' | 'configurations';
 
 // Animation folder/item structure matching the real Animation Manager
 interface AnimFolder {
@@ -367,6 +371,33 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
   const hasTts = !!(data.ttsOverride && data.ttsOverride.trim());
   const hasFlowCode = !!data.flowCodeEnabled;
 
+  // Configurations
+  const availConfigs = data.availableConfigurations || [];
+  const hasMultipleConfigs = availConfigs.length > 1;
+  const selectedConfigIds = data.configurationIds || [];
+  const isAllConfigs = selectedConfigIds.length === 0;
+  const hasSpecificConfigs = !isAllConfigs && hasMultipleConfigs;
+
+  const toggleConfigId = (configId: string) => {
+    const current = data.configurationIds || [];
+    const isSelected = current.includes(configId);
+    let next: string[];
+    if (isSelected) {
+      next = current.filter(id => id !== configId);
+    } else {
+      next = [...current, configId];
+    }
+    // If all are selected, reset to empty (= "all")
+    if (next.length === availConfigs.length) {
+      next = [];
+    }
+    updateData({ configurationIds: next });
+  };
+
+  const setAllConfigs = () => {
+    updateData({ configurationIds: [] });
+  };
+
   return (
     <div
       ref={containerRef}
@@ -421,6 +452,21 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               </div>
             ) : null;
           })()}
+
+          {/* Configuration badge (when specific configs selected, not "all") */}
+          {hasSpecificConfigs && (
+            <div
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold w-fit"
+              style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED' }}
+            >
+              <Settings size={9} strokeWidth={2} />
+              <span>
+                {selectedConfigIds.length === 1
+                  ? availConfigs.find(c => c.id === selectedConfigIds[0])?.name || '1 config'
+                  : `${selectedConfigIds.length} configs`}
+              </span>
+            </div>
+          )}
 
           {/* Title & Description — double-click to edit, otherwise draggable */}
           <div className="flex flex-col gap-0.5">
@@ -561,6 +607,21 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
               <Code size={11} strokeWidth={1.8} />
               <span className="canvas-step-tool-label">Code</span>
             </button>
+
+            {hasMultipleConfigs && (
+              <>
+                <div className="canvas-step-tool-sep" />
+                <button
+                  onClick={() => handleToggleMenu('configurations')}
+                  className={`canvas-step-tool-btn ${hasSpecificConfigs ? 'active' : ''} ${activeMenu === 'configurations' ? 'menu-open' : ''}`}
+                  style={hasSpecificConfigs ? { '--tool-active-color': '#7C3AED' } as React.CSSProperties : undefined}
+                  title="Configurations"
+                >
+                  <Settings size={11} strokeWidth={1.8} />
+                  <span className="canvas-step-tool-label">Config</span>
+                </button>
+              </>
+            )}
 
           </div>
           )}
@@ -1209,6 +1270,100 @@ export function DynamicNode({ data, selected, id }: NodeProps<DynamicNodeData>) 
                     Enable the checkbox to write JavaScript that runs when this step executes.
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Configurations Menu */}
+            {activeMenu === 'configurations' && hasMultipleConfigs && (
+              <div className="flex flex-col gap-3">
+                <div className="canvas-config-menu-header">
+                  <div className="canvas-config-menu-header-icon" style={{ background: 'rgba(124, 58, 237, 0.12)' }}>
+                    <Settings size={14} style={{ color: '#7C3AED' }} />
+                  </div>
+                  <span className="canvas-config-menu-header-label">Configurations</span>
+                  <button className="canvas-config-menu-header-close" onClick={() => setActiveMenu('none')}>
+                    <X size={14} />
+                  </button>
+                </div>
+                <p className="text-[9px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  Choose which configurations this step applies to. When set to "All", the step is shown for every configuration.
+                </p>
+
+                {/* "All Configurations" option */}
+                <button
+                  onClick={setAllConfigs}
+                  className="flex items-center gap-2.5 w-full text-left rounded-lg transition-colors px-2.5 py-2"
+                  style={{
+                    backgroundColor: isAllConfigs ? 'rgba(124, 58, 237, 0.07)' : 'transparent',
+                  }}
+                >
+                  <div
+                    className="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0"
+                    style={{
+                      borderColor: isAllConfigs ? '#7C3AED' : '#C2C9DB',
+                      backgroundColor: isAllConfigs ? '#7C3AED' : 'transparent',
+                    }}
+                  >
+                    {isAllConfigs && <Check size={10} color="white" strokeWidth={3} />}
+                  </div>
+                  <span className="text-[12px] font-semibold" style={{ color: isAllConfigs ? '#7C3AED' : 'var(--foreground)' }}>
+                    All Configurations
+                  </span>
+                  <span className="text-[10px] ml-auto" style={{ color: '#868D9E' }}>
+                    {availConfigs.length}
+                  </span>
+                </button>
+
+                <div style={{ borderTop: '1px solid var(--border)', margin: '0 -2px' }} />
+
+                {/* Individual configurations */}
+                <div className="flex flex-col gap-0.5 max-h-[240px] overflow-y-auto custom-scrollbar pr-0.5">
+                  {availConfigs.map(config => {
+                    const isSelected = isAllConfigs || selectedConfigIds.includes(config.id);
+                    const isExplicit = selectedConfigIds.includes(config.id);
+                    return (
+                      <button
+                        key={config.id}
+                        onClick={() => {
+                          if (isAllConfigs) {
+                            // Switching from "all" → select only the others (deselect this one)
+                            updateData({ configurationIds: availConfigs.filter(c => c.id !== config.id).map(c => c.id) });
+                          } else {
+                            toggleConfigId(config.id);
+                          }
+                        }}
+                        className="flex items-center gap-2.5 w-full text-left rounded-lg transition-colors px-2.5 py-2 hover:bg-black/[0.03]"
+                        style={{
+                          backgroundColor: isExplicit && !isAllConfigs ? 'rgba(124, 58, 237, 0.05)' : 'transparent',
+                        }}
+                      >
+                        <div
+                          className="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0"
+                          style={{
+                            borderColor: isSelected ? '#7C3AED' : '#C2C9DB',
+                            backgroundColor: isSelected ? '#7C3AED' : 'transparent',
+                            opacity: isAllConfigs ? 0.5 : 1,
+                          }}
+                        >
+                          {isSelected && <Check size={10} color="white" strokeWidth={3} />}
+                        </div>
+                        <span className="text-[11px] font-medium truncate" style={{ color: 'var(--foreground)' }}>
+                          {config.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer summary */}
+                <div
+                  className="text-[10px] text-center py-1.5 rounded-lg"
+                  style={{ backgroundColor: 'rgba(124, 58, 237, 0.05)', color: '#7C3AED' }}
+                >
+                  {isAllConfigs
+                    ? `Applies to all ${availConfigs.length} configurations`
+                    : `Applies to ${selectedConfigIds.length} of ${availConfigs.length} configurations`}
+                </div>
               </div>
             )}
           </div>

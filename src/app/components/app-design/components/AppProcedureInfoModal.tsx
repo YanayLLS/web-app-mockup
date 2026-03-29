@@ -188,16 +188,18 @@ export function AppProcedureInfoModal({ procedure, onClose }: AppProcedureInfoMo
               </span>
               <button
                 onClick={() => setShowConfigSelector(true)}
-                className="flex-1 flex items-center justify-between hover:bg-[rgba(47,128,237,0.04)] active:scale-[0.99] transition-all min-w-0"
-                style={{ padding: '5px 10px', borderRadius: '8px', border: '1px solid rgba(47,128,237,0.2)' }}
+                className="flex-1 flex items-center justify-between hover:bg-[#E9E9E9]/50 active:scale-[0.98] transition-all min-w-0"
+                style={{
+                  padding: '6px 10px',
+                  borderRadius: '8px',
+                  border: '1px solid #C2C9DB',
+                  backgroundColor: '#FFFFFF',
+                }}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2F80ED', flexShrink: 0 }} />
-                  <span className="truncate" style={{ fontSize: '13px', color: '#2F80ED', fontWeight: 'var(--font-weight-semibold)' }}>
-                    {selectedConfigName}
-                  </span>
-                </div>
-                <ChevronDown style={{ width: '14px', height: '14px', color: '#2F80ED', flexShrink: 0, opacity: 0.5 }} />
+                <span className="truncate" style={{ fontSize: '13px', color: '#36415D', fontWeight: 'var(--font-weight-medium)' }}>
+                  {selectedConfigName}
+                </span>
+                <ChevronDown style={{ width: '14px', height: '14px', color: '#868D9E', flexShrink: 0 }} />
               </button>
             </div>
 

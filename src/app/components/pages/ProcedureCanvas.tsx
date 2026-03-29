@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect, useLayoutEffect } from 'react';
 import { useProcedureSteps } from '../../contexts/ProcedureStepsContext';
 import { DEFAULT_PROCEDURE_STEPS } from '../../data/mockProcedureSteps';
+import { MOCK_CONFIGURATIONS } from '../../data/configurationsData';
 import type { Step } from '../procedure-editor/ProcedureEditor';
 import ReactFlow, {
   Background,
@@ -41,7 +42,6 @@ import {
   Clock,
   Layout,
   Globe,
-  List,
 } from 'lucide-react';
 import imgDots from "figma:asset/024a1ea7ee32f89f8dbc4aa4a011b69bd6e9bad7.png";
 import { DynamicNode } from './canvas/DynamicNode';
@@ -153,7 +153,6 @@ function stepsToFlow(steps: Step[]): { nodes: Node[]; edges: Edge[] } {
 
   orderedSteps.forEach((step, index) => {
     const nodeId = step.id;
-    const prevId = index === 0 ? 'start-node' : orderedSteps[index - 1].id;
     const title = step.title || `Step ${index + 1}`;
     const description = step.description || '';
     const options = step.actions.length > 0
@@ -216,28 +215,84 @@ function stepsToFlow(steps: Step[]): { nodes: Node[]; edges: Edge[] } {
         options,
         popups: step.popups.map(p => ({ id: p.id, title: p.title || '' })),
         media: step.mediaFiles.map(m => m.id),
+        configurationIds: step.configurationIds || [],
+        availableConfigurations: MOCK_CONFIGURATIONS.filter(c => c.isEnabled).map(c => ({ id: c.id, name: c.name })),
       },
     });
 
-    // Determine the sourceHandle for the edge from the previous node
-    let sourceHandle: string | undefined;
-    if (index > 0) {
-      const prevStep = orderedSteps[index - 1];
-      sourceHandle = prevStep.actions.length > 0
-        ? `opt-${prevId}-0`   // first action option
-        : `opt-${prevId}`;    // single "Continue" option
-    }
+  });
 
+  // ── Create edges (branching-aware) ──────────────────────────────────────
+  const usesBranching = steps.some(s => s.actions.some(a => a.nextStepId));
+  const allStepIds = new Set(steps.map(s => s.id));
+
+  if (usesBranching) {
+    // Start → first step
     edges.push({
-      id: `e-${prevId}-${nodeId}`,
-      source: prevId,
-      target: nodeId,
-      sourceHandle: sourceHandle || null,
+      id: `e-start-node-${orderedSteps[0].id}`,
+      source: 'start-node',
+      target: orderedSteps[0].id,
+      sourceHandle: null,
       type: 'custom',
       style: { strokeWidth: 2, stroke: '#2f80ed' },
       animated: false,
     });
-  });
+
+    orderedSteps.forEach((step) => {
+      const nid = step.id;
+      if (step.actions.length > 0) {
+        step.actions.forEach((action, ai) => {
+          if (action.nextStepId && allStepIds.has(action.nextStepId)) {
+            edges.push({
+              id: `e-${nid}-opt${ai}-${action.nextStepId}`,
+              source: nid,
+              target: action.nextStepId,
+              sourceHandle: `opt-${nid}-${ai}`,
+              type: 'custom',
+              style: { strokeWidth: 2, stroke: '#2f80ed' },
+              animated: false,
+            });
+          }
+        });
+      } else {
+        // No actions — connect to child via parentStepId chain
+        const child = steps.find(s => s.parentStepId === nid);
+        if (child) {
+          edges.push({
+            id: `e-${nid}-${child.id}`,
+            source: nid,
+            target: child.id,
+            sourceHandle: `opt-${nid}`,
+            type: 'custom',
+            style: { strokeWidth: 2, stroke: '#2f80ed' },
+            animated: false,
+          });
+        }
+      }
+    });
+  } else {
+    // Original linear edge creation
+    orderedSteps.forEach((step, index) => {
+      const nid = step.id;
+      const prevId = index === 0 ? 'start-node' : orderedSteps[index - 1].id;
+      let sourceHandle: string | undefined;
+      if (index > 0) {
+        const prevStep = orderedSteps[index - 1];
+        sourceHandle = prevStep.actions.length > 0
+          ? `opt-${prevId}-0`
+          : `opt-${prevId}`;
+      }
+      edges.push({
+        id: `e-${prevId}-${nid}`,
+        source: prevId,
+        target: nid,
+        sourceHandle: sourceHandle || null,
+        type: 'custom',
+        style: { strokeWidth: 2, stroke: '#2f80ed' },
+        animated: false,
+      });
+    });
+  }
 
   return getLayoutedElements(nodes, edges);
 }
@@ -323,17 +378,18 @@ function flowToSteps(nodes: Node[], edges: Edge[]): Step[] {
       })),
       mediaFiles: [],
       validation: undefined,
+      configurationIds: d.configurationIds && d.configurationIds.length > 0 ? d.configurationIds : undefined,
     };
   });
 }
 
 // Auto-arrange function using dagre
-const getLayoutedElements = (nodes: Node[], edges: Edge[], compact = false) => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  const nodeWidth = compact ? 200 : 280;
+  const nodeWidth = 280;
 
-  dagreGraph.setGraph({ rankdir: 'TB', nodesep: compact ? 40 : 100, ranksep: compact ? 30 : 80 });
+  dagreGraph.setGraph({ rankdir: 'TB', nodesep: 300, ranksep: 120 });
 
   // Separate group (section) nodes from layoutable nodes
   const groupNodes = nodes.filter(n => n.type === 'section');
@@ -352,22 +408,17 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], compact = false) => {
   // Calculate dynamic heights based on node content
   const nodeHeights = new Map<string, number>();
   layoutableNodes.forEach((node) => {
-    let height = compact ? 60 : 120; // Base height for start/logic nodes
+    let height = 120; // Base height for start/logic nodes
 
     if (node.type === 'dynamic') {
-      if (compact) {
-        // Compact: just title + small badges
-        height = 52;
-      } else {
-        const data = node.data as any;
-        const baseHeight = 80;
-        const titleHeight = 30;
-        const descriptionHeight = data.description ? Math.min(60, Math.ceil(data.description.length / 4)) : 0;
-        const optionsHeight = (data.options?.length || 0) * 18;
-        const popupsHeight = (data.popups?.length || 0) * 18;
-        const mediaHeight = (data.media?.length || 0) * 18;
-        height = baseHeight + titleHeight + descriptionHeight + optionsHeight + popupsHeight + mediaHeight;
-      }
+      const data = node.data as any;
+      const baseHeight = 80;
+      const titleHeight = 30;
+      const descriptionHeight = data.description ? Math.min(60, Math.ceil(data.description.length / 4)) : 0;
+      const optionsHeight = (data.options?.length || 0) * 18;
+      const popupsHeight = (data.popups?.length || 0) * 18;
+      const mediaHeight = (data.media?.length || 0) * 18;
+      height = baseHeight + titleHeight + descriptionHeight + optionsHeight + popupsHeight + mediaHeight;
     }
 
     nodeHeights.set(node.id, height);
@@ -422,7 +473,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], compact = false) => {
   }
 
   // Spread multi-target branching: align each target's input handle under its source handle
-  const minTargetGap = nodeWidth + (compact ? 20 : 60); // minimum gap between target left edges
+  const minTargetGap = nodeWidth + 200; // minimum gap between target left edges
   sourceToTargets.forEach((targets, sourceId) => {
     const uniqueTargets = [...new Set(targets)];
     if (uniqueTargets.length < 2) return;
@@ -586,9 +637,9 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], compact = false) => {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     children.forEach(n => {
       const pos = absolutePositions.get(n.id)!;
-      const el = document.querySelector(`[data-id="${n.id}"]`) as HTMLElement | null;
-      const w = el ? el.offsetWidth : nodeWidth;
-      const h = el ? el.offsetHeight : (nodeHeights.get(n.id) || 200);
+      // Use layout-computed dimensions (not stale DOM) so groups resize correctly
+      const w = nodeWidth;
+      const h = nodeHeights.get(n.id) || 200;
       minX = Math.min(minX, pos.x);
       minY = Math.min(minY, pos.y);
       maxX = Math.max(maxX, pos.x + w);
@@ -713,7 +764,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
   const [showHotkeys, setShowHotkeys] = useState(false);
-  const [compactView, setCompactView] = useState(false);
+
 
   // Language / Localization state
   const [showLanguagePanel, setShowLanguagePanel] = useState(false);
@@ -823,7 +874,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     // Merge then auto-arrange everything so the inserted template fits cleanly
     const mergedNodes = [...nodes, ...nn];
     const mergedEdges = [...edges, ...ne];
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(mergedNodes, mergedEdges, compactView);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(mergedNodes, mergedEdges);
     setNodes([...layoutedNodes]);
     setEdges([...layoutedEdges]);
     setHasUnsavedChanges(true);
@@ -1028,7 +1079,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     const ids = new Set(selected.map(n => n.id));
     clipboardRef.current = {
       nodes: selected.map(n => {
-        const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, compactView: _cv, ...clean } = n.data as any;
+        const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, ...clean } = n.data as any;
         return { type: n.type!, relativePosition: { x: n.position.x - cx, y: n.position.y - cy }, data: clean, originalId: n.id };
       }),
       edges: edges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({
@@ -1084,7 +1135,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     const idMap = new Map<string, string>(); const optMap = new Map<string, string>();
     const newNodes: Node[] = sel.map(n => {
       const nid = crypto.randomUUID(); idMap.set(n.id, nid);
-      const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, compactView: _cv, ...clean } = n.data as any;
+      const { onChange, onAction, onAddOption, onAddConnectedStep, onOpenMediaLibrary, onSelectProcedure, connectedHandles, editingEnabled, ...clean } = n.data as any;
       const nd = JSON.parse(JSON.stringify(clean));
       if (nd.options && Array.isArray(nd.options)) nd.options = nd.options.map((o: any) => { const oid = crypto.randomUUID(); optMap.set(o.id, oid); return { ...o, id: oid }; });
       return { id: nid, type: n.type!, position: { x: n.position.x + 50, y: n.position.y + 50 }, selected: true, data: nd };
@@ -1147,6 +1198,14 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
     if ('inputType' in newData) logChange('Input', `Input type changed to "${newData.inputType}" on ${stepLabel}`);
     if ('titleMulti' in newData || 'descriptionMulti' in newData) logChange('Translation', `Translation edited on ${stepLabel}`);
     if ('linkedProcedureId' in newData) logChange('Link', `Linked procedure changed on ${stepLabel}`);
+    if ('animationId' in newData) logChange('Animation', `Animation ${newData.animationId ? 'attached to' : 'removed from'} ${stepLabel}`);
+    if ('ttsOverride' in newData) logChange('TTS', `TTS override ${newData.ttsOverride ? 'set on' : 'cleared from'} ${stepLabel}`);
+    if ('flowCodeEnabled' in newData) logChange('FlowCode', `FlowCode ${newData.flowCodeEnabled ? 'enabled' : 'disabled'} on ${stepLabel}`);
+    if ('flowCode' in newData && !('flowCodeEnabled' in newData)) logChange('FlowCode', `FlowCode edited on ${stepLabel}`);
+    if ('configurationIds' in newData) {
+      const ids = (newData.configurationIds || []) as string[];
+      logChange('Config', ids.length === 0 ? `Configurations reset to "All" on ${stepLabel}` : `${ids.length} configuration(s) set on ${stepLabel}`);
+    }
 
     setNodes((nds) =>
       nds.map((node) => {
@@ -1407,23 +1466,11 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
 
   // Auto Arrange
   const onAutoArrange = useCallback(() => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, compactView);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
     setNodes([...layoutedNodes]);
     setEdges([...layoutedEdges]);
     setHasUnsavedChanges(true);
-  }, [edges, nodes, setNodes, setEdges, compactView]);
-
-  // Re-layout when compact view toggles so lines get shorter/longer
-  const prevCompactRef = useRef(compactView);
-  useEffect(() => {
-    if (prevCompactRef.current !== compactView) {
-      prevCompactRef.current = compactView;
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, compactView);
-      setNodes([...layoutedNodes]);
-      setEdges([...layoutedEdges]);
-      fitView({ padding: 0.15, duration: 400 });
-    }
-  }, [compactView]); // intentionally only depend on compactView to avoid re-triggering on node changes
+  }, [edges, nodes, setNodes, setEdges]);
 
   // Validation: Go to node handler
   const handleGoToValidationNode = useCallback((nodeId: string) => {
@@ -1492,7 +1539,6 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
           editingEnabled,
           editingLanguage,
           defaultLanguage,
-          compactView,
           onChange: (newData: any) => onNodeDataChange(node.id, newData),
           onAction: (action: any) => onNodeAction(node.id, action),
           onAddOption: node.type === 'dynamic' ? () => handleAddOption(node.id) : undefined,
@@ -1534,7 +1580,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
         },
       };
     });
-  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled, searchState, showValidation, validationResult.nodeIssueMap, commentCounts, commentThreads, handleAddComment, handleResolveThread, handleUnresolveThread, handleToggleReaction, editingLanguage, defaultLanguage, compactView]);
+  }, [nodes, edges, onNodeDataChange, onNodeAction, handleAddOption, handleAddConnectedStep, setNodes, editingEnabled, searchState, showValidation, validationResult.nodeIssueMap, commentCounts, commentThreads, handleAddComment, handleResolveThread, handleUnresolveThread, handleToggleReaction, editingLanguage, defaultLanguage]);
 
   // Delete edge handler
   const handleDeleteEdge = useCallback((edgeId: string) => {
@@ -2191,13 +2237,6 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
         return;
       }
 
-      // C: Toggle compact view
-      if (e.key === 'c' || e.key === 'C') {
-        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-          setCompactView(prev => !prev);
-          return;
-        }
-      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -2305,16 +2344,6 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
           <Search className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
         </button>
 
-        {/* Compact View Toggle */}
-        <button
-          onClick={() => setCompactView(!compactView)}
-          className={`p-2 rounded-lg transition-colors ${compactView ? 'bg-secondary' : 'hover:bg-secondary'}`}
-          title={compactView ? 'Expanded View' : 'Compact View — titles only'}
-          style={compactView ? { color: 'var(--primary)' } : undefined}
-        >
-          <List className="w-4 h-4" style={{ color: compactView ? 'var(--primary)' : 'var(--foreground)' }} />
-        </button>
-
         {/* Validation */}
         <button
           onClick={() => setShowValidation(!showValidation)}
@@ -2411,7 +2440,6 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
                     { section: 'Canvas', shortcuts: [
                       { keys: '⇧1', label: 'Fit view' },
                       { keys: 'N', label: 'Add new step' },
-                      { keys: 'C', label: 'Toggle compact view' },
                       { keys: 'Delete', label: 'Delete selected' },
                       { keys: '↑ ↓ ← →', label: 'Nudge selected nodes' },
                     ]},
@@ -2586,6 +2614,7 @@ function FlowEditorInner({ procedureId, procedureName, procedureItem, onClose }:
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
+          minZoom={0.1}
           snapToGrid
           snapGrid={[20, 20]}
           selectionOnDrag

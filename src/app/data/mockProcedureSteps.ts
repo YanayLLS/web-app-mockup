@@ -101,6 +101,7 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     actions: [],
     color: '#11E874',
     hasAnimation: false,
+    configurationIds: ['config-premium-coolant', 'config-autocorp-usa-east'],
     popups: [
       { id: 'popup-6a', title: 'Radiator Cap Warning', description: 'NEVER open the radiator cap when the engine is hot. The cooling system is pressurized and can cause severe burns. Wait at least 30 minutes after shutdown.', position: { x: 35, y: 20 }, color: '#FF1F1F', mediaFiles: [], arrowDirection: 'down' },
     ],
@@ -162,6 +163,7 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
     ],
     color: '#8404B3',
     hasAnimation: false,
+    configurationIds: ['config-standard'],
     popups: [
       { id: 'popup-9a', title: 'Belt Tension Check', description: 'Press the belt at the midpoint between the alternator and water pump pulleys. Acceptable deflection: 10–12mm. If the auto-tensioner is at its limit, replace the belt.', position: { x: 35, y: 45 }, color: '#8404B3', mediaFiles: [], arrowDirection: 'right' },
       { id: 'popup-9b', title: 'Hose Inspection Points', description: 'Check upper radiator hose, lower radiator hose, heater hoses, and bypass hoses. Pay special attention to clamp areas — this is where hoses fail first.', position: { x: 65, y: 40 }, color: '#FF6B35', mediaFiles: [], arrowDirection: 'left' },
@@ -196,6 +198,237 @@ const GENERATOR_MAINTENANCE_STEPS: Step[] = [
   },
 ];
 
+// Branching variant — multi-output steps connect to separate branch nodes
+const GENERATOR_BRANCHING_STEPS: Step[] = (() => {
+  const steps: Step[] = GENERATOR_MAINTENANCE_STEPS.map(s => ({
+    ...s,
+    actions: s.actions.map(a => ({ ...a })),
+    popups: [...s.popups],
+    mediaFiles: [...s.mediaFiles],
+  }));
+
+  const byId = (id: string) => steps.find(s => s.id === id)!;
+
+  // Step 2 — Visual Inspection: pass → oil check, fail → document damage
+  byId(sid(2)).actions = [
+    { label: 'Pass — No issues found', nextStepId: sid(3) },
+    { label: 'Fail — Damage detected', nextStepId: sid(11) },
+  ];
+
+  // Step 3 — Oil Check: OK → skip to air filter, needs change → drain/replace
+  byId(sid(3)).actions = [
+    { label: 'Oil level OK', nextStepId: sid(5) },
+    { label: 'Oil needs change', nextStepId: sid(4) },
+  ];
+
+  // Step 5 — Air Filter: OK → coolant, dirty → install new filter
+  byId(sid(5)).actions = [
+    { label: 'Filter OK — reinstall', nextStepId: sid(6) },
+    { label: 'Filter dirty — replace', nextStepId: sid(12) },
+  ];
+
+  // Step 7 — Fuel System: 3-way branch
+  byId(sid(7)).actions = [
+    { label: 'No water — skip drain', nextStepId: sid(8) },
+    { label: 'Water found — drain separator', nextStepId: sid(13) },
+    { label: 'Filter due — replace filter', nextStepId: sid(14) },
+  ];
+
+  // Step 9 — Belt & Hoses: 3-way branch
+  byId(sid(9)).actions = [
+    { label: 'Belt & hoses OK', nextStepId: sid(10) },
+    { label: 'Belt needs replacement', nextStepId: sid(15) },
+    { label: 'Hoses need replacement', nextStepId: sid(16) },
+  ];
+
+  // ── Branch paths ────────────────────────────────────────────────────────
+
+  // Fail path from Step 2 — dead-end escalation (does NOT rejoin main flow)
+  // 11 → 17 → END
+  steps.push(
+    {
+      id: sid(11),
+      title: 'Document & Report Damage',
+      description: 'Take photographs of all damage found during the visual inspection. Create a maintenance report noting the type, location, and severity of each issue.',
+      actions: [{ label: 'Report created', nextStepId: sid(17) }],
+      color: '#FF1F1F',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(17),
+      title: 'Escalate to Maintenance Supervisor',
+      description: 'Submit the damage report with photos to the maintenance supervisor. Generator is taken out of service until structural repairs are completed and re-inspected. Tag the unit as "Out of Service — Awaiting Repair".',
+      actions: [],
+      color: '#FF1F1F',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+  );
+
+  // Filter dirty path from Step 5 — short merge back to coolant
+  steps.push(
+    {
+      id: sid(12),
+      title: 'Install New Air Filter Element',
+      description: 'Remove the old filter element from the housing. Wipe the housing interior with a clean lint-free cloth. Unbox the new filter and verify the correct part number. Insert the new element ensuring proper seating. Close the housing and secure all four spring clips.',
+      actions: [{ label: 'New filter installed', nextStepId: sid(6) }],
+      color: '#11E874',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+  );
+
+  // Water found path from Step 7 — 2-step branch: drain → verify → Battery
+  // 13 → 18 → sid(8)
+  steps.push(
+    {
+      id: sid(13),
+      title: 'Drain Water Separator Bowl',
+      description: 'Place a container under the fuel/water separator. Open the petcock drain valve at the bottom of the separator bowl. Allow water and contaminated fuel to drain until clean diesel flows. Close the petcock valve.',
+      actions: [{ label: 'Water drained', nextStepId: sid(18) }],
+      color: '#FF6B35',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(18),
+      title: 'Verify Fuel Quality',
+      description: 'Collect a fuel sample from the separator outlet into a clear glass jar. Hold up to light and check for cloudiness, particles, or water droplets. If contamination persists, drain and flush the fuel tank before proceeding.',
+      actions: [{ label: 'Fuel is clean', nextStepId: sid(8) }],
+      color: '#FF6B35',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+  );
+
+  // Filter due path from Step 7 — separate fork: replace → prime → full service end
+  // 14 → 19 → 23 → END (does NOT rejoin main flow)
+  steps.push(
+    {
+      id: sid(14),
+      title: 'Replace Fuel Filter Element',
+      description: 'Close the fuel supply valve. Use a filter wrench to remove the old fuel filter. Apply a thin coat of clean diesel to the gasket of the new filter. Pre-fill the new filter with clean diesel. Install hand-tight plus 1/2 turn.',
+      actions: [{ label: 'Filter installed', nextStepId: sid(19) }],
+      color: '#FF6B35',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(19),
+      title: 'Prime & Bleed Fuel Lines',
+      description: 'Open the fuel supply valve. Locate the bleed screw on the injection pump housing. Open the bleed screw and operate the hand primer pump until a steady, bubble-free stream of diesel flows. Close the bleed screw tightly.',
+      actions: [{ label: 'System primed', nextStepId: sid(23) }],
+      color: '#FF6B35',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(23),
+      title: 'Full Fuel System Service Complete',
+      description: 'The fuel filter has been replaced and the fuel system has been bled. Run the engine for 5 minutes at idle to verify no air leaks in the fuel system. Log the filter replacement in the maintenance record with date and part number.',
+      actions: [],
+      color: '#11E874',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+  );
+
+  // Belt replacement path from Step 9 — 2-step: replace → verify alignment → Load Test
+  // 15 → 20 → sid(10)
+  steps.push(
+    {
+      id: sid(15),
+      title: 'Replace Serpentine Belt',
+      description: 'Note the belt routing from the diagram on the fan shroud. Use a breaker bar to release the auto-tensioner. Slide the old belt off all pulleys. Inspect all pulleys for wear or wobble. Route the new belt following the diagram.',
+      actions: [{ label: 'Belt installed', nextStepId: sid(20) }],
+      color: '#8404B3',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(20),
+      title: 'Verify Belt Alignment & Tension',
+      description: 'Release the tensioner to apply tension to the new belt. Check deflection at the longest span — must be 10–12 mm. Visually verify the belt tracks centered on all pulleys. Spin each pulley by hand to confirm smooth operation.',
+      actions: [{ label: 'Alignment verified', nextStepId: sid(10) }],
+      color: '#8404B3',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+  );
+
+  // Hose replacement path from Step 9 — separate fork with its own sub-branch
+  // 16 → 21 → (pass → 24 END) or (fail → 22 → 25 END)
+  // Does NOT rejoin main flow — cooling system work is a full separate procedure
+  steps.push(
+    {
+      id: sid(16),
+      title: 'Replace Coolant Hoses',
+      description: 'Drain coolant to below the hose level. Loosen hose clamps with a flat screwdriver. Remove the deteriorated hose(s). Clean the fittings of old sealant or corrosion. Install new hose(s) with new clamps.',
+      actions: [{ label: 'Hoses installed', nextStepId: sid(21) }],
+      color: '#8404B3',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(21),
+      title: 'Pressure Test Cooling System',
+      description: 'Refill the cooling system with 50/50 coolant mix. Attach a cooling system pressure tester to the radiator filler neck. Pump to 15 PSI (103 kPa) and hold for 10 minutes. Monitor the pressure gauge for any drop.',
+      actions: [
+        { label: 'Pressure holds — no leaks', nextStepId: sid(24) },
+        { label: 'Pressure drops — leak detected', nextStepId: sid(22) },
+      ],
+      color: '#2F80ED',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(24),
+      title: 'Coolant System Service Complete',
+      description: 'The cooling system has been repaired and pressure tested successfully. Bleed air from the system by running the engine with the radiator cap off until the thermostat opens. Top off coolant and install cap. Log all replaced components.',
+      actions: [],
+      color: '#11E874',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(22),
+      title: 'Locate & Repair Leak',
+      description: 'With the system still pressurized, visually inspect all hose connections, clamps, and fittings for coolant seepage. Tighten or replace the leaking component. Re-pressurize and verify the repair holds for 10 minutes.',
+      actions: [{ label: 'Leak repaired', nextStepId: sid(25) }],
+      color: '#FF1F1F',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+    {
+      id: sid(25),
+      title: 'Escalate — Extended Cooling Repair',
+      description: 'The cooling system requires additional parts or specialist attention. Tag the generator as "Limited Service — Cooling Repair Pending". Create a work order for the cooling system specialist team with all findings and photos attached.',
+      actions: [],
+      color: '#FF1F1F',
+      hasAnimation: false,
+      popups: [],
+      mediaFiles: [],
+    },
+  );
+
+  return steps;
+})();
+
 // Helper to build a simple linear procedure
 function makeSimpleSteps(data: { title: string; description: string; color: string }[]): Step[] {
   return data.map((d, i) => ({
@@ -215,7 +448,7 @@ function makeSimpleSteps(data: { title: string; description: string; color: stri
 export const DEFAULT_PROCEDURE_STEPS: Record<string, { title: string; steps: Step[] }> = {
   // Generator procedures — full data
   'generator-maintenance': { title: 'Generator Preventive Maintenance Procedure', steps: GENERATOR_MAINTENANCE_STEPS },
-  'generator-kb-2': { title: 'Generator Preventive Maintenance Procedure', steps: GENERATOR_MAINTENANCE_STEPS },
+  'generator-kb-2': { title: 'Preventive Maintenance Procedure', steps: GENERATOR_BRANCHING_STEPS },
   // Shorter generator procedures
   'generator-kb-3': {
     title: 'Air Filter Replacement',

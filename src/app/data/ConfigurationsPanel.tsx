@@ -133,8 +133,10 @@ function ConfirmDialog({
 interface ConfigItemProps {
   config: Configuration;
   isActive: boolean;
+  isApplied: boolean;
   isChecked: boolean;
   onSelect: () => void;
+  onApply: () => void;
   onToggleEnabled: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -146,7 +148,7 @@ interface ConfigItemProps {
   folders: ConfigFolder[];
 }
 
-function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, onDuplicate, onDelete, onRename, onStartInlineRename, onToggleChecked, onCopyLink, onMoveToFolder, folders }: ConfigItemProps) {
+function ConfigItem({ config, isActive, isApplied, isChecked, onSelect, onApply, onToggleEnabled, onDuplicate, onDelete, onRename, onStartInlineRename, onToggleChecked, onCopyLink, onMoveToFolder, folders }: ConfigItemProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
@@ -177,43 +179,16 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
 
   return (
     <div
-      className={`group cursor-pointer transition-all ${isActive ? '' : 'hover:bg-[#E9E9E9]/40'}`}
+      className="group cursor-pointer transition-all hover:bg-[#E9E9E9]/40"
       data-demo={`config-item-${config.id}`}
       data-config-default={config.isDefault ? 'true' : undefined}
       style={{
         padding: '5px 8px',
         borderRadius: '6px',
       }}
-      onClick={onSelect}
+      onDoubleClick={onSelect}
     >
       <div className="flex items-center" style={{ gap: '6px', minHeight: '30px' }}>
-        {/* Multi-select checkbox for non-default configs; spacer for default to keep alignment */}
-        {!config.isDefault ? (
-          <input
-            type="checkbox"
-            checked={isChecked}
-            onChange={(e) => {
-              e.stopPropagation();
-              onToggleChecked(e.nativeEvent instanceof MouseEvent ? e.nativeEvent.shiftKey : false);
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="flex-shrink-0 accent-[#2F80ED]"
-            style={{ width: '13px', height: '13px', cursor: 'pointer' }}
-          />
-        ) : (
-          <div className="flex-shrink-0" style={{ width: '13px', height: '13px' }} />
-        )}
-
-        {/* Active indicator */}
-        <div
-          className="flex-shrink-0 rounded-full transition-colors"
-          style={{
-            width: '8px',
-            height: '8px',
-            backgroundColor: config.isEnabled ? (isActive ? '#2F80ED' : '#11E874') : '#C2C9DB',
-            boxShadow: isActive ? '0 0 0 2px rgba(47,128,237,0.2)' : undefined,
-          }}
-        />
 
         {/* Name / inline edit */}
         <div className="flex-1 min-w-0">
@@ -230,7 +205,6 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
               onClick={(e) => e.stopPropagation()}
               className="w-full bg-white border outline-none px-1.5 py-0.5"
               style={{
-                
                 fontSize: '12px',
                 color: '#36415D',
                 borderColor: '#2E80ED',
@@ -242,7 +216,6 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
             <span
               className="truncate block"
               style={{
-                
                 fontSize: '12px',
                 fontWeight: isActive ? 600 : 500,
                 color: config.isEnabled ? '#36415D' : '#7F7F7F',
@@ -262,7 +235,6 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
           <span
             className="flex-shrink-0"
             style={{
-              
               fontSize: '9px',
               fontWeight: 600,
               color: '#2F80ED',
@@ -277,21 +249,40 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
           </span>
         )}
 
-        {/* Enable/disable checkbox */}
-        {!config.isDefault && (
-          <input
-            type="checkbox"
-            checked={config.isEnabled}
-            onChange={(e) => {
-              e.stopPropagation();
-              onToggleEnabled();
+        {/* Apply to DT toggle switch */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onApply();
+          }}
+          className="flex-shrink-0 transition-all"
+          title={isApplied ? 'Currently applied' : 'Apply configuration'}
+          style={{
+            width: '36px',
+            height: '20px',
+            borderRadius: '99px',
+            backgroundColor: isApplied ? '#2F80ED' : '#C2C9DB',
+            border: isApplied ? '1px solid #2F80ED' : '1px solid #B0B7C8',
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            boxShadow: isApplied ? '0 0 0 2px rgba(47,128,237,0.15)' : undefined,
+          }}
+        >
+          <div
+            className="transition-all"
+            style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: '#FFFFFF',
+              position: 'absolute',
+              top: '1px',
+              left: isApplied ? '17px' : '1px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
             }}
-            onClick={(e) => e.stopPropagation()}
-            title={config.isEnabled ? 'Disable configuration' : 'Enable configuration'}
-            className="flex-shrink-0 accent-[#2F80ED]"
-            style={{ width: '14px', height: '14px', cursor: 'pointer' }}
           />
-        )}
+        </button>
 
         {/* Three-dot menu */}
         <div className="flex-shrink-0">
@@ -323,6 +314,18 @@ function ConfigItem({ config, isActive, isChecked, onSelect, onToggleEnabled, on
                   style={{ minWidth: '150px', top: menuPos.top, left: menuPos.left, borderColor: '#E9E9E9' }}
                 >
                   <div style={{ padding: '4px' }}>
+                    <button
+                      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
+                      style={{  fontSize: '12px', color: '#36415D' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenu(false);
+                        onSelect();
+                      }}
+                    >
+                      <Sliders className="size-3.5" style={{ color: '#868D9E' }} />
+                      Edit
+                    </button>
                     <button
                       className="flex items-center gap-2.5 w-full px-3 py-2 rounded-[6px] hover:bg-[#F5F5F5] transition-colors text-left min-h-[32px]"
                       style={{  fontSize: '12px', color: '#36415D' }}
@@ -1493,7 +1496,8 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
   const [configurations, setConfigurations] = useState<Configuration[]>(MOCK_CONFIGURATIONS);
   const [folders, setFolders] = useState<ConfigFolder[]>(MOCK_FOLDERS);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>('config-default');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [appliedConfigId, setAppliedConfigId] = useState<string>('config-default');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     title: string;
@@ -1901,23 +1905,6 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             >
               <FolderPlus className="size-3.5" style={{ color: '#868D9E' }} />
             </button>
-            {selectableConfigs.length > 0 && (
-              <button
-                onClick={handleToggleSelectAll}
-                className="flex items-center justify-center rounded-[8px] border hover:bg-[#E9E9E9]/50 active:scale-[0.97] transition-all min-h-[36px]"
-                style={{
-                  
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  color: allSelected ? '#2F80ED' : '#868D9E',
-                  borderColor: allSelected ? '#2F80ED' : '#C2C9DB',
-                  padding: '6px 8px',
-                }}
-                title={allSelected ? 'Deselect all' : 'Select all'}
-              >
-                {allSelected ? 'Deselect' : 'Select all'}
-              </button>
-            )}
           </div>
 
           {/* Configuration List with Folders */}
@@ -1934,16 +1921,15 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                     key={config.id}
                     config={config}
                     isActive={selectedId === config.id}
+                    isApplied={appliedConfigId === config.id}
                     isChecked={checkedIds.has(config.id)}
                     folders={folders}
                     onSelect={() => {
-                      if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
-                        const prev = configurations.find((c) => c.id === selectedId);
-                        if (prev && !prev.isDefault) {
-                          setToastMessage('Previous configuration state saved');
-                        }
-                      }
                       setSelectedId(config.id);
+                    }}
+                    onApply={() => {
+                      setAppliedConfigId(config.id);
+                      setToastMessage(`Applied "${config.name}" to scene`);
                     }}
                     onToggleEnabled={() => handleToggleEnabled(config.id)}
                     onDuplicate={() => handleDuplicate(config.id)}
@@ -1988,16 +1974,15 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
                                 key={config.id}
                                 config={config}
                                 isActive={selectedId === config.id}
+                                isApplied={appliedConfigId === config.id}
                                 isChecked={checkedIds.has(config.id)}
                                 folders={folders}
                                 onSelect={() => {
-                                  if (selectedId && selectedId !== config.id && selectedId !== 'config-default') {
-                                    const prev = configurations.find((c) => c.id === selectedId);
-                                    if (prev && !prev.isDefault) {
-                                      setToastMessage('Previous configuration state saved');
-                                    }
-                                  }
                                   setSelectedId(config.id);
+                                }}
+                                onApply={() => {
+                                  setAppliedConfigId(config.id);
+                                  setToastMessage(`Applied "${config.name}" to scene`);
                                 }}
                                 onToggleEnabled={() => handleToggleEnabled(config.id)}
                                 onDuplicate={() => handleDuplicate(config.id)}
@@ -2054,8 +2039,8 @@ export function ConfigurationsPanel({ isOpen, onClose }: ConfigurationsPanelProp
             )}
           </div>
 
-          {/* Bulk Action Bar */}
-          {checkedIds.size >= 1 && (
+          {/* Bulk Action Bar — hidden in simplified view */}
+          {false && checkedIds.size >= 1 && (
             <div
               className="border-t"
               style={{
