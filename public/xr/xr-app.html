@@ -2498,6 +2498,14 @@ setInterval(function() {
   }
 }, 1000);
 
+// Navigate to screen from URL hash on load (e.g. xr-app.html#call)
+(function() {
+  var hash = window.location.hash.replace('#', '');
+  if (hash && screenMap[hash]) {
+    screenIds.forEach(function(id) { document.getElementById(id).classList.remove('active'); });
+    document.getElementById(screenMap[hash]).classList.add('active');
+  }
+})();
 
 </script>
 <script src="../shared/debug-menu.js"></script>
