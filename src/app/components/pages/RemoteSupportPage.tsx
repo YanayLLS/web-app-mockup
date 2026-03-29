@@ -901,7 +901,15 @@ export function RemoteSupportPage({
   const [callId] = useState(() => Math.random().toString(36).substring(2, 11).toUpperCase());
   const [callPassword] = useState(() => Math.random().toString(36).substring(2, 8));
   const createButtonRef = useRef<HTMLButtonElement>(null);
-  const [activeTab, setActiveTab] = useState<'agenda' | 'recent' | 'history'>('agenda');
+  const [activeTab, setActiveTabRaw] = useState<'agenda' | 'recent' | 'history'>(() => {
+    const param = getUrlParam('tab');
+    if (param === 'recent' || param === 'history') return param;
+    return 'agenda';
+  });
+  const setActiveTab = (tab: 'agenda' | 'recent' | 'history') => {
+    setActiveTabRaw(tab);
+    setUrlParam('tab', tab === 'agenda' ? null : tab);
+  };
   const [recentCalls, setRecentCalls] = useState<RecentCall[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [postCallSummary, setPostCallSummary] = useState<{

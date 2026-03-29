@@ -1842,7 +1842,7 @@ const totalSteps = 10;
 let callChatOpen = false;
 let callParticipantsOpen = false;
 
-function navigateTo(key, skipHash) {
+function navigateTo(key) {
   screenIds.forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById(screenMap[key]).classList.add('active');
   closeSidePanel();
@@ -1859,15 +1859,6 @@ function navigateTo(key, skipHash) {
   callChatOpen = false;
   callParticipantsOpen = false;
   updateClock();
-  // Update URL hash for shareable links
-  if (!skipHash) {
-    const hash = key === 'lobby' ? '' : key;
-    history.replaceState(null, '', hash ? '#' + hash : window.location.pathname);
-    // Sync parent frame URL if embedded in iframe
-    if (window.parent !== window) {
-      window.parent.postMessage({ type: 'xr-navigate', screen: key }, '*');
-    }
-  }
 }
 
 // Projects
@@ -2503,23 +2494,7 @@ setInterval(function() {
   }
 }, 1000);
 
-// ===== HASH-BASED ROUTING =====
-// Navigate to screen from URL hash on load (e.g. #rs, #call, #kb)
-(function() {
-  const hash = window.location.hash.replace('#', '');
-  if (hash && screenMap[hash]) {
-    navigateTo(hash, true);
-  }
-})();
-// Handle browser back/forward
-window.addEventListener('hashchange', function() {
-  const hash = window.location.hash.replace('#', '');
-  if (hash && screenMap[hash]) {
-    navigateTo(hash, true);
-  } else if (!hash) {
-    navigateTo('lobby', true);
-  }
-});
+
 </script>
 <script src="../shared/debug-menu.js"></script>
 </body>
