@@ -929,6 +929,38 @@ function usePageTitle() {
 }
 
 // Router wrapper that handles product selection and platform routing
+function XrAppPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Extract screen from URL path (e.g. /xr/rs → rs)
+  const screenFromPath = location.pathname.replace(/.*\/xr\/?/, '') || '';
+  const iframeSrc = `${import.meta.env.BASE_URL}xr/xr-app.html${screenFromPath ? '#' + screenFromPath : ''}`;
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'xr-navigate') {
+        const screen = e.data.screen;
+        const newPath = screen === 'lobby' ? '/xr' : `/xr/${screen}`;
+        if (location.pathname !== newPath && location.pathname !== `${import.meta.env.BASE_URL}${newPath.slice(1)}`) {
+          navigate(newPath, { replace: true });
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate, location.pathname]);
+
+  return (
+    <div className="w-screen h-screen bg-black">
+      <iframe
+        src={iframeSrc}
+        className="w-full h-full border-0"
+        title="XR App"
+      />
+    </div>
+  );
+}
+
 function AppRouter() {
   usePageTitle();
   return (
@@ -959,15 +991,7 @@ function AppRouter() {
           </AvatarProvider>
         } />
         <Route path="/app/*" element={<ProjectProvider><AppLayout /></ProjectProvider>} />
-        <Route path="/xr/*" element={
-          <div className="w-screen h-screen bg-black">
-            <iframe
-              src={`${import.meta.env.BASE_URL}xr/xr-app.html`}
-              className="w-full h-full border-0"
-              title="XR App"
-            />
-          </div>
-        } />
+        <Route path="/xr/*" element={<XrAppPage />} />
       </Routes>
       <DebugMenu />
     </UserProfileProvider>
