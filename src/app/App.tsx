@@ -932,15 +932,25 @@ function usePageTitle() {
 function XrAppPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   // Compute initial hash from URL path once (e.g. /xr/rs → #rs)
+  // Also forward ?modal= query param into the hash (e.g. /xr/lobby?modal=voice-commands → #lobby&modal=voice-commands)
   const initialScreen = useRef(location.pathname.replace(/.*\/xr\/?/, '') || '');
-  const initialSrc = useRef(
-    `${import.meta.env.BASE_URL}xr/xr-app.html${initialScreen.current ? '#' + initialScreen.current : ''}`
+  const initialModal = useRef(new URLSearchParams(location.search).get('modal') || '');
+  const initialHash = useRef(
+    initialScreen.current
+      ? '#' + initialScreen.current + (initialModal.current ? '&modal=' + initialModal.current : '')
+      : ''
   );
+  const initialSrc = useRef(
+    `${import.meta.env.BASE_URL}xr/xr-app.html${initialHash.current}`
+  );
+  const mountedRef = useRef(false);
   // Use a ref for navigate to avoid stale closures
   const navRef = useRef(navigate);
   navRef.current = navigate;
 
+  // Listen for navigation messages from the iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === 'xr-navigate') {
@@ -953,9 +963,24 @@ function XrAppPage() {
     return () => window.removeEventListener('message', handler);
   }, []);
 
+  // Forward URL changes to the iframe via postMessage (skip on first mount)
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    const screen = location.pathname.replace(/.*\/xr\/?/, '') || 'lobby';
+    const modal = new URLSearchParams(location.search).get('modal') || undefined;
+    iframeRef.current?.contentWindow?.postMessage(
+      { type: 'xr-open', screen, modal },
+      '*'
+    );
+  }, [location.pathname, location.search]);
+
   return (
     <div className="w-screen h-screen bg-black">
       <iframe
+        ref={iframeRef}
         src={initialSrc.current}
         className="w-full h-full border-0"
         title="XR App"

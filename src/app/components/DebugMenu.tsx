@@ -53,6 +53,14 @@ const xrPages: PageLink[] = [
   { label: 'Call', path: '/xr/call' },
 ];
 
+const xrModals: PageLink[] = [
+  { label: 'Workspace Picker', path: '/xr/lobby?modal=workspace-picker' },
+  { label: 'Voice Commands', path: '/xr/lobby?modal=voice-commands' },
+  { label: 'Side Panel', path: '/xr/item?modal=side-panel' },
+  { label: 'Call Chat', path: '/xr/call?modal=call-chat' },
+  { label: 'Call Participants', path: '/xr/call?modal=call-participants' },
+];
+
 const webPages: PageLink[] = [
   { label: 'Home', path: '/web/home' },
   { label: 'Notifications', path: '/web/notifications' },
@@ -140,7 +148,7 @@ export function DebugMenu() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
     const s = new Set<string>();
     featureGroups.forEach(g => s.add(g.label));
-    [...appPages, ...webPages, ...xrPages].forEach(p => { if (p.children) s.add(p.path); });
+    [...appPages, ...webPages, ...xrPages, ...xrModals].forEach(p => { if (p.children) s.add(p.path); });
     return s;
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -428,11 +436,12 @@ export function DebugMenu() {
   const filteredAppPages = filterPages(appPages, searchQ);
   const filteredWebPages = filterPages(webPages, searchQ);
   const filteredXrPages = filterPages(xrPages, searchQ);
+  const filteredXrModals = filterPages(xrModals, searchQ);
   const isGlobalSearch = !!searchQ;
-  const hasPageResults = isGlobalSearch && (filteredAppPages.length > 0 || filteredWebPages.length > 0 || filteredXrPages.length > 0);
+  const hasPageResults = isGlobalSearch && (filteredAppPages.length > 0 || filteredWebPages.length > 0 || filteredXrPages.length > 0 || filteredXrModals.length > 0);
   const hasFeatureResults = isGlobalSearch && filteredGroups.length > 0;
   const hasRoleResults = isGlobalSearch && filteredRoleGroups.length > 0;
-  const totalPageCount = countPages(filteredAppPages) + countPages(filteredWebPages) + countPages(filteredXrPages);
+  const totalPageCount = countPages(filteredAppPages) + countPages(filteredWebPages) + countPages(filteredXrPages) + countPages(filteredXrModals);
   const totalFeatureCount = filteredGroups.reduce((s, g) => s + g.features.length, 0);
   const totalRoleCount = filteredRoleGroups.reduce((s, g) => s + g.roles.length, 0);
   const noResults = isGlobalSearch && !hasPageResults && !hasFeatureResults && !hasRoleResults;
@@ -443,7 +452,7 @@ export function DebugMenu() {
   const pinnedPageItems = useMemo(() => {
     const all: PageLink[] = [];
     const walk = (pages: PageLink[]) => { for (const p of pages) { if (pinnedPagePaths.includes(p.path)) all.push(p); if (p.children) walk(p.children); } };
-    walk([...appPages, ...webPages, ...xrPages]);
+    walk([...appPages, ...webPages, ...xrPages, ...xrModals]);
     return all;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinnedItems]);
@@ -648,7 +657,7 @@ export function DebugMenu() {
       }
       // Normal search fallback
       if (searchQuery) {
-        const allPages = [...appPages, ...webPages, ...xrPages];
+        const allPages = [...appPages, ...webPages, ...xrPages, ...xrModals];
         const pm = getFirstMatch(allPages, searchQuery);
         if (pm) { handleNavigate(pm.path); setSearchQuery(''); return; }
         const q = searchQuery.toLowerCase();
@@ -992,7 +1001,7 @@ export function DebugMenu() {
 
                   {isApp && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>App Pages</div>{renderPageList(appPages)}</>)}
                   {isWeb && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>Web Pages</div>{renderPageList(webPages)}</>)}
-                  {isXR && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>XR Pages</div>{renderPageList(xrPages)}</>)}
+                  {isXR && (<><div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', fontWeight: 700 }}>XR Pages</div>{renderPageList(xrPages)}<div style={{ fontSize: '11px', color: '#868D9E', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 8px', marginBottom: '2px', marginTop: '8px', fontWeight: 700 }}>XR Modals</div>{renderPageList(xrModals)}</>)}
                   {!isApp && !isWeb && !isXR && (
                     <div style={{ padding: '8px', color: '#868D9E', fontSize: '12px', textAlign: 'center' }}>Select a platform tab above</div>
                   )}
