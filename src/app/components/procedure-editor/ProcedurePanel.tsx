@@ -111,7 +111,7 @@ export function ProcedurePanel({
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const colorButtonRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [cardWidth, setCardWidth] = useState(200);
+  const [cardWidth, setCardWidth] = useState(280);
   const isResizing = useRef(false);
 
   // Right-edge drag-to-resize
@@ -127,7 +127,7 @@ export function ProcedurePanel({
 
     const onMouseMove = (ev: MouseEvent) => {
       if (!isResizing.current) return;
-      const newWidth = Math.max(200, Math.min(startWidth + (ev.clientX - startX), window.innerWidth * 0.5));
+      const newWidth = Math.max(280, Math.min(startWidth + (ev.clientX - startX), window.innerWidth * 0.5));
       setCardWidth(newWidth);
     };
 
